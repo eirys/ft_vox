@@ -6,12 +6,11 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/15 20:18:58 by etran             #+#    #+#             */
-/*   Updated: 2023/05/16 14:51:19 by etran            ###   ########.fr       */
+/*   Updated: 2023/05/16 17:19:51 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef TEXTURE_SAMPLER_HPP
-# define TEXTURE_SAMPLER_HPP
+#pragma once
 
 # ifndef GLFW_INCLUDE_VULKAN
 #  define GLFW_INCLUDE_VULKAN
@@ -19,17 +18,18 @@
 
 # include <GLFW/glfw3.h>
 
-namespace scop {
-namespace graphics {
+# include <chrono>
 
+namespace scop {
 class Image;
-class Device;
+
+namespace graphics {
 class DescriptorSet;
 
 class TextureSampler {
 public:
 
-	friend class DescriptorSet;
+	friend DescriptorSet;
 
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
@@ -92,7 +92,7 @@ private:
 /*                                    OTHER                                   */
 /* ========================================================================== */
 
-inline void	transitionImageLayout(
+void	transitionImageLayout(
 	VkDevice device,
 	VkCommandPool command_pool,
 	VkQueue graphics_queue,
@@ -106,4 +106,3 @@ inline void	transitionImageLayout(
 } // namespace graphics
 }  // namespace scop
 
-#endif

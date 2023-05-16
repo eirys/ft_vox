@@ -6,12 +6,11 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/15 16:27:44 by etran             #+#    #+#             */
-/*   Updated: 2023/05/16 14:25:03 by etran            ###   ########.fr       */
+/*   Updated: 2023/05/16 17:19:51 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef GRAPHICS_PIPELINE_HPP
-# define GRAPHICS_PIPELINE_HPP
+#pragma once
 
 // Graphics
 # ifndef GLFW_INCLUDE_VULKAN
@@ -24,9 +23,7 @@
 # include <optional>	// std::optional
 # include <vector>		// std::vector
 
-# include "vector.hpp"
-# include "image_handler.hpp"
-
+# include "debug_module.hpp"
 # include "device.hpp"
 # include "render_target.hpp"
 # include "texture_sampler.hpp"
@@ -52,7 +49,14 @@ public:
 	/*                               CONST MEMBERS                               */
 	/* ========================================================================= */
 
-	static constexpr size_t			max_frames_in_flight = 1;
+	static const std::vector<const char*>	validation_layers;
+	static constexpr size_t					max_frames_in_flight = 1;
+
+	#ifndef NDEBUG
+	static constexpr bool					enable_validation_layers = false;
+	#else
+	static constexpr bool					enable_validation_layers = true;
+	#endif
 
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
@@ -68,7 +72,7 @@ public:
 	/* ========================================================================= */
 
 	void						init(
-		Window& window, 
+	scop::Window& window, 
 		const scop::Image& image,
 		const std::vector<Vertex>& vertices,
 		const std::vector<uint32_t>& indices
@@ -77,14 +81,8 @@ public:
 
 	void						idle();
 	void						render(
-		Window& window,
+	scop::Window& window,
 		size_t indices_size
-	);
-
-	void						recordCommandBuffer(
-		size_t indices_size,
-		VkCommandBuffer command_buffer,
-		uint32_t image_index
 	);
 
 private:
@@ -101,24 +99,15 @@ private:
 	/*                               CONST MEMBERS                               */
 	/* ========================================================================= */
 
-	const std::vector<const char*>	validation_layers = {
-		"VK_LAYER_KHRONOS_validation"
-	};
-	static constexpr char*			vertex_shader_bin = "shaders/vert.spv";
-	static constexpr char*			fragment_shader_bin = "shaders/frag.spv";
-
-	#ifndef NDEBUG
-	static constexpr bool			enable_validation_layers = false;
-	#else
-	static constexpr bool			enable_validation_layers = true;
-	#endif
+	const char*						vertex_shader_bin = "shaders/vert.spv";
+	const char*						fragment_shader_bin = "shaders/frag.spv";
 
 	/* ========================================================================= */
 	/*                               CLASS MEMBERS                               */
 	/* ========================================================================= */
 
 	VkInstance						vk_instance;
-	VkDebugUtilsMessengerEXT		debug_messenger;
+	DebugModule						debug_module;
 
 	Device							device;
 	RenderTarget					render_target;
@@ -141,20 +130,18 @@ private:
 	/* INIT ==================================================================== */
 
 	void							createInstance();
-	void							setupDebugMessenger();
 	void							createGraphicsPipeline();
 	void							createSyncObjects();
 
-	/* UTILS =================================================================== */
-
 	bool							checkValidationLayerSupport();
 	std::vector<const char*>		getRequiredExtensions();
-	void							populateDebugMessengerCreateInfo(
-		VkDebugUtilsMessengerCreateInfoEXT& create_info
-	);
-
 	VkShaderModule					createShaderModule(
 		const std::vector<char>& code
+	);
+	void							recordCommandBuffer(
+		size_t indices_size,
+		VkCommandBuffer command_buffer,
+		uint32_t image_index
 	);
 
 }; // class GraphicsPipeline
@@ -163,39 +150,19 @@ private:
 /*                                    UTILS                                   */
 /* ========================================================================== */
 
-inline VkResult	CreateDebugUtilsMessengerEXT(
-	VkInstance instance,
-	const VkDebugUtilsMessengerCreateInfoEXT* p_create_info,
-	const VkAllocationCallbacks* p_allocator,
-	VkDebugUtilsMessengerEXT* p_debug_messenger
-);
-
-inline void	DestroyDebugUtilsMessengerEXT(
-	VkInstance instance,
-	VkDebugUtilsMessengerEXT debug_messenger,
-	const VkAllocationCallbacks* p_allocator
-);
-
-inline VKAPI_ATTR	VkBool32 VKAPI_CALL	debugCallback(
-	VkDebugUtilsMessageSeverityFlagBitsEXT message_severity,
-	VkDebugUtilsMessageTypeFlagsEXT message_type,
-	const VkDebugUtilsMessengerCallbackDataEXT* p_callback_data,
-	void* p_user_data
-);
-
-inline VkCommandBuffer	beginSingleTimeCommands(
+VkCommandBuffer	beginSingleTimeCommands(
 	VkDevice device,
 	VkCommandPool command_pool
 );
 
-inline void	endSingleTimeCommands(
+void	endSingleTimeCommands(
 	VkDevice device,
 	VkQueue queue,
 	VkCommandPool command_pool,
 	VkCommandBuffer command_buffer
 );
 
-inline VkImageView	createImageView(
+VkImageView	createImageView(
 	VkDevice logical_device,
 	VkImage image,
 	VkFormat format,
@@ -203,7 +170,7 @@ inline VkImageView	createImageView(
 	uint32_t mip_level
 );
 
-inline void	copyBuffer(
+void	copyBuffer(
 	VkDevice device,
 	VkQueue queue,
 	VkCommandPool command_pool,
@@ -212,7 +179,7 @@ inline void	copyBuffer(
 	VkDeviceSize size
 );
 
-inline void	copyBufferToImage(
+void	copyBufferToImage(
 	VkDevice device,
 	VkQueue queue,
 	VkCommandPool command_pool,
@@ -225,4 +192,3 @@ inline void	copyBufferToImage(
 } // namespace graphics
 } // namespace scop
 
-#endif

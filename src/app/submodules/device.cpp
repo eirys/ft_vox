@@ -6,12 +6,13 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/16 01:00:19 by etran             #+#    #+#             */
-/*   Updated: 2023/05/16 12:40:17 by etran            ###   ########.fr       */
+/*   Updated: 2023/05/16 17:18:50 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "device.hpp"
 #include "graphics_pipeline.hpp"
+#include "device.hpp"
+#include "window.hpp"
 
 #include <vector> // std::vector
 #include <set> // std::set
@@ -24,7 +25,7 @@ namespace graphics {
 /*                                   PUBLIC                                   */
 /* ========================================================================== */
 
-void	Device::init(Window& window,VkInstance instance) {
+void	Device::init(scop::Window& window,VkInstance instance) {
 	createSurface(instance, window);
 	pickPhysicalDevice(instance);
 	createLogicalDevice();
@@ -190,7 +191,7 @@ void	Device::createBuffer(
 */
 void	Device::createSurface(
 	VkInstance instance,
-	Window& window
+scop::Window& window
 ) {
 	if (glfwCreateWindowSurface(instance, window.getWindow(), nullptr, &vk_surface) != VK_SUCCESS)
 		throw std::runtime_error("failed to create window surface");
@@ -226,7 +227,7 @@ void	Device::pickPhysicalDevice(VkInstance instance) {
 */
 void	Device::createLogicalDevice() {
 	// Indicate that we want to create a single queue, with graphics capabilities
-	QueueFamilyIndices	indices = findQueueFamilies(physical_device, vk_surface);
+	QueueFamilyIndices	indices = findQueueFamilies();
 
 	std::vector<VkDeviceQueueCreateInfo>	queue_create_infos;
 	std::set<uint32_t>						unique_queue_families = {
@@ -257,9 +258,11 @@ void	Device::createLogicalDevice() {
 	create_info.pEnabledFeatures = &device_features;
 
 	// Validation layers
-	if (enable_validation_layers) {
-		create_info.enabledLayerCount = static_cast<uint32_t>(validation_layers.size());
-		create_info.ppEnabledLayerNames = validation_layers.data();
+	if (GraphicsPipeline::enable_validation_layers) {
+		create_info.enabledLayerCount = static_cast<uint32_t>(
+			GraphicsPipeline::validation_layers.size()
+		);
+		create_info.ppEnabledLayerNames = GraphicsPipeline::validation_layers.data();
 	} else {
 		create_info.enabledLayerCount = 0;
 	}
@@ -335,7 +338,7 @@ bool	Device::checkDeviceExtensionSupport(const VkPhysicalDevice& device) {
  * Verify that the selected physical device is suitable for the app needs
 */
 bool	Device::isDeviceSuitable(const VkPhysicalDevice& device) {
-	QueueFamilyIndices	indices = findQueueFamilies(device, vk_surface);
+	QueueFamilyIndices	indices = findQueueFamilies();
 	bool	extensions_supported = checkDeviceExtensionSupport(device);
 	bool	swap_chain_adequate = false;
 

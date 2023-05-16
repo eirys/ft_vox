@@ -6,13 +6,11 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/15 20:56:05 by etran             #+#    #+#             */
-/*   Updated: 2023/05/16 14:25:54 by etran            ###   ########.fr       */
+/*   Updated: 2023/05/16 16:47:47 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "descriptor_set.hpp"
-#include "device.hpp"
-#include "app.hpp"
 
 #include <array> // std::array
 #include <stdexcept> // std::runtime_error
@@ -55,11 +53,11 @@ void	DescriptorSet::destroy(
 /**
  * Update transformation of vertices
 */
-void	DescriptorSet::updateUniformBuffer(const scop::App::Input& input) {
+void	DescriptorSet::updateUniformBuffer() {
 	time_point	current_time = std::chrono::high_resolution_clock::now();
 
-	updateVertexPart(current_time, input);
-	updateFragmentPart(current_time, input);
+	updateVertexPart(current_time);
+	updateFragmentPart(current_time);
 }
 
 /* ========================================================================== */
@@ -239,7 +237,7 @@ void	DescriptorSet::createUniformBuffers(Device& device) {
 void	DescriptorSet::initUniformBuffer() noexcept {
 	UniformBufferObject	ubo{};
 
-	ubo.texture.enabled = texture_enabled;
+	ubo.texture.enabled = scop::App::texture_enabled;
 	ubo.texture.mix = -1.0f;
 
 	memcpy(uniform_buffers_mapped, &ubo, sizeof(ubo));
@@ -256,10 +254,10 @@ void	DescriptorSet::updateVertexPart(
 	UniformBufferObject::Camera	camera{};
 
 	// Define object transformation model
-	if (App::rotation_axis.has_value()) {
+	if (scop::App::rotation_axis.has_value()) {
 		camera.model = scop::rotate(
 			time * scop::utils::radians(90.0f),
-			App::rotation_axis.value()
+			scop::App::rotation_axis.value()
 		);
 	} else {
 		camera.model = scop::Mat4(1.0f);
@@ -268,7 +266,7 @@ void	DescriptorSet::updateVertexPart(
 	// Define camera transformation view
 	scop::Mat4	zoom = scop::scale(
 		scop::Mat4(1.0f),
-		scop::Vect3(zoom_input, zoom_input, zoom_input)
+		scop::Vect3(scop::App::zoom_input, scop::App::zoom_input, scop::App::zoom_input)
 	);
 	camera.view = zoom * scop::lookAt(
 		scop::Vect3(2.0f, 2.0f, 2.0f),
@@ -295,7 +293,7 @@ void	DescriptorSet::updateVertexPart(
 
 void	DescriptorSet::updateFragmentPart(
 	time_point current_time,
-	const scop::App::Input& input
+	const scop::scop::App::Input& input
 ) {
 	// Only udpate if it was recently toggled
 	if (!input.texture_enabled_start.has_value()) {
@@ -307,7 +305,7 @@ void	DescriptorSet::updateFragmentPart(
 	// Transition from 0 to 1 in /*transition_duration*/ ms	float
 	float	time = std::chrono::duration<float, std::chrono::milliseconds::period>(
 		current_time - input.texture_enabled_start.value()
-	).count() / App::transition_duration;
+	).count() / scop::App::transition_duration;
 
 	texture.enabled = input.texture_enabled;
 	texture.mix = input.texture_enabled ? time : 1.0f - time;

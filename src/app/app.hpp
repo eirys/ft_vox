@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/10 18:21:34 by eli               #+#    #+#             */
-/*   Updated: 2023/05/16 14:26:33 by etran            ###   ########.fr       */
+/*   Updated: 2023/05/16 16:01:51 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,8 +64,6 @@ enum UpAxis {
 	UP_Y,
 	UP_Z
 };
-
-class graphics::DescriptorSet;
 
 /**
  * Core engine.

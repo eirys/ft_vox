@@ -6,12 +6,11 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/15 20:43:53 by etran             #+#    #+#             */
-/*   Updated: 2023/05/16 14:57:17 by etran            ###   ########.fr       */
+/*   Updated: 2023/05/16 17:04:41 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef VERTEX_INPUT_HPP
-# define VERTEX_INPUT_HPP
+#pragma once
 
 // Graphics
 # ifndef GLFW_INCLUDE_VULKAN
@@ -22,18 +21,15 @@
 
 // Std
 # include <vector>
-
-#include "vertex.hpp"
+# include "vertex.hpp"
+# include "vector.hpp"
 
 namespace scop {
 namespace graphics {
 
-class GraphicsPipeline;
-class Device;
-
 class VertexInput {
 public:
-	friend class GraphicsPipeline;
+	friend GraphicsPipeline;
 
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
@@ -85,4 +81,3 @@ private:
 
 } // namespace graphics
 } // namespace scop
-#endif

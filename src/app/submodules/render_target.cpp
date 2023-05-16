@@ -11,9 +11,12 @@
 /* ************************************************************************** */
 
 #include "render_target.hpp"
+#include "device.hpp"
 #include "graphics_pipeline.hpp"
+#include "window.hpp"
 
-#include <algorithm>
+#include <algorithm> // std::min, std::max
+#include <stdexcept> // std::runtime_error
 
 namespace scop {
 namespace graphics {

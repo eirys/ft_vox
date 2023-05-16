@@ -6,13 +6,11 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/16 12:47:19 by etran             #+#    #+#             */
-/*   Updated: 2023/05/16 13:35:37 by etran            ###   ########.fr       */
+/*   Updated: 2023/05/16 16:47:19 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "command_buffer.hpp"
-#include "graphics_pipeline.hpp"
-#include "device.hpp"
 
 namespace scop {
 namespace graphics {

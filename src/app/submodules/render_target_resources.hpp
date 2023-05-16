@@ -6,12 +6,11 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/15 20:07:43 by etran             #+#    #+#             */
-/*   Updated: 2023/05/16 14:37:01 by etran            ###   ########.fr       */
+/*   Updated: 2023/05/16 17:10:52 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef DEPTH_STENCIL_HPP
-# define DEPTH_STENCIL_HPP
+#pragma once
 
 // Graphics
 # ifndef GLFW_INCLUDE_VULKAN
@@ -23,16 +22,18 @@
 // Std
 # include <vector> // std::vector
 
+# include "device.hpp"
+
 namespace scop {
 namespace graphics {
 
-class Device;
 class RenderTarget;
+class Device;
 
 class RenderTargetResources {
 public:
 
-	friend class RenderTarget;
+	friend RenderTarget;
 
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
@@ -87,4 +88,3 @@ private:
 } // namespace graphics
 }  // namespace scop
 
-#endif

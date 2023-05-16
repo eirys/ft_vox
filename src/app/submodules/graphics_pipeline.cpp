@@ -6,13 +6,11 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/15 16:34:03 by etran             #+#    #+#             */
-/*   Updated: 2023/05/16 14:58:17 by etran            ###   ########.fr       */
+/*   Updated: 2023/05/16 16:54:08 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "graphics_pipeline.hpp"
-#include "window.hpp"
-#include "utils.hpp"
 
 #include <iostream> // std::cerr std::endl
 #include <cstring> // std::strcmp
@@ -21,18 +19,22 @@
 namespace scop {
 namespace graphics {
 
+const std::vector<const char*>	GraphicsPipeline::validation_layers = {
+	"VK_LAYER_KHRONOS_validation"
+};
+
 /* ========================================================================== */
 /*                                   PUBLIC                                   */
 /* ========================================================================== */
 
 void	GraphicsPipeline::init(
-	Window& window,
+scop::Window& window,
 	const scop::Image& image,
 	const std::vector<Vertex>& vertices,
 	const std::vector<uint32_t>& indices
 ) {
 	createInstance();
-	setupDebugMessenger();
+	debug_module.init(vk_instance);
 	device.init(window, vk_instance);
 	render_target.init(device, window);
 	descriptor_set.init(device, texture_sampler);
@@ -59,15 +61,10 @@ void	GraphicsPipeline::destroy() {
 
 	descriptor_set.destroy(device);
 	render_target.destroy(device);
-
-	// Remove device && vk surface
 	device.destroy(vk_instance);
+	debug_module.destroy(vk_instance);
 
-	// Remove debug object
-	if (enable_validation_layers) {
-		DestroyDebugUtilsMessengerEXT(vk_instance, debug_messenger, nullptr);
-	}
-	// Remove vk instance
+	// Remove instance
 	vkDestroyInstance(vk_instance, nullptr);
 }
 
@@ -78,7 +75,7 @@ void	GraphicsPipeline::idle() {
 }
 
 void	GraphicsPipeline::render(
-	Window& window,
+scop::Window& window,
 	size_t indices_size
 ) {
 	// Wait fence available, lock it
@@ -170,89 +167,6 @@ void	GraphicsPipeline::render(
 }
 
 /* ========================================================================== */
-
-/**
- *  Write commands to command buffer to be subimtted to queue.
- */
-void	GraphicsPipeline::recordCommandBuffer(
-	size_t indices_size,
-	VkCommandBuffer command_buffer,
-	uint32_t image_index
-) {
-	VkCommandBufferBeginInfo	begin_info{};
-	begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-	begin_info.flags = 0;
-	begin_info.pInheritanceInfo = nullptr;
-
-	if (vkBeginCommandBuffer(command_buffer, &begin_info) != VK_SUCCESS) {
-		throw std::runtime_error("failed to begin recording command buffer");
-	}
-
-	// Define what corresponds to 'clear color'
-	std::array<VkClearValue, 2>	clear_values{};
-	clear_values[0].color = {{ 0.0f, 0.0f, 0.0f, 1.0f }};
-	clear_values[1].depthStencil = { 1.0f, 0 };
-
-	// Spectify to render pass how to handle the command buffer,
-	// and which framebuffer to render to
-	VkRenderPassBeginInfo	render_pass_info{};
-	render_pass_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-	render_pass_info.renderPass = render_target.vk_render_pass;
-	render_pass_info.framebuffer = render_target.swap_chain_frame_buffers[image_index];
-	render_pass_info.renderArea.offset = { 0, 0 };
-	render_pass_info.renderArea.extent = render_target.swap_chain_extent;
-	render_pass_info.clearValueCount = static_cast<uint32_t>(clear_values.size());
-	render_pass_info.pClearValues = clear_values.data();
-
-	// Begin rp and bind pipeline
-	vkCmdBeginRenderPass(command_buffer, &render_pass_info, VK_SUBPASS_CONTENTS_INLINE);
-	vkCmdBindPipeline(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphics_pipeline);
-
-	// Set viewport and scissors
-	VkViewport	viewport{};
-	viewport.x = 0.0f;
-	viewport.y = 0.0f;
-	viewport.width = static_cast<float>(render_target.swap_chain_extent.width);
-	viewport.height = static_cast<float>(render_target.swap_chain_extent.height);
-	viewport.minDepth = 0.0f;
-	viewport.maxDepth = 1.0f;
-	vkCmdSetViewport(command_buffer, 0, 1, &viewport);
-
-	VkRect2D	scissor{};
-	scissor.offset = { 0, 0 };
-	scissor.extent = render_target.swap_chain_extent;
-	vkCmdSetScissor(command_buffer, 0, 1, &scissor);
-
-	// Bind vertex buffer && index buffer
-	VkBuffer		vertex_buffers[] = { vertex_input.vertex_buffer };
-	VkDeviceSize	offsets[] = { 0 };
-	vkCmdBindVertexBuffers(command_buffer, 0, 1, vertex_buffers, offsets);
-	vkCmdBindIndexBuffer(command_buffer, vertex_input.index_buffer, 0, VK_INDEX_TYPE_UINT32);
-
-	// Bind descriptor sets
-	vkCmdBindDescriptorSets(
-		command_buffer,
-		VK_PIPELINE_BIND_POINT_GRAPHICS,
-		pipeline_layout,
-		0,
-		1,
-		&descriptor_set.vk_descriptor_sets,
-		0,
-		nullptr
-	);
-
-	// Issue draw command
-	vkCmdDrawIndexed(command_buffer, static_cast<uint32_t>(indices_size), 1, 0, 0, 0);
-
-	// Stop the render target work
-	vkCmdEndRenderPass(command_buffer);
-
-	if (vkEndCommandBuffer(command_buffer) != VK_SUCCESS) {
-		throw std::runtime_error("failed to record command buffer");
-	}
-}
-
-/* ========================================================================== */
 /*                                   PRIVATE                                  */
 /* ========================================================================== */
 
@@ -290,7 +204,7 @@ void	GraphicsPipeline::createInstance() {
 	if (enable_validation_layers) {
 		create_info.enabledLayerCount = static_cast<uint32_t>(validation_layers.size());
 		create_info.ppEnabledLayerNames = validation_layers.data();
-		populateDebugMessengerCreateInfo(debug_create_info);
+		debug_module.populate(debug_create_info);
 		create_info.pNext = (VkDebugUtilsMessengerCreateInfoEXT*)&debug_create_info;
 	} else {
 		create_info.enabledLayerCount = 0;
@@ -300,20 +214,6 @@ void	GraphicsPipeline::createInstance() {
 	// Create the instance
 	if (vkCreateInstance(&create_info, nullptr, &vk_instance) != VK_SUCCESS)
 		throw std::runtime_error("failed to create vk_instance");
-}
-
-/**
- * Create a debug messenger to handle Vulkan errors
-*/
-void	GraphicsPipeline::setupDebugMessenger() {
-	if (!enable_validation_layers) return;
-
-	VkDebugUtilsMessengerCreateInfoEXT	create_info{};
-	populateDebugMessengerCreateInfo(create_info);
-
-	if (CreateDebugUtilsMessengerEXT(vk_instance, &create_info, nullptr, &debug_messenger) != VK_SUCCESS) {
-		throw std::runtime_error("failed to setup debug messenger");
-	}
 }
 
 void	GraphicsPipeline::createGraphicsPipeline() {
@@ -507,7 +407,7 @@ void	GraphicsPipeline::createSyncObjects() {
 	}
 }
 
-/* UTILS ==================================================================== */
+/* ========================================================================== */
 
 /**
  * Check if all required extensions are available for validation layers
@@ -550,29 +450,6 @@ std::vector<const char*>	GraphicsPipeline::getRequiredExtensions() {
 }
 
 /**
- * Explicit which debug messages are to be handled
-*/
-void	GraphicsPipeline::populateDebugMessengerCreateInfo(
-	VkDebugUtilsMessengerCreateInfoEXT& create_info
-) {
-	create_info = {};
-	create_info.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
-	create_info.messageSeverity =
-		VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT |
-		VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
-	#ifdef __VERBOSE
-	create_info.messageSeverity |= VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT;
-	#endif
-
-	create_info.messageType =
-		VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT |
-		VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
-		VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
-	create_info.pfnUserCallback = debugCallback;
-	create_info.pUserData = nullptr;
-}
-
-/**
  * Create a shader module, from a GLSL shader file, that will be used in the pipeline
 */
 VkShaderModule	GraphicsPipeline::createShaderModule(const std::vector<char>& code) {
@@ -590,64 +467,90 @@ VkShaderModule	GraphicsPipeline::createShaderModule(const std::vector<char>& cod
 	return shader_module;
 }
 
+/**
+ *  Write commands to command buffer to be subimtted to queue.
+ */
+void	GraphicsPipeline::recordCommandBuffer(
+	size_t indices_size,
+	VkCommandBuffer command_buffer,
+	uint32_t image_index
+) {
+	VkCommandBufferBeginInfo	begin_info{};
+	begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+	begin_info.flags = 0;
+	begin_info.pInheritanceInfo = nullptr;
+
+	if (vkBeginCommandBuffer(command_buffer, &begin_info) != VK_SUCCESS) {
+		throw std::runtime_error("failed to begin recording command buffer");
+	}
+
+	// Define what corresponds to 'clear color'
+	std::array<VkClearValue, 2>	clear_values{};
+	clear_values[0].color = {{ 0.0f, 0.0f, 0.0f, 1.0f }};
+	clear_values[1].depthStencil = { 1.0f, 0 };
+
+	// Spectify to render pass how to handle the command buffer,
+	// and which framebuffer to render to
+	VkRenderPassBeginInfo	render_pass_info{};
+	render_pass_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+	render_pass_info.renderPass = render_target.vk_render_pass;
+	render_pass_info.framebuffer = render_target.swap_chain_frame_buffers[image_index];
+	render_pass_info.renderArea.offset = { 0, 0 };
+	render_pass_info.renderArea.extent = render_target.swap_chain_extent;
+	render_pass_info.clearValueCount = static_cast<uint32_t>(clear_values.size());
+	render_pass_info.pClearValues = clear_values.data();
+
+	// Begin rp and bind pipeline
+	vkCmdBeginRenderPass(command_buffer, &render_pass_info, VK_SUBPASS_CONTENTS_INLINE);
+	vkCmdBindPipeline(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphics_pipeline);
+
+	// Set viewport and scissors
+	VkViewport	viewport{};
+	viewport.x = 0.0f;
+	viewport.y = 0.0f;
+	viewport.width = static_cast<float>(render_target.swap_chain_extent.width);
+	viewport.height = static_cast<float>(render_target.swap_chain_extent.height);
+	viewport.minDepth = 0.0f;
+	viewport.maxDepth = 1.0f;
+	vkCmdSetViewport(command_buffer, 0, 1, &viewport);
+
+	VkRect2D	scissor{};
+	scissor.offset = { 0, 0 };
+	scissor.extent = render_target.swap_chain_extent;
+	vkCmdSetScissor(command_buffer, 0, 1, &scissor);
+
+	// Bind vertex buffer && index buffer
+	VkBuffer		vertex_buffers[] = { vertex_input.vertex_buffer };
+	VkDeviceSize	offsets[] = { 0 };
+	vkCmdBindVertexBuffers(command_buffer, 0, 1, vertex_buffers, offsets);
+	vkCmdBindIndexBuffer(command_buffer, vertex_input.index_buffer, 0, VK_INDEX_TYPE_UINT32);
+
+	// Bind descriptor sets
+	vkCmdBindDescriptorSets(
+		command_buffer,
+		VK_PIPELINE_BIND_POINT_GRAPHICS,
+		pipeline_layout,
+		0,
+		1,
+		&descriptor_set.vk_descriptor_sets,
+		0,
+		nullptr
+	);
+
+	// Issue draw command
+	vkCmdDrawIndexed(command_buffer, static_cast<uint32_t>(indices_size), 1, 0, 0, 0);
+
+	// Stop the render target work
+	vkCmdEndRenderPass(command_buffer);
+
+	if (vkEndCommandBuffer(command_buffer) != VK_SUCCESS) {
+		throw std::runtime_error("failed to record command buffer");
+	}
+}
+
 /* ========================================================================== */
 /*                                    OTHER                                   */
 /* ========================================================================== */
-
-/**
- * Load the debug object creation function if avail
-*/
-VkResult	CreateDebugUtilsMessengerEXT(
-	VkInstance instance,
-	const VkDebugUtilsMessengerCreateInfoEXT* p_create_info,
-	const VkAllocationCallbacks* p_allocator,
-	VkDebugUtilsMessengerEXT* p_debug_messenger
-) {
-	auto	func = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(
-		instance,
-		"vkCreateDebugUtilsMessengerEXT"
-	);
-
-	if (func != nullptr) {
-		return func(instance, p_create_info, p_allocator, p_debug_messenger);
-	} else {
-		return VK_ERROR_EXTENSION_NOT_PRESENT;
-	}
-}
-
-/**
- * Load the debug object destructor function if available
-*/
-void	DestroyDebugUtilsMessengerEXT(
-	VkInstance instance,
-	VkDebugUtilsMessengerEXT debug_messenger,
-	const VkAllocationCallbacks* p_allocator
-) {
-	auto func = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(
-		instance,
-		"vkDestroyDebugUtilsMessengerEXT"
-	);
-
-	if (func != nullptr) {
-		func(instance, debug_messenger, p_allocator);
-	}
-}
-
-/**
- * Debug callback function, used by validation layers
-*/
-VKAPI_ATTR VkBool32 VKAPI_CALL	debugCallback(
-	VkDebugUtilsMessageSeverityFlagBitsEXT message_severity,
-	VkDebugUtilsMessageTypeFlagsEXT message_type,
-	const VkDebugUtilsMessengerCallbackDataEXT* p_callback_data,
-	void* p_user_data
-) {
-	(void)message_severity;
-	(void)message_type;
-	(void)p_user_data;
-	std::cerr << "[validation layer] " << p_callback_data->pMessage << std::endl;
-	return VK_FALSE;
-}
 
 VkCommandBuffer	beginSingleTimeCommands(
 	VkDevice device,

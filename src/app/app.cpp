@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/28 11:12:12 by eli               #+#    #+#             */
-/*   Updated: 2023/05/16 14:25:24 by etran            ###   ########.fr       */
+/*   Updated: 2023/05/16 16:37:01 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,7 +44,6 @@ App::~App() {
 /* ========================================================================== */
 
 void	App::run() {
-	initUniformBuffer();
 	while (window.alive()) {
 		// Poll events while not pressing x...
 		window.await();
@@ -114,24 +113,6 @@ void	App::changeUpAxis(UpAxis axis) noexcept {
 void	App::drawFrame() {
 	graphics_pipeline.render(window, indices.size());
 }
-
-/**
- * Force recreation of swap chain when not compatible with window
-*/
-void	App::recreateSwapChain() {
-	window.pause();
-	// vkDeviceWaitIdle(logical_device);
-	graphics_pipeline.idle();
-
-	// cleanupSwapChain();
-	// createSwapChain();
-	// createImageViews();
-	// createColorResources();
-	// createDepthResources();
-	// createFrameBuffers();
-	// swap_chain.update();
-}
-
 
 void	App::loadModel(const std::string& path) {
 	scop::obj::Parser	parser;

@@ -10,8 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef RENDER_TARGET_HPP
-# define RENDER_TARGET_HPP
+#pragma once
 
 // Graphics
 # ifndef GLFW_INCLUDE_VULKAN
@@ -24,13 +23,13 @@
 # include <optional>	// std::optional
 # include <vector>		// std::vector
 
-#include "window.hpp"
-#include "render_target_resources.hpp"
+# include "render_target_resources.hpp"
 
 namespace scop {
+class Window;
+	
 namespace graphics {
-
-class Device;
+class GraphicsPipeline;
 
 struct SwapChainSupportDetails {
 	VkSurfaceCapabilitiesKHR		capabilities;
@@ -41,7 +40,7 @@ struct SwapChainSupportDetails {
 class RenderTarget {
 public:
 
-	friend class GraphicsPipeline;
+	friend GraphicsPipeline;
 
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
@@ -67,12 +66,12 @@ public:
 	);
 
 private:
-
 	/* ========================================================================= */
 	/*                               CLASS MEMBERS                               */
 	/* ========================================================================= */
 
 	VkSwapchainKHR					vk_swap_chain;
+	VkRenderPass					vk_render_pass;
 
 	std::vector<VkImage>			swap_chain_images;
 	VkFormat						swap_chain_image_format;
@@ -82,8 +81,6 @@ private:
 	std::vector<VkFramebuffer>		swap_chain_frame_buffers;
 
 	RenderTargetResources			resources;
-
-	VkRenderPass					vk_render_pass;
 
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
@@ -122,7 +119,7 @@ private:
 /*                                    OTHER                                   */
 /* ========================================================================== */
 
-inline SwapChainSupportDetails	querySwapChainSupport(
+SwapChainSupportDetails	querySwapChainSupport(
 	VkPhysicalDevice device,
 	VkSurfaceKHR vk_surface
 );
@@ -130,4 +127,3 @@ inline SwapChainSupportDetails	querySwapChainSupport(
 } // namespace graphics
 } // namespace scop
 
-#endif

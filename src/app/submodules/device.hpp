@@ -6,24 +6,26 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/16 00:55:41 by etran             #+#    #+#             */
-/*   Updated: 2023/05/16 14:53:44 by etran            ###   ########.fr       */
+/*   Updated: 2023/05/16 17:19:51 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef DEVICE_HPP
-# define DEVICE_HPP
+#pragma once
 
 // Graphics
 # ifndef GLFW_INCLUDE_VULKAN
 #  define GLFW_INCLUDE_VULKAN
 # endif
-
 # include <GLFW/glfw3.h>
 
-namespace scop {
-namespace graphics {
+# include <vector>
 
+namespace scop {
+class Window;
+
+namespace graphics {
 class GraphicsPipeline;
+class QueueFamilyIndices;
 class RenderTarget;
 class RenderTargetResources;
 class DescriptorSet;
@@ -33,14 +35,13 @@ class VertexInput;
 
 class Device {
 public:
-
-	friend class GraphicsPipeline;
-	friend class RenderTarget;
-	friend class RenderTargetResources;
-	friend class DescriptorSet;
-	friend class CommandBuffer;
-	friend class TextureSampler;
-	friend class VertexInput;
+	friend GraphicsPipeline;
+	friend RenderTarget;
+	friend RenderTargetResources;
+	friend DescriptorSet;
+	friend CommandBuffer;
+	friend TextureSampler;
+	friend VertexInput;
 
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
@@ -55,7 +56,7 @@ public:
 
 	/* ========================================================================= */
 
-	void							init(Window& window, VkInstance instance);
+	void							init(scop::Window& window, VkInstance instance);
 	void							destroy(VkInstance instance);
 	QueueFamilyIndices				findQueueFamilies() const;
 	uint32_t						findMemoryType(
@@ -110,7 +111,7 @@ private:
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
 
-	void							createSurface(VkInstance instance, Window& window);
+	void							createSurface(VkInstance instance, scop::Window& window);
 	void							pickPhysicalDevice(VkInstance vk_instance);
 	void							createLogicalDevice();
 
@@ -130,20 +131,19 @@ private:
 /*                                    OTHER                                   */
 /* ========================================================================== */
 
-inline VkFormat	findSupportedFormat(
+VkFormat	findSupportedFormat(
 	VkPhysicalDevice physical_device,
 	const std::vector<VkFormat>& candidates,
 	VkImageTiling tiling,
 	VkFormatFeatureFlags features
 );
 
-inline VkFormat	findDepthFormat(
+VkFormat	findDepthFormat(
 	VkPhysicalDevice physical_device
 );
 
-inline bool	hasStencilCompotent(VkFormat format) noexcept;
+bool	hasStencilCompotent(VkFormat format) noexcept;
 
 } // namespace graphics
 } // namespace scop
 
-#endif

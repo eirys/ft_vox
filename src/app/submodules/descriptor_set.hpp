@@ -6,12 +6,11 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/15 20:39:20 by etran             #+#    #+#             */
-/*   Updated: 2023/05/16 14:26:10 by etran            ###   ########.fr       */
+/*   Updated: 2023/05/16 17:07:48 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef DESCRIPTOR_SET_HPP
-# define DESCRIPTOR_SET_HPP
+#pragma once
 
 // Graphics
 # ifndef GLFW_INCLUDE_VULKAN
@@ -20,16 +19,18 @@
 
 # include <GLFW/glfw3.h>
 
-# include "uniform_buffer_object.hpp"
-# include "app.hpp"
+# include "device.hpp"
+# include "texture_sampler.hpp"
 
 namespace scop {
 namespace graphics {
 
+class GraphicsPipeline;
+
 class DescriptorSet {
 public:
 
-	friend class GraphicsPipeline;
+	friend GraphicsPipeline;
 
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
@@ -46,7 +47,7 @@ public:
 
 	void					init(Device& device, TextureSampler& texture_sampler);
 	void					destroy(Device& device);
-	void					updateUniformBuffer(const scop::App::Input& input);
+	void					updateUniformBuffer();
 
 private:
 	/* ========================================================================= */
@@ -92,5 +93,3 @@ private:
 
 } // namespace graphics
 } // namespace scop
-
-#endif
