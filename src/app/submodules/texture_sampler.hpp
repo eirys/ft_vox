@@ -1,0 +1,109 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   texture_sampler.hpp                                :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2023/05/15 20:18:58 by etran             #+#    #+#             */
+/*   Updated: 2023/05/16 14:51:19 by etran            ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
+#ifndef TEXTURE_SAMPLER_HPP
+# define TEXTURE_SAMPLER_HPP
+
+# ifndef GLFW_INCLUDE_VULKAN
+#  define GLFW_INCLUDE_VULKAN
+# endif
+
+# include <GLFW/glfw3.h>
+
+namespace scop {
+namespace graphics {
+
+class Image;
+class Device;
+class DescriptorSet;
+
+class TextureSampler {
+public:
+
+	friend class DescriptorSet;
+
+	/* ========================================================================= */
+	/*                                  METHODS                                  */
+	/* ========================================================================= */
+
+	TextureSampler() = default;
+	TextureSampler(TextureSampler&& other) = default;
+	~TextureSampler() = default;
+
+	TextureSampler(const TextureSampler& other) = delete;
+	TextureSampler& operator=(const TextureSampler& other) = delete;
+
+	/* ========================================================================= */
+
+	void							init(
+		Device& device,
+		VkCommandPool command_pool,
+		const scop::Image& image
+	);
+
+	void							destroy(Device& device);
+	
+private:
+	/* ========================================================================= */
+	/*                                CLASS MEMBER                               */
+	/* ========================================================================= */
+
+	uint32_t						mip_levels;
+	VkImage							vk_texture_image;
+	VkDeviceMemory					vk_texture_image_memory;
+	VkImageView						vk_texture_image_view;
+	VkSampler 						vk_texture_sampler;
+
+	/* ========================================================================= */
+	/*                                  METHODS                                  */
+	/* ========================================================================= */
+
+	void							createTextureImage(
+		Device& device,
+		VkCommandPool command_pool,
+		const scop::Image& image
+	);
+	void							createTextureImageView(Device& device);
+	void							createTextureSampler(
+		Device& device
+	);
+	void							generateMipmaps(
+		Device& device,
+		VkCommandPool command_pool,
+		VkImage image,
+		VkFormat image_format,
+		int32_t tex_width,
+		int32_t tex_height,
+		uint32_t mip_level
+	) const;
+
+}; // class TextureSampler
+
+/* ========================================================================== */
+/*                                    OTHER                                   */
+/* ========================================================================== */
+
+inline void	transitionImageLayout(
+	VkDevice device,
+	VkCommandPool command_pool,
+	VkQueue graphics_queue,
+	VkImage image,
+	VkFormat format,
+	VkImageLayout old_layout,
+	VkImageLayout new_layout,
+	uint32_t mip_level
+);
+
+} // namespace graphics
+}  // namespace scop
+
+#endif

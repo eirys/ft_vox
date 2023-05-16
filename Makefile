@@ -6,7 +6,7 @@
 #    By: etran <etran@student.42.fr>                +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/04/06 03:40:09 by eli               #+#    #+#              #
-#    Updated: 2023/05/13 23:16:22 by etran            ###   ########.fr        #
+#    Updated: 2023/05/16 12:28:08 by etran            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -42,7 +42,7 @@ OBJ_SUBDIRS	:=	$(addprefix $(OBJ_DIR)/,$(SUBDIRS))
 INC_SUBDIRS	:=	$(addprefix $(SRC_DIR)/,$(SUBDIRS))
 
 # cpp files
-INC_FILES	:=	$(TOOLS_DIR)/utils.hpp \
+INC_FILES	:=	$(TOOLS_DIR)/utils.cpp \
 				$(TOOLS_DIR)/matrix.hpp \
 				$(TOOLS_DIR)/vector.hpp \
 				$(UTILS_DIR)/vertex.hpp \
@@ -53,6 +53,10 @@ INC_FILES	:=	$(TOOLS_DIR)/utils.hpp \
 				$(IMG_DIR)/image_handler.hpp \
 				$(IMG_DIR)/ppm_loader.hpp \
 				$(SUBMOD_DIR)/window.hpp \
+				$(SUBMOD_DIR)/graphics_pipeline.cpp \
+				$(SUBMOD_DIR)/render_target.hpp \
+				$(SUBMOD_DIR)/texture_sampler.hpp \
+				$(SUBMOD_DIR)/descriptor_set.hpp \
 				$(APP_DIR)/app.hpp
 
 SRC_FILES	:=	$(MODEL_DIR)/model.cpp \
@@ -60,6 +64,10 @@ SRC_FILES	:=	$(MODEL_DIR)/model.cpp \
 				$(IMG_DIR)/ppm_loader.cpp \
 				$(IMG_DIR)/image_handler.cpp \
 				$(SUBMOD_DIR)/window.cpp \
+				$(SUBMOD_DIR)/graphics_pipeline.cpp \
+				$(SUBMOD_DIR)/render_target.cpp \
+				$(SUBMOD_DIR)/texture_sampler.cpp \
+				$(SUBMOD_DIR)/descriptor_set.cpp \
 				$(APP_DIR)/app.cpp \
 				main.cpp
 

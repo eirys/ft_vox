@@ -1,0 +1,107 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   render_target_resources.cpp                        :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2023/05/15 20:21:48 by etran             #+#    #+#             */
+/*   Updated: 2023/05/16 14:38:12 by etran            ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
+#include "render_target_resources.hpp"
+#include "graphics_pipeline.hpp"
+#include "device.hpp"
+
+namespace scop {
+namespace graphics {
+
+/* ========================================================================== */
+/*                                   PUBLIC                                   */
+/* ========================================================================== */
+
+void	RenderTargetResources::init(
+	Device& device,
+	VkExtent2D extent,
+	VkFormat image_format
+) {
+	createColorResources(device, extent, image_format);
+	createDepthResources(device, extent);
+}
+
+void	RenderTargetResources::destroy(Device& device) {
+	// Remove msaa resources
+	vkDestroyImageView(device.logical_device, color_image_view, nullptr);
+	vkDestroyImage(device.logical_device, color_image, nullptr);
+	vkFreeMemory(device.logical_device, color_image_memory, nullptr);
+
+	// Remove depth handler
+	vkDestroyImageView(device.logical_device, depth_image_view, nullptr);
+	vkDestroyImage(device.logical_device, depth_image, nullptr);
+	vkFreeMemory(device.logical_device, depth_image_memory, nullptr);
+}
+
+/* ========================================================================== */
+/*                                   PRIVATE                                  */
+/* ========================================================================== */
+
+/**
+ * Create color buffer for MSAA
+*/
+void	RenderTargetResources::createColorResources(
+	Device& device,
+	VkExtent2D extent,
+	VkFormat image_format
+) {
+	device.createImage(
+		extent.width,
+		extent.height,
+		1,
+		device.msaa_samples,
+		image_format,
+		VK_IMAGE_TILING_OPTIMAL,
+		VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
+		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+		color_image,
+		color_image_memory
+	);
+	color_image_view = createImageView(
+		device.logical_device,
+		color_image,
+		image_format,
+		VK_IMAGE_ASPECT_COLOR_BIT,
+		1
+	);
+}
+
+void	RenderTargetResources::createDepthResources(
+	Device& device,
+	VkExtent2D extent
+) {
+	VkFormat	depth_format = findDepthFormat(device.physical_device);
+
+	device.createImage(
+		extent.width,
+		extent.height,
+		1,
+		device.msaa_samples,
+		depth_format,
+		VK_IMAGE_TILING_OPTIMAL,
+		VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
+		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+		depth_image,
+		depth_image_memory
+	);
+
+	depth_image_view = createImageView(
+		device.logical_device,
+		depth_image,
+		depth_format,
+		VK_IMAGE_ASPECT_DEPTH_BIT,
+		1
+	);
+}
+
+} // namespace graphics
+} // namespace scop

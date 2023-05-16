@@ -1,0 +1,4 @@
+obj
+.vscode
+shaders/*.spv
+a.out
