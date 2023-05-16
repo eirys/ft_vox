@@ -6,11 +6,13 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/16 13:03:48 by etran             #+#    #+#             */
-/*   Updated: 2023/05/16 16:49:21 by etran            ###   ########.fr       */
+/*   Updated: 2023/05/16 17:35:45 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "vertex_input.hpp"
+#include "graphics_pipeline.hpp"
+#include "device.hpp"
 
 #include <cstring> // memcpy
 

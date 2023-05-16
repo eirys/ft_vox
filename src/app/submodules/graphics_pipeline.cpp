@@ -6,11 +6,13 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/15 16:34:03 by etran             #+#    #+#             */
-/*   Updated: 2023/05/16 16:54:08 by etran            ###   ########.fr       */
+/*   Updated: 2023/05/16 17:53:16 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "graphics_pipeline.hpp"
+#include "window.hpp"
+#include "utils.hpp"
 
 #include <iostream> // std::cerr std::endl
 #include <cstring> // std::strcmp
@@ -34,15 +36,25 @@ scop::Window& window,
 	const std::vector<uint32_t>& indices
 ) {
 	createInstance();
+	LOG("Passed instance ");
 	debug_module.init(vk_instance);
+	LOG("Passed debug module ");
 	device.init(window, vk_instance);
+	LOG("Passed device ");
 	render_target.init(device, window);
+	LOG("Passed render target ");
 	descriptor_set.init(device, texture_sampler);
+	LOG("Passed descriptor set ");
 	createSyncObjects();
+	LOG("Passed sync objects");
 	command_buffer.init(device);
+	LOG("Passed command buffer ");
 	texture_sampler.init(device, command_buffer.vk_command_pool, image);
+	LOG("Passed texture sampler ");
 	vertex_input.init(device, command_buffer.vk_command_pool, vertices, indices);
+	LOG("Passed vertex input ");
 	createGraphicsPipeline();
+	LOG("Passed graphics pipeline ");
 }
 
 void	GraphicsPipeline::destroy() {
@@ -112,7 +124,7 @@ scop::Window& window,
 		image_index
 	);
 
-	// descriptor_set.updateUniformBuffer();
+	descriptor_set.updateUniformBuffer(render_target.swap_chain_extent);
 
 	// Set synchronization objects
 	VkSemaphore				wait_semaphore[] = {

@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/16 00:55:41 by etran             #+#    #+#             */
-/*   Updated: 2023/05/16 17:19:51 by etran            ###   ########.fr       */
+/*   Updated: 2023/05/16 18:04:44 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -119,10 +119,10 @@ private:
 
 	VkSampleCountFlagBits			getMaxUsableSampleCount() const;
 	bool							checkDeviceExtensionSupport(
-		const VkPhysicalDevice& device
+		VkPhysicalDevice device
 	);
 	bool							isDeviceSuitable(
-		const VkPhysicalDevice& device
+		VkPhysicalDevice device
 	);
 
 }; // class Device

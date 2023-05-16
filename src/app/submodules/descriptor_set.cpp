@@ -6,11 +6,12 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/15 20:56:05 by etran             #+#    #+#             */
-/*   Updated: 2023/05/16 16:47:47 by etran            ###   ########.fr       */
+/*   Updated: 2023/05/16 17:27:36 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "descriptor_set.hpp"
+#include "app.hpp"
 
 #include <array> // std::array
 #include <stdexcept> // std::runtime_error
@@ -53,10 +54,10 @@ void	DescriptorSet::destroy(
 /**
  * Update transformation of vertices
 */
-void	DescriptorSet::updateUniformBuffer() {
+void	DescriptorSet::updateUniformBuffer(VkExtent2D extent) {
 	time_point	current_time = std::chrono::high_resolution_clock::now();
 
-	updateVertexPart(current_time);
+	updateVertexPart(extent, current_time);
 	updateFragmentPart(current_time);
 }
 
@@ -244,6 +245,7 @@ void	DescriptorSet::initUniformBuffer() noexcept {
 }
 
 void	DescriptorSet::updateVertexPart(
+	VkExtent2D extent,
 	time_point current_time
 ) {
 	static time_point	start_time = std::chrono::high_resolution_clock::now();
@@ -271,13 +273,13 @@ void	DescriptorSet::updateVertexPart(
 	camera.view = zoom * scop::lookAt(
 		scop::Vect3(2.0f, 2.0f, 2.0f),
 		scop::Vect3(0.0f, 0.0f, 0.0f),
-		up_axis
+		App::up_axis
 	);
 
 	// Define persp. projection transformation
 	camera.proj = scop::perspective(
 		scop::utils::radians(45.0f),
-		swap_chain_extent.width / static_cast<float>(swap_chain_extent.height),
+		extent.width / static_cast<float>(extent.height),
 		0.1f,
 		10.0f
 	);
@@ -292,11 +294,10 @@ void	DescriptorSet::updateVertexPart(
 }
 
 void	DescriptorSet::updateFragmentPart(
-	time_point current_time,
-	const scop::scop::App::Input& input
+	time_point current_time
 ) {
 	// Only udpate if it was recently toggled
-	if (!input.texture_enabled_start.has_value()) {
+	if (!App::texture_enabled_start.has_value()) {
 		return;
 	}
 
@@ -304,11 +305,11 @@ void	DescriptorSet::updateFragmentPart(
 
 	// Transition from 0 to 1 in /*transition_duration*/ ms	float
 	float	time = std::chrono::duration<float, std::chrono::milliseconds::period>(
-		current_time - input.texture_enabled_start.value()
-	).count() / scop::App::transition_duration;
+		current_time - App::texture_enabled_start.value()
+	).count() / App::transition_duration;
 
-	texture.enabled = input.texture_enabled;
-	texture.mix = input.texture_enabled ? time : 1.0f - time;
+	texture.enabled = App::texture_enabled;
+	texture.mix = App::texture_enabled ? time : 1.0f - time;
 	memcpy(
 		(char*)uniform_buffers_mapped + offsetof(UniformBufferObject, texture),
 		&texture,
@@ -317,7 +318,7 @@ void	DescriptorSet::updateFragmentPart(
 
 	// Reset texture_enabled_start if time is up
 	if (time >= 1.0f) {
-		texture_enabled_start.reset();
+		App::texture_enabled_start.reset();
 	}
 }
 

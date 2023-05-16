@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/15 20:18:58 by etran             #+#    #+#             */
-/*   Updated: 2023/05/16 17:19:51 by etran            ###   ########.fr       */
+/*   Updated: 2023/05/16 17:29:51 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,7 @@ namespace scop {
 class Image;
 
 namespace graphics {
+class Device;
 class DescriptorSet;
 
 class TextureSampler {

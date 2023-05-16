@@ -6,11 +6,14 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/15 20:25:44 by etran             #+#    #+#             */
-/*   Updated: 2023/05/16 16:49:08 by etran            ###   ########.fr       */
+/*   Updated: 2023/05/16 17:30:54 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "texture_sampler.hpp"
+#include "graphics_pipeline.hpp"
+#include "image_handler.hpp"
+#include "device.hpp"
 
 #include <cmath> // std::floor
 #include <algorithm> // std::max

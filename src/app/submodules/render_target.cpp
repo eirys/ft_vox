@@ -56,6 +56,7 @@ void	RenderTarget::createSwapChain(
 	Device& device,
 	scop::Window& window
 ) {
+	createSwapChain(device, window);
 	createFrameBuffers(device);
 	createImageViews(device);
 	resources.init(device, swap_chain_extent, swap_chain_image_format);

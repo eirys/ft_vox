@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/15 20:39:20 by etran             #+#    #+#             */
-/*   Updated: 2023/05/16 17:07:48 by etran            ###   ########.fr       */
+/*   Updated: 2023/05/16 17:26:41 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,7 +47,7 @@ public:
 
 	void					init(Device& device, TextureSampler& texture_sampler);
 	void					destroy(Device& device);
-	void					updateUniformBuffer();
+	void					updateUniformBuffer(VkExtent2D extent);
 
 private:
 	/* ========================================================================= */
@@ -81,8 +81,8 @@ private:
 	);
 	void					createUniformBuffers(Device& device);
 	void					initUniformBuffer() noexcept;
-
 	void					updateVertexPart(
+		VkExtent2D extent,
 		time_point current_time
 	);
 	void					updateFragmentPart(

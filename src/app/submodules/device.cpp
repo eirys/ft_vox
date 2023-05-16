@@ -6,13 +6,14 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/16 01:00:19 by etran             #+#    #+#             */
-/*   Updated: 2023/05/16 17:18:50 by etran            ###   ########.fr       */
+/*   Updated: 2023/05/16 18:04:51 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "graphics_pipeline.hpp"
 #include "device.hpp"
 #include "window.hpp"
+#include "utils.hpp"
 
 #include <vector> // std::vector
 #include <set> // std::set
@@ -211,6 +212,8 @@ void	Device::pickPhysicalDevice(VkInstance instance) {
 	vkEnumeratePhysicalDevices(instance, &device_count, devices.data());
 
 	for (const VkPhysicalDevice& device: devices) {
+			static size_t k = 0;
+			LOG("Call nb " << k++);
 		if (isDeviceSuitable(device)) {
 			physical_device = device;
 			msaa_samples = getMaxUsableSampleCount();
@@ -310,7 +313,7 @@ VkSampleCountFlagBits	Device::getMaxUsableSampleCount() const {
 /**
  * Check if all required extensions are available for the physical device
 */
-bool	Device::checkDeviceExtensionSupport(const VkPhysicalDevice& device) {
+bool	Device::checkDeviceExtensionSupport(VkPhysicalDevice device) {
 	// Verify that every device_extensions are available
 	uint32_t	extension_count;
 	vkEnumerateDeviceExtensionProperties(device, nullptr, &extension_count, nullptr);
@@ -337,7 +340,7 @@ bool	Device::checkDeviceExtensionSupport(const VkPhysicalDevice& device) {
 /**
  * Verify that the selected physical device is suitable for the app needs
 */
-bool	Device::isDeviceSuitable(const VkPhysicalDevice& device) {
+bool	Device::isDeviceSuitable(VkPhysicalDevice device) {
 	QueueFamilyIndices	indices = findQueueFamilies();
 	bool	extensions_supported = checkDeviceExtensionSupport(device);
 	bool	swap_chain_adequate = false;
