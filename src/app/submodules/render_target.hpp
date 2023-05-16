@@ -98,7 +98,7 @@ private:
 		Device& device,
 		scop::Window& window
 	);
-	void							destroySwapChainObject(Device& device);
+	void							destroySwapChain(Device& device);
 	void							createFrameBuffers(Device& device);
 	void							createImageViews(Device& device);
 

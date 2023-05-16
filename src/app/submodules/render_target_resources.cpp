@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/15 20:21:48 by etran             #+#    #+#             */
-/*   Updated: 2023/05/16 17:22:01 by etran            ###   ########.fr       */
+/*   Updated: 2023/05/17 01:20:09 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -92,13 +92,38 @@ void	RenderTargetResources::createDepthResources(
 		depth_image,
 		depth_image_memory
 	);
-
 	depth_image_view = createImageView(
 		device.logical_device,
 		depth_image,
 		depth_format,
 		VK_IMAGE_ASPECT_DEPTH_BIT,
 		1
+	);
+}
+
+/* ========================================================================== */
+/*                                    OTHER                                   */
+/* ========================================================================== */
+
+VkFormat	findDepthFormat(
+	VkPhysicalDevice physical_device
+) {
+	return findSupportedFormat(
+		physical_device,
+		{
+			VK_FORMAT_D32_SFLOAT,
+			VK_FORMAT_D32_SFLOAT_S8_UINT,
+			VK_FORMAT_D24_UNORM_S8_UINT
+		},
+		VK_IMAGE_TILING_OPTIMAL,
+		VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT
+	);
+}
+
+bool	hasStencilCompotent(VkFormat format) noexcept {
+	return (
+		format == VK_FORMAT_D32_SFLOAT_S8_UINT ||
+		format == VK_FORMAT_D24_UNORM_S8_UINT
 	);
 }
 

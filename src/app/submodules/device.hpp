@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/16 00:55:41 by etran             #+#    #+#             */
-/*   Updated: 2023/05/16 18:04:44 by etran            ###   ########.fr       */
+/*   Updated: 2023/05/17 01:20:22 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,7 +58,6 @@ public:
 
 	void							init(scop::Window& window, VkInstance instance);
 	void							destroy(VkInstance instance);
-	QueueFamilyIndices				findQueueFamilies() const;
 	uint32_t						findMemoryType(
 		uint32_t type_filter,
 		VkMemoryPropertyFlags properties
@@ -138,11 +137,10 @@ VkFormat	findSupportedFormat(
 	VkFormatFeatureFlags features
 );
 
-VkFormat	findDepthFormat(
-	VkPhysicalDevice physical_device
+QueueFamilyIndices	findQueueFamilies(
+	VkPhysicalDevice device,
+	VkSurfaceKHR vk_surface
 );
-
-bool	hasStencilCompotent(VkFormat format) noexcept;
 
 } // namespace graphics
 } // namespace scop

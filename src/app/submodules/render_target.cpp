@@ -31,12 +31,13 @@ void	RenderTarget::init(
 ) {
 	createSwapChain(device, window);
 	createRenderPass(device);
+	createFrameBuffers(device);
 }
 
 void	RenderTarget::destroy(
 	Device& device
 ) {
-	destroySwapChainObject(device);
+	destroySwapChain(device);
 	vkDestroyRenderPass(device.logical_device, vk_render_pass, nullptr);
 }
 
@@ -44,8 +45,11 @@ void	RenderTarget::updateSwapChain(
 	Device& device,
 	scop::Window& window
 ) {
-	destroySwapChainObject(device);
+	window.pause();
+
+	destroySwapChain(device);
 	createSwapChain(device, window);
+	createFrameBuffers(device);
 }
 
 /* ========================================================================== */
@@ -56,8 +60,7 @@ void	RenderTarget::createSwapChain(
 	Device& device,
 	scop::Window& window
 ) {
-	createSwapChain(device, window);
-	createFrameBuffers(device);
+	createSwapChainObject(device, window);
 	createImageViews(device);
 	resources.init(device, swap_chain_extent, swap_chain_image_format);
 }
@@ -201,7 +204,7 @@ void	RenderTarget::createSwapChainObject(
 	// Queue family swap handling:
 	// - graphics queue -> drawing to swap chain
 	// - present queue -> get passed the swap chain to be submitted
-	QueueFamilyIndices	indices = device.findQueueFamilies();
+	QueueFamilyIndices	indices = findQueueFamilies(device.physical_device, device.vk_surface);
 	uint32_t			queue_family_indices[] = {
 		indices.graphics_family.value(),
 		indices.present_family.value()
@@ -239,7 +242,7 @@ void	RenderTarget::createSwapChainObject(
 	swap_chain_extent = swap_extent;
 }
 
-void	RenderTarget::destroySwapChainObject(Device& device) {
+void	RenderTarget::destroySwapChain(Device& device) {
 	resources.destroy(device);
 
 	for (size_t i = 0; i < swap_chain_frame_buffers.size(); ++i) {
@@ -252,7 +255,6 @@ void	RenderTarget::destroySwapChainObject(Device& device) {
 	// Remove swap chain handler
 	vkDestroySwapchainKHR(device.logical_device, vk_swap_chain, nullptr);
 }
-
 
 /**
  * Create frame buffers wrapping each swap chain image view

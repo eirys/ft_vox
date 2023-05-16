@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/15 16:34:03 by etran             #+#    #+#             */
-/*   Updated: 2023/05/16 17:53:16 by etran            ###   ########.fr       */
+/*   Updated: 2023/05/17 01:24:46 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,7 +30,7 @@ const std::vector<const char*>	GraphicsPipeline::validation_layers = {
 /* ========================================================================== */
 
 void	GraphicsPipeline::init(
-scop::Window& window,
+	scop::Window& window,
 	const scop::Image& image,
 	const std::vector<Vertex>& vertices,
 	const std::vector<uint32_t>& indices
@@ -43,36 +43,42 @@ scop::Window& window,
 	LOG("Passed device ");
 	render_target.init(device, window);
 	LOG("Passed render target ");
-	descriptor_set.init(device, texture_sampler);
-	LOG("Passed descriptor set ");
-	createSyncObjects();
-	LOG("Passed sync objects");
-	command_buffer.init(device);
-	LOG("Passed command buffer ");
+	descriptor_set.initLayout(device);
+	LOG("Passed descriptor layout");
+	createGraphicsPipeline();
+	LOG("Passed graphics pipeline ");
+	command_buffer.initPool(device);
+	LOG("Passed command pool ");
 	texture_sampler.init(device, command_buffer.vk_command_pool, image);
 	LOG("Passed texture sampler ");
 	vertex_input.init(device, command_buffer.vk_command_pool, vertices, indices);
 	LOG("Passed vertex input ");
-	createGraphicsPipeline();
-	LOG("Passed graphics pipeline ");
+	descriptor_set.initSets(device, texture_sampler);
+	LOG("Passed descriptor set ");
+	command_buffer.initBuffer(device);
+	LOG("Passed command buffer ");
+	createSyncObjects();
+	LOG("Passed sync objects");
 }
 
 void	GraphicsPipeline::destroy() {
+	render_target.destroy(device);
+
+	texture_sampler.destroy(device);
+
 	// Remove graphics pipeline
 	vkDestroyPipeline(device.logical_device, graphics_pipeline, nullptr);
 	vkDestroyPipelineLayout(device.logical_device, pipeline_layout, nullptr);
 
+	descriptor_set.destroy(device);
 	vertex_input.destroy(device);
-	texture_sampler.destroy(device);
-	command_buffer.destroy(device);
 
 	// Remove sync objects
 	vkDestroySemaphore(device.logical_device, image_available_semaphores, nullptr);
 	vkDestroySemaphore(device.logical_device, render_finished_semaphores, nullptr);
 	vkDestroyFence(device.logical_device, in_flight_fences, nullptr);
 
-	descriptor_set.destroy(device);
-	render_target.destroy(device);
+	command_buffer.destroy(device);
 	device.destroy(vk_instance);
 	debug_module.destroy(vk_instance);
 

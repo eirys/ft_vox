@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/16 01:00:19 by etran             #+#    #+#             */
-/*   Updated: 2023/05/16 18:04:51 by etran            ###   ########.fr       */
+/*   Updated: 2023/05/17 01:20:06 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,7 +26,7 @@ namespace graphics {
 /*                                   PUBLIC                                   */
 /* ========================================================================== */
 
-void	Device::init(scop::Window& window,VkInstance instance) {
+void	Device::init(scop::Window& window, VkInstance instance) {
 	createSurface(instance, window);
 	pickPhysicalDevice(instance);
 	createLogicalDevice();
@@ -35,37 +35,6 @@ void	Device::init(scop::Window& window,VkInstance instance) {
 void	Device::destroy(VkInstance instance) {
 	vkDestroyDevice(logical_device, nullptr);
 	vkDestroySurfaceKHR(instance, vk_surface, nullptr);
-}
-
-/**
- * Retrieve queue families that are appropriate for the physical device and the app needs.
-*/
-QueueFamilyIndices	Device::findQueueFamilies() const {
-	QueueFamilyIndices	indices;
-	uint32_t			queue_family_count = 0;
-	vkGetPhysicalDeviceQueueFamilyProperties(physical_device, &queue_family_count, nullptr);
-
-	std::vector<VkQueueFamilyProperties>	queue_families(queue_family_count);
-	vkGetPhysicalDeviceQueueFamilyProperties(physical_device, &queue_family_count, queue_families.data());
-
-	int	i = 0;
-	for (const auto& queue_family: queue_families) {
-		// Looking for queue family that supports the graphics bit flag
-		if (queue_family.queueFlags & VK_QUEUE_GRAPHICS_BIT)
-			indices.graphics_family = i;
-
-		// Looking for queue family that supports presenting
-		VkBool32	present_support = false;
-		vkGetPhysicalDeviceSurfaceSupportKHR(physical_device, i, vk_surface, &present_support);
-		if (present_support)
-			indices.present_family = i;
-
-		if (indices.isComplete())
-			break;
-		++i;
-	}
-
-	return indices;
 }
 
 /**
@@ -192,7 +161,7 @@ void	Device::createBuffer(
 */
 void	Device::createSurface(
 	VkInstance instance,
-scop::Window& window
+	scop::Window& window
 ) {
 	if (glfwCreateWindowSurface(instance, window.getWindow(), nullptr, &vk_surface) != VK_SUCCESS)
 		throw std::runtime_error("failed to create window surface");
@@ -205,15 +174,13 @@ void	Device::pickPhysicalDevice(VkInstance instance) {
 	uint32_t	device_count = 0;
 	vkEnumeratePhysicalDevices(instance, &device_count, nullptr);
 
-	if (!device_count)
+	if (device_count == 0)
 		throw std::runtime_error("failed to find GPUs with vulkan support");
 
 	std::vector<VkPhysicalDevice>	devices(device_count);
 	vkEnumeratePhysicalDevices(instance, &device_count, devices.data());
 
 	for (const VkPhysicalDevice& device: devices) {
-			static size_t k = 0;
-			LOG("Call nb " << k++);
 		if (isDeviceSuitable(device)) {
 			physical_device = device;
 			msaa_samples = getMaxUsableSampleCount();
@@ -230,7 +197,7 @@ void	Device::pickPhysicalDevice(VkInstance instance) {
 */
 void	Device::createLogicalDevice() {
 	// Indicate that we want to create a single queue, with graphics capabilities
-	QueueFamilyIndices	indices = findQueueFamilies();
+	QueueFamilyIndices	indices = findQueueFamilies(physical_device, vk_surface);
 
 	std::vector<VkDeviceQueueCreateInfo>	queue_create_infos;
 	std::set<uint32_t>						unique_queue_families = {
@@ -341,7 +308,7 @@ bool	Device::checkDeviceExtensionSupport(VkPhysicalDevice device) {
  * Verify that the selected physical device is suitable for the app needs
 */
 bool	Device::isDeviceSuitable(VkPhysicalDevice device) {
-	QueueFamilyIndices	indices = findQueueFamilies();
+	QueueFamilyIndices	indices = findQueueFamilies(device, vk_surface);
 	bool	extensions_supported = checkDeviceExtensionSupport(device);
 	bool	swap_chain_adequate = false;
 
@@ -364,6 +331,37 @@ bool	Device::isDeviceSuitable(VkPhysicalDevice device) {
 		swap_chain_adequate &&
 		supported_features.samplerAnisotropy
 	);
+}
+
+/* ========================================================================== */
+/*                                    OTHER                                   */
+/* ========================================================================== */
+
+/**
+ * Find best suited format for depth image
+*/
+VkFormat	findSupportedFormat(
+	VkPhysicalDevice physical_device,
+	const std::vector<VkFormat>& candidates,
+	VkImageTiling tiling,
+	VkFormatFeatureFlags features
+) {
+	for (VkFormat format: candidates) {
+		// Query format properties for candidate
+		VkFormatProperties	properties;
+		vkGetPhysicalDeviceFormatProperties(physical_device, format, &properties);
+
+		if ((
+			tiling == VK_IMAGE_TILING_LINEAR
+			&& (properties.linearTilingFeatures & features) == features
+		) || (
+			tiling == VK_IMAGE_TILING_OPTIMAL
+			&& (properties.optimalTilingFeatures & features) == features
+		)) {
+			return format;
+		}
+	}
+	throw std::runtime_error("failed to find supported format");
 }
 
 /**
@@ -400,57 +398,5 @@ QueueFamilyIndices	findQueueFamilies(
 	return indices;
 }
 
-/* ========================================================================== */
-/*                                    OTHER                                   */
-/* ========================================================================== */
-
-/**
- * Find best suited format for depth image
-*/
-VkFormat	findSupportedFormat(
-	VkPhysicalDevice physical_device,
-	const std::vector<VkFormat>& candidates,
-	VkImageTiling tiling,
-	VkFormatFeatureFlags features
-) {
-	for (VkFormat format: candidates) {
-		// Query format properties for candidate
-		VkFormatProperties	properties;
-		vkGetPhysicalDeviceFormatProperties(physical_device, format, &properties);
-
-		if ((
-			tiling == VK_IMAGE_TILING_LINEAR
-			&& (properties.linearTilingFeatures & features) == features
-		) || (
-			tiling == VK_IMAGE_TILING_OPTIMAL
-			&& (properties.optimalTilingFeatures & features) == features
-		)) {
-			return format;
-		}
-	}
-	throw std::runtime_error("failed to find supported format");
-}
-
-VkFormat	findDepthFormat(
-	VkPhysicalDevice physical_device
-) {
-	return findSupportedFormat(
-		physical_device,
-		{
-			VK_FORMAT_D32_SFLOAT,
-			VK_FORMAT_D32_SFLOAT_S8_UINT,
-			VK_FORMAT_D24_UNORM_S8_UINT
-		},
-		VK_IMAGE_TILING_OPTIMAL,
-		VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT
-	);
-}
-
-bool	hasStencilCompotent(VkFormat format) noexcept {
-	return (
-		format == VK_FORMAT_D32_SFLOAT_S8_UINT ||
-		format == VK_FORMAT_D24_UNORM_S8_UINT
-	);
-}
 } // namespace graphics
 } // namespace scop

@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/15 20:39:20 by etran             #+#    #+#             */
-/*   Updated: 2023/05/16 17:26:41 by etran            ###   ########.fr       */
+/*   Updated: 2023/05/17 01:16:13 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,7 +45,8 @@ public:
 
 	/* ========================================================================= */
 
-	void					init(Device& device, TextureSampler& texture_sampler);
+	void					initLayout(Device& device);
+	void					initSets(Device& device, TextureSampler& texture_sampler);
 	void					destroy(Device& device);
 	void					updateUniformBuffer(VkExtent2D extent);
 

@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/15 20:07:43 by etran             #+#    #+#             */
-/*   Updated: 2023/05/16 17:10:52 by etran            ###   ########.fr       */
+/*   Updated: 2023/05/17 01:20:40 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -84,6 +84,14 @@ private:
 	);
 
 }; // class DepthStencil
+
+/* ========================================================================== */
+/*                                    OTHER                                   */
+/* ========================================================================== */
+
+VkFormat	findDepthFormat(VkPhysicalDevice physical_device);
+bool		hasStencilCompotent(VkFormat format) noexcept;
+
 
 } // namespace graphics
 }  // namespace scop

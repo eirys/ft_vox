@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/16 12:47:19 by etran             #+#    #+#             */
-/*   Updated: 2023/05/16 17:28:02 by etran            ###   ########.fr       */
+/*   Updated: 2023/05/17 01:13:29 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,8 +21,11 @@ namespace graphics {
 /*                                   PUBLIC                                   */
 /* ========================================================================== */
 
-void	CommandBuffer::init(Device& device) {
+void	CommandBuffer::initPool(Device& device) {
 	createCommandPool(device);
+}
+
+void	CommandBuffer::initBuffer(Device& device) {
 	createCommandBuffers(device);
 }
 
@@ -38,7 +41,7 @@ void	CommandBuffer::destroy(Device& device) {
  * Command buffers memory handler
 */
 void	CommandBuffer::createCommandPool(Device& device) {
-	QueueFamilyIndices	queue_family_indices = device.findQueueFamilies();
+	QueueFamilyIndices	queue_family_indices = findQueueFamilies(device.physical_device, device.vk_surface);
 
 	VkCommandPoolCreateInfo	pool_info{};
 	pool_info.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;

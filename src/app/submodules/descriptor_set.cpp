@@ -6,11 +6,12 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/15 20:56:05 by etran             #+#    #+#             */
-/*   Updated: 2023/05/16 17:27:36 by etran            ###   ########.fr       */
+/*   Updated: 2023/05/17 01:26:28 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "descriptor_set.hpp"
+#include "uniform_buffer_object.hpp"
 #include "app.hpp"
 
 #include <array> // std::array
@@ -25,14 +26,19 @@ namespace graphics {
 /*                                   PUBLIC                                   */
 /* ========================================================================== */
 
-void	DescriptorSet::init(Device& device, TextureSampler& texture_sampler) {
+void	DescriptorSet::initLayout(Device& device) {
+	createDescriptorSetLayout(device);
+}
+
+void	DescriptorSet::initSets(Device& device, TextureSampler& texture_sampler) {
 	uint32_t	frames_in_flight = static_cast<uint32_t>(
 		GraphicsPipeline::max_frames_in_flight
 	);
-	createDescriptorSetLayout(device);
+	createUniformBuffers(device);
 	createDescriptorPool(device, frames_in_flight);
 	createDescriptorSets(device, texture_sampler, frames_in_flight);
-	createUniformBuffers(device);
+
+	initUniformBuffer();
 }
 
 void	DescriptorSet::destroy(
