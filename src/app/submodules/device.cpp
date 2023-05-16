@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/16 01:00:19 by etran             #+#    #+#             */
-/*   Updated: 2023/05/17 01:20:06 by etran            ###   ########.fr       */
+/*   Updated: 2023/05/17 01:54:59 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,6 +36,12 @@ void	Device::destroy(VkInstance instance) {
 	vkDestroyDevice(logical_device, nullptr);
 	vkDestroySurfaceKHR(instance, vk_surface, nullptr);
 }
+
+void	Device::idle() {
+	vkDeviceWaitIdle(logical_device);
+}
+
+/* ========================================================================== */
 
 /**
  * Map memory and find one suitable with filter and properties

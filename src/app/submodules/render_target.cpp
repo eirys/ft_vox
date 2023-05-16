@@ -46,6 +46,7 @@ void	RenderTarget::updateSwapChain(
 	scop::Window& window
 ) {
 	window.pause();
+	device.idle();
 
 	destroySwapChain(device);
 	createSwapChain(device, window);

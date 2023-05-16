@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/16 00:55:41 by etran             #+#    #+#             */
-/*   Updated: 2023/05/17 01:20:22 by etran            ###   ########.fr       */
+/*   Updated: 2023/05/17 01:54:38 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,6 +58,9 @@ public:
 
 	void							init(scop::Window& window, VkInstance instance);
 	void							destroy(VkInstance instance);
+	void							idle();
+
+
 	uint32_t						findMemoryType(
 		uint32_t type_filter,
 		VkMemoryPropertyFlags properties

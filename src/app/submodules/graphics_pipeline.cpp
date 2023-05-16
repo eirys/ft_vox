@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/15 16:34:03 by etran             #+#    #+#             */
-/*   Updated: 2023/05/17 01:24:46 by etran            ###   ########.fr       */
+/*   Updated: 2023/05/17 01:55:09 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -89,7 +89,7 @@ void	GraphicsPipeline::destroy() {
 /* ========================================================================== */
 
 void	GraphicsPipeline::idle() {
-	vkDeviceWaitIdle(device.logical_device);
+	device.idle();
 }
 
 void	GraphicsPipeline::render(
