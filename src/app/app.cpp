@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/28 11:12:12 by eli               #+#    #+#             */
-/*   Updated: 2023/05/17 17:59:32 by etran            ###   ########.fr       */
+/*   Updated: 2023/05/17 18:08:29 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 #include "model.hpp"
 #include "parser.hpp"
 #include "image_handler.hpp"
+#include "math.hpp"
 
 namespace scop {
 
@@ -133,7 +134,7 @@ void	App::loadModel(const std::string& path) {
 				model_textures[index.texture].x,
 				1.0f - model_textures[index.texture].y
 			};
-			utils::generateVibrantColor(vertex.color.x, vertex.color.y, vertex.color.z);
+			math::generateVibrantColor(vertex.color.x, vertex.color.y, vertex.color.z);
 			// vertex.normal = model_normals[index.normal_index];
 
 			if (unique_vertices.count(vertex) == 0) {

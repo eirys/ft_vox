@@ -6,13 +6,14 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/15 20:56:05 by etran             #+#    #+#             */
-/*   Updated: 2023/05/17 01:26:28 by etran            ###   ########.fr       */
+/*   Updated: 2023/05/17 18:07:57 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "descriptor_set.hpp"
 #include "uniform_buffer_object.hpp"
 #include "app.hpp"
+#include "math.hpp"
 
 #include <array> // std::array
 #include <stdexcept> // std::runtime_error
@@ -264,7 +265,7 @@ void	DescriptorSet::updateVertexPart(
 	// Define object transformation model
 	if (scop::App::rotation_axis.has_value()) {
 		camera.model = scop::rotate(
-			time * scop::utils::radians(90.0f),
+			time * scop::math::radians(90.0f),
 			scop::App::rotation_axis.value()
 		);
 	} else {
@@ -284,7 +285,7 @@ void	DescriptorSet::updateVertexPart(
 
 	// Define persp. projection transformation
 	camera.proj = scop::perspective(
-		scop::utils::radians(45.0f),
+		scop::math::radians(45.0f),
 		extent.width / static_cast<float>(extent.height),
 		0.1f,
 		10.0f

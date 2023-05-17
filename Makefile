@@ -6,7 +6,7 @@
 #    By: etran <etran@student.42.fr>                +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/04/06 03:40:09 by eli               #+#    #+#              #
-#    Updated: 2023/05/17 17:51:45 by etran            ###   ########.fr        #
+#    Updated: 2023/05/17 18:42:45 by etran            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -27,9 +27,9 @@ LIB_DIR		:=	lib
 TOOLS_DIR	:=	tools
 APP_DIR		:=	app
 SUBMOD_DIR	:=	$(APP_DIR)/submodules
-MODEL_DIR	:=	$(APP_DIR)/model
 UTILS_DIR	:=	$(APP_DIR)/utils
 IMG_DIR		:=	$(UTILS_DIR)/img
+MODEL_DIR	:=	$(UTILS_DIR)/model
 
 SUBDIRS		:=	$(APP_DIR) \
 				$(TOOLS_DIR) \
@@ -43,6 +43,7 @@ INC_SUBDIRS	:=	$(addprefix $(SRC_DIR)/,$(SUBDIRS))
 
 # cpp files
 INC_FILES	:=	$(TOOLS_DIR)/utils.hpp \
+				$(TOOLS_DIR)/math.hpp \
 				$(TOOLS_DIR)/matrix.hpp \
 				$(TOOLS_DIR)/vector.hpp \
 				$(UTILS_DIR)/vertex.hpp \

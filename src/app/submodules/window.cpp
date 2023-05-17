@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/06 12:28:42 by eli               #+#    #+#             */
-/*   Updated: 2023/05/15 18:08:37 by etran            ###   ########.fr       */
+/*   Updated: 2023/05/17 18:44:55 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,7 +62,13 @@ Window::Window(const std::string& model_name) {
 	// create a window pointer
 	const std::string	window_title = title + model_name;
 
-	window = glfwCreateWindow(width, height, window_title.c_str(), nullptr, nullptr);
+	window = glfwCreateWindow(
+		width,
+		height,
+		window_title.c_str(),
+		glfwGetPrimaryMonitor(),
+		nullptr
+	);
 
 	// set pointer to window to `this` instance pointer
 	// so we can access it from the callback functions
