@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/28 11:12:12 by eli               #+#    #+#             */
-/*   Updated: 2023/05/16 16:37:01 by etran            ###   ########.fr       */
+/*   Updated: 2023/05/17 17:59:32 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,7 +45,6 @@ App::~App() {
 
 void	App::run() {
 	while (window.alive()) {
-		// Poll events while not pressing x...
 		window.await();
 		drawFrame();
 	}

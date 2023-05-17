@@ -6,7 +6,7 @@
 #    By: etran <etran@student.42.fr>                +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/04/06 03:40:09 by eli               #+#    #+#              #
-#    Updated: 2023/05/16 17:47:00 by etran            ###   ########.fr        #
+#    Updated: 2023/05/17 17:51:45 by etran            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -101,9 +101,8 @@ INCLUDES	:=	$(addprefix -I./,\
 CFLAGS		:=	$(EXTRA)\
 				-std=c++17 \
 				$(INCLUDES) \
-				-g \
 				-DNDEBUG \
-				-D__VERBOSE \
+				-O3 \
 				-D__DEBUG
 
 LDFLAGS		:=	-lglfw \
