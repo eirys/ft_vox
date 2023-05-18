@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/06 12:28:42 by eli               #+#    #+#             */
-/*   Updated: 2023/05/17 18:44:55 by etran            ###   ########.fr       */
+/*   Updated: 2023/05/17 19:08:32 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,7 +66,8 @@ Window::Window(const std::string& model_name) {
 		width,
 		height,
 		window_title.c_str(),
-		glfwGetPrimaryMonitor(),
+		nullptr, // windowed
+		// glfwGetPrimaryMonitor(), // fullscreen
 		nullptr
 	);
 
