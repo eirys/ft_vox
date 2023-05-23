@@ -6,13 +6,15 @@
 #    By: etran <etran@student.42.fr>                +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/04/06 03:40:09 by eli               #+#    #+#              #
-#    Updated: 2023/05/17 18:42:45 by etran            ###   ########.fr        #
+#    Updated: 2023/05/22 01:03:41 by etran            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 # ============================================================================ #
 #                                    TARGETS                                   #
 # ============================================================================ #
+
+school		:=	$(shell env | grep 42paris | wc -l)
 
 # final binary
 NAME		:=	scop
@@ -65,7 +67,8 @@ INC_FILES	:=	$(TOOLS_DIR)/utils.hpp \
 				$(SUBMOD_DIR)/graphics_pipeline.hpp \
 				$(APP_DIR)/app.hpp
 
-SRC_FILES	:=	$(MODEL_DIR)/model.cpp \
+SRC_FILES	:=	$(TOOLS_DIR)/matrix.cpp \
+				$(MODEL_DIR)/model.cpp \
 				$(MODEL_DIR)/parser.cpp \
 				$(IMG_DIR)/ppm_loader.cpp \
 				$(IMG_DIR)/image_handler.cpp \
@@ -99,12 +102,14 @@ INCLUDES	:=	$(addprefix -I./,\
 				$(INC_SUBDIRS) \
 				$(STB_PATH))
 
+ifdef school!=0
+	EXTRA	+=	-Wno-unused-private-field
+endif
+
 CFLAGS		:=	$(EXTRA)\
 				-std=c++17 \
 				$(INCLUDES) \
-				-DNDEBUG \
-				-O3 \
-				-D__DEBUG
+				-DNDEBUG
 
 LDFLAGS		:=	-lglfw \
 				-lvulkan \
@@ -115,7 +120,7 @@ LDFLAGS		:=	-lglfw \
 				-lXrandr \
 				-lXi
 
-ifdef school
+ifdef school!=0
 	GLSLC	:=	~/my_sgoinfre/glslc
 else
 	GLSLC	:=	glslc
@@ -138,7 +143,7 @@ $(NAME): $(SHD_BIN) $(OBJ)
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp $(INC)
 	@mkdir -p $(OBJ_DIR) $(OBJ_SUBDIRS)
 	@echo "Compiling file $<..."
-	@$(CXX) $(CFLAGS) -c $< -o $@ $(LDFLAGS)
+	@$(CXX) $(CFLAGS) -c $< -o $@
 
 $(SHD_DIR)/%.spv: $(SHD_DIR)/shader.%
 	@echo "Compiling shader $<..."

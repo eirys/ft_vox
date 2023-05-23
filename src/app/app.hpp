@@ -6,12 +6,11 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/10 18:21:34 by eli               #+#    #+#             */
-/*   Updated: 2023/05/16 16:01:51 by etran            ###   ########.fr       */
+/*   Updated: 2023/05/23 01:45:47 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef APP_HPP
-# define APP_HPP
+#pragma once
 
 // Graphics
 # ifndef GLFW_INCLUDE_VULKAN
@@ -22,35 +21,44 @@
 # include <GLFW/glfw3.h>
 
 // Std
-# include <iostream>
-# include <stdexcept>
-# include <cstdlib>
-# include <vector>
-# include <optional>
-# include <limits>
-# include <algorithm>
-# include <cassert>
-# include <chrono>
-# include <unordered_map>
-# include <memory>
+# include <memory> // std::unique_ptr
+# include <map> // std::map
 
 # include "window.hpp"
 # include "utils.hpp"
+# include "matrix.hpp"
 # include "vertex.hpp"
-# include "uniform_buffer_object.hpp"
 # include "image_handler.hpp"
-# include "ppm_loader.hpp"
 # include "graphics_pipeline.hpp"
 
 # define SCOP_TEXTURE_FILE_HAMSTER_PPM	"textures/hammy.ppm"
+# define SCOP_MOVE_SPEED				0.005f
+# define SCOP_ROTATION_SPEED			0.25f // deg
 
 namespace scop {
 
 enum RotationAxis {
-	ROTATION_X,
-	ROTATION_Y,
-	ROTATION_Z,
-	ROTATION_NONE
+	ROTATION_AXIS_X = 0,
+	ROTATION_AXIS_Y = 1,
+	ROTATION_AXIS_Z = 2
+};
+
+enum RotationInput {
+	ROTATION_ADD_X = 1,
+	ROTATION_SUB_X = -1,
+	ROTATION_ADD_Y = 2,
+	ROTATION_SUB_Y = -2,
+	ROTATION_ADD_Z = 3,
+	ROTATION_SUB_Z = -3
+};
+
+enum ObjectDirection {
+	MOVE_FORWARD = 1,
+	MOVE_BACKWARD = -1,
+	MOVE_LEFT = 2,
+	MOVE_RIGHT = -2,
+	MOVE_UP = 3,
+	MOVE_DOWN = -3
 };
 
 enum ZoomInput {
@@ -59,26 +67,13 @@ enum ZoomInput {
 	ZOOM_NONE
 };
 
-enum UpAxis {
-	UP_X,
-	UP_Y,
-	UP_Z
-};
-
 /**
  * Core engine.
 */
 class App {
-private:
-	/* ========================================================================= */
-	/*                                  TYPEDEF                                  */
-	/* ========================================================================= */
-
-	typedef	std::chrono::high_resolution_clock::time_point	time_point;
-
 public:
 
-	friend class graphics::DescriptorSet;
+	friend graphics::DescriptorSet;
 
 	/* ========================================================================= */
 	/*                               CONST MEMBERS                               */
@@ -98,15 +93,41 @@ public:
 	App(App&& x) = delete;
 	App& operator=(const App& rhs) = delete;
 
-	/* ========================================================================= */
+	/* MAIN FUNCTION =========================================================== */
 
 	void								run();
+
+	/* ========================================================================= */
+
 	static void							toggleTexture() noexcept;
-	static void							toggleRotation(RotationAxis axis) noexcept;
+	static void							resetModel() noexcept;
+	// static void							updateRotation(
+	// 	RotationAxis axis,
+	// 	RotationInput value
+	// ) noexcept;
+
+	static void							toggleRotation(
+		RotationInput value
+	) noexcept;
+	static void							untoggleRotation(
+		RotationInput value
+	) noexcept;
+	static void							toggleMove(
+		ObjectDirection direction
+	) noexcept;
+	static void							untoggleMove(
+		ObjectDirection direction
+	) noexcept;
 	static void							toggleZoom(ZoomInput input) noexcept;
-	static void							changeUpAxis(UpAxis axis) noexcept;
+	static void							changeUpAxis() noexcept;
 
 private:
+	/* ========================================================================= */
+	/*                                  TYPEDEF                                  */
+	/* ========================================================================= */
+
+	typedef	std::chrono::high_resolution_clock::time_point	time_point;
+
 	/* ========================================================================= */
 	/*                               CLASS MEMBERS                               */
 	/* ========================================================================= */
@@ -124,24 +145,35 @@ private:
 
 	static bool							texture_enabled;
 	static std::optional<time_point>	texture_enabled_start;
-	static std::optional<Vect3>			rotation_axis;
+
+	static
+	std::map<RotationInput, bool>		keys_pressed_rotations;
+	static std::array<float, 3>			rotation_angles;
+	static std::array<float, 3>			rotating_input;
+
+	static
+	std::map<ObjectDirection, bool>		keys_pressed_directions;
+	static scop::Vect3					movement;
+	static scop::Vect3					position;
+
 	static float						zoom_input;
-	static Vect3						up_axis;
+	static size_t						selected_up_axis;
 
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
 
-	void							drawFrame();
-
-	void							loadModel(
-		const std::string& path
-	);
-	void							loadTexture(const std::string& path);
-
+	void								drawFrame();
+	void								loadModel(const std::string& path);
+	void								loadTexture(const std::string& path);
 
 }; // class App
 
-} // namespace scop
+/* ========================================================================== */
+/*                                    OTHER                                   */
+/* ========================================================================== */
 
-#endif
+std::map<ObjectDirection, bool>	populateDirectionKeys();
+std::map<RotationInput, bool>	populateRotationKeys();
+
+} // namespace scop

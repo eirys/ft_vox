@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/16 00:55:41 by etran             #+#    #+#             */
-/*   Updated: 2023/05/17 01:54:38 by etran            ###   ########.fr       */
+/*   Updated: 2023/05/18 14:06:34 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,8 +24,8 @@ namespace scop {
 class Window;
 
 namespace graphics {
+struct QueueFamilyIndices;
 class GraphicsPipeline;
-class QueueFamilyIndices;
 class RenderTarget;
 class RenderTargetResources;
 class DescriptorSet;

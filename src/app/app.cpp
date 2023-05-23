@@ -6,24 +6,31 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/28 11:12:12 by eli               #+#    #+#             */
-/*   Updated: 2023/05/17 18:08:29 by etran            ###   ########.fr       */
+/*   Updated: 2023/05/23 01:54:57 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "app.hpp"
-#include "matrix.hpp"
 #include "model.hpp"
 #include "parser.hpp"
-#include "image_handler.hpp"
+#include "ppm_loader.hpp"
 #include "math.hpp"
 
 namespace scop {
 
 bool							App::texture_enabled = true;
 std::optional<App::time_point>	App::texture_enabled_start;
-std::optional<Vect3>			App::rotation_axis;
+
+std::map<RotationInput, bool>	App::keys_pressed_rotations = populateRotationKeys();
+std::array<float, 3>			App::rotation_angles = { 0.0f, 0.0f, 0.0f };
+std::array<float, 3>			App::rotating_input = { 0.0f, 0.0f, 0.0f };
+
+std::map<ObjectDirection, bool>	App::keys_pressed_directions = populateDirectionKeys();
+scop::Vect3						App::movement = scop::Vect3(0.0f, 0.0f, 0.0f);
+scop::Vect3						App::position = scop::Vect3(0.0f, 0.0f, 0.0f);
+
 float							App::zoom_input = 1.0f;
-Vect3							App::up_axis = Vect3(0.0f, 1.0f, 0.0f);
+size_t							App::selected_up_axis = 1;
 
 /* ========================================================================== */
 /*                                   PUBLIC                                   */
@@ -65,17 +72,139 @@ void	App::toggleTexture() noexcept {
 }
 
 /**
+ * Resets the model to its original position and rotation.
+*/
+void	App::resetModel() noexcept {
+	// Reset rotation
+	rotation_angles[RotationAxis::ROTATION_AXIS_X] = 0.0f;
+	rotation_angles[RotationAxis::ROTATION_AXIS_Y] = 0.0f;
+	rotation_angles[RotationAxis::ROTATION_AXIS_Z] = 0.0f;
+
+	// Reset translation
+	position = scop::Vect3(0.0f, 0.0f, 0.0f);
+}
+
+/**
  * On toggle, changes the rotation of the model.
 */
-void	App::toggleRotation(RotationAxis axis) noexcept {
-	if (axis == RotationAxis::ROTATION_X) {
-		rotation_axis = Vect3(1.0f, 0.0f, 0.0f);
-	} else if (axis == RotationAxis::ROTATION_Y) {
-		rotation_axis = Vect3(0.0f, 1.0f, 0.0f);
-	} else if (axis == RotationAxis::ROTATION_Z) {
-		rotation_axis = Vect3(0.0f, 0.0f, 1.0f);
+void	App::toggleRotation(RotationInput value) noexcept {
+	keys_pressed_rotations[value] = true;
+	switch (value) {
+		case RotationInput::ROTATION_ADD_X: {
+			rotating_input[RotationAxis::ROTATION_AXIS_X] = SCOP_ROTATION_SPEED;
+			break;
+		}
+		case RotationInput::ROTATION_SUB_X: {
+			rotating_input[RotationAxis::ROTATION_AXIS_X] = -SCOP_ROTATION_SPEED;
+			break;
+		}
+		case RotationInput::ROTATION_ADD_Y: {
+			rotating_input[RotationAxis::ROTATION_AXIS_Y] = SCOP_ROTATION_SPEED;
+			break;
+		}
+		case RotationInput::ROTATION_SUB_Y: {
+			rotating_input[RotationAxis::ROTATION_AXIS_Y] = -SCOP_ROTATION_SPEED;
+			break;
+		}
+		case RotationInput::ROTATION_ADD_Z: {
+			rotating_input[RotationAxis::ROTATION_AXIS_Z] = SCOP_ROTATION_SPEED;
+			break;
+		}
+		case RotationInput::ROTATION_SUB_Z: {
+			rotating_input[RotationAxis::ROTATION_AXIS_Z] = -SCOP_ROTATION_SPEED;
+			break;
+		}
+		default:
+			return;
+	}
+}
+
+/**
+ * On untoggle, stops the rotation of the model.
+*/
+void	App::untoggleRotation(RotationInput value) noexcept {
+	keys_pressed_rotations[value] = false;
+	if (keys_pressed_rotations[static_cast<RotationInput>(-value)] == false) {
+		if (
+			value == RotationInput::ROTATION_ADD_X ||
+			value == RotationInput::ROTATION_SUB_X
+		) {
+			rotating_input[RotationAxis::ROTATION_AXIS_X] = 0.0f;
+		} else if (
+			value == RotationInput::ROTATION_ADD_Y ||
+			value == RotationInput::ROTATION_SUB_Y
+		) {
+			rotating_input[RotationAxis::ROTATION_AXIS_Y] = 0.0f;
+		} else if (
+			value == RotationInput::ROTATION_ADD_Z ||
+			value == RotationInput::ROTATION_SUB_Z
+		) {
+			rotating_input[RotationAxis::ROTATION_AXIS_Z] = 0.0f;
+		}
 	} else {
-		rotation_axis.reset();
+		toggleRotation(static_cast<RotationInput>(-value));
+	}
+}
+
+/**
+ * On toggle, the model is moved in the given direction.
+*/
+void	App::toggleMove(ObjectDirection dir) noexcept {
+	keys_pressed_directions[dir] = true;
+	switch (dir) {
+		case ObjectDirection::MOVE_FORWARD: {
+			movement.z = -SCOP_MOVE_SPEED;
+			break;
+		}
+		case ObjectDirection::MOVE_BACKWARD: {
+			movement.z = SCOP_MOVE_SPEED;
+			break;
+		}
+		case ObjectDirection::MOVE_RIGHT: {
+			movement.x = SCOP_MOVE_SPEED;
+			break;
+		}
+		case ObjectDirection::MOVE_LEFT: {
+			movement.x = -SCOP_MOVE_SPEED;
+			break;
+		}
+		case ObjectDirection::MOVE_UP: {
+			movement.y = SCOP_MOVE_SPEED;
+			break;
+		}
+		case ObjectDirection::MOVE_DOWN: {
+			movement.y = -SCOP_MOVE_SPEED;
+			break;
+		}
+		default:
+			return;
+	}
+}
+
+/**
+ * On untoggle, the model stops moving in the given direction.
+*/
+void	App::untoggleMove(ObjectDirection dir) noexcept {
+	keys_pressed_directions[dir] = false;
+	if (keys_pressed_directions[static_cast<ObjectDirection>(-dir)] == false) {
+		if (
+			dir == ObjectDirection::MOVE_FORWARD ||
+			dir == ObjectDirection::MOVE_BACKWARD
+		) {
+			movement.z = 0.0f;
+		} else if (
+			dir == ObjectDirection::MOVE_RIGHT ||
+			dir == ObjectDirection::MOVE_LEFT
+		) {
+			movement.x = 0.0f;
+		} else if (
+			dir == ObjectDirection::MOVE_UP ||
+			dir == ObjectDirection::MOVE_DOWN
+		) {
+			movement.y = 0.0f;
+		}
+	} else {
+		toggleMove(static_cast<ObjectDirection>(-dir));
 	}
 }
 
@@ -90,33 +219,21 @@ void	App::toggleZoom(ZoomInput zoom) noexcept {
 	}
 }
 
-void	App::changeUpAxis(UpAxis axis) noexcept {
-	if (axis == UpAxis::UP_X) {
-		up_axis = Vect3(1.0f, 0.0f, 0.0f);
-	} else if (axis == UpAxis::UP_Y) {
-		up_axis = Vect3(0.0f, 1.0f, 0.0f);
-	} else if (axis == UpAxis::UP_Z) {
-		up_axis = Vect3(0.0f, 0.0f, 1.0f);
-	}
+void	App::changeUpAxis() noexcept {
+	selected_up_axis = (selected_up_axis + 1) % 3;
 }
 
 /* ========================================================================== */
 /*                                   PRIVATE                                  */
 /* ========================================================================== */
 
-/**
- * Fence awaited: the cpu waits until the frame is ready to be retrieved.
- *
- * Semaphores awaited: the gpu waits until the command buffer
- * is done executing, aka the image is available in the swap chain.
-*/
 void	App::drawFrame() {
 	graphics_pipeline.render(window, indices.size());
 }
 
 void	App::loadModel(const std::string& path) {
 	scop::obj::Parser	parser;
-	scop::obj::Model	model = parser.parseFile(path.c_str());
+	scop::obj::Model	model = parser.parseFile(path.c_str(), *image);
 	std::unordered_map<scop::Vertex, uint32_t>	unique_vertices{};
 
 	const auto&	model_vertices = model.getVertexCoords();
@@ -134,7 +251,11 @@ void	App::loadModel(const std::string& path) {
 				model_textures[index.texture].x,
 				1.0f - model_textures[index.texture].y
 			};
-			math::generateVibrantColor(vertex.color.x, vertex.color.y, vertex.color.z);
+			math::generateVibrantColor(
+				vertex.color.x,
+				vertex.color.y,
+				vertex.color.z
+			);
 			// vertex.normal = model_normals[index.normal_index];
 
 			if (unique_vertices.count(vertex) == 0) {
@@ -180,6 +301,34 @@ void	App::loadTexture(const std::string& path) {
 	}
 	image_loader.reset(new PpmLoader(file));
 	image = std::make_unique<scop::Image>(image_loader->load());
+}
+
+/* ========================================================================== */
+/*                                    OTHER                                   */
+/* ========================================================================== */
+
+std::map<ObjectDirection, bool>	populateDirectionKeys() {
+	std::map<ObjectDirection, bool>	map;
+
+	map[ObjectDirection::MOVE_FORWARD] = false;
+	map[ObjectDirection::MOVE_BACKWARD] = false;
+	map[ObjectDirection::MOVE_LEFT] = false;
+	map[ObjectDirection::MOVE_RIGHT] = false;
+	map[ObjectDirection::MOVE_UP] = false;
+	map[ObjectDirection::MOVE_DOWN] = false;
+	return map;
+}
+
+std::map<RotationInput, bool> populateRotationKeys() {
+	std::map<RotationInput, bool>	map;
+
+	map[RotationInput::ROTATION_ADD_X] = false;
+	map[RotationInput::ROTATION_SUB_X] = false;
+	map[RotationInput::ROTATION_ADD_Y] = false;
+	map[RotationInput::ROTATION_SUB_Y] = false;
+	map[RotationInput::ROTATION_ADD_Z] = false;
+	map[RotationInput::ROTATION_SUB_Z] = false;
+	return map;
 }
 
 } // namespace scop

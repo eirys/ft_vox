@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/15 20:56:05 by etran             #+#    #+#             */
-/*   Updated: 2023/05/17 18:07:57 by etran            ###   ########.fr       */
+/*   Updated: 2023/05/23 02:02:39 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,10 +62,8 @@ void	DescriptorSet::destroy(
  * Update transformation of vertices
 */
 void	DescriptorSet::updateUniformBuffer(VkExtent2D extent) {
-	time_point	current_time = std::chrono::high_resolution_clock::now();
-
-	updateVertexPart(extent, current_time);
-	updateFragmentPart(current_time);
+	updateCamera(extent);
+	updateTexture();
 }
 
 /* ========================================================================== */
@@ -158,7 +156,7 @@ void	DescriptorSet::createDescriptorSets(
 	VkDescriptorBufferInfo	ubo_info_vertex{};
 	ubo_info_vertex.buffer = uniform_buffers;
 	ubo_info_vertex.offset = 0;
-	ubo_info_vertex.range = offsetof(UniformBufferObject, texture);
+	ubo_info_vertex.range = sizeof(UniformBufferObject::Camera);
 
 	// Texture sampler
 	VkDescriptorImageInfo	image_info{};
@@ -170,7 +168,7 @@ void	DescriptorSet::createDescriptorSets(
 	VkDescriptorBufferInfo	ubo_info_fragment{};
 	ubo_info_fragment.buffer = uniform_buffers;
 	ubo_info_fragment.offset = offsetof(UniformBufferObject, texture);
-	ubo_info_fragment.range = sizeof(UniformBufferObject) - offsetof(UniformBufferObject, texture);
+	ubo_info_fragment.range = sizeof(UniformBufferObject::Texture);
 
 	// Allow buffer udpate using descriptor write
 	std::array<VkWriteDescriptorSet, 3>	descriptor_writes{};
@@ -213,11 +211,8 @@ void	DescriptorSet::createDescriptorSets(
 	);
 }
 
-/**
- * Create uniform buffers
-*/
 void	DescriptorSet::createUniformBuffers(Device& device) {
-	VkDeviceSize	buffer_size = sizeof(scop::UniformBufferObject);
+	VkDeviceSize	buffer_size = sizeof(UniformBufferObject);
 
 	// Create the buffer and allocate memory
 	device.createBuffer(
@@ -248,39 +243,62 @@ void	DescriptorSet::initUniformBuffer() noexcept {
 	ubo.texture.enabled = scop::App::texture_enabled;
 	ubo.texture.mix = -1.0f;
 
-	memcpy(uniform_buffers_mapped, &ubo, sizeof(ubo));
+	memcpy(uniform_buffers_mapped, &ubo, sizeof(UniformBufferObject));
 }
 
-void	DescriptorSet::updateVertexPart(
-	VkExtent2D extent,
-	time_point current_time
+/**
+ * Update the camera part of the uniform buffer.
+*/
+void	DescriptorSet::updateCamera(
+	VkExtent2D extent
 ) {
-	static time_point	start_time = std::chrono::high_resolution_clock::now();
-	float	time = std::chrono::duration<float, std::chrono::seconds::period>(
-		current_time - start_time
-	).count();
-
 	UniformBufferObject::Camera	camera{};
 
+	static const std::array<scop::Vect3, 3>	axis = {
+		scop::Vect3(1.0f, 0.0f, 0.0f),
+		scop::Vect3(0.0f, 1.0f, 0.0f),
+		scop::Vect3(0.0f, 0.0f, 1.0f)
+	};
+
+	// Add translation (object movement)
+	App::position += App::movement;
+
+	App::rotation_angles[RotationAxis::ROTATION_AXIS_X] +=
+		App::rotating_input[RotationAxis::ROTATION_AXIS_X];
+
+	App::rotation_angles[RotationAxis::ROTATION_AXIS_Y] +=
+		App::rotating_input[RotationAxis::ROTATION_AXIS_Y];
+
+	App::rotation_angles[RotationAxis::ROTATION_AXIS_Z] +=
+		App::rotating_input[RotationAxis::ROTATION_AXIS_Z];
+
 	// Define object transformation model
-	if (scop::App::rotation_axis.has_value()) {
-		camera.model = scop::rotate(
-			time * scop::math::radians(90.0f),
-			scop::App::rotation_axis.value()
-		);
-	} else {
-		camera.model = scop::Mat4(1.0f);
-	}
+	camera.model = scop::rotate(
+		scop::rotate(
+			scop::rotate(
+				// Translate object first
+				scop::translate(
+					scop::Mat4(1.0f),
+					App::position
+				),
+				// Rotate around x
+				scop::math::radians(App::rotation_angles[0]),
+				axis[static_cast<int>(RotationAxis::ROTATION_AXIS_X)]
+			),
+			// Rotate around y
+			scop::math::radians(App::rotation_angles[1]),
+			axis[static_cast<int>(RotationAxis::ROTATION_AXIS_Y)]
+		),
+		// Rotate around z
+		scop::math::radians(App::rotation_angles[2]),
+		axis[static_cast<int>(RotationAxis::ROTATION_AXIS_Z)]
+	);
 
 	// Define camera transformation view
-	scop::Mat4	zoom = scop::scale(
-		scop::Mat4(1.0f),
-		scop::Vect3(scop::App::zoom_input, scop::App::zoom_input, scop::App::zoom_input)
-	);
-	camera.view = zoom * scop::lookAt(
-		scop::Vect3(2.0f, 2.0f, 2.0f),
+	camera.view = scop::lookAt(
+		scop::Vect3(1.0f, 1.0f, 2.0f),
 		scop::Vect3(0.0f, 0.0f, 0.0f),
-		App::up_axis
+		axis[App::selected_up_axis]
 	);
 
 	// Define persp. projection transformation
@@ -288,27 +306,39 @@ void	DescriptorSet::updateVertexPart(
 		scop::math::radians(45.0f),
 		extent.width / static_cast<float>(extent.height),
 		0.1f,
-		10.0f
+		100.0f
 	);
 	// Invert y axis (because y axis is inverted in Vulkan)
 	camera.proj[5] *= -1;
 
+	// Define zoom factor
+	camera.zoom = scop::scale(
+		scop::Mat4(1.0f),
+		scop::Vect3(
+			scop::App::zoom_input,
+			scop::App::zoom_input,
+			scop::App::zoom_input
+		)
+	);
+
+	// Copy to uniform buffer
 	memcpy(
-		uniform_buffers_mapped,
+		(char*)uniform_buffers_mapped,
 		&camera,
-		offsetof(UniformBufferObject, texture)
+		sizeof(UniformBufferObject::Camera)
 	);
 }
 
-void	DescriptorSet::updateFragmentPart(
-	time_point current_time
-) {
+/**
+ * Update the texture part of the uniform buffer.
+*/
+void	DescriptorSet::updateTexture() {
 	// Only udpate if it was recently toggled
 	if (!App::texture_enabled_start.has_value()) {
 		return;
 	}
-
 	UniformBufferObject::Texture	texture;
+	time_point	current_time = std::chrono::high_resolution_clock::now();
 
 	// Transition from 0 to 1 in /*transition_duration*/ ms	float
 	float	time = std::chrono::duration<float, std::chrono::milliseconds::period>(
@@ -320,7 +350,7 @@ void	DescriptorSet::updateFragmentPart(
 	memcpy(
 		(char*)uniform_buffers_mapped + offsetof(UniformBufferObject, texture),
 		&texture,
-		sizeof(texture)
+		sizeof(UniformBufferObject::Texture)
 	);
 
 	// Reset texture_enabled_start if time is up

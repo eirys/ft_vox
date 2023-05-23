@@ -6,20 +6,19 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/29 20:12:41 by eli               #+#    #+#             */
-/*   Updated: 2023/05/17 17:13:34 by etran            ###   ########.fr       */
+/*   Updated: 2023/05/21 11:09:01 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef UNIFORM_BUFFER_OBJECT_HPP
-# define UNIFORM_BUFFER_OBJECT_HPP
+#pragma once
 
-# define __ALIGNMENT 16
+# define __ALIGNMENT 64
 
 # include "matrix.hpp"
 
 namespace scop {
 
-class UniformBufferObject {
+struct UniformBufferObject {
 public:
 	/* ========================================================================= */
 	/*                               HELPER OBJECTS                              */
@@ -29,6 +28,7 @@ public:
 		scop::Mat4	model;
 		scop::Mat4	view;
 		scop::Mat4	proj;
+		scop::Mat4	zoom;
 	};
 
 	struct Texture {
@@ -50,16 +50,9 @@ public:
 	/*                               CLASS MEMBERS                               */
 	/* ========================================================================= */
 
-	/* VERTEX SHADER =========================================================== */
-
 	alignas(__ALIGNMENT) Camera		camera;
-
-	/* FRAGMENT SHADER ========================================================= */
-
 	alignas(__ALIGNMENT) Texture	texture;
 
 };
 
 } // namespace scop
-
-#endif
