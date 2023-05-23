@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/04 15:02:06 by etran             #+#    #+#             */
-/*   Updated: 2023/05/18 22:45:21 by etran            ###   ########.fr       */
+/*   Updated: 2023/05/23 10:22:07 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,11 +18,11 @@
 # include "model.hpp"
 # include "vertex.hpp"
 
-static constexpr const uint8_t	vertex_bit = 1 << 0;// 1
-static constexpr const uint8_t	texture_bit = 1 << 1; // 2
-static constexpr const uint8_t	normal_bit = 1 << 2; // 4
+static constexpr const uint8_t		vertex_bit = 1 << 0;// 1
+static constexpr const uint8_t		texture_bit = 1 << 1; // 2
+static constexpr const uint8_t		normal_bit = 1 << 2; // 4
 
-static constexpr const size_t	nb_line_types = 10;
+static constexpr const std::size_t	nb_line_types = 10;
 
 namespace scop {
 class Image;
@@ -77,7 +77,7 @@ private:
 	/* ======================================================================== */
 
 	Model				model_output;
-	size_t				current_pos;
+	std::size_t			current_pos;
 	std::string			line;
 	std::string			token;
 
@@ -159,7 +159,7 @@ private:
 	TokenType			checkNumberType(const std::string& word) const;
 	void				checkJunkAfterNumber(
 		const std::string& word,
-		size_t pos
+		std::size_t pos
 	) const;
 	uint8_t				getFormat() const noexcept;
 	void				storeTriangles(

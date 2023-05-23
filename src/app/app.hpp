@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/10 18:21:34 by eli               #+#    #+#             */
-/*   Updated: 2023/05/23 01:45:47 by etran            ###   ########.fr       */
+/*   Updated: 2023/05/23 14:14:32 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -101,11 +101,6 @@ public:
 
 	static void							toggleTexture() noexcept;
 	static void							resetModel() noexcept;
-	// static void							updateRotation(
-	// 	RotationAxis axis,
-	// 	RotationInput value
-	// ) noexcept;
-
 	static void							toggleRotation(
 		RotationInput value
 	) noexcept;
@@ -157,7 +152,7 @@ private:
 	static scop::Vect3					position;
 
 	static float						zoom_input;
-	static size_t						selected_up_axis;
+	static std::size_t					selected_up_axis;
 
 	/* ========================================================================= */
 	/*                                  METHODS                                  */

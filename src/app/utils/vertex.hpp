@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/26 15:25:04 by etran             #+#    #+#             */
-/*   Updated: 2023/05/18 22:46:21 by etran            ###   ########.fr       */
+/*   Updated: 2023/05/23 10:19:38 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -98,7 +98,7 @@ namespace std {
 
 	template<>
 	struct hash<scop::Vertex> {
-		size_t	operator()(const scop::Vertex& vertex) const {
+		std::size_t	operator()(const scop::Vertex& vertex) const {
 			return (
 				(hash<scop::Vect3>()(vertex.pos) ^
 				(hash<scop::Vect3>()(vertex.color) << 1)) >> 1 ^

@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/04 15:06:05 by etran             #+#    #+#             */
-/*   Updated: 2023/05/19 00:56:27 by etran            ###   ########.fr       */
+/*   Updated: 2023/05/23 10:19:39 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,7 +37,7 @@ Model	Parser::parseFile(
 		throw std::invalid_argument("Could not open file " + file_name);
 	}
 
-	for (size_t current_line = 1; file.good(); ++current_line) {
+	for (std::size_t current_line = 1; file.good(); ++current_line) {
 		std::getline(file, line);
 
 		try {
@@ -67,7 +67,7 @@ void	Parser::checkFile(const std::string& file) const {
 	if (file.empty()) {
 		throw std::invalid_argument("Empty file name");
 	}
-	size_t	extension_pos = file.rfind('.');
+	std::size_t	extension_pos = file.rfind('.');
 
 	if (extension_pos == std::string::npos) {
 		throw std::invalid_argument("File '" + file + "' has no extension");
@@ -84,7 +84,7 @@ void	Parser::processLine() {
 
 	// Check line type
 	getWord();
-	for (size_t i = 0; i < nb_line_types; ++i) {
+	for (std::size_t i = 0; i < nb_line_types; ++i) {
 		if (token == line_begin[i]) {
 			skipWhitespace();
 			try {
@@ -114,7 +114,7 @@ void	Parser::processLine() {
 void	Parser::parseVertex() {
 	scop::Vect3	vertex{};
 
-	for (size_t i = 0; i < 3; ++i) {
+	for (std::size_t i = 0; i < 3; ++i) {
 		if (!getWord())
 			throw Parser::parse_error("expecting 3 coordinates");
 		checkNumberType(token);
@@ -133,7 +133,7 @@ void	Parser::parseVertex() {
 void	Parser::parseTexture() {
 	scop::Vect2	texture{};
 
-	for (size_t i = 0; i < 2; ++i) {
+	for (std::size_t i = 0; i < 2; ++i) {
 		if (!getWord())
 			throw Parser::parse_error("expecting 2 coordinates");
 		checkNumberType(token);
@@ -152,7 +152,7 @@ void	Parser::parseTexture() {
 void	Parser::parseNormal() {
 	scop::Vect3	normal{};
 
-	for (size_t i = 0; i < 3; ++i) {
+	for (std::size_t i = 0; i < 3; ++i) {
 		if (!getWord())
 			throw Parser::parse_error("expecting 3 coordinates");
 		checkNumberType(token);
@@ -179,7 +179,7 @@ void	Parser::parseFace() {
 	skipWhitespace();
 	while (getWord()) {
 		// Verify nb indices
-		size_t	nb_slashes = std::count(token.begin(), token.end(), '/');
+		std::size_t	nb_slashes = std::count(token.begin(), token.end(), '/');
 		if (nb_slashes > 2) {
 			throw Parser::parse_error("expecting at most 3 indices");
 		}
@@ -193,10 +193,10 @@ void	Parser::parseFace() {
 
 		// Extract expected indices from chunk
 		Model::Index	index{};
-		size_t	begin_pos = 0;
-		for (size_t i = 0; i < 3; ++i) {
+		std::size_t	begin_pos = 0;
+		for (std::size_t i = 0; i < 3; ++i) {
 			if (format.value() & (1 << i)) {
-				size_t	end_pos = token.find(cs_slash, begin_pos);
+				std::size_t	end_pos = token.find(cs_slash, begin_pos);
 				if (end_pos == std::string::npos) {
 					end_pos = token.size();
 				}
@@ -237,7 +237,7 @@ bool	Parser::getWord() {
 	if (current_pos == std::string::npos) {
 		return false;
 	}
-	size_t	end_pos = line.find_first_of(cs_whitespaces, current_pos);
+	std::size_t	end_pos = line.find_first_of(cs_whitespaces, current_pos);
 	token = line.substr(current_pos, end_pos - current_pos);
 	current_pos = end_pos;
 	return true;
@@ -256,7 +256,7 @@ Parser::TokenType	Parser::checkNumberType(const std::string& word) const {
 		throw Parser::parse_error("expecting number");
 	}
 
-	size_t	pos_checked = word.find(cs_negate);
+	std::size_t	pos_checked = word.find(cs_negate);
 
 	// Check if first negate
 	if (pos_checked != std::string::npos && pos_checked != 0) {
@@ -274,7 +274,7 @@ Parser::TokenType	Parser::checkNumberType(const std::string& word) const {
 	}
 
 	// Check if there's a dot after digits
-	size_t	dot_pos = word.find(cs_dot, pos_checked);
+	std::size_t	dot_pos = word.find(cs_dot, pos_checked);
 	if (dot_pos == std::string::npos) {
 		checkJunkAfterNumber(word, pos_checked);
 		return TokenType::TOKEN_INT;
@@ -286,15 +286,15 @@ Parser::TokenType	Parser::checkNumberType(const std::string& word) const {
 /**
  * Check if there's junk after digits in word.
 */
-void	Parser::checkJunkAfterNumber(const std::string& word, size_t pos) const {
+void	Parser::checkJunkAfterNumber(const std::string& word, std::size_t pos) const {
 	if (word.find_first_not_of(cs_digit, pos) != std::string::npos) {
 		throw Parser::parse_error("unexpected character after value");
 	}
 }
 
 uint8_t	Parser::getFormat() const noexcept {
-	size_t	first_slash = token.find(cs_slash);
-	size_t	last_slash = token.rfind(cs_slash);
+	std::size_t	first_slash = token.find(cs_slash);
+	std::size_t	last_slash = token.rfind(cs_slash);
 
 	if (first_slash == std::string::npos && last_slash == std::string::npos) {
 		return vertex_bit;
@@ -310,18 +310,18 @@ uint8_t	Parser::getFormat() const noexcept {
 void	Parser::storeTriangles(
 	const std::vector<Model::Index>& indices
 ) {
-	size_t	attr_sizes[3] = {
+	std::size_t	attr_sizes[3] = {
 		model_output.getVertexCoords().size(),
 		model_output.getTextureCoords().size(),
 		model_output.getNormalCoords().size()
 	};
-	size_t	nb_triangles = indices.size() - 2;
+	std::size_t	nb_triangles = indices.size() - 2;
 
-	for (size_t i = 0; i < nb_triangles; ++i) {
+	for (std::size_t i = 0; i < nb_triangles; ++i) {
 
 		// Replace occurence of -1 by last element of corresponding list
 		auto	selectIndex =
-			[indices, attr_sizes](size_t pos, size_t attr) -> int {
+			[indices, attr_sizes](std::size_t pos, std::size_t attr) -> int {
 				if (indices[pos][attr] < 0) {
 					return attr_sizes[attr] - 1;
 				} else {

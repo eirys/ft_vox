@@ -6,7 +6,7 @@
 #    By: etran <etran@student.42.fr>                +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/04/06 03:40:09 by eli               #+#    #+#              #
-#    Updated: 2023/05/22 01:03:41 by etran            ###   ########.fr        #
+#    Updated: 2023/05/23 09:27:11 by etran            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -32,13 +32,15 @@ SUBMOD_DIR	:=	$(APP_DIR)/submodules
 UTILS_DIR	:=	$(APP_DIR)/utils
 IMG_DIR		:=	$(UTILS_DIR)/img
 MODEL_DIR	:=	$(UTILS_DIR)/model
+GEN_DIR		:=	$(UTILS_DIR)/generation
 
-SUBDIRS		:=	$(APP_DIR) \
-				$(TOOLS_DIR) \
+SUBDIRS		:=	$(TOOLS_DIR) \
+				$(APP_DIR) \
 				$(SUBMOD_DIR) \
-				$(MODEL_DIR) \
 				$(UTILS_DIR) \
-				$(IMG_DIR)
+				$(IMG_DIR) \
+				$(MODEL_DIR) \
+				$(GEN_DIR)
 
 OBJ_SUBDIRS	:=	$(addprefix $(OBJ_DIR)/,$(SUBDIRS))
 INC_SUBDIRS	:=	$(addprefix $(SRC_DIR)/,$(SUBDIRS))
@@ -55,6 +57,7 @@ INC_FILES	:=	$(TOOLS_DIR)/utils.hpp \
 				$(IMG_DIR)/image_loader.hpp \
 				$(IMG_DIR)/image_handler.hpp \
 				$(IMG_DIR)/ppm_loader.hpp \
+				$(GEN_DIR)/perlin_noise.hpp \
 				$(SUBMOD_DIR)/window.hpp \
 				$(SUBMOD_DIR)/debug_module.hpp \
 				$(SUBMOD_DIR)/device.hpp \
@@ -72,6 +75,7 @@ SRC_FILES	:=	$(TOOLS_DIR)/matrix.cpp \
 				$(MODEL_DIR)/parser.cpp \
 				$(IMG_DIR)/ppm_loader.cpp \
 				$(IMG_DIR)/image_handler.cpp \
+				$(GEN_DIR)/perlin_noise.cpp \
 				$(SUBMOD_DIR)/window.cpp \
 				$(SUBMOD_DIR)/debug_module.cpp \
 				$(SUBMOD_DIR)/device.cpp \

@@ -6,11 +6,16 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/17 18:03:49 by etran             #+#    #+#             */
-/*   Updated: 2023/05/19 23:11:49 by etran            ###   ########.fr       */
+/*   Updated: 2023/05/23 12:46:56 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
+
+// Std
+# include <cmath> // M_PI, std::fma
+# include <algorithm> // std::max, std::min
+# include <random> // std::mt19937, std::uniform_real_distribution
 
 namespace scop {
 namespace math {

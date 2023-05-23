@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/12 10:23:32 by eli               #+#    #+#             */
-/*   Updated: 2023/05/18 22:46:13 by etran            ###   ########.fr       */
+/*   Updated: 2023/05/23 10:21:05 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,7 @@ namespace scop {
 /**
  * Image handler.
  * 
- * Only handles 32-bit images.
+ * Only handles 32-bit images. (RGBA)
 */
 class Image {
 public:
@@ -41,8 +41,8 @@ public:
 		const std::string& path,
 		ImageType type,
 		std::vector<uint32_t>&& pixels,
-		size_t width,
-		size_t height
+		std::size_t width,
+		std::size_t height
 	);
 
 	Image(Image&& x) = default;
@@ -56,8 +56,9 @@ public:
 
 	const std::string&			getPath() const noexcept;
 	const uint32_t*				getPixels() const noexcept;
-	size_t						getWidth() const noexcept;
-	size_t						getHeight() const noexcept;
+	std::size_t					getWidth() const noexcept;
+	std::size_t					getHeight() const noexcept;
+	ImageType					getType() const noexcept;
 
 private:
 	/* ========================================================================= */
@@ -67,8 +68,8 @@ private:
 	const std::string			path;
 	ImageType					type;
 	const std::vector<uint32_t>	pixels;
-	size_t						width;
-	size_t						height;
+	std::size_t					width;
+	std::size_t					height;
 
 }; // class Image
 

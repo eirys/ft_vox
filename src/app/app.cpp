@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/28 11:12:12 by eli               #+#    #+#             */
-/*   Updated: 2023/05/23 01:54:57 by etran            ###   ########.fr       */
+/*   Updated: 2023/05/23 10:19:56 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,7 +30,7 @@ scop::Vect3						App::movement = scop::Vect3(0.0f, 0.0f, 0.0f);
 scop::Vect3						App::position = scop::Vect3(0.0f, 0.0f, 0.0f);
 
 float							App::zoom_input = 1.0f;
-size_t							App::selected_up_axis = 1;
+std::size_t						App::selected_up_axis = 1;
 
 /* ========================================================================== */
 /*                                   PUBLIC                                   */
@@ -287,7 +287,7 @@ void	App::loadTexture(const std::string& path) {
 	if (path.empty()) {
 		file = SCOP_TEXTURE_FILE_HAMSTER_PPM;
 	} else {
-		size_t	extension_pos = path.rfind('.');
+		std::size_t	extension_pos = path.rfind('.');
 		if (extension_pos == std::string::npos) {
 			throw std::invalid_argument(
 				"No extention found for texture file (must be .ppm)"

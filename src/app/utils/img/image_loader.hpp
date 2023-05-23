@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/12 10:12:47 by eli               #+#    #+#             */
-/*   Updated: 2023/05/18 22:45:59 by etran            ###   ########.fr       */
+/*   Updated: 2023/05/23 12:44:51 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,6 @@
 # include <vector>
 
 namespace scop {
-
 class Image;
 
 /**
@@ -60,8 +59,8 @@ protected:
 	const std::string	path;		// File path
 	ImageType			type;		// File extension
 	std::vector<char>	data;		// Contains file entire content
-	size_t				width;
-	size_t				height;
+	std::size_t			width;
+	std::size_t			height;
 
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
