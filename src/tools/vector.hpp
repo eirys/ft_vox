@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/03 13:54:57 by eli               #+#    #+#             */
-/*   Updated: 2023/05/18 22:45:11 by etran            ###   ########.fr       */
+/*   Updated: 2023/05/24 19:32:47 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 // Std
 # include <cmath>
 # include <stdexcept>
+# include <ostream>
 
 namespace scop {
 
@@ -255,6 +256,16 @@ struct Vect2 {
 }; // struct Vect2
 
 } // namespace scop
+
+std::ostream& operator<<(std::ostream& os, const scop::Vect3& vect) {
+	os << "(" << vect.x << ", " << vect.y << ", " << vect.z << ")";
+	return os;
+}
+
+std::ostream& operator<<(std::ostream& os, const scop::Vect2& vect) {
+	os << "(" << vect.x << ", " << vect.y << ")";
+	return os;
+}
 
 namespace std {
 

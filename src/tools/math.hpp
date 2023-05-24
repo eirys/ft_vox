@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/17 18:03:49 by etran             #+#    #+#             */
-/*   Updated: 2023/05/23 12:46:56 by etran            ###   ########.fr       */
+/*   Updated: 2023/05/24 21:11:14 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,6 +25,13 @@ namespace math {
 */
 inline float	radians(float degrees) noexcept {
 	return degrees * M_PI / 180;
+}
+
+/**
+ * @brief Smoothen a value between 0.0f and 1.0f.
+*/
+inline float	smoothen(const float x) noexcept {
+	return x * x * (3 - 2 * x);
 }
 
 /**

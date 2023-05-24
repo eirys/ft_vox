@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/17 18:33:56 by etran             #+#    #+#             */
-/*   Updated: 2023/05/23 18:09:42 by etran            ###   ########.fr       */
+/*   Updated: 2023/05/24 22:48:26 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,8 +14,11 @@
 
 # include <vector> // std::vector
 # include <cstdint> // uint32_t
+# include <functional> // std::function
+# include <random> // std::mt19937
 
 namespace scop {
+class Vect2;
 class Vect3;
 
 enum PerlinNoiseType {
@@ -35,55 +38,63 @@ public:
 
 	PerlinNoise(std::size_t width, std::size_t height, uint32_t init_seed = 0);
 
-	PerlinNoise() = default;
 	PerlinNoise(const PerlinNoise& other) = default;
 	PerlinNoise(PerlinNoise&& other) = default;
 	PerlinNoise& operator=(const PerlinNoise& other) = default;
+
+	PerlinNoise() = delete;
 	~PerlinNoise() = default;
 
+	/* 1D NOISE MAP ============================================================ */
+
+	std::vector<float>			generate1dNoiseMap();
+
+	/* 2D NOISE MAP ============================================================ */
+
+	std::vector<float>			generate2dNoiseMap();
+
+	/* GETTERS ================================================================= */
+
+	std::size_t					getWidth() const noexcept;
+	std::size_t					getHeight() const noexcept;
+	uint32_t					getSeed() const noexcept;
+
+// private:
+	/* ========================================================================= */
+	/*                               CONST MEMBERS                               */
 	/* ========================================================================= */
 
+	static constexpr const std::size_t	table_sizes = 256;
 
-private:
 	/* ========================================================================= */
 	/*                               CLASS MEMBERS                               */
 	/* ========================================================================= */
 
-	std::size_t					width;
-	std::size_t					height;
-	std::vector<scop::Vect3>	noise_map;
-	const uin32_t				seed;
+	const std::size_t			width;
+	const std::size_t			height;
+	const uint32_t				seed;
+	std::mt19937				generator;
+
+	std::vector<uint32_t>		permutation_table;
+	std::vector<float>			random_table;
 
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
 
 	uint32_t					generateSeed() const;
-	float						generateFloat(
-		uint32_t seed,
-		float min,
-		float max
-	) const;
-	std::vector<int>			generatePermutationTable(
-		std::size_t len
-	) const;
-
-	/* 1D NOISE MAP ============================================================ */
+	float						generateFloat(float min, float max);
+	std::vector<float>			generateRandomTable();
+	std::vector<uint32_t>		generatePermutationTable();
 
 	template <typename T>
-	T							evaluateAt(
-		const T& x, 
-		T (*lerpFn)(T, T, float),
-		T (*floorFn)(const T&),
-		T (*fractFn)(const T&, const T&),
-		T (*modFn)(const T&, const T&),
-		const std::vector<T>& table
+	float						evaluateAt(
+		const T& x,
+		std::function<T(const T&)> floorFn,
+		std::function<T(const T&, int32_t)> modFn,
+		std::function<float(T, T, T)> lerpFn,
+		T unit
 	) const;
-	std::vector<float>			generate1dNoiseMap(std::size_t len) const;
-
-	/* 2D NOISE MAP ============================================================ */
-
-	std::vector<scop::Vect3>	generate2dNoiseMap() const;
 
 }; // class PerlinNoise
 
