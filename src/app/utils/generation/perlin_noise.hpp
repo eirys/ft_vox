@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/17 18:33:56 by etran             #+#    #+#             */
-/*   Updated: 2023/05/24 22:48:26 by etran            ###   ########.fr       */
+/*   Updated: 2023/05/25 01:25:53 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,7 @@
 # include <cstdint> // uint32_t
 # include <functional> // std::function
 # include <random> // std::mt19937
+# include <optional> // std::optional
 
 namespace scop {
 class Vect2;
@@ -33,10 +34,31 @@ enum PerlinNoiseType {
 class PerlinNoise {
 public:
 	/* ========================================================================= */
+	/*                                HELPER CLASS                               */
+	/* ========================================================================= */
+
+	/**
+	 * @brief Contains the information needed to create a noise map.
+	 * 
+	 * @param seed		The seed to use for the noise map. If not provided,
+	 * 					a random seed will be generated.
+	 * @param width		The width of the noise map.
+	 * @param height	The height of the noise map.
+	 * @param layers	The number of layers to use for the noise map.
+	*/
+	struct NoiseMapCreationInfo {
+		std::optional<uint32_t>	seed;
+		const std::size_t		width;
+		const std::size_t		height;
+		const std::size_t		layers;
+		PerlinNoiseType			type;
+	};
+
+	/* ========================================================================= */
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
 
-	PerlinNoise(std::size_t width, std::size_t height, uint32_t init_seed = 0);
+	PerlinNoise(NoiseMapCreationInfo info);
 
 	PerlinNoise(const PerlinNoise& other) = default;
 	PerlinNoise(PerlinNoise&& other) = default;
@@ -45,21 +67,18 @@ public:
 	PerlinNoise() = delete;
 	~PerlinNoise() = default;
 
-	/* 1D NOISE MAP ============================================================ */
+	/* ========================================================================= */
 
-	std::vector<float>			generate1dNoiseMap();
-
-	/* 2D NOISE MAP ============================================================ */
-
-	std::vector<float>			generate2dNoiseMap();
+	std::vector<uint32_t>		toPixels() const;
 
 	/* GETTERS ================================================================= */
 
 	std::size_t					getWidth() const noexcept;
 	std::size_t					getHeight() const noexcept;
 	uint32_t					getSeed() const noexcept;
+	const std::vector<float>&	getNoiseMap() const noexcept;
 
-// private:
+private:
 	/* ========================================================================= */
 	/*                               CONST MEMBERS                               */
 	/* ========================================================================= */
@@ -73,10 +92,12 @@ public:
 	const std::size_t			width;
 	const std::size_t			height;
 	const uint32_t				seed;
+	const std::size_t			layers;
 	std::mt19937				generator;
 
 	std::vector<uint32_t>		permutation_table;
 	std::vector<float>			random_table;
+	std::vector<float>			noise_map;
 
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
@@ -95,6 +116,14 @@ public:
 		std::function<float(T, T, T)> lerpFn,
 		T unit
 	) const;
+
+	/* 1D NOISE MAP ============================================================ */
+
+	std::vector<float>			generate1dNoiseMap();
+
+	/* 2D NOISE MAP ============================================================ */
+
+	std::vector<float>			generate2dNoiseMap();
 
 }; // class PerlinNoise
 

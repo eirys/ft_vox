@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/23 10:26:08 by etran             #+#    #+#             */
-/*   Updated: 2023/05/24 23:43:12 by etran            ###   ########.fr       */
+/*   Updated: 2023/05/25 01:30:30 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,15 +28,133 @@ namespace scop {
  * @brief Perlin noise generator, with no seed.
 */
 PerlinNoise::PerlinNoise(
-	std::size_t width,
-	std::size_t height,
-	uint32_t init_seed
-):	width(width),
-	height(height),
-	seed(init_seed ? init_seed : generateSeed()),
+	PerlinNoise::NoiseMapCreationInfo info
+):	width(info.width),
+	height(info.height),
+	seed(info.seed.has_value() ? info.seed.value() : generateSeed()),
+	layers(info.layers),
 	generator(seed),
 	permutation_table(generatePermutationTable()),
-	random_table(generateRandomTable()) {}
+	random_table(generateRandomTable()) {
+		if (info.type == PerlinNoiseType::PERLIN_NOISE_1D) {
+			noise_map = generate1dNoiseMap();
+		} else if (info.type == PerlinNoiseType::PERLIN_NOISE_2D) {
+			noise_map = generate2dNoiseMap();
+		// else if (info.type == PerlinNoiseType::PERLIN_NOISE_3D)
+		// 	noise_map = generate3dNoiseMap();
+		} else {
+			throw std::invalid_argument("Invalid noise type.");
+		}
+	}
+
+/* ========================================================================== */
+
+std::vector<uint32_t>	PerlinNoise::toPixels() const {
+	std::vector<uint32_t>	pixels(width * height);
+
+	for (std::size_t i = 0; i < width * height; i++) {
+		pixels[i] = static_cast<uint32_t>(noise_map[i] * 255);
+	}
+	return pixels;
+}
+
+/* GETTERS ================================================================== */
+
+std::size_t	PerlinNoise::getWidth() const noexcept {
+	return width;
+}
+
+std::size_t	PerlinNoise::getHeight() const noexcept {
+	return height;
+}
+
+uint32_t	PerlinNoise::getSeed() const noexcept {
+	return seed;
+}
+
+/* ========================================================================== */
+/*                                   PRIVATE                                  */
+/* ========================================================================== */
+
+/**
+ * @brief Generate a random seed when no seed is provided.
+*/
+uint32_t	PerlinNoise::generateSeed() const {
+	return static_cast<uint32_t>(std::random_device()());
+}
+
+/**
+ * @brief Generate a random float between min and max, using seed.
+*/
+float	PerlinNoise::generateFloat(float min, float max) {
+	std::uniform_real_distribution<float> dis(min, max);
+	return dis(generator);
+}
+
+/**
+ * @brief Generate the random table.
+*/
+std::vector<float>	PerlinNoise::generateRandomTable() {
+	std::vector<float>	table(table_sizes);
+
+	for (std::size_t i = 0; i < table_sizes; i++) {
+		table[i] = generateFloat(0.0f, 1.0f);
+	}
+	return table;
+}
+
+/**
+ * @brief Generate the permutation table.
+*/
+std::vector<uint32_t>	PerlinNoise::generatePermutationTable() {
+	std::size_t				size = table_sizes * 2;
+	std::vector<uint32_t>	table(size);
+
+	// Fill table.
+	for (std::size_t i = 0; i < table_sizes; ++i) {
+		table[i] = static_cast<uint32_t>(i);
+	}
+	// Shuffle table using the seed.
+	std::shuffle(table.begin(), table.begin() + table_sizes, generator);
+
+	// Duplicate the table.
+	for (std::size_t i = 0; i < table_sizes; ++i) {
+		table[table_sizes + i] = table[i];
+	}
+	return table;
+}
+
+/* ========================================================================== */
+
+/**
+ * @brief Returns an interpolated value from the permutation table.
+ *
+ * @param x			The coordinate to evaluate at.
+ * @param floorFn	Floor function.
+ * @param modFn		Modulo function.
+ * @param lerpFn	Linear interpolation function.
+ * @param unit		Corresponds a coordinate unit.
+ *
+ * @note			- T is the type of the coordinate.
+*/
+template <typename T>
+float	PerlinNoise::evaluateAt(
+	const T& x,
+	std::function<T(const T&)> floorFn,
+	std::function<T(const T&, int32_t)> modFn,
+	std::function<float(T, T, T)> lerpFn,
+	T unit
+) const {
+	// Get the integer part of x.
+	T	x_int = floorFn(x);
+	// Get the fractional part of x.
+	T	t = x - x_int;
+
+	// Retrieve upper and lower bounds.
+	T	x_min = modFn(x_int, table_sizes - 1);
+	T	x_max = modFn(x_min + unit, table_sizes - 1);
+	return lerpFn(x_min, x_max, t);
+}
 
 /* 1D NOISE MAP ============================================================= */
 
@@ -150,104 +268,6 @@ std::vector<float>	PerlinNoise::generate2dNoiseMap() {
 	return noise_map;
 }
 
-/* GETTERS ================================================================== */
-
-std::size_t	PerlinNoise::getWidth() const noexcept {
-	return width;
-}
-
-std::size_t	PerlinNoise::getHeight() const noexcept {
-	return height;
-}
-
-uint32_t	PerlinNoise::getSeed() const noexcept {
-	return seed;
-}
-
-/* ========================================================================== */
-/*                                   PRIVATE                                  */
-/* ========================================================================== */
-
-/**
- * @brief Generate a random seed when no seed is provided.
-*/
-uint32_t	PerlinNoise::generateSeed() const {
-	return static_cast<uint32_t>(std::random_device()());
-}
-
-/**
- * @brief Generate a random float between min and max, using seed.
-*/
-float	PerlinNoise::generateFloat(float min, float max) {
-	std::uniform_real_distribution<float> dis(min, max);
-	return dis(generator);
-}
-
-/**
- * @brief Generate the random table.
-*/
-std::vector<float>	PerlinNoise::generateRandomTable() {
-	std::vector<float>	table(table_sizes);
-
-	for (std::size_t i = 0; i < table_sizes; i++) {
-		table[i] = generateFloat(0.0f, 1.0f);
-	}
-	return table;
-}
-
-/**
- * @brief Generate the permutation table.
-*/
-std::vector<uint32_t>	PerlinNoise::generatePermutationTable() {
-	std::size_t				size = table_sizes * 2;
-	std::vector<uint32_t>	table(size);
-
-	// Fill table.
-	for (std::size_t i = 0; i < table_sizes; ++i) {
-		table[i] = static_cast<uint32_t>(i);
-	}
-	// Shuffle table using the seed.
-	std::shuffle(table.begin(), table.begin() + table_sizes, generator);
-
-	// Duplicate the table.
-	for (std::size_t i = 0; i < table_sizes; ++i) {
-		table[table_sizes + i] = table[i];
-	}
-	return table;
-}
-
-/* ========================================================================== */
-
-/**
- * @brief Returns an interpolated value from the permutation table.
- *
- * @param x			The coordinate to evaluate at.
- * @param floorFn	Floor function.
- * @param modFn		Modulo function.
- * @param lerpFn	Linear interpolation function.
- * @param unit		Corresponds a coordinate unit.
- *
- * @note			- T is the type of the coordinate.
-*/
-template <typename T>
-float	PerlinNoise::evaluateAt(
-	const T& x,
-	std::function<T(const T&)> floorFn,
-	std::function<T(const T&, int32_t)> modFn,
-	std::function<float(T, T, T)> lerpFn,
-	T unit
-) const {
-	// Get the integer part of x.
-	T	x_int = floorFn(x);
-	// Get the fractional part of x.
-	T	t = x - x_int;
-
-	// Retrieve upper and lower bounds.
-	T	x_min = modFn(x_int, table_sizes - 1);
-	T	x_max = modFn(x_min + unit, table_sizes - 1);
-	return lerpFn(x_min, x_max, t);
-}
-
 } // namespace scop
 
 #include<iostream>
@@ -255,8 +275,14 @@ float	PerlinNoise::evaluateAt(
 int main() {
 	std::ofstream	file("noise_map.ppm", std::ios::out | std::ios::binary);
 
-	scop::PerlinNoise	noise(256, 256);
-	std::vector<float>	noise_map = noise.generate2dNoiseMap();
+	scop::PerlinNoise::NoiseMapCreationInfo	info = {
+		.width = 256,
+		.height = 256,
+		.layers = 4,
+		.type = scop::PerlinNoiseType::PERLIN_NOISE_2D,
+	};
+	scop::PerlinNoise	noise(info);
+	std::vector<float>	noise_map = noise.getNoiseMap();
 
 	std::cout << "Seed: " << noise.getSeed() << std::endl;
 
@@ -269,7 +295,6 @@ int main() {
 			uint8_t	color = static_cast<uint8_t>(value * 255.0f);
 			file << color << color << color;
 		}
-
 	}
 
 	file.close();
