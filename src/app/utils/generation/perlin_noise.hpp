@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/17 18:33:56 by etran             #+#    #+#             */
-/*   Updated: 2023/05/25 01:25:53 by etran            ###   ########.fr       */
+/*   Updated: 2023/05/25 10:43:54 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,17 +40,24 @@ public:
 	/**
 	 * @brief Contains the information needed to create a noise map.
 	 * 
-	 * @param seed		The seed to use for the noise map. If not provided,
-	 * 					a random seed will be generated.
-	 * @param width		The width of the noise map.
-	 * @param height	The height of the noise map.
-	 * @param layers	The number of layers to use for the noise map.
+	 * @param seed				The seed to use for the noise map. If not provided,
+	 * 							a random seed will be generated.
+	 * @param width				The width of the noise map.
+	 * @param height			The height of the noise map.
+	 * @param layers			The number of layers to use for the noise map.
+	 * @param frequency_0		The frequency of the first layer.
+	 * @param frequency_mult	The frequency multiplier to use for each layer.
+	 * @param amplitude_mult	The amplitude multiplier to use for each layer.
+	 * @param type				The type of noise map to generate.
 	*/
-	struct NoiseMapCreationInfo {
+	struct NoiseMapInfo {
 		std::optional<uint32_t>	seed;
 		const std::size_t		width;
 		const std::size_t		height;
 		const std::size_t		layers;
+		const float				frequency_0;
+		const float				frequency_mult;
+		const float				amplitude_mult;
 		PerlinNoiseType			type;
 	};
 
@@ -58,7 +65,7 @@ public:
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
 
-	PerlinNoise(NoiseMapCreationInfo info);
+	PerlinNoise(NoiseMapInfo info);
 
 	PerlinNoise(const PerlinNoise& other) = default;
 	PerlinNoise(PerlinNoise&& other) = default;
@@ -83,16 +90,22 @@ private:
 	/*                               CONST MEMBERS                               */
 	/* ========================================================================= */
 
+	/**
+	 * Size of the random values table.
+	*/
 	static constexpr const std::size_t	table_sizes = 256;
 
 	/* ========================================================================= */
 	/*                               CLASS MEMBERS                               */
 	/* ========================================================================= */
 
+	const uint32_t				seed;
 	const std::size_t			width;
 	const std::size_t			height;
-	const uint32_t				seed;
 	const std::size_t			layers;
+	const float					frequency;
+	const float					frequency_mult;
+	const float					amplitude_mult;
 	std::mt19937				generator;
 
 	std::vector<uint32_t>		permutation_table;
