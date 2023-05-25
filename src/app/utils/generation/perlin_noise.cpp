@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/23 10:26:08 by etran             #+#    #+#             */
-/*   Updated: 2023/05/25 11:26:42 by etran            ###   ########.fr       */
+/*   Updated: 2023/05/25 12:46:59 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,30 +25,35 @@ namespace scop {
 /* ========================================================================== */
 
 /**
- * @brief Perlin noise generator, with no seed.
+ * @brief Perlin noise generator.
+ *
+ * @param info	The information needed to create the noise map.
+ * 				See `PerlinNoise::NoiseMapInfo` for more information.
+ *
+ * @note No verification is done on the parameters.
 */
 PerlinNoise::PerlinNoise(
 	PerlinNoise::NoiseMapInfo info
 ):	seed(info.seed.has_value() ? info.seed.value() : generateSeed()),
 	width(info.width),
 	height(info.height),
+	depth(info.depth),
 	layers(info.layers),
 	frequency(info.frequency_0),
 	frequency_mult(info.frequency_mult),
 	amplitude_mult(info.amplitude_mult),
 	generator(seed),
-	permutation_table(generatePermutationTable()),
-	random_table(generateRandomTable()) {
-		if (info.type == PerlinNoiseType::PERLIN_NOISE_1D) {
-			noise_map = generate1dNoiseMap();
-		} else if (info.type == PerlinNoiseType::PERLIN_NOISE_2D) {
-			noise_map = generate2dNoiseMap();
-		// else if (info.type == PerlinNoiseType::PERLIN_NOISE_3D)
-		// 	noise_map = generate3dNoiseMap();
-		} else {
-			throw std::invalid_argument("Invalid noise type.");
-		}
+	permutation_table(generatePermutationTable()) {
+	if (info.type == PerlinNoiseType::PERLIN_NOISE_1D) {
+		noise_map = generate1dNoiseMap();
+	} else if (info.type == PerlinNoiseType::PERLIN_NOISE_2D) {
+		noise_map = generate2dNoiseMap();
+	} else if (info.type == PerlinNoiseType::PERLIN_NOISE_3D) {
+		noise_map = generate3dNoiseMap();
+	} else {
+		throw std::invalid_argument("Invalid noise type.");
 	}
+}
 
 /* ========================================================================== */
 
@@ -58,7 +63,7 @@ PerlinNoise::PerlinNoise(
 std::vector<uint32_t>	PerlinNoise::toPixels() const {
 	std::vector<uint32_t>	pixels(width * height);
 
-	for (std::size_t i = 0; i < width * height; i++) {
+	for (std::size_t i = 0; i < width * height; ++i) {
 		pixels[i] = static_cast<uint32_t>(noise_map[i] * 255);
 	}
 	return pixels;
@@ -107,22 +112,46 @@ float	PerlinNoise::generateFloat(float min, float max) {
 std::vector<float>	PerlinNoise::generateRandomTable() {
 	std::vector<float>	table(table_sizes);
 
-	for (std::size_t i = 0; i < table_sizes; i++) {
+	for (std::size_t i = 0; i < table_sizes; ++i) {
 		table[i] = generateFloat(0.0f, 1.0f);
 	}
 	return table;
 }
 
 /**
- * @brief Generate the permutation table.
+ * @brief Generate the gradient table.
 */
-std::vector<uint32_t>	PerlinNoise::generatePermutationTable() {
-	std::size_t				size = table_sizes * 2;
-	std::vector<uint32_t>	table(size);
+std::vector<scop::Vect3>	PerlinNoise::generateGradientTable() {
+	std::vector<scop::Vect3>	table(table_sizes);
+
+	for (std::size_t i = 0; i < table_sizes; ++i) {
+		table[i] = scop::Vect3(
+			generateFloat(-1.0f, 1.0f),
+			generateFloat(-1.0f, 1.0f),
+			generateFloat(-1.0f, 1.0f)
+		);
+		if (table[i] == scop::Vect3(0.0f, 0.0f, 0.0f)) {
+			// If the gradient is null, regenerate it.
+			--i;
+			continue;
+		}
+		table[i] = scop::normalize(table[i]);
+	}
+	return table;
+}
+
+/**
+ * @brief Generate the permutation table.
+ *
+ * @note This is basically a hash table.
+*/
+std::vector<std::size_t>	PerlinNoise::generatePermutationTable() {
+	std::size_t					size = table_sizes * 2;
+	std::vector<std::size_t>	table(size);
 
 	// Fill table.
 	for (std::size_t i = 0; i < table_sizes; ++i) {
-		table[i] = static_cast<uint32_t>(i);
+		table[i] = i;
 	}
 	// Shuffle table using the seed.
 	std::shuffle(table.begin(), table.begin() + table_sizes, generator);
@@ -164,6 +193,40 @@ float	PerlinNoise::evaluateAt(
 	return lerpFn(x_min, x_max, t);
 }
 
+/**
+ * @brief Returns a value from the permutation table (1D noise).
+*/
+std::size_t	PerlinNoise::hash(const float x) const {
+	return permutation_table[static_cast<std::size_t>(x)];
+}
+
+/**
+ * @brief Returns a value from the permutation table (2D noise).
+*/
+std::size_t	PerlinNoise::hash(const float x, const float y) const {
+	return permutation_table[
+		permutation_table[static_cast<std::size_t>(x)] +
+		static_cast<std::size_t>(y)
+	];
+}
+
+/**
+ * @brief Returns a value from the permutation table (3D noise).
+*/
+std::size_t	PerlinNoise::hash(
+	const float x,
+	const float y,
+	const float z
+) const {
+	return permutation_table[
+		permutation_table[
+			permutation_table[static_cast<std::size_t>(x)] +
+			static_cast<std::size_t>(y)
+		] +
+		static_cast<std::size_t>(z)
+	];
+}
+
 /* ========================================================================== */
 
 /**
@@ -171,12 +234,13 @@ float	PerlinNoise::evaluateAt(
 */
 std::vector<float>	PerlinNoise::generate1dNoiseMap() {
 	std::vector<float>	noise_map(width);
+	std::vector<float>	random_table = generateRandomTable();
 
 	std::function<float(float, float, float)>	lerpFn =
-		[this](float x_min, float x_max, float t){
+		[&random_table, this](float x_min, float x_max, float t){
 		return scop::math::lerp(
-			random_table[static_cast<std::size_t>(x_min)],
-			random_table[static_cast<std::size_t>(x_max)],
+			random_table[hash(x_min)],
+			random_table[hash(x_max)],
 			t
 		);
 	};
@@ -208,29 +272,21 @@ std::vector<float>	PerlinNoise::generate1dNoiseMap() {
 */
 std::vector<float>	PerlinNoise::generate2dNoiseMap() {
 	std::vector<float>	noise_map(width * height);
+	std::vector<float>	random_table = generateRandomTable();
 
 	std::function<float(scop::Vect2, scop::Vect2, scop::Vect2)> lerpFn =
-		[this](scop::Vect2 min, scop::Vect2 max, scop::Vect2 t){
+		[&random_table, this](scop::Vect2 min, scop::Vect2 max, scop::Vect2 t){
 		// Retrieve corners.
-		float c00 = random_table[
-			permutation_table[permutation_table[min.x] + min.y]
-		];
-		float c10 = random_table[
-			permutation_table[permutation_table[max.x] + min.y]
-		];
-		float c01 = random_table[
-			permutation_table[permutation_table[min.x] + max.y]
-		];
-		float c11 = random_table[
-			permutation_table[permutation_table[max.x] + max.y]
-		];
+		float c00 = random_table[hash(min.x, min.y)];
+		float c10 = random_table[hash(max.x, min.y)];
+		float c01 = random_table[hash(min.x, max.y)];
+		float c11 = random_table[hash(max.x, max.y)];
 
 		// Smoothen
 		scop::Vect2 s = scop::Vect2(
 			scop::math::smoothen(t.x),
 			scop::math::smoothen(t.y)
 		);
-
 		// Interpolate between corners.
 		return
 			scop::math::lerp(
@@ -269,7 +325,6 @@ std::vector<float>	PerlinNoise::generate2dNoiseMap() {
 					lerpFn,
 					unit
 				) * amplitude;
-				// Increase noise frequency and decrease amplitude.
 				coord *= frequency_mult;
 				amplitude *= amplitude_mult;
 			}
@@ -280,13 +335,28 @@ std::vector<float>	PerlinNoise::generate2dNoiseMap() {
 			}
 		}
 	}
-	if (norm == 0) {
-		throw std::invalid_argument("Noise map normalization failed.");
-	}
 	for (auto& value: noise_map) {
 		value /= norm;
 	}
 	return noise_map;
+}
+
+std::vector<float>	PerlinNoise::generate3dNoiseMap() {
+	std::vector<float>	noise_map(width * height * depth);
+	std::vector<scop::Vect3>	gradients = generateGradientTable();
+
+	std::function<float(scop::Vect3, scop::Vect3, float t)>	lerpFn =
+	[&gradients, this](){};
+
+	for (std::size_t z = 0; z < depth; ++z) {
+		for (std::size_t y = 0; y < height; ++y) {
+			for (std::size_t x = 0; x < width; ++x) {
+				noise_map[z * width * height + y * width + x] = evaluateAt(
+					//...
+				);
+			}
+		}
+	}
 }
 
 } // namespace scop

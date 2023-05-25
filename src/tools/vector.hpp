@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/03 13:54:57 by eli               #+#    #+#             */
-/*   Updated: 2023/05/24 19:32:47 by etran            ###   ########.fr       */
+/*   Updated: 2023/05/25 12:17:24 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -187,6 +187,17 @@ struct Vect2 {
 	/* ACCESSORS =============================================================== */
 
 	float&	operator[](size_t index) {
+		switch (index) {
+			case 0:
+				return x;
+			case 1:
+				return y;
+			default:
+				throw std::out_of_range("Matrix index out of range");
+		}
+	}
+
+	const float& operator[](size_t index) const {
 		switch (index) {
 			case 0:
 				return x;

@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/17 18:33:56 by etran             #+#    #+#             */
-/*   Updated: 2023/05/25 11:07:16 by etran            ###   ########.fr       */
+/*   Updated: 2023/05/25 12:43:50 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,11 +39,12 @@ public:
 
 	/**
 	 * @brief Contains the information needed to create a noise map.
-	 * 
+	 *
 	 * @param seed				The seed to use for the noise map. If not provided,
 	 * 							a random seed will be generated.
-	 * @param width				The width of the noise map.
-	 * @param height			The height of the noise map.
+	 * @param width				The width of the noise map. (1D/2D/3D noise)
+	 * @param height			The height of the noise map. (2D/3D noise)
+	 * @param depth				The depth of the noise map. (3D noise)
 	 * @param layers			The number of layers to use for the noise map.
 	 * @param frequency_0		The frequency of the first layer.
 	 * @param frequency_mult	The frequency multiplier to use for each layer.
@@ -54,6 +55,7 @@ public:
 		std::optional<uint32_t>	seed;
 		const std::size_t		width;
 		const std::size_t		height;
+		const std::size_t		depth;
 		const std::size_t		layers;
 		const float				frequency_0;
 		const float				frequency_mult;
@@ -103,14 +105,14 @@ private:
 	const uint32_t				seed;
 	const std::size_t			width;
 	const std::size_t			height;
+	const std::size_t			depth;
 	const std::size_t			layers;
 	const float					frequency;
 	const float					frequency_mult;
 	const float					amplitude_mult;
 	std::mt19937				generator;
 
-	std::vector<uint32_t>		permutation_table;
-	std::vector<float>			random_table;
+	std::vector<std::size_t>	permutation_table;
 	std::vector<float>			noise_map;
 
 	/* ========================================================================= */
@@ -120,7 +122,8 @@ private:
 	uint32_t					generateSeed() const;
 	float						generateFloat(float min, float max);
 	std::vector<float>			generateRandomTable();
-	std::vector<uint32_t>		generatePermutationTable();
+	std::vector<scop::Vect3>	generateGradientTable();
+	std::vector<std::size_t>	generatePermutationTable();
 
 	template <typename T>
 	float						evaluateAt(
@@ -131,10 +134,19 @@ private:
 		const T unit
 	) const;
 
+	std::size_t					hash(const float x) const;
+	std::size_t					hash(const float x, const float y) const;
+	std::size_t					hash(
+		const float x,
+		const float y,
+		const float z
+	) const;
+
 	/* ========================================================================= */
 
 	std::vector<float>			generate1dNoiseMap();
 	std::vector<float>			generate2dNoiseMap();
+	std::vector<float>			generate3dNoiseMap();
 
 }; // class PerlinNoise
 
