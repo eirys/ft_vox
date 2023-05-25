@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/23 10:26:08 by etran             #+#    #+#             */
-/*   Updated: 2023/05/25 10:54:23 by etran            ###   ########.fr       */
+/*   Updated: 2023/05/25 11:26:42 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,6 +52,9 @@ PerlinNoise::PerlinNoise(
 
 /* ========================================================================== */
 
+/**
+ * @brief Converts the noise map to a vector of pixels.
+*/
 std::vector<uint32_t>	PerlinNoise::toPixels() const {
 	std::vector<uint32_t>	pixels(width * height);
 
@@ -131,8 +134,6 @@ std::vector<uint32_t>	PerlinNoise::generatePermutationTable() {
 	return table;
 }
 
-/* ========================================================================== */
-
 /**
  * @brief Returns an interpolated value from the permutation table.
  *
@@ -150,20 +151,20 @@ float	PerlinNoise::evaluateAt(
 	std::function<T(const T&)> floorFn,
 	std::function<T(const T&, int32_t)> modFn,
 	std::function<float(T, T, T)> lerpFn,
-	T unit
+	const T unit
 ) const {
 	// Get the integer part of x.
-	T	x_int = floorFn(x);
+	const T	x_int = floorFn(x);
 	// Get the fractional part of x.
-	T	t = x - x_int;
+	const T	t = x - x_int;
 
 	// Retrieve upper and lower bounds.
-	T	x_min = modFn(x_int, table_sizes - 1);
-	T	x_max = modFn(x_min + unit, table_sizes - 1);
+	const T	x_min = modFn(x_int, table_sizes - 1);
+	const T	x_max = modFn(x_min + unit, table_sizes - 1);
 	return lerpFn(x_min, x_max, t);
 }
 
-/* 1D NOISE MAP ============================================================= */
+/* ========================================================================== */
 
 /**
  * @brief Generates a 1d noise map of size width.
@@ -201,8 +202,6 @@ std::vector<float>	PerlinNoise::generate1dNoiseMap() {
 	}
 	return noise_map;
 }
-
-/* 2D NOISE MAP ============================================================= */
 
 /**
  * @brief Generates a 2d noise map.
@@ -254,7 +253,7 @@ std::vector<float>	PerlinNoise::generate2dNoiseMap() {
 		);
 	};
 
-	const scop::Vect2	unit = scop::Vect2(1.0f, 1.0f);
+	const scop::Vect2	unit(1.0f, 1.0f);
 	float	norm = 0;
 	for (std::size_t y = 0; y < height; ++y) {
 		for (std::size_t x = 0; x < width; ++x) {
@@ -264,12 +263,12 @@ std::vector<float>	PerlinNoise::generate2dNoiseMap() {
 			for (std::size_t layer = 0; layer < layers; ++layer) {
 				// Evaluate and stack up layers.
 				noise_map[y * width + x] += evaluateAt(
-					coord * amplitude,
+					coord,
 					floorFn,
 					modFn,
 					lerpFn,
 					unit
-				);
+				) * amplitude;
 				// Increase noise frequency and decrease amplitude.
 				coord *= frequency_mult;
 				amplitude *= amplitude_mult;
@@ -292,6 +291,7 @@ std::vector<float>	PerlinNoise::generate2dNoiseMap() {
 
 } // namespace scop
 
+// TODO remove
 #include<iostream>
 #include <fstream>
 int main() {
@@ -300,10 +300,10 @@ int main() {
 	scop::PerlinNoise::NoiseMapInfo	info = {
 		.width = 450,
 		.height = 450,
-		.layers = 4,
-		.frequency_0 = 0.04f,
-		.frequency_mult = 1.5f,
-		.amplitude_mult = 0.35f,
+		.layers = 5,
+		.frequency_0 = .02f,
+		.frequency_mult = 1.8f,
+		.amplitude_mult = 0.5f,
 		.type = scop::PerlinNoiseType::PERLIN_NOISE_2D,
 	};
 	scop::PerlinNoise	noise(info);

@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/17 18:33:56 by etran             #+#    #+#             */
-/*   Updated: 2023/05/25 10:43:54 by etran            ###   ########.fr       */
+/*   Updated: 2023/05/25 11:07:16 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -70,9 +70,9 @@ public:
 	PerlinNoise(const PerlinNoise& other) = default;
 	PerlinNoise(PerlinNoise&& other) = default;
 	PerlinNoise& operator=(const PerlinNoise& other) = default;
+	~PerlinNoise() = default;
 
 	PerlinNoise() = delete;
-	~PerlinNoise() = default;
 
 	/* ========================================================================= */
 
@@ -92,8 +92,9 @@ private:
 
 	/**
 	 * Size of the random values table.
+	 * Multiple of 2 to allow for bitwise AND insteand of modulo.
 	*/
-	static constexpr const std::size_t	table_sizes = 256;
+	static constexpr const std::size_t	table_sizes = 2 << 8;
 
 	/* ========================================================================= */
 	/*                               CLASS MEMBERS                               */
@@ -127,15 +128,12 @@ private:
 		std::function<T(const T&)> floorFn,
 		std::function<T(const T&, int32_t)> modFn,
 		std::function<float(T, T, T)> lerpFn,
-		T unit
+		const T unit
 	) const;
 
-	/* 1D NOISE MAP ============================================================ */
+	/* ========================================================================= */
 
 	std::vector<float>			generate1dNoiseMap();
-
-	/* 2D NOISE MAP ============================================================ */
-
 	std::vector<float>			generate2dNoiseMap();
 
 }; // class PerlinNoise

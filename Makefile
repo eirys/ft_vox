@@ -6,7 +6,7 @@
 #    By: etran <etran@student.42.fr>                +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/04/06 03:40:09 by eli               #+#    #+#              #
-#    Updated: 2023/05/23 09:27:11 by etran            ###   ########.fr        #
+#    Updated: 2023/05/25 10:56:23 by etran            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -17,7 +17,7 @@
 school		:=	$(shell env | grep 42paris | wc -l)
 
 # final binary
-NAME		:=	scop
+NAME		:=	vox
 
 # directory names
 SRC_DIR		:=	src

@@ -3,3 +3,4 @@ obj
 shaders/*.spv
 a.out
 scop
+noise_map.ppm
