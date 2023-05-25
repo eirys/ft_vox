@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/23 10:26:08 by etran             #+#    #+#             */
-/*   Updated: 2023/05/25 12:46:59 by etran            ###   ########.fr       */
+/*   Updated: 2023/05/25 16:33:16 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -196,14 +196,17 @@ float	PerlinNoise::evaluateAt(
 /**
  * @brief Returns a value from the permutation table (1D noise).
 */
-std::size_t	PerlinNoise::hash(const float x) const {
+std::size_t	PerlinNoise::hash(const float x) const noexcept {
 	return permutation_table[static_cast<std::size_t>(x)];
 }
 
 /**
  * @brief Returns a value from the permutation table (2D noise).
 */
-std::size_t	PerlinNoise::hash(const float x, const float y) const {
+std::size_t	PerlinNoise::hash(
+	const float x,
+	const float y
+) const noexcept {
 	return permutation_table[
 		permutation_table[static_cast<std::size_t>(x)] +
 		static_cast<std::size_t>(y)
@@ -217,7 +220,7 @@ std::size_t	PerlinNoise::hash(
 	const float x,
 	const float y,
 	const float z
-) const {
+) const noexcept {
 	return permutation_table[
 		permutation_table[
 			permutation_table[static_cast<std::size_t>(x)] +
@@ -236,15 +239,6 @@ std::vector<float>	PerlinNoise::generate1dNoiseMap() {
 	std::vector<float>	noise_map(width);
 	std::vector<float>	random_table = generateRandomTable();
 
-	std::function<float(float, float, float)>	lerpFn =
-		[&random_table, this](float x_min, float x_max, float t){
-		return scop::math::lerp(
-			random_table[hash(x_min)],
-			random_table[hash(x_max)],
-			t
-		);
-	};
-
 	std::function<float(const float&)>	floorFn =
 		[](const float& x){
 		return std::floor(x);
@@ -253,6 +247,15 @@ std::vector<float>	PerlinNoise::generate1dNoiseMap() {
 	std::function<float(const float&, int32_t)> modFn =
 		[](const float& x, int32_t len){
 		return static_cast<int32_t>(x) & len;
+	};
+
+	std::function<float(float, float, float)>	lerpFn =
+		[&random_table, this](float x_min, float x_max, float t){
+		return scop::math::lerp(
+			random_table[hash(x_min)],
+			random_table[hash(x_max)],
+			t
+		);
 	};
 
 	for (std::size_t x = 0; x < width; ++x) {
@@ -274,31 +277,9 @@ std::vector<float>	PerlinNoise::generate2dNoiseMap() {
 	std::vector<float>	noise_map(width * height);
 	std::vector<float>	random_table = generateRandomTable();
 
-	std::function<float(scop::Vect2, scop::Vect2, scop::Vect2)> lerpFn =
-		[&random_table, this](scop::Vect2 min, scop::Vect2 max, scop::Vect2 t){
-		// Retrieve corners.
-		float c00 = random_table[hash(min.x, min.y)];
-		float c10 = random_table[hash(max.x, min.y)];
-		float c01 = random_table[hash(min.x, max.y)];
-		float c11 = random_table[hash(max.x, max.y)];
-
-		// Smoothen
-		scop::Vect2 s = scop::Vect2(
-			scop::math::smoothen(t.x),
-			scop::math::smoothen(t.y)
-		);
-		// Interpolate between corners.
-		return
-			scop::math::lerp(
-				scop::math::lerp(c00, c10, s.x),
-				scop::math::lerp(c01, c11, s.x),
-				s.y
-			);
-	};
-
 	std::function<scop::Vect2(const scop::Vect2&)> floorFn =
 		[](const scop::Vect2& vec){
-		return scop::Vect2(std::floor(vec.x),std::floor(vec.y));
+		return scop::Vect2(std::floor(vec.x), std::floor(vec.y));
 	};
 
 	std::function<scop::Vect2(const scop::Vect2&, int32_t)> modFn =
@@ -309,7 +290,29 @@ std::vector<float>	PerlinNoise::generate2dNoiseMap() {
 		);
 	};
 
-	const scop::Vect2	unit(1.0f, 1.0f);
+	std::function<float(scop::Vect2, scop::Vect2, scop::Vect2)> lerpFn =
+		[&random_table, this](scop::Vect2 min, scop::Vect2 max, scop::Vect2 t){
+		// Retrieve corners.
+		float c00 = random_table[hash(min.x, min.y)];
+		float c10 = random_table[hash(max.x, min.y)];
+		float c01 = random_table[hash(min.x, max.y)];
+		float c11 = random_table[hash(max.x, max.y)];
+
+		// Smoothen t.
+		scop::Vect2 s = scop::Vect2(
+			scop::math::smoothen(t.x),
+			scop::math::smoothen(t.y)
+		);
+
+		// Interpolate between corners using s.
+		return
+			scop::math::lerp(
+				scop::math::lerp(c00, c10, s.x),
+				scop::math::lerp(c01, c11, s.x),
+				s.y
+			);
+	};
+
 	float	norm = 0;
 	for (std::size_t y = 0; y < height; ++y) {
 		for (std::size_t x = 0; x < width; ++x) {
@@ -323,7 +326,7 @@ std::vector<float>	PerlinNoise::generate2dNoiseMap() {
 					floorFn,
 					modFn,
 					lerpFn,
-					unit
+					scop::Vect2(1.0f, 1.0f)
 				) * amplitude;
 				coord *= frequency_mult;
 				amplitude *= amplitude_mult;
@@ -341,22 +344,106 @@ std::vector<float>	PerlinNoise::generate2dNoiseMap() {
 	return noise_map;
 }
 
+/**
+ * @brief Generates a 3d noise map.
+*/
 std::vector<float>	PerlinNoise::generate3dNoiseMap() {
 	std::vector<float>	noise_map(width * height * depth);
 	std::vector<scop::Vect3>	gradients = generateGradientTable();
 
-	std::function<float(scop::Vect3, scop::Vect3, float t)>	lerpFn =
-	[&gradients, this](){};
+	std::function<scop::Vect3(const scop::Vect3&)>	floorFn =
+		[](const scop::Vect3& vec){
+		return scop::Vect3(
+			std::floor(vec.x),
+			std::floor(vec.y),
+			std::floor(vec.z)
+		);
+	};
+
+	std::function<scop::Vect3(const scop::Vect3&, int32_t)>	modFn =
+		[](const scop::Vect3& vec, int32_t len){
+		return scop::Vect3(
+			static_cast<int32_t>(vec.x) & len,
+			static_cast<int32_t>(vec.y) & len,
+			static_cast<int32_t>(vec.z) & len
+		);
+	};
+
+	std::function<float(scop::Vect3, scop::Vect3, scop::Vect3 t)>	lerpFn =
+		[&gradients, this](scop::Vect3 min, scop::Vect3 max, scop::Vect3 t){
+			// Retrieve gradients at corners.
+			scop::Vect3 c000 = gradients[hash(min.x, min.y, min.z)];
+			scop::Vect3 c100 = gradients[hash(max.x, min.y, min.z)];
+			scop::Vect3 c010 = gradients[hash(min.x, max.y, min.z)];
+			scop::Vect3 c110 = gradients[hash(max.x, max.y, min.z)];
+
+			scop::Vect3 c001 = gradients[hash(min.x, min.y, max.z)];
+			scop::Vect3 c101 = gradients[hash(max.x, min.y, max.z)];
+			scop::Vect3 c011 = gradients[hash(min.x, max.y, max.z)];
+			scop::Vect3 c111 = gradients[hash(max.x, max.y, max.z)];
+
+			// Retrieve vectors from corners to point.
+			scop::Vect3 p000 = scop::Vect3(t.x, t.y, t.z);
+			scop::Vect3 p100 = scop::Vect3(t.x - 1, t.y, t.z);
+			scop::Vect3 p010 = scop::Vect3(t.x, t.y - 1, t.z);
+			scop::Vect3 p110 = scop::Vect3(t.x - 1, t.y - 1, t.z);
+
+			scop::Vect3 p001 = scop::Vect3(t.x, t.y, t.z - 1);
+			scop::Vect3 p101 = scop::Vect3(t.x - 1, t.y, t.z - 1);
+			scop::Vect3 p011 = scop::Vect3(t.x, t.y - 1, t.z - 1);
+			scop::Vect3 p111 = scop::Vect3(t.x - 1, t.y - 1, t.z - 1);
+
+			// Smoothen t.
+			scop::Vect3 s = scop::Vect3(
+				scop::math::smoothen(t.x),
+				scop::math::smoothen(t.y),
+				scop::math::smoothen(t.z)
+			);
+
+			// Retrieve dot products.
+			float x0 = scop::math::lerp(
+				scop::dot(c000, p000),
+				scop::dot(c100, p100),
+				s.x
+			);
+			float x1 = scop::math::lerp(
+				scop::dot(c010, p010),
+				scop::dot(c110, p110),
+				s.x
+			);
+			float x2 = scop::math::lerp(
+				scop::dot(c001, p001),
+				scop::dot(c101, p101),
+				s.x
+			);
+			float x3 = scop::math::lerp(
+				scop::dot(c011, p011),
+				scop::dot(c111, p111),
+				s.x
+			);
+
+			// Interpolate along y then z.
+			return scop::math::lerp(
+				scop::math::lerp(x0, x1, s.y),
+				scop::math::lerp(x2, x3, s.y),
+				s.z
+			);
+		};
 
 	for (std::size_t z = 0; z < depth; ++z) {
 		for (std::size_t y = 0; y < height; ++y) {
 			for (std::size_t x = 0; x < width; ++x) {
 				noise_map[z * width * height + y * width + x] = evaluateAt(
-					//...
+					scop::Vect3(x, y, z),
+					floorFn,
+					modFn,
+					lerpFn,
+					scop::Vect3(1.0f, 1.0f, 1.0f)
 				);
 			}
 		}
 	}
+	return noise_map;
 }
 
 } // namespace scop

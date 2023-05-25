@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/17 18:33:56 by etran             #+#    #+#             */
-/*   Updated: 2023/05/25 12:43:50 by etran            ###   ########.fr       */
+/*   Updated: 2023/05/25 16:34:07 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,6 +40,7 @@ public:
 	/**
 	 * @brief Contains the information needed to create a noise map.
 	 *
+	 * @param type				The type of noise map to generate.
 	 * @param seed				The seed to use for the noise map. If not provided,
 	 * 							a random seed will be generated.
 	 * @param width				The width of the noise map. (1D/2D/3D noise)
@@ -49,9 +50,9 @@ public:
 	 * @param frequency_0		The frequency of the first layer.
 	 * @param frequency_mult	The frequency multiplier to use for each layer.
 	 * @param amplitude_mult	The amplitude multiplier to use for each layer.
-	 * @param type				The type of noise map to generate.
 	*/
 	struct NoiseMapInfo {
+		PerlinNoiseType			type;
 		std::optional<uint32_t>	seed;
 		const std::size_t		width;
 		const std::size_t		height;
@@ -60,7 +61,6 @@ public:
 		const float				frequency_0;
 		const float				frequency_mult;
 		const float				amplitude_mult;
-		PerlinNoiseType			type;
 	};
 
 	/* ========================================================================= */
@@ -134,13 +134,18 @@ private:
 		const T unit
 	) const;
 
-	std::size_t					hash(const float x) const;
-	std::size_t					hash(const float x, const float y) const;
+	std::size_t					hash(
+		const float x
+	) const noexcept;
+	std::size_t					hash(
+		const float x,
+		const float y
+	) const noexcept;
 	std::size_t					hash(
 		const float x,
 		const float y,
 		const float z
-	) const;
+	) const noexcept;
 
 	/* ========================================================================= */
 
