@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/17 18:33:56 by etran             #+#    #+#             */
-/*   Updated: 2023/05/25 16:34:07 by etran            ###   ########.fr       */
+/*   Updated: 2023/05/25 18:07:09 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,7 @@
 namespace scop {
 class Vect2;
 class Vect3;
+class obj::Model;
 
 enum PerlinNoiseType {
 	PERLIN_NOISE_1D,
@@ -79,6 +80,7 @@ public:
 	/* ========================================================================= */
 
 	std::vector<uint32_t>		toPixels() const;
+	scop::obj::Model			toModel() const;
 
 	/* GETTERS ================================================================= */
 

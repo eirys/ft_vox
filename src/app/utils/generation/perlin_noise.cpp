@@ -6,13 +6,14 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/23 10:26:08 by etran             #+#    #+#             */
-/*   Updated: 2023/05/25 17:59:05 by etran            ###   ########.fr       */
+/*   Updated: 2023/05/25 22:06:29 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "perlin_noise.hpp"
 #include "math.hpp"
 #include "vector.hpp"
+#include "model.hpp"
 
 #include <cstdint> // uint32_t
 #include <vector> // std::vector
@@ -58,15 +59,40 @@ PerlinNoise::PerlinNoise(
 /* ========================================================================== */
 
 /**
- * @brief Converts the noise map to a vector of pixels.
+ * @brief Converts the noise map to a vector of pixels. (image)
 */
 std::vector<uint32_t>	PerlinNoise::toPixels() const {
 	std::vector<uint32_t>	pixels(width * height);
 
 	for (std::size_t i = 0; i < width * height; ++i) {
+		// Convert to grayscale
 		pixels[i] = static_cast<uint32_t>(noise_map[i] * 255);
 	}
 	return pixels;
+}
+
+/**
+ * @brief Converts the noise map to a model.
+*/
+scop::obj::Model	PerlinNoise::toModel() const {
+	const float	model_width = 1;
+	const float	model_height = 1;
+
+	// The noise map width/height corresponds to the subdivisions.
+	std::vector<scop::Vect3>	vertices;
+	vertices.reserve(width * height);
+	const float	inv_width = 1.0f / static_cast<float>(width);
+	const float	inv_height = 1.0f / static_cast<float>(height);
+
+	for (std::size_t y = 0; y < height; ++y) {
+		for (std::size_t x = 0; x < width; ++x) {
+			vertices[y * width + x] = scop::Vect3(
+				std::fma(model_width, std::fma(x, inv_width, -0.5f), 0),
+				0.0f,
+				std::fma(model_height, std::fma(y, inv_height, -0.5f), 0)
+			);
+		}
+	}
 }
 
 /* GETTERS ================================================================== */

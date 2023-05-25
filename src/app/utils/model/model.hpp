@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/04 19:23:53 by eli               #+#    #+#             */
-/*   Updated: 2023/05/23 10:19:39 by etran            ###   ########.fr       */
+/*   Updated: 2023/05/25 19:07:58 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -72,6 +72,12 @@ public:
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
 
+	Model(
+		std::vector<Vect3>&& vertices,
+		std::vector<Vect2>&& textures,
+		std::vector<Vect3>&& normals,
+		std::vector<Index>&& indices
+	);
 	Model() = default;
 	Model(const Model& x) = default;
 	Model(Model&& x) = default;
