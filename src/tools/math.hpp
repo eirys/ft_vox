@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/17 18:03:49 by etran             #+#    #+#             */
-/*   Updated: 2023/05/24 21:11:14 by etran            ###   ########.fr       */
+/*   Updated: 2023/05/25 17:56:42 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,7 +31,15 @@ inline float	radians(float degrees) noexcept {
  * @brief Smoothen a value between 0.0f and 1.0f.
 */
 inline float	smoothen(const float x) noexcept {
-	return x * x * (3 - 2 * x);
+	return std::fma(
+		std::fma(
+			std::fma(x, -2.0f, 3.0f),
+			x,
+			0.0f
+		),
+		x,
+		0.0f
+	);
 }
 
 /**

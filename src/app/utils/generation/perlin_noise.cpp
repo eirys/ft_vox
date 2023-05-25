@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/23 10:26:08 by etran             #+#    #+#             */
-/*   Updated: 2023/05/25 16:33:16 by etran            ###   ########.fr       */
+/*   Updated: 2023/05/25 17:59:05 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -234,6 +234,8 @@ std::size_t	PerlinNoise::hash(
 
 /**
  * @brief Generates a 1d noise map of size width.
+ * 
+ * @note The noise map doesn't take in consideration the layers.
 */
 std::vector<float>	PerlinNoise::generate1dNoiseMap() {
 	std::vector<float>	noise_map(width);
@@ -259,13 +261,13 @@ std::vector<float>	PerlinNoise::generate1dNoiseMap() {
 	};
 
 	for (std::size_t x = 0; x < width; ++x) {
-		noise_map.emplace_back(evaluateAt(
+		noise_map[x] = evaluateAt(
 			static_cast<float>(x),
 			floorFn,
 			modFn,
 			lerpFn,
 			1.0f
-		));
+		);
 	}
 	return noise_map;
 }
@@ -321,13 +323,17 @@ std::vector<float>	PerlinNoise::generate2dNoiseMap() {
 
 			for (std::size_t layer = 0; layer < layers; ++layer) {
 				// Evaluate and stack up layers.
-				noise_map[y * width + x] += evaluateAt(
-					coord,
-					floorFn,
-					modFn,
-					lerpFn,
-					scop::Vect2(1.0f, 1.0f)
-				) * amplitude;
+				noise_map[y * width + x] = std::fma(
+					evaluateAt(
+						coord,
+						floorFn,
+						modFn,
+						lerpFn,
+						scop::Vect2(1.0f, 1.0f)
+					),
+					amplitude,
+					noise_map[y * width + x]
+				);
 				coord *= frequency_mult;
 				amplitude *= amplitude_mult;
 			}
