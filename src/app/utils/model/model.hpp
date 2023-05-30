@@ -6,17 +6,20 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/04 19:23:53 by eli               #+#    #+#             */
-/*   Updated: 2023/05/25 19:07:58 by etran            ###   ########.fr       */
+/*   Updated: 2023/05/28 11:57:03 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
 // Std
-# include <vector>
-# include <array>
-# include <map>
-# include <stdexcept>
+# include <vector> // std::vector
+# include <array> // std::array
+# include <stdexcept> // std::out_of_range
+
+# include "material.hpp"
+
+# define SCOP_TEXTURE_FILE_DEFAULT "assets/textures/hammy.ppm"
 
 namespace scop {
 class Image;
@@ -72,17 +75,12 @@ public:
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
 
-	Model(
-		std::vector<Vect3>&& vertices,
-		std::vector<Vect2>&& textures,
-		std::vector<Vect3>&& normals,
-		std::vector<Index>&& indices
-	);
+	Model(Model&& x);
+
 	Model() = default;
-	Model(const Model& x) = default;
-	Model(Model&& x) = default;
 	~Model() = default;
 
+	Model(const Model& x) = delete;
 	Model&	operator=(const Model& x) = delete;
 
 	/* ========================================================================= */
@@ -93,14 +91,19 @@ public:
 	void							addIndex(const Index& index);
 	void							addTriangle(const Triangle& triangle);
 
-	void							setDefaultTextureCoords(const scop::Image& img);
+	void							setDefaultTextureCoords();
 	void							setDefaultNormalCoords();
+
+	void							setMaterial(mtl::Material&& material);
+	void							toggleSmoothShading() noexcept;
 
 	const std::vector<Vect3>&		getVertexCoords() const noexcept;
 	const std::vector<Vect2>&		getTextureCoords() const noexcept;
 	const std::vector<Vect3>&		getNormalCoords() const noexcept;
 	const std::vector<Index>&		getIndices() const noexcept;
 	const std::vector<Triangle>&	getTriangles() const noexcept;
+	const mtl::Material&			getMaterial() const noexcept;
+	mtl::Material&					getMaterial() noexcept;
 
 private:
 	/* ========================================================================= */
@@ -112,6 +115,8 @@ private:
 	std::vector<scop::Vect3>		normal_coords;
 	std::vector<Index>				indices;
 	std::vector<Triangle>			triangles;
+	mtl::Material					material{};
+	bool							smooth_shading = false;
 
 }; // class Model
 

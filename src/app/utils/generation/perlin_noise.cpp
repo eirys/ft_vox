@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/23 10:26:08 by etran             #+#    #+#             */
-/*   Updated: 2023/05/25 22:06:29 by etran            ###   ########.fr       */
+/*   Updated: 2023/05/30 14:42:09 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -93,6 +93,7 @@ scop::obj::Model	PerlinNoise::toModel() const {
 			);
 		}
 	}
+	
 }
 
 /* GETTERS ================================================================== */
@@ -487,13 +488,13 @@ int main() {
 	std::ofstream	file("noise_map.ppm", std::ios::out | std::ios::binary);
 
 	scop::PerlinNoise::NoiseMapInfo	info = {
+		.type = scop::PerlinNoiseType::PERLIN_NOISE_2D,
 		.width = 450,
 		.height = 450,
 		.layers = 5,
 		.frequency_0 = .02f,
 		.frequency_mult = 1.8f,
 		.amplitude_mult = 0.5f,
-		.type = scop::PerlinNoiseType::PERLIN_NOISE_2D,
 	};
 	scop::PerlinNoise	noise(info);
 	std::vector<float>	noise_map = noise.getNoiseMap();

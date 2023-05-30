@@ -6,20 +6,21 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/28 11:12:12 by eli               #+#    #+#             */
-/*   Updated: 2023/05/23 10:19:56 by etran            ###   ########.fr       */
+/*   Updated: 2023/05/29 10:51:02 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "app.hpp"
 #include "model.hpp"
-#include "parser.hpp"
+#include "obj_parser.hpp"
 #include "ppm_loader.hpp"
 #include "math.hpp"
+#include "mtl_parser.hpp"
 
 namespace scop {
 
-bool							App::texture_enabled = true;
-std::optional<App::time_point>	App::texture_enabled_start;
+TextureState					App::texture_state = TextureState::TEXTURE_ENABLED;
+std::optional<App::time_point>	App::texture_transition_start;
 
 std::map<RotationInput, bool>	App::keys_pressed_rotations = populateRotationKeys();
 std::array<float, 3>			App::rotation_angles = { 0.0f, 0.0f, 0.0f };
@@ -29,20 +30,33 @@ std::map<ObjectDirection, bool>	App::keys_pressed_directions = populateDirection
 scop::Vect3						App::movement = scop::Vect3(0.0f, 0.0f, 0.0f);
 scop::Vect3						App::position = scop::Vect3(0.0f, 0.0f, 0.0f);
 
+scop::Vect3						App::eye_pos = scop::Vect3(1.0f, 1.0f, 3.0f);
 float							App::zoom_input = 1.0f;
 std::size_t						App::selected_up_axis = 1;
+
+std::array<scop::Vect3, 4>		App::light_colors = {
+	scop::Vect3(1.0f, 1.0f, 1.0f), // white
+	scop::Vect3(1.0f, 0.0f, 0.0f), // red
+	scop::Vect3(0.0f, 1.0f, 0.0f), // green
+	scop::Vect3(0.0f, 0.0f, 1.0f) // blue
+};
+std::size_t						App::selected_light_color = 0;
+std::array<scop::Vect3, 4>		App::light_positions = {
+	scop::Vect3(1.0f, 1.5f, 2.0f),
+	scop::Vect3(0.0f, 0.5f, 0.5f),
+	scop::Vect3(-1.0f, -1.8f, 1.75f),
+	scop::Vect3(0.0f, -1.0f, 0.0f)
+};
+std::size_t						App::selected_light_pos = 0;
 
 /* ========================================================================== */
 /*                                   PUBLIC                                   */
 /* ========================================================================== */
 
-App::App(
-	const std::string& model_file,
-	const std::string& texture_file
-): window(model_file) {
-	loadTexture(texture_file);
+App::App(const std::string& model_file) {
 	loadModel(model_file);
-	graphics_pipeline.init(window, *image, vertices, indices);
+	window.init(model_file);
+	graphics_pipeline.init(window, *image, light, vertices, indices);
 }
 
 App::~App() {
@@ -65,8 +79,10 @@ void	App::run() {
  * On toggle, changes the texture of the model.
 */
 void	App::toggleTexture() noexcept {
-	texture_enabled = !texture_enabled;
-	texture_enabled_start.emplace(
+	texture_state = static_cast<TextureState>(
+		(static_cast<int>(texture_state) + 1) % 3
+	);
+	texture_transition_start.emplace(
 		std::chrono::high_resolution_clock::now()
 	);
 }
@@ -223,6 +239,14 @@ void	App::changeUpAxis() noexcept {
 	selected_up_axis = (selected_up_axis + 1) % 3;
 }
 
+void	App::toggleLightColor() noexcept {
+	selected_light_color = (selected_light_color + 1) % 4;
+}
+
+void	App::toggleLightPos() noexcept {
+	selected_light_pos = (selected_light_pos + 1) % 4;
+}
+
 /* ========================================================================== */
 /*                                   PRIVATE                                  */
 /* ========================================================================== */
@@ -232,13 +256,16 @@ void	App::drawFrame() {
 }
 
 void	App::loadModel(const std::string& path) {
-	scop::obj::Parser	parser;
-	scop::obj::Model	model = parser.parseFile(path.c_str(), *image);
+	LOG("Loading model...");
+
+	scop::obj::ObjParser	parser;
+	scop::obj::Model	model = parser.parseFile(path.c_str());
+
 	std::unordered_map<scop::Vertex, uint32_t>	unique_vertices{};
 
 	const auto&	model_vertices = model.getVertexCoords();
 	const auto& model_textures = model.getTextureCoords();
-	// const auto& model_normals = model.getNormalCoords();
+	const auto& model_normals = model.getNormalCoords();
 	const auto& model_triangles = model.getTriangles();
 
 	// Retrieve unique vertices:
@@ -251,12 +278,12 @@ void	App::loadModel(const std::string& path) {
 				model_textures[index.texture].x,
 				1.0f - model_textures[index.texture].y
 			};
+			vertex.normal = model_normals[index.normal];
 			math::generateVibrantColor(
 				vertex.color.x,
 				vertex.color.y,
 				vertex.color.z
 			);
-			// vertex.normal = model_normals[index.normal_index];
 
 			if (unique_vertices.count(vertex) == 0) {
 				unique_vertices[vertex] = static_cast<uint32_t>(vertices.size());
@@ -271,36 +298,23 @@ void	App::loadModel(const std::string& path) {
 	for (auto& vertex: vertices) {
 		vertex.pos -= barycenter;
 	}
-}
 
-/**
- * @brief	Creates texture loader object. If no path is provided, default
- * 			texture is loaded.
- *
- * @todo	Handle other image formats
-*/
-void	App::loadTexture(const std::string& path) {
-	std::unique_ptr<scop::ImageLoader>	image_loader;
-	std::string	file;
+	// Pass ownership of texture image from model to app
+	image.reset(
+		new scop::Image(std::move(*model.getMaterial().ambient_texture))
+	);
+	model.getMaterial().ambient_texture.release();
 
-	// Only handle ppm files for now
-	if (path.empty()) {
-		file = SCOP_TEXTURE_FILE_HAMSTER_PPM;
-	} else {
-		std::size_t	extension_pos = path.rfind('.');
-		if (extension_pos == std::string::npos) {
-			throw std::invalid_argument(
-				"No extention found for texture file (must be .ppm)"
-			);
-		} else if (path.find("ppm", extension_pos) == std::string::npos) {
-			throw std::invalid_argument(
-				"Texture file must be a ppm file (.ppm)"
-			);
-		}
-		file = path;
-	}
-	image_loader.reset(new PpmLoader(file));
-	image = std::make_unique<scop::Image>(image_loader->load());
+	// Load light
+	light = UniformBufferObject::Light{
+		model.getMaterial().ambient_color,
+		App::light_positions[0],
+		App::light_colors[0],
+		model.getMaterial().diffuse_color,
+		App::eye_pos * App::zoom_input,
+		model.getMaterial().specular_color,
+		model.getMaterial().shininess
+	};
 }
 
 /* ========================================================================== */

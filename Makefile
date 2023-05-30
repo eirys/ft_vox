@@ -6,7 +6,7 @@
 #    By: etran <etran@student.42.fr>                +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/04/06 03:40:09 by eli               #+#    #+#              #
-#    Updated: 2023/05/25 10:56:23 by etran            ###   ########.fr        #
+#    Updated: 2023/05/30 14:38:40 by etran            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -14,10 +14,8 @@
 #                                    TARGETS                                   #
 # ============================================================================ #
 
-school		:=	$(shell env | grep 42paris | wc -l)
-
 # final binary
-NAME		:=	vox
+NAME		:=	scop
 
 # directory names
 SRC_DIR		:=	src
@@ -34,13 +32,13 @@ IMG_DIR		:=	$(UTILS_DIR)/img
 MODEL_DIR	:=	$(UTILS_DIR)/model
 GEN_DIR		:=	$(UTILS_DIR)/generation
 
-SUBDIRS		:=	$(TOOLS_DIR) \
-				$(APP_DIR) \
+SUBDIRS		:=	$(APP_DIR) \
+				$(TOOLS_DIR) \
 				$(SUBMOD_DIR) \
-				$(UTILS_DIR) \
-				$(IMG_DIR) \
 				$(MODEL_DIR) \
-				$(GEN_DIR)
+				$(UTILS_DIR) \
+				$(GEN_DIR) \
+				$(IMG_DIR)
 
 OBJ_SUBDIRS	:=	$(addprefix $(OBJ_DIR)/,$(SUBDIRS))
 INC_SUBDIRS	:=	$(addprefix $(SRC_DIR)/,$(SUBDIRS))
@@ -53,11 +51,14 @@ INC_FILES	:=	$(TOOLS_DIR)/utils.hpp \
 				$(UTILS_DIR)/vertex.hpp \
 				$(UTILS_DIR)/uniform_buffer_object.hpp \
 				$(MODEL_DIR)/model.hpp \
+				$(MODEL_DIR)/material.hpp \
 				$(MODEL_DIR)/parser.hpp \
+				$(MODEL_DIR)/obj_parser.hpp \
+				$(MODEL_DIR)/mtl_parser.hpp \
+				$(GEN_DIR)/perlin_noise.hpp \
 				$(IMG_DIR)/image_loader.hpp \
 				$(IMG_DIR)/image_handler.hpp \
 				$(IMG_DIR)/ppm_loader.hpp \
-				$(GEN_DIR)/perlin_noise.hpp \
 				$(SUBMOD_DIR)/window.hpp \
 				$(SUBMOD_DIR)/debug_module.hpp \
 				$(SUBMOD_DIR)/device.hpp \
@@ -73,9 +74,11 @@ INC_FILES	:=	$(TOOLS_DIR)/utils.hpp \
 SRC_FILES	:=	$(TOOLS_DIR)/matrix.cpp \
 				$(MODEL_DIR)/model.cpp \
 				$(MODEL_DIR)/parser.cpp \
+				$(MODEL_DIR)/obj_parser.cpp \
+				$(MODEL_DIR)/mtl_parser.cpp \
+				$(GEN_DIR)/perlin_noise.cpp \
 				$(IMG_DIR)/ppm_loader.cpp \
 				$(IMG_DIR)/image_handler.cpp \
-				$(GEN_DIR)/perlin_noise.cpp \
 				$(SUBMOD_DIR)/window.cpp \
 				$(SUBMOD_DIR)/debug_module.cpp \
 				$(SUBMOD_DIR)/device.cpp \
@@ -103,16 +106,13 @@ SHD_BIN		:=	$(addsuffix .spv,$(SHD))
 CXX			:=	c++
 EXTRA		:=	-Wall -Werror -Wextra
 INCLUDES	:=	$(addprefix -I./,\
-				$(INC_SUBDIRS) \
-				$(STB_PATH))
-
-ifdef school!=0
-	EXTRA	+=	-Wno-unused-private-field
-endif
+				$(INC_SUBDIRS))
 
 CFLAGS		:=	$(EXTRA)\
 				-std=c++17 \
 				$(INCLUDES) \
+				-g \
+				-D__DEBUG \
 				-DNDEBUG
 
 LDFLAGS		:=	-lglfw \
@@ -124,11 +124,7 @@ LDFLAGS		:=	-lglfw \
 				-lXrandr \
 				-lXi
 
-ifdef school!=0
-	GLSLC	:=	~/my_sgoinfre/glslc
-else
-	GLSLC	:=	glslc
-endif
+GLSLC		:=	~/my_sgoinfre/glslc
 
 # misc
 RM			:=	rm -rf

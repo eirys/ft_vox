@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/15 20:25:44 by etran             #+#    #+#             */
-/*   Updated: 2023/05/23 10:19:39 by etran            ###   ########.fr       */
+/*   Updated: 2023/05/28 10:40:00 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 #include "graphics_pipeline.hpp"
 #include "image_handler.hpp"
 #include "device.hpp"
+#include "utils.hpp"
 
 #include <cmath> // std::floor
 #include <algorithm> // std::max
@@ -37,10 +38,7 @@ void	TextureSampler::init(
 	createTextureSampler(device);
 }
 
-void	TextureSampler::destroy(
-	Device& device
-) {
-	// Remove texture image
+void	TextureSampler::destroy(Device& device) {
 	vkDestroySampler(device.logical_device, vk_texture_sampler, nullptr);
 	vkDestroyImageView(device.logical_device, vk_texture_image_view, nullptr);
 	vkDestroyImage(device.logical_device, vk_texture_image, nullptr);

@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/12 22:44:13 by eli               #+#    #+#             */
-/*   Updated: 2023/05/23 10:19:38 by etran            ###   ########.fr       */
+/*   Updated: 2023/05/27 01:18:04 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,13 +20,13 @@ namespace scop {
 
 Image::Image(
 	const std::string& path,
-	ImageType type,
+	// ImageType type,
 	std::vector<uint32_t>&& pixels,
 	std::size_t width,
 	std::size_t height
 ):
 path(path),
-type(type),
+// type(type),
 pixels(std::move(pixels)),
 width(width),
 height(height) {}
@@ -37,7 +37,7 @@ const std::string&	Image::getPath() const noexcept {
 	return path;
 }
 
-const uint32_t*	Image::getPixels() const noexcept {
+const uint32_t*		Image::getPixels() const noexcept {
 	return pixels.data();
 }
 
@@ -47,10 +47,6 @@ std::size_t	Image::getWidth() const noexcept {
 
 std::size_t	Image::getHeight() const noexcept {
 	return height;
-}
-
-ImageType	Image::getType() const noexcept {
-	return type;
 }
 
 } // namespace scop

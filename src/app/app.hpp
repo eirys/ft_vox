@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/10 18:21:34 by eli               #+#    #+#             */
-/*   Updated: 2023/05/23 14:14:32 by etran            ###   ########.fr       */
+/*   Updated: 2023/05/28 23:37:42 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,10 +30,10 @@
 # include "vertex.hpp"
 # include "image_handler.hpp"
 # include "graphics_pipeline.hpp"
+# include "uniform_buffer_object.hpp"
 
-# define SCOP_TEXTURE_FILE_HAMSTER_PPM	"textures/hammy.ppm"
-# define SCOP_MOVE_SPEED				0.005f
-# define SCOP_ROTATION_SPEED			0.25f // deg
+# define SCOP_MOVE_SPEED		0.005f
+# define SCOP_ROTATION_SPEED	0.25f // deg
 
 namespace scop {
 
@@ -67,6 +67,12 @@ enum ZoomInput {
 	ZOOM_NONE
 };
 
+enum TextureState {
+	TEXTURE_GRAYSCALE = 1,
+	TEXTURE_COLOR = 2,
+	TEXTURE_ENABLED = 0
+};
+
 /**
  * Core engine.
 */
@@ -85,7 +91,7 @@ public:
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
 
-	App(const std::string& model_file, const std::string& texture_file);
+	App(const std::string& model_file);
 	~App();
 
 	App() = delete;
@@ -115,6 +121,8 @@ public:
 	) noexcept;
 	static void							toggleZoom(ZoomInput input) noexcept;
 	static void							changeUpAxis() noexcept;
+	static void							toggleLightColor() noexcept;
+	static void							toggleLightPos() noexcept;
 
 private:
 	/* ========================================================================= */
@@ -127,19 +135,20 @@ private:
 	/*                               CLASS MEMBERS                               */
 	/* ========================================================================= */
 
-	std::unique_ptr<scop::Image>		image;
 	scop::Window						window;
-	scop::graphics::GraphicsPipeline	graphics_pipeline;
+	scop::graphics::GraphicsPipeline	graphics_pipeline; // TODO: rename
 
 	std::vector<scop::Vertex>			vertices;
 	std::vector<uint32_t>				indices;
+	std::unique_ptr<scop::Image>		image;
+	UniformBufferObject::Light			light;
 
 	/* ========================================================================= */
 	/*                               STATIC MEMBERS                              */
 	/* ========================================================================= */
 
-	static bool							texture_enabled;
-	static std::optional<time_point>	texture_enabled_start;
+	static TextureState					texture_state;
+	static std::optional<time_point>	texture_transition_start;
 
 	static
 	std::map<RotationInput, bool>		keys_pressed_rotations;
@@ -151,8 +160,14 @@ private:
 	static scop::Vect3					movement;
 	static scop::Vect3					position;
 
+	static scop::Vect3					eye_pos;
 	static float						zoom_input;
 	static std::size_t					selected_up_axis;
+
+	static std::array<scop::Vect3, 4>	light_colors;
+	static std::size_t					selected_light_color;
+	static std::array<scop::Vect3, 4>	light_positions;
+	static std::size_t					selected_light_pos;
 
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
@@ -160,7 +175,6 @@ private:
 
 	void								drawFrame();
 	void								loadModel(const std::string& path);
-	void								loadTexture(const std::string& path);
 
 }; // class App
 
@@ -168,7 +182,7 @@ private:
 /*                                    OTHER                                   */
 /* ========================================================================== */
 
-std::map<ObjectDirection, bool>	populateDirectionKeys();
-std::map<RotationInput, bool>	populateRotationKeys();
+std::map<ObjectDirection, bool>			populateDirectionKeys();
+std::map<RotationInput, bool>			populateRotationKeys();
 
 } // namespace scop

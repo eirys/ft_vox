@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/17 18:33:56 by etran             #+#    #+#             */
-/*   Updated: 2023/05/25 18:07:09 by etran            ###   ########.fr       */
+/*   Updated: 2023/05/30 14:40:14 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,10 +18,11 @@
 # include <random> // std::mt19937
 # include <optional> // std::optional
 
+# include "model.hpp"
+
 namespace scop {
-class Vect2;
-class Vect3;
-class obj::Model;
+struct Vect2;
+struct Vect3;
 
 enum PerlinNoiseType {
 	PERLIN_NOISE_1D,
@@ -70,12 +71,12 @@ public:
 
 	PerlinNoise(NoiseMapInfo info);
 
-	PerlinNoise(const PerlinNoise& other) = default;
 	PerlinNoise(PerlinNoise&& other) = default;
-	PerlinNoise& operator=(const PerlinNoise& other) = default;
 	~PerlinNoise() = default;
 
 	PerlinNoise() = delete;
+	PerlinNoise(const PerlinNoise& other) = delete;
+	PerlinNoise& operator=(const PerlinNoise& other) = delete;
 
 	/* ========================================================================= */
 

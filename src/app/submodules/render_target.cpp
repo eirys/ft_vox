@@ -247,10 +247,18 @@ void	RenderTarget::destroySwapChain(Device& device) {
 	resources.destroy(device);
 
 	for (std::size_t i = 0; i < swap_chain_frame_buffers.size(); ++i) {
-		vkDestroyFramebuffer(device.logical_device, swap_chain_frame_buffers[i], nullptr);
+		vkDestroyFramebuffer(
+			device.logical_device,
+			swap_chain_frame_buffers[i],
+			nullptr
+		);
 	}
 	for (std::size_t i = 0; i < swap_chain_image_views.size(); ++i) {
-		vkDestroyImageView(device.logical_device, swap_chain_image_views[i], nullptr);
+		vkDestroyImageView(
+			device.logical_device,
+			swap_chain_image_views[i],
+			nullptr
+		);
 	}
 
 	// Remove swap chain handler

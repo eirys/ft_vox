@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/12 10:12:47 by eli               #+#    #+#             */
-/*   Updated: 2023/05/23 12:44:51 by etran            ###   ########.fr       */
+/*   Updated: 2023/05/28 00:46:50 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,7 @@
 # include <vector>
 
 namespace scop {
+
 class Image;
 
 /**
@@ -51,6 +52,23 @@ public:
 	virtual ~ImageLoader() = default;
 	virtual scop::Image		load() = 0;
 
+	/* ========================================================================= */
+	/*                                 EXCEPTIONS                                */
+	/* ========================================================================= */
+
+	class FailedToLoadImage: public std::exception {
+	public:
+		FailedToLoadImage() = delete;
+		FailedToLoadImage(const std::string& path, const std::string& spec):
+			spec("Failed to load `" + path + "`: " + spec) {}
+
+		const char*	what() const noexcept override {
+			return spec.c_str();
+		}
+	private:
+		const std::string	spec;
+	};
+
 protected:
 	/* ========================================================================= */
 	/*                               CLASS MEMBERS                               */
@@ -72,23 +90,6 @@ protected:
 	ImageLoader() = delete;
 	ImageLoader(const ImageLoader& x) = delete;
 	ImageLoader& operator=(const ImageLoader& x) = delete;
-
-	/* ========================================================================= */
-	/*                                 EXCEPTIONS                                */
-	/* ========================================================================= */
-
-	class FailedToLoadImage: public std::exception {
-	public:
-		FailedToLoadImage() = delete;
-		FailedToLoadImage(const std::string& path, const std::string& spec):
-			spec("Failed to load `" + path + "`: " + spec) {}
-
-		const char*	what() const noexcept override {
-			return spec.c_str();
-		}
-	private:
-		const std::string	spec;
-	};
 
 }; // class ImageLoader
 

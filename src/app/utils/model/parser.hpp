@@ -5,32 +5,19 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/05/04 15:02:06 by etran             #+#    #+#             */
-/*   Updated: 2023/05/23 10:22:07 by etran            ###   ########.fr       */
+/*   Created: 2023/05/26 23:30:12 by etran             #+#    #+#             */
+/*   Updated: 2023/05/27 01:18:04 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
-// Std
 # include <string>
 
-# include "model.hpp"
-# include "vertex.hpp"
-
-static constexpr const uint8_t		vertex_bit = 1 << 0;// 1
-static constexpr const uint8_t		texture_bit = 1 << 1; // 2
-static constexpr const uint8_t		normal_bit = 1 << 2; // 4
-
-static constexpr const std::size_t	nb_line_types = 10;
-
 namespace scop {
-class Image;
-
-namespace obj {
 
 /**
- * List of possible token type in .obj file.
+ * List of possible token type in the files.
 */
 enum TokenType {
 	TOKEN_INT,
@@ -42,45 +29,10 @@ enum TokenType {
 };
 
 /**
- * Parser for .obj files.
+ * Abstract class for parsers.
 */
 class Parser {
-public:
-	/* ========================================================================= */
-	/*                                  METHODS                                  */
-	/* ========================================================================= */
-
-	Parser() = default;
-	Parser(Parser&& x) = default;
-	~Parser() = default;
-
-	Parser(const Parser& x) = delete;
-	Parser&	operator=(const Parser& x) = delete;
-
-	/* ========================================================================= */
-
-	Model			parseFile(
-		const std::string& file_name,
-		const scop::Image& texture
-	);
-
-private:
-	/* ========================================================================= */
-	/*                                  TYPEDEF                                  */
-	/* ========================================================================= */
-
-	typedef		enum TokenType			TokenType;
-	typedef		void (Parser::*ParseFunction)();
-
-	/* ======================================================================== */
-	/*                               CLASS MEMBERS                              */
-	/* ======================================================================== */
-
-	Model				model_output;
-	std::size_t			current_pos;
-	std::string			line;
-	std::string			token;
-
+protected:
 	/* ========================================================================= */
 	/*                               CONST MEMBERS                               */
 	/* ========================================================================= */
@@ -91,40 +43,8 @@ private:
 	const std::string	cs_digit		= "0123456789";
 	const std::string	cs_dot			= ".";
 	const std::string	cs_negate		= "-";
-	const std::string	cs_lowercase	= "abcdefghijklmnopqrstuvwxyz";
-	const std::string	cs_uppercase	= "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-	const std::string	cs_hash			= "#";
 	const std::string	cs_slash		= "/";
 	const std::string	cs_whitespaces	= " \t";
-
-	/**
-	 * List of possible line type in .obj file.
-	*/
-	const std::string	line_begin[nb_line_types] = {
-		"v",
-		"vn",
-		"vt",
-		"f",
-		"#",
-		"mtllib",	// TODO
-		"usemtl", 	// TODO
-		"o",		// TODO
-		"g",		// TODO
-		"s"			// TODO
-	};
-
-	ParseFunction		parseLineFun[nb_line_types] = {
-		&Parser::parseVertex,
-		&Parser::parseVertex,
-		&Parser::parseTexture,
-		&Parser::parseFace,
-		&Parser::skipComment,
-		&Parser::skipComment,
-		&Parser::skipComment,
-		&Parser::skipComment,
-		&Parser::skipComment,
-		&Parser::skipComment
-	};
 
 	/* ========================================================================= */
 	/*                                 EXCEPTION                                 */
@@ -143,15 +63,29 @@ private:
 			const std::string	error_msg;
 	};
 
-	/* ======================================================================== */
+	/* ========================================================================= */
+	/*                               CLASS MEMBERS                               */
+	/* ========================================================================= */
 
-	void				checkFile(const std::string& file) const;
-	void				processLine();
+	std::size_t				current_pos;
+	std::string			line;
+	std::string			token;
 
-	void				parseVertex();
-	void				parseTexture();
-	void				parseNormal();
-	void				parseFace();
+	/* ========================================================================= */
+	/*                                  METHODS                                  */
+	/* ========================================================================= */
+
+	Parser() = default;
+	Parser(Parser&& x) = default;
+	~Parser() = default;
+
+	Parser(const Parser& x) = delete;
+	Parser&	operator=(const Parser& x) = delete;
+
+	/* ========================================================================= */
+
+	virtual void		checkFile(const std::string& file) const = 0;
+	virtual void		processLine() = 0;
 
 	bool				getWord();
 	void				skipComment() noexcept;
@@ -161,25 +95,7 @@ private:
 		const std::string& word,
 		std::size_t pos
 	) const;
-	uint8_t				getFormat() const noexcept;
-	void				storeTriangles(
-		const std::vector<Model::Index>& indices
-	);
-	void				fixMissingIndices(const scop::Image& img) noexcept;
 
 }; // class Parser
 
-} // namespace obj
-
-namespace mtl {
-
-/**
- * Parser for .mtl files.
- * 
- * TODO
-*/
-class Parser {
-}; // class Parser
-
-} // namespace mtl
 } // namespace scop

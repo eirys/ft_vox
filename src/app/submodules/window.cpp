@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/06 12:28:42 by eli               #+#    #+#             */
-/*   Updated: 2023/05/23 01:47:54 by etran            ###   ########.fr       */
+/*   Updated: 2023/05/29 09:41:07 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -82,6 +82,14 @@ static void	keyCallback(
 			// Camera orientation
 			case GLFW_KEY_TAB:
 				return App::changeUpAxis();
+
+			// Light position
+			case GLFW_KEY_L:
+				return App::toggleLightPos();
+
+			// Light color
+			case GLFW_KEY_K:
+				return App::toggleLightColor();
 
 			// Rotation
 			case GLFW_KEY_1:
@@ -196,18 +204,17 @@ static void	scrollCallback(
 /*                                   PUBLIC                                   */
 /* ========================================================================== */
 
-Window::Window(const std::string& model_name) {
+Window::Window() {
 	// initialize glfw
 	glfwInit();
 
 	// disable OpenGL context creation
 	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+}
 
+void	Window::init(const std::string& model_name) {
 	// create a window pointer
 	const std::string	window_title = title + model_name;
-
-	// int count;
-	// GLFWmonitor** monitors = glfwGetMonitors(&count);
 
 	window = glfwCreateWindow(
 		width,

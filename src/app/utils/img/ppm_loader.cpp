@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/12 15:00:15 by eli               #+#    #+#             */
-/*   Updated: 2023/05/23 10:19:38 by etran            ###   ########.fr       */
+/*   Updated: 2023/05/28 11:58:12 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,7 +33,7 @@ Image	PpmLoader::load() {
 
 		return Image(
 			base::path,
-			base::type,
+			// base::type,
 			std::move(pixels),
 			width,
 			height
@@ -121,7 +121,7 @@ PpmLoader::Pixels	PpmLoader::parseBody() {
 	while (row < base::height) {
 		uint8_t	r, g, b;
 
-		for (std::size_t i = 0; i < base::width; ++i) {
+		for (size_t i = 0; i < base::width; ++i) {
 			// Read 3 bytes (RGB)
 			r = parseChannelFn();
 			g = parseChannelFn();

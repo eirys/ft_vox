@@ -6,16 +6,16 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/03 13:54:57 by eli               #+#    #+#             */
-/*   Updated: 2023/05/25 12:17:24 by etran            ###   ########.fr       */
+/*   Updated: 2023/05/28 21:34:48 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
 // Std
-# include <cmath>
-# include <stdexcept>
-# include <ostream>
+# include <cmath> // std::fma, std::sqrt
+# include <stdexcept> // std::out_of_range
+# include <ostream> // std::ostream
 
 namespace scop {
 
@@ -42,7 +42,7 @@ struct Vect3 {
 
 	/* ACCESSORS =============================================================== */
 
-	const float&	operator[](size_t index) const {
+	const float&	operator[](std::size_t index) const {
 		switch (index) {
 			case 0:
 				return x;
@@ -55,7 +55,7 @@ struct Vect3 {
 		}
 	}
 
-	float&	operator[](size_t index) {
+	float&	operator[](std::size_t index) {
 		switch (index) {
 			case 0:
 				return x;
@@ -69,6 +69,10 @@ struct Vect3 {
 	}
 
 	/* OPERATORS =============================================================== */
+
+	bool	operator!() const noexcept {
+		return !x && !y && !z;
+	}
 
 	Vect3	operator-() const noexcept {
 		return Vect3(-x, -y, -z);
@@ -186,18 +190,7 @@ struct Vect2 {
 
 	/* ACCESSORS =============================================================== */
 
-	float&	operator[](size_t index) {
-		switch (index) {
-			case 0:
-				return x;
-			case 1:
-				return y;
-			default:
-				throw std::out_of_range("Matrix index out of range");
-		}
-	}
-
-	const float& operator[](size_t index) const {
+	float&	operator[](std::size_t index) {
 		switch (index) {
 			case 0:
 				return x;
@@ -209,6 +202,10 @@ struct Vect2 {
 	}
 
 	/* OPERATORS =============================================================== */
+
+	bool	operator!() const noexcept {
+		return !x && !y;
+	}
 
 	Vect2	operator-() const noexcept {
 		return Vect2{ -x, -y };
@@ -268,37 +265,41 @@ struct Vect2 {
 
 } // namespace scop
 
-std::ostream& operator<<(std::ostream& os, const scop::Vect3& vect) {
-	os << "(" << vect.x << ", " << vect.y << ", " << vect.z << ")";
-	return os;
-}
+/* ========================================================================== */
+/*                                    OTHER                                   */
+/* ========================================================================== */
 
-std::ostream& operator<<(std::ostream& os, const scop::Vect2& vect) {
-	os << "(" << vect.x << ", " << vect.y << ")";
-	return os;
-}
-
-namespace std {
+/* HASH FUNCTIONS =========================================================== */
 
 template<>
-struct hash<scop::Vect3> {
-	inline size_t	operator()(const scop::Vect3& vect) const {
+struct std::hash<scop::Vect3> {
+	inline std::size_t	operator()(const scop::Vect3& vect) const {
 		return (
-			hash<float>()(vect.x) ^
-			hash<float>()(vect.y) ^
-			hash<float>()(vect.z)
+			std::hash<float>()(vect.x) ^
+			std::hash<float>()(vect.y) ^
+			std::hash<float>()(vect.z)
 		);
 	}
 };
 
 template<>
-struct hash<scop::Vect2> {
-	inline size_t	operator()(const scop::Vect2& vect) const {
+struct std::hash<scop::Vect2> {
+	inline std::size_t	operator()(const scop::Vect2& vect) const {
 		return (
-			hash<float>()(vect.x) ^
-			hash<float>()(vect.y)
+			std::hash<float>()(vect.x) ^
+			std::hash<float>()(vect.y)
 		);
 	}
 };
 
-} // namespace std
+/* IOSTREAM ================================================================= */
+
+inline std::ostream& operator<<(std::ostream& os, const scop::Vect3& vect) {
+	os << "Vect3(" << vect.x << ", " << vect.y << ", " << vect.z << ")";
+	return os;
+}
+
+inline std::ostream& operator<<(std::ostream& os, const scop::Vect2& vect) {
+	os << "Vect2(" << vect.x << ", " << vect.y << ")";
+	return os;
+}

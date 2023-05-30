@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/04 19:23:47 by eli               #+#    #+#             */
-/*   Updated: 2023/05/23 10:19:38 by etran            ###   ########.fr       */
+/*   Updated: 2023/05/28 11:56:57 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,9 +15,8 @@
 #include "vector.hpp"
 #include "vertex.hpp"
 #include "utils.hpp"
-
-#include <algorithm>
-#include <set> // std::set
+#include "material.hpp"
+#include "ppm_loader.hpp"
 
 namespace scop {
 namespace obj {
@@ -25,6 +24,15 @@ namespace obj {
 /* ========================================================================== */
 /*                                   PUBLIC                                   */
 /* ========================================================================== */
+
+Model::Model(Model&& x):
+vertex_coords(std::move(x.vertex_coords)),
+texture_coords(std::move(x.texture_coords)),
+normal_coords(std::move(x.normal_coords)),
+indices(std::move(x.indices)),
+triangles(std::move(x.triangles)),
+material(std::move(x.material)),
+smooth_shading(x.smooth_shading) {}
 
 void	Model::addVertex(const Vect3& vertex) {
 	vertex_coords.emplace_back(vertex);
@@ -46,7 +54,7 @@ void	Model::addIndex(const Index& index) {
 	indices.emplace_back(index);
 }
 
-void	Model::setDefaultTextureCoords(const scop::Image& img) {
+void	Model::setDefaultTextureCoords() {
 	texture_coords = {
 		{ 0.0f, 0.0f },
 		{ 1.0f, 0.0f },
@@ -66,43 +74,45 @@ void	Model::setDefaultTextureCoords(const scop::Image& img) {
 			triangle.indices[2].texture = 3;
 		}
 	}
-
-
-	// Avoid texture stretching
-	// texture_coords.reserve(vertex_coords.size());
-
-	// float 	width = static_cast<float>(img.getWidth());
-	// float 	height = static_cast<float>(img.getHeight());
-
-	// Retrieve coplanar triangles.
-	// We can't rely on the triangle normals.
-	// We need to check the vertex values.
-	// We can calculate the normal of a triangle using the cross product.
-
-	// Sort by normals
-	// std::map<scop::Vect3, std::vector<Triangle>>	coplanar_triangles;
-
-	// for (const auto& triangle : triangles) {
-	// 	const auto&	v1 = vertex_coords[triangle.indices[0].vertex];
-	// 	const auto&	v2 = vertex_coords[triangle.indices[1].vertex];
-	// 	const auto&	v3 = vertex_coords[triangle.indices[2].vertex];
-	// 	scop::Vect3 normal = scop::normalize(scop::cross(v2 - v1, v3 - v1));
-	// 	coplanar_triangles[normal].emplace_back(triangle);
-	// }
-
-	// For each normal (triangle set), generate texture coordinates,
-	// where it's a continuous application of the texture.
-	// The texture is applied on the triangle set as a whole.
-	// for (const auto& normal: coplanar_triangles) {
-	// 	// Get the triangle set
-	// 	const auto&	triangles_vec = normal.second;
-	// }
-	(void)img;
 }
 
 void	Model::setDefaultNormalCoords() {
-	// TODO
+	// Reserve as many as the triangles.
+	normal_coords.reserve(triangles.size());
+
+	// Calculate normal coordinates for each triangles.
+	for (Triangle& triangle: triangles) {
+		// Calculate 2 coplanar vectors of the triangle
+		const scop::Vect3	v1 =
+			vertex_coords[triangle.indices[1].vertex] -
+			vertex_coords[triangle.indices[0].vertex];
+		const scop::Vect3	v2 =
+			vertex_coords[triangle.indices[2].vertex] -
+			vertex_coords[triangle.indices[0].vertex];
+
+		// Save the normalized normal coordinates
+		normal_coords.emplace_back(scop::normalize(scop::cross(v1, v2)));
+
+		// Set the normal coordinates for each triangle index
+		for (auto& index: triangle.indices) {
+			index.normal = normal_coords.size() - 1;
+		}
+	}
 	return;
+}
+
+void	Model::setMaterial(scop::mtl::Material&& mtl) {
+	material = std::move(mtl);
+	if (material.ambient_texture != nullptr) {
+		return;
+	} else {
+		scop::PpmLoader ppm_loader(SCOP_TEXTURE_FILE_DEFAULT);
+		material.ambient_texture.reset(new scop::Image(ppm_loader.load()));
+	}
+}
+
+void	Model::toggleSmoothShading() noexcept {
+	smooth_shading = true;
 }
 
 /* ========================================================================== */
@@ -125,6 +135,14 @@ const std::vector<Vect3>&	Model::getNormalCoords() const noexcept {
 
 const std::vector<Model::Index>&	Model::getIndices() const noexcept {
 	return indices;
+}
+
+const mtl::Material&	Model::getMaterial() const noexcept {
+	return material;
+}
+
+mtl::Material&	Model::getMaterial() noexcept {
+	return material;
 }
 
 } // namespace obj

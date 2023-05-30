@@ -5,233 +5,22 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/05/04 15:06:05 by etran             #+#    #+#             */
-/*   Updated: 2023/05/23 10:19:39 by etran            ###   ########.fr       */
+/*   Created: 2023/05/26 23:38:54 by etran             #+#    #+#             */
+/*   Updated: 2023/05/27 01:18:04 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "parser.hpp"
-#include "utils.hpp"	// LOG
-
-#include <fstream>		// ifstream
-#include <vector>		// vector
-#include <optional>		// optional
-#include <algorithm>	// count
 
 namespace scop {
-namespace obj {
 
 /* ========================================================================== */
-/*                                   PUBLIC                                   */
-/* ========================================================================== */
-
-Model	Parser::parseFile(
-	const std::string& file_name,
-	const scop::Image& texture
-) {
-	checkFile(file_name);
-	std::ifstream	file;
-
-	file.open(file_name);
-	if (!file.is_open()) {
-		throw std::invalid_argument("Could not open file " + file_name);
-	}
-
-	for (std::size_t current_line = 1; file.good(); ++current_line) {
-		std::getline(file, line);
-
-		try {
-			processLine();
-		} catch (const Parser::parse_error& error) {
-			throw std::invalid_argument(
-				"Error while parsing '" + file_name +
-				"' at line " + std::to_string(current_line) + ": " +
-				error.what()
-			);
-		}
-	}
-	if (file.bad()) {
-		throw std::invalid_argument("Error while reading file " + file_name);
-	}
-	// Fix empty indices in face
-	fixMissingIndices(texture);
-
-	return model_output;
-}
-
-/* ========================================================================== */
-/*                                   PRIVATE                                  */
-/* ========================================================================== */
-
-void	Parser::checkFile(const std::string& file) const {
-	if (file.empty()) {
-		throw std::invalid_argument("Empty file name");
-	}
-	std::size_t	extension_pos = file.rfind('.');
-
-	if (extension_pos == std::string::npos) {
-		throw std::invalid_argument("File '" + file + "' has no extension");
-	} else if (file.substr(extension_pos) != ".obj") {
-		throw std::invalid_argument("File '" + file + "' is not a .obj file");
-	}
-}
-
-void	Parser::processLine() {
-	if (line.empty()) {
-		return skipComment();
-	}
-	current_pos = 0;
-
-	// Check line type
-	getWord();
-	for (std::size_t i = 0; i < nb_line_types; ++i) {
-		if (token == line_begin[i]) {
-			skipWhitespace();
-			try {
-				(this->*parseLineFun[i])();
-			} catch (const std::out_of_range& oor) {
-				throw Parser::parse_error("value overflow");
-			}
-			if (current_pos != std::string::npos) {
-				if (line[current_pos] == '#') {
-					skipComment();
-				} else {
-					throw Parser::parse_error("unexpected token");
-				}
-			}
-			return;
-		}
-	}
-	throw Parser::parse_error("undefined line type");
-}
-
-/**
- * Format expected:
- * "vx vy vz "
- *
- * Retrieves a vertex.
-*/
-void	Parser::parseVertex() {
-	scop::Vect3	vertex{};
-
-	for (std::size_t i = 0; i < 3; ++i) {
-		if (!getWord())
-			throw Parser::parse_error("expecting 3 coordinates");
-		checkNumberType(token);
-		vertex[i] = std::stof(token);
-		skipWhitespace();
-	}
-	model_output.addVertex(vertex);
-}
-
-/**
- * Format expected:
- * "vx vy "
- *
- * Retrieves a texture coordinates.
-*/
-void	Parser::parseTexture() {
-	scop::Vect2	texture{};
-
-	for (std::size_t i = 0; i < 2; ++i) {
-		if (!getWord())
-			throw Parser::parse_error("expecting 2 coordinates");
-		checkNumberType(token);
-		texture[i] = std::stof(token);
-		skipWhitespace();
-	}
-	model_output.addTexture(texture);
-}
-
-/**
- * Format expected:
- * "vx vy vz "
- *
- * Retrieves a normal.
-*/
-void	Parser::parseNormal() {
-	scop::Vect3	normal{};
-
-	for (std::size_t i = 0; i < 3; ++i) {
-		if (!getWord())
-			throw Parser::parse_error("expecting 3 coordinates");
-		checkNumberType(token);
-		normal[i] = std::stof(token);
-		skipWhitespace();
-	}
-	model_output.addNormal(normal);
-}
-
-/**
- * Format expected:
- * case 100: "	v1 v2 v3 {...}"
- * case 110: "	v1/vt1 v2/vt2 v3/vt3 {...}"
- * case 101: "	v1//vn1 v2//vn2 v3//vn3 {...}"
- * case 111: "	v1/vt1/vn1 v2/vt2/vn2 v3/vt3/vn3 {...}"
- *
- * Retrives at least one triangle.
-*/
-void	Parser::parseFace() {
-	std::optional<uint8_t>			format;
-	std::vector<Model::Index>		indices;
-
-	// Parse all indices chunks
-	skipWhitespace();
-	while (getWord()) {
-		// Verify nb indices
-		std::size_t	nb_slashes = std::count(token.begin(), token.end(), '/');
-		if (nb_slashes > 2) {
-			throw Parser::parse_error("expecting at most 3 indices");
-		}
-
-		// If first chunk, determine format
-		if (!format.has_value()) {
-			format = getFormat();
-		} else if (format.value() != getFormat()) {
-			throw Parser::parse_error("inconsistent format");
-		}
-
-		// Extract expected indices from chunk
-		Model::Index	index{};
-		std::size_t	begin_pos = 0;
-		for (std::size_t i = 0; i < 3; ++i) {
-			if (format.value() & (1 << i)) {
-				std::size_t	end_pos = token.find(cs_slash, begin_pos);
-				if (end_pos == std::string::npos) {
-					end_pos = token.size();
-				}
-				std::string	index_str = token.substr(begin_pos, end_pos - begin_pos);
-				if (checkNumberType(index_str) != TOKEN_INT) {
-					throw Parser::parse_error("expecting integer index");
-				}
-				index[i] = std::stoi(index_str);
-				begin_pos = end_pos + 1;
-			} else if (nb_slashes) {
-				begin_pos += 1;
-			}
-		}
-		if (index.vertex == 0) {
-			throw Parser::parse_error("expecting vertex index");
-		}
-		model_output.addIndex(index);
-		indices.emplace_back(index);
-		skipWhitespace();
-	}
-
-	if (indices.size() < 3) {
-		throw Parser::parse_error("expecting at least 3 vertices");
-	}
-
-	// Store triangles
-	storeTriangles(indices);
-}
-
+/*                                  PROTECTED                                 */
 /* ========================================================================== */
 
 /**
- * Retrieve word (chunk of non-whitespace character),
- * or up until the charset parameter.
- * Returns false if line is empty.
+ * @brief Retrieve a word. A word is a sequence of characters that are not
+ * whitespace characters.
 */
 bool	Parser::getWord() {
 	if (current_pos == std::string::npos) {
@@ -243,15 +32,27 @@ bool	Parser::getWord() {
 	return true;
 }
 
+/**
+ * @brief Skip comment. Moves current_pos to the end of the line.
+*/
 void	Parser::skipComment() noexcept {
 	current_pos = std::string::npos;
 }
 
+/**
+ * @brief Skip whitespace characters. Moves current_pos to the next
+ * non-whitespace character.
+*/
 void	Parser::skipWhitespace() noexcept {
 	current_pos = line.find_first_not_of(cs_whitespaces, current_pos);
 }
 
-Parser::TokenType	Parser::checkNumberType(const std::string& word) const {
+/**
+ * @brief Check if the value is a number. If so, return its type.
+ * 
+ * @param word The value to check.
+*/
+TokenType	Parser::checkNumberType(const std::string& word) const {
 	if (word.empty()) {
 		throw Parser::parse_error("expecting number");
 	}
@@ -284,84 +85,15 @@ Parser::TokenType	Parser::checkNumberType(const std::string& word) const {
 }
 
 /**
- * Check if there's junk after digits in word.
+ * @brief Check if there are junk characters after a number.
 */
-void	Parser::checkJunkAfterNumber(const std::string& word, std::size_t pos) const {
+void	Parser::checkJunkAfterNumber(
+	const std::string& word,
+	std::size_t pos
+) const {
 	if (word.find_first_not_of(cs_digit, pos) != std::string::npos) {
 		throw Parser::parse_error("unexpected character after value");
 	}
 }
 
-uint8_t	Parser::getFormat() const noexcept {
-	std::size_t	first_slash = token.find(cs_slash);
-	std::size_t	last_slash = token.rfind(cs_slash);
-
-	if (first_slash == std::string::npos && last_slash == std::string::npos) {
-		return vertex_bit;
-	} else if (first_slash == last_slash) {
-		return vertex_bit | texture_bit;
-	} else if (first_slash == last_slash - 1) {
-		return vertex_bit | normal_bit;
-	} else {
-		return vertex_bit | texture_bit | normal_bit;
-	}
-}
-
-void	Parser::storeTriangles(
-	const std::vector<Model::Index>& indices
-) {
-	std::size_t	attr_sizes[3] = {
-		model_output.getVertexCoords().size(),
-		model_output.getTextureCoords().size(),
-		model_output.getNormalCoords().size()
-	};
-	std::size_t	nb_triangles = indices.size() - 2;
-
-	for (std::size_t i = 0; i < nb_triangles; ++i) {
-
-		// Replace occurence of -1 by last element of corresponding list
-		auto	selectIndex =
-			[indices, attr_sizes](std::size_t pos, std::size_t attr) -> int {
-				if (indices[pos][attr] < 0) {
-					return attr_sizes[attr] - 1;
-				} else {
-					return indices[pos][attr] - 1;
-				}
-			};
-
-		Model::Triangle	triangle{};
-
-		triangle.indices[0] = {
-			.vertex = selectIndex(0, 0),
-			.texture = selectIndex(0, 1),
-			.normal = selectIndex(0, 2)
-		};
-		triangle.indices[1] = {
-			.vertex = selectIndex(i + 1, 0),
-			.texture = selectIndex(i + 1, 1),
-			.normal = selectIndex(i + 1, 2)
-		};
-		triangle.indices[2] = {
-			.vertex = selectIndex(i + 2, 0),
-			.texture = selectIndex(i + 2, 1),
-			.normal = selectIndex(i + 2, 2)
-		};
-		model_output.addTriangle(triangle);
-	}
-}
-
-/**
- * Check if there are missing indices,
- * and add default ones.
-*/
-void	Parser::fixMissingIndices(const scop::Image& image) noexcept {
-	if (model_output.getTextureCoords().empty()) {
-		model_output.setDefaultTextureCoords(image);
-	}
-	if (model_output.getNormalCoords().empty()) {
-		model_output.setDefaultNormalCoords();
-	}
-}
-
-} // namespace obj
 } // namespace scop

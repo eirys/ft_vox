@@ -6,13 +6,14 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/15 16:34:03 by etran             #+#    #+#             */
-/*   Updated: 2023/05/23 10:19:39 by etran            ###   ########.fr       */
+/*   Updated: 2023/05/28 17:23:12 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "graphics_pipeline.hpp"
 #include "window.hpp"
 #include "utils.hpp"
+#include "image_handler.hpp"
 
 #include <iostream> // std::cerr std::endl
 #include <cstring> // std::strcmp
@@ -32,33 +33,22 @@ const std::vector<const char*>	GraphicsPipeline::validation_layers = {
 void	GraphicsPipeline::init(
 	scop::Window& window,
 	const scop::Image& image,
+	const UniformBufferObject::Light& light,
 	const std::vector<Vertex>& vertices,
 	const std::vector<uint32_t>& indices
 ) {
 	createInstance();
-	LOG("Passed instance ");
 	debug_module.init(vk_instance);
-	LOG("Passed debug module ");
 	device.init(window, vk_instance);
-	LOG("Passed device ");
 	render_target.init(device, window);
-	LOG("Passed render target ");
 	descriptor_set.initLayout(device);
-	LOG("Passed descriptor layout");
 	createGraphicsPipeline();
-	LOG("Passed graphics pipeline ");
 	command_buffer.initPool(device);
-	LOG("Passed command pool ");
 	texture_sampler.init(device, command_buffer.vk_command_pool, image);
-	LOG("Passed texture sampler ");
 	vertex_input.init(device, command_buffer.vk_command_pool, vertices, indices);
-	LOG("Passed vertex input ");
-	descriptor_set.initSets(device, texture_sampler);
-	LOG("Passed descriptor set ");
+	descriptor_set.initSets(device, texture_sampler, light);
 	command_buffer.initBuffer(device);
-	LOG("Passed command buffer ");
 	createSyncObjects();
-	LOG("Passed sync objects");
 }
 
 void	GraphicsPipeline::destroy() {
@@ -258,8 +248,6 @@ void	GraphicsPipeline::createGraphicsPipeline() {
 		vert_stage_info,
 		frag_stage_info
 	};
-
-	// Fixed function state
 
 	// Vertex data input handler
 	VkPipelineVertexInputStateCreateInfo	vertex_input_info{};
