@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/04 19:23:53 by eli               #+#    #+#             */
-/*   Updated: 2023/05/28 11:57:03 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/01 13:49:41 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -69,6 +69,17 @@ public:
 	*/
 	struct Triangle {
 		std::array<Index, 3>		indices;
+
+		const Index&	operator[](std::size_t i) const {
+			if (i >= 3)
+				throw std::out_of_range("Index out of range");
+			return indices[i];
+		}
+		Index&	operator[](std::size_t i) {
+			if (i >= 3)
+				throw std::out_of_range("Index out of range");
+			return indices[i];
+		}
 	};
 
 	/* ========================================================================= */

@@ -6,7 +6,7 @@
 #    By: etran <etran@student.42.fr>                +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/04/06 03:40:09 by eli               #+#    #+#              #
-#    Updated: 2023/05/30 14:49:09 by etran            ###   ########.fr        #
+#    Updated: 2023/06/01 15:54:09 by etran            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -124,7 +124,7 @@ LDFLAGS		:=	-lglfw \
 				-lXrandr \
 				-lXi
 
-GLSLC		:=	~/my_sgoinfre/glslc
+GLSLC		:=	glslc
 
 # misc
 RM			:=	rm -rf

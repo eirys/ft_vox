@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/17 18:33:56 by etran             #+#    #+#             */
-/*   Updated: 2023/05/30 14:40:14 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/01 15:54:15 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,9 +20,10 @@
 
 # include "model.hpp"
 
-namespace scop {
-struct Vect2;
-struct Vect3;
+namespace vox {
+	
+typedef struct scop::Vect2	Vect2;
+typedef	struct scop::Vect3	Vect3;
 
 enum PerlinNoiseType {
 	PERLIN_NOISE_1D,
@@ -65,6 +66,17 @@ public:
 		const float				amplitude_mult;
 	};
 
+
+	/**
+	 * @brief Contains the vertices, normals and vertex indices of a mesh,
+	 * generated from a perlin noise map.
+	*/
+	struct PerlinMesh {
+		std::vector<Vect3>			vertices;
+		std::vector<uint32_t>		indices;
+		std::vector<Vect3>			normals;
+	};
+
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
@@ -81,7 +93,7 @@ public:
 	/* ========================================================================= */
 
 	std::vector<uint32_t>		toPixels() const;
-	scop::obj::Model			toModel() const;
+	PerlinMesh					toMesh() const;
 
 	/* GETTERS ================================================================= */
 
@@ -158,4 +170,4 @@ private:
 
 }; // class PerlinNoise
 
-} // namespace scop
+} // namespace vox

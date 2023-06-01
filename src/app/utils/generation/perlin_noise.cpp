@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/23 10:26:08 by etran             #+#    #+#             */
-/*   Updated: 2023/05/30 14:49:50 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/01 15:58:31 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,12 +14,13 @@
 #include "math.hpp"
 #include "vector.hpp"
 #include "model.hpp"
+#include "perlin_mesh.hpp"
 
 #include <cstdint> // uint32_t
 #include <vector> // std::vector
 #include <algorithm> // std::shuffle
 
-namespace scop {
+namespace vox {
 
 /* ========================================================================== */
 /*                                   PUBLIC                                   */
@@ -35,25 +36,31 @@ namespace scop {
 */
 PerlinNoise::PerlinNoise(
 	PerlinNoise::NoiseMapInfo info
-):	seed(info.seed.has_value() ? info.seed.value() : generateSeed()),
-	width(info.width),
-	height(info.height),
-	depth(info.depth),
-	layers(info.layers),
-	frequency(info.frequency_0),
-	frequency_mult(info.frequency_mult),
-	amplitude_mult(info.amplitude_mult),
-	generator(seed),
-	permutation_table(generatePermutationTable()) {
+):
+seed(info.seed.has_value() ? info.seed.value() : generateSeed()),
+width(info.width),
+height(info.height),
+depth(info.depth),
+layers(info.layers),
+frequency(info.frequency_0),
+frequency_mult(info.frequency_mult),
+amplitude_mult(info.amplitude_mult),
+generator(seed),
+permutation_table(generatePermutationTable()) {
+	std::vector<float>	(PerlinNoise::*generateNoiseMapFn)();
+
+	// Select the correct function to generate the noise map
 	if (info.type == PerlinNoiseType::PERLIN_NOISE_1D) {
-		noise_map = generate1dNoiseMap();
+		generateNoiseMapFn = &PerlinNoise::generate1dNoiseMap;
 	} else if (info.type == PerlinNoiseType::PERLIN_NOISE_2D) {
-		noise_map = generate2dNoiseMap();
+		generateNoiseMapFn = &PerlinNoise::generate2dNoiseMap;
 	} else if (info.type == PerlinNoiseType::PERLIN_NOISE_3D) {
-		noise_map = generate3dNoiseMap();
+		generateNoiseMapFn = &PerlinNoise::generate3dNoiseMap;
 	} else {
 		throw std::invalid_argument("Invalid noise type.");
 	}
+
+	noise_map = (this->*generateNoiseMapFn)();
 }
 
 /* ========================================================================== */
@@ -74,26 +81,33 @@ std::vector<uint32_t>	PerlinNoise::toPixels() const {
 /**
  * @brief Converts the noise map to a model.
 */
-scop::obj::Model	PerlinNoise::toModel() const {
-	const float	model_width = 1;
-	const float	model_height = 1;
+PerlinMesh	PerlinNoise::toMesh() const {
+	PerlinMesh			mesh;
+	const float			half_width = width / 2;
+	const float			half_height = height / 2;
+	std::size_t			vertice_count = width * height;
 
-	// The noise map width/height corresponds to the subdivisions.
-	std::vector<scop::Vect3>	vertices;
-	vertices.reserve(width * height);
-	const float	inv_width = 1.0f / static_cast<float>(width);
-	const float	inv_height = 1.0f / static_cast<float>(height);
+	std::vector<scop::Vect3>	vertice_coords;
+	std::vector<uint32_t>		indices;
+	vertice_coords.reserve(vertice_count);
+	indices.reserve(vertice_count);
 
+	// Store vertices coordinates
 	for (std::size_t y = 0; y < height; ++y) {
 		for (std::size_t x = 0; x < width; ++x) {
-			vertices[y * width + x] = scop::Vect3(
-				std::fma(model_width, std::fma(x, inv_width, -0.5f), 0),
-				0.0f,
-				std::fma(model_height, std::fma(y, inv_height, -0.5f), 0)
-			);
+			std::size_t	i = std::fma(y, width, x);
+
+			// Retrieve raw height from noise map
+			vertice_coords.emplace_back(Vect3(
+				x - half_width,						// x
+				noise_map[i] * depth,				// y
+				y - half_height						// z
+			));
+			indices.emplace_back(/* TODO */);
 		}
 	}
-	return scop::obj::Model();
+
+	return mesh;
 }
 
 /* GETTERS ================================================================== */
@@ -261,7 +275,7 @@ std::size_t	PerlinNoise::hash(
 
 /**
  * @brief Generates a 1d noise map of size width.
- * 
+ *
  * @note The noise map doesn't take in consideration the layers.
 */
 std::vector<float>	PerlinNoise::generate1dNoiseMap() {
