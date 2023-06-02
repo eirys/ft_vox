@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/15 20:56:05 by etran             #+#    #+#             */
-/*   Updated: 2023/06/02 21:26:53 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/02 23:13:18 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -293,28 +293,12 @@ void	DescriptorSet::updateCamera(
 ) {
 	UniformBufferObject::Camera	camera{};
 
-	// Add translation (object movement)
-	App::position += App::movement;
-
-	App::rotation_angles[RotationAxis::ROTATION_AXIS_X] +=
-		App::rotating_input[RotationAxis::ROTATION_AXIS_X];
-
-	App::rotation_angles[RotationAxis::ROTATION_AXIS_Y] +=
-		App::rotating_input[RotationAxis::ROTATION_AXIS_Y];
-
-	App::rotation_angles[RotationAxis::ROTATION_AXIS_Z] +=
-		App::rotating_input[RotationAxis::ROTATION_AXIS_Z];
-
 	// Define object transformation model
 	camera.model = scop::rotate(
 		scop::rotate(
 			scop::rotate(
-				// Translate object first
-				scop::translate(
-					scop::Mat4(1.0f),
-					App::position
-				),
 				// Rotate around x
+				scop::Mat4(1.0f),
 				scop::math::radians(App::rotation_angles[0]),
 				Vect3(1.0f, 0.0f, 0.0f)
 			),
@@ -329,7 +313,7 @@ void	DescriptorSet::updateCamera(
 
 	// Define camera transformation view
 	camera.view = scop::lookAtDir(
-		scop::App::eye_pos * scop::App::zoom_input,
+		App::position * scop::App::zoom_input,
 		scop::App::eye_dir,
 		scop::Vect3(0.0f, 1.0f, 0.0f)
 	);

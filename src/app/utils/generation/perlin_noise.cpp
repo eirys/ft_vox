@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/23 10:26:08 by etran             #+#    #+#             */
-/*   Updated: 2023/06/02 16:50:14 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/03 00:26:58 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -106,12 +106,15 @@ PerlinNoise::PerlinMesh	PerlinNoise::toMesh() const {
 				y - half_height							// z
 			));
 
+			// TODO: Missing indices, redo up to STOP
 			// Upper left triangle: y * width + x
 			indices.emplace_back(static_cast<uint32_t>(i));
 			// Lower right triangle: (y + 1) * width + x
 			indices.emplace_back(static_cast<uint32_t>(
 				std::fma(y + 1, width, x)
 			));
+
+			// STOP
 		}
 	}
 	mesh.vertices = std::move(vertice_coords);

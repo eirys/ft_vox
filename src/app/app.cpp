@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/28 11:12:12 by eli               #+#    #+#             */
-/*   Updated: 2023/06/02 21:24:34 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/03 00:09:44 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,17 +25,14 @@ TextureState					App::texture_state = TextureState::TEXTURE_ENABLED;
 std::optional<App::time_point>	App::texture_transition_start;
 
 std::map<RotationInput, bool>	App::keys_pressed_rotations = populateRotationKeys();
-std::array<float, 3>			App::rotation_angles = { 0.0f, 0.0f, 0.0f };
-std::array<float, 3>			App::rotating_input = { 0.0f, 0.0f, 0.0f };
+scop::Vect3						App::rotation_angles = scop::Vect3(0.0f, 0.0f, 0.0f);
+scop::Vect3						App::rotating_input = scop::Vect3(0.0f, 0.0f, 0.0f);
 
 std::map<ObjectDirection, bool>	App::keys_pressed_directions = populateDirectionKeys();
 scop::Vect3						App::movement = scop::Vect3(0.0f, 0.0f, 0.0f);
-scop::Vect3						App::position = scop::Vect3(0.0f, 0.0f, 0.0f);
+scop::Vect3						App::position = scop::Vect3(1.0f, 1.0f, 3.0f);
+scop::Vect3						App::eye_dir = scop::normalize(-App::position);
 
-scop::Vect3						App::eye_pos = scop::Vect3(1.0f, 1.0f, 3.0f);
-scop::Vect3						App::eye_dir = scop::normalize(
-	scop::Vect3(0.0f, 0.0f, 0.0f) - App::eye_pos
-);
 float							App::zoom_input = 1.0f;
 
 std::array<scop::Vect3, 4>		App::light_colors = {
@@ -97,12 +94,12 @@ void	App::toggleTexture() noexcept {
 */
 void	App::resetModel() noexcept {
 	// Reset rotation
-	rotation_angles[RotationAxis::ROTATION_AXIS_X] = 0.0f;
-	rotation_angles[RotationAxis::ROTATION_AXIS_Y] = 0.0f;
-	rotation_angles[RotationAxis::ROTATION_AXIS_Z] = 0.0f;
+	rotation_angles.x = 0.0f;
+	rotation_angles.y = 0.0f;
+	rotation_angles.z = 0.0f;
 
 	// Reset translation
-	position = scop::Vect3(0.0f, 0.0f, 0.0f);
+	position = scop::Vect3(1.0f, 1.0f, 3.0f);
 }
 
 /**
@@ -112,27 +109,27 @@ void	App::toggleRotation(RotationInput value) noexcept {
 	keys_pressed_rotations[value] = true;
 	switch (value) {
 		case RotationInput::ROTATION_ADD_X: {
-			rotating_input[RotationAxis::ROTATION_AXIS_X] = SCOP_ROTATION_SPEED;
+			rotating_input.x = SCOP_ROTATION_SPEED;
 			break;
 		}
 		case RotationInput::ROTATION_SUB_X: {
-			rotating_input[RotationAxis::ROTATION_AXIS_X] = -SCOP_ROTATION_SPEED;
+			rotating_input.x = -SCOP_ROTATION_SPEED;
 			break;
 		}
 		case RotationInput::ROTATION_ADD_Y: {
-			rotating_input[RotationAxis::ROTATION_AXIS_Y] = SCOP_ROTATION_SPEED;
+			rotating_input.y = SCOP_ROTATION_SPEED;
 			break;
 		}
 		case RotationInput::ROTATION_SUB_Y: {
-			rotating_input[RotationAxis::ROTATION_AXIS_Y] = -SCOP_ROTATION_SPEED;
+			rotating_input.y = -SCOP_ROTATION_SPEED;
 			break;
 		}
 		case RotationInput::ROTATION_ADD_Z: {
-			rotating_input[RotationAxis::ROTATION_AXIS_Z] = SCOP_ROTATION_SPEED;
+			rotating_input.z = SCOP_ROTATION_SPEED;
 			break;
 		}
 		case RotationInput::ROTATION_SUB_Z: {
-			rotating_input[RotationAxis::ROTATION_AXIS_Z] = -SCOP_ROTATION_SPEED;
+			rotating_input.z = -SCOP_ROTATION_SPEED;
 			break;
 		}
 		default:
@@ -150,17 +147,17 @@ void	App::untoggleRotation(RotationInput value) noexcept {
 			value == RotationInput::ROTATION_ADD_X ||
 			value == RotationInput::ROTATION_SUB_X
 		) {
-			rotating_input[RotationAxis::ROTATION_AXIS_X] = 0.0f;
+			rotating_input.x = 0.0f;
 		} else if (
 			value == RotationInput::ROTATION_ADD_Y ||
 			value == RotationInput::ROTATION_SUB_Y
 		) {
-			rotating_input[RotationAxis::ROTATION_AXIS_Y] = 0.0f;
+			rotating_input.y = 0.0f;
 		} else if (
 			value == RotationInput::ROTATION_ADD_Z ||
 			value == RotationInput::ROTATION_SUB_Z
 		) {
-			rotating_input[RotationAxis::ROTATION_AXIS_Z] = 0.0f;
+			rotating_input.z = 0.0f;
 		}
 	} else {
 		toggleRotation(static_cast<RotationInput>(-value));
@@ -250,7 +247,7 @@ void	App::updateCameraDir(float x, float y) noexcept {
 
 	yaw += (x - last_x) * SCOP_MOUSE_SENSITIVITY;
 	pitch = std::clamp(
-		pitch + (last_y - y) * SCOP_MOUSE_SENSITIVITY,
+		std::fma(last_y - y, SCOP_MOUSE_SENSITIVITY, pitch),
 		-89.f,
 		89.f
 	);
@@ -277,7 +274,18 @@ void	App::toggleLightPos() noexcept {
 /* ========================================================================== */
 
 void	App::drawFrame() {
+	update();
 	engine.render(window, indices.size());
+}
+
+void	App::update() {
+	// Update camera position
+	position += movement;
+
+	// Update model rotation
+	rotation_angles.x += rotating_input.x;
+	rotation_angles.y += rotating_input.y;
+	rotation_angles.z += rotating_input.z;
 }
 
 void	App::loadTerrain() {
@@ -294,7 +302,7 @@ void	App::loadTerrain() {
 	});
 
 	vox::PerlinNoise::PerlinMesh	mesh = noise.toMesh();
-	// vertices = std::move(mesh.vertices);
+
 	vertices.reserve(mesh.vertices.size());
 	for (const auto& coord: mesh.vertices) {
 		scop::Vertex	vertex{};
@@ -372,7 +380,7 @@ void	App::loadModel(const std::string& path) {
 		App::light_positions[0],
 		App::light_colors[0],
 		model.getMaterial().diffuse_color,
-		App::eye_pos * App::zoom_input,
+		App::position * App::zoom_input,
 		model.getMaterial().specular_color,
 		model.getMaterial().shininess
 	};

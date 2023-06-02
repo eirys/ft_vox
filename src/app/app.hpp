@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/10 18:21:34 by eli               #+#    #+#             */
-/*   Updated: 2023/06/02 21:30:15 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/02 23:12:56 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,7 +33,7 @@
 # include "uniform_buffer_object.hpp"
 
 # define SCOP_MOUSE_SENSITIVITY	0.25f
-# define SCOP_MOVE_SPEED		0.005f
+# define SCOP_MOVE_SPEED		0.05f
 # define SCOP_ROTATION_SPEED	0.25f // deg
 
 namespace scop {
@@ -155,15 +155,14 @@ private:
 
 	static
 	std::map<RotationInput, bool>		keys_pressed_rotations;
-	static std::array<float, 3>			rotation_angles;
-	static std::array<float, 3>			rotating_input;
+	static scop::Vect3					rotation_angles;
+	static scop::Vect3					rotating_input;
 
 	static
 	std::map<ObjectDirection, bool>		keys_pressed_directions;
 	static scop::Vect3					movement;
 	static scop::Vect3					position;
 
-	static scop::Vect3					eye_pos;
 	static scop::Vect3					eye_dir;
 	static float						zoom_input;
 
@@ -179,6 +178,7 @@ private:
 	void								drawFrame();
 	void								loadModel(const std::string& path);
 	void								loadTerrain();
+	void								update();
 
 }; // class App
 
