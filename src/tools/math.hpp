@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/17 18:03:49 by etran             #+#    #+#             */
-/*   Updated: 2023/05/25 17:56:42 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/02 21:35:56 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,14 +23,21 @@ namespace math {
 /**
  * @brief Converts degrees to radians.
 */
-inline float	radians(float degrees) noexcept {
+inline constexpr float	radians(float degrees) noexcept {
 	return degrees * M_PI / 180;
+}
+
+/**
+ * @brief Converts radians to degrees.
+*/
+inline constexpr float	dregrees(float radians) noexcept {
+	return radians * 180 / M_PI;
 }
 
 /**
  * @brief Smoothen a value between 0.0f and 1.0f.
 */
-inline float	smoothen(const float x) noexcept {
+inline constexpr float	smoothen(const float x) noexcept {
 	return std::fma(
 		std::fma(
 			std::fma(x, -2.0f, 3.0f),

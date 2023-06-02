@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/17 18:33:56 by etran             #+#    #+#             */
-/*   Updated: 2023/06/01 15:54:15 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/02 16:11:25 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,7 @@
 # include "model.hpp"
 
 namespace vox {
-	
+
 typedef struct scop::Vect2	Vect2;
 typedef	struct scop::Vect3	Vect3;
 

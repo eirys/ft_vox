@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/10 18:21:34 by eli               #+#    #+#             */
-/*   Updated: 2023/05/28 23:37:42 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/02 21:30:15 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,9 +29,10 @@
 # include "matrix.hpp"
 # include "vertex.hpp"
 # include "image_handler.hpp"
-# include "graphics_pipeline.hpp"
+# include "engine.hpp"
 # include "uniform_buffer_object.hpp"
 
+# define SCOP_MOUSE_SENSITIVITY	0.25f
 # define SCOP_MOVE_SPEED		0.005f
 # define SCOP_ROTATION_SPEED	0.25f // deg
 
@@ -91,10 +92,9 @@ public:
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
 
-	App(const std::string& model_file);
+	App();
 	~App();
 
-	App() = delete;
 	App(const App& x) = delete;
 	App(App&& x) = delete;
 	App& operator=(const App& rhs) = delete;
@@ -120,7 +120,10 @@ public:
 		ObjectDirection direction
 	) noexcept;
 	static void							toggleZoom(ZoomInput input) noexcept;
-	static void							changeUpAxis() noexcept;
+	static void							updateCameraDir(
+		float x,
+		float y
+	) noexcept;
 	static void							toggleLightColor() noexcept;
 	static void							toggleLightPos() noexcept;
 
@@ -136,7 +139,7 @@ private:
 	/* ========================================================================= */
 
 	scop::Window						window;
-	scop::graphics::GraphicsPipeline	graphics_pipeline; // TODO: rename
+	scop::graphics::Engine				engine;
 
 	std::vector<scop::Vertex>			vertices;
 	std::vector<uint32_t>				indices;
@@ -161,8 +164,8 @@ private:
 	static scop::Vect3					position;
 
 	static scop::Vect3					eye_pos;
+	static scop::Vect3					eye_dir;
 	static float						zoom_input;
-	static std::size_t					selected_up_axis;
 
 	static std::array<scop::Vect3, 4>	light_colors;
 	static std::size_t					selected_light_color;
@@ -175,6 +178,7 @@ private:
 
 	void								drawFrame();
 	void								loadModel(const std::string& path);
+	void								loadTerrain();
 
 }; // class App
 

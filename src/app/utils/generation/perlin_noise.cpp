@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/23 10:26:08 by etran             #+#    #+#             */
-/*   Updated: 2023/06/01 15:58:31 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/02 16:50:14 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,6 @@
 #include "math.hpp"
 #include "vector.hpp"
 #include "model.hpp"
-#include "perlin_mesh.hpp"
 
 #include <cstdint> // uint32_t
 #include <vector> // std::vector
@@ -81,7 +80,7 @@ std::vector<uint32_t>	PerlinNoise::toPixels() const {
 /**
  * @brief Converts the noise map to a model.
 */
-PerlinMesh	PerlinNoise::toMesh() const {
+PerlinNoise::PerlinMesh	PerlinNoise::toMesh() const {
 	PerlinMesh			mesh;
 	const float			half_width = width / 2;
 	const float			half_height = height / 2;
@@ -92,21 +91,31 @@ PerlinMesh	PerlinNoise::toMesh() const {
 	vertice_coords.reserve(vertice_count);
 	indices.reserve(vertice_count);
 
+	float scale = 64.0f / depth;
+	float shift = 8.0f;
+
 	// Store vertices coordinates
 	for (std::size_t y = 0; y < height; ++y) {
 		for (std::size_t x = 0; x < width; ++x) {
-			std::size_t	i = std::fma(y, width, x);
+			std::size_t	i = std::fma(y, width, x); // y * width + x
 
 			// Retrieve raw height from noise map
 			vertice_coords.emplace_back(Vect3(
-				x - half_width,						// x
-				noise_map[i] * depth,				// y
-				y - half_height						// z
+				x - half_width,							// x
+				std::fma(noise_map[i], scale, -shift),	// y
+				y - half_height							// z
 			));
-			indices.emplace_back(/* TODO */);
+
+			// Upper left triangle: y * width + x
+			indices.emplace_back(static_cast<uint32_t>(i));
+			// Lower right triangle: (y + 1) * width + x
+			indices.emplace_back(static_cast<uint32_t>(
+				std::fma(y + 1, width, x)
+			));
 		}
 	}
-
+	mesh.vertices = std::move(vertice_coords);
+	mesh.indices = std::move(indices);
 	return mesh;
 }
 
@@ -496,36 +505,36 @@ std::vector<float>	PerlinNoise::generate3dNoiseMap() {
 } // namespace scop
 
 // TODO remove
-#include<iostream>
-#include <fstream>
-int main() {
-	std::ofstream	file("noise_map.ppm", std::ios::out | std::ios::binary);
+// #include<iostream>
+// #include <fstream>
+// int main() {
+// 	std::ofstream	file("noise_map.ppm", std::ios::out | std::ios::binary);
 
-	scop::PerlinNoise::NoiseMapInfo	info = {
-		.type = scop::PerlinNoiseType::PERLIN_NOISE_2D,
-		.width = 450,
-		.height = 450,
-		.layers = 5,
-		.frequency_0 = .02f,
-		.frequency_mult = 1.8f,
-		.amplitude_mult = 0.5f,
-	};
-	scop::PerlinNoise	noise(info);
-	std::vector<float>	noise_map = noise.getNoiseMap();
+// 	scop::PerlinNoise::NoiseMapInfo	info = {
+// 		.type = scop::PerlinNoiseType::PERLIN_NOISE_2D,
+// 		.width = 450,
+// 		.height = 450,
+// 		.layers = 5,
+// 		.frequency_0 = .02f,
+// 		.frequency_mult = 1.8f,
+// 		.amplitude_mult = 0.5f,
+// 	};
+// 	scop::PerlinNoise	noise(info);
+// 	std::vector<float>	noise_map = noise.getNoiseMap();
 
-	std::cout << "Seed: " << noise.getSeed() << std::endl;
+// 	std::cout << "Seed: " << noise.getSeed() << std::endl;
 
-	// Generate PPM file in format P6.
-	file << "P6\n" << noise.getWidth() << " " << noise.getHeight() << "\n255\n";
+// 	// Generate PPM file in format P6.
+// 	file << "P6\n" << noise.getWidth() << " " << noise.getHeight() << "\n255\n";
 
-	for (std::size_t y = 0; y < noise.getHeight(); ++y) {
-		for (std::size_t x = 0; x < noise.getWidth(); ++x) {
-			float	value = noise_map[y * noise.getWidth() + x];
-			uint8_t	color = static_cast<uint8_t>(value * 255.0f);
-			file << color << color << color;
-		}
-	}
+// 	for (std::size_t y = 0; y < noise.getHeight(); ++y) {
+// 		for (std::size_t x = 0; x < noise.getWidth(); ++x) {
+// 			float	value = noise_map[y * noise.getWidth() + x];
+// 			uint8_t	color = static_cast<uint8_t>(value * 255.0f);
+// 			file << color << color << color;
+// 		}
+// 	}
 
-	file.close();
-	return 0;
-}
+// 	file.close();
+// 	return 0;
+// }

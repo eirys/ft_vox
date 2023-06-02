@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/06 12:28:42 by eli               #+#    #+#             */
-/*   Updated: 2023/05/29 09:41:07 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/02 21:28:44 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -78,10 +78,6 @@ static void	keyCallback(
 			// Texture toggle
 			case GLFW_KEY_T:
 				return toggleTextureCallback();
-
-			// Camera orientation
-			case GLFW_KEY_TAB:
-				return App::changeUpAxis();
 
 			// Light position
 			case GLFW_KEY_L:
@@ -200,6 +196,15 @@ static void	scrollCallback(
 	}
 }
 
+static void cursorPositionCallback(
+	GLFWwindow* window,
+	double xpos,
+	double ypos
+) {
+	(void)window;
+	App::updateCameraDir(xpos, ypos);
+}
+
 /* ========================================================================== */
 /*                                   PUBLIC                                   */
 /* ========================================================================== */
@@ -212,14 +217,12 @@ Window::Window() {
 	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 }
 
-void	Window::init(const std::string& model_name) {
+void	Window::init() {
 	// create a window pointer
-	const std::string	window_title = title + model_name;
-
 	window = glfwCreateWindow(
 		width,
 		height,
-		window_title.c_str(),
+		title,
 		nullptr,
 		nullptr
 	);
@@ -233,6 +236,10 @@ void	Window::init(const std::string& model_name) {
 	glfwSetKeyCallback(window, keyCallback);
 	glfwSetMouseButtonCallback(window, mouseButtonCallback);
 	glfwSetScrollCallback(window, scrollCallback);
+	glfwSetCursorPosCallback(window, cursorPositionCallback);
+
+	// Disable cursor
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 }
 
 Window::~Window() {

@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/29 20:12:41 by eli               #+#    #+#             */
-/*   Updated: 2023/05/29 10:53:34 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/02 16:19:36 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -63,8 +63,8 @@ public:
 	/* ========================================================================= */
 
 	alignas(__ALIGNMENT_BUFF) Camera		camera;
-	alignas(__ALIGNMENT_BUFF) Texture		texture;
-	alignas(__ALIGNMENT_BUFF) Light			light;
+	// alignas(__ALIGNMENT_BUFF) Texture		texture;
+	// alignas(__ALIGNMENT_BUFF) Light			light;
 
 };
 

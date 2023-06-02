@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/19 23:18:11 by etran             #+#    #+#             */
-/*   Updated: 2023/05/27 01:18:04 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/02 21:27:40 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -392,6 +392,29 @@ Mat4	lookAt(const Vect3& eye, const Vect3& center, const Vect3& up) noexcept {
 		s.z, u.z, -f.z, 0,
 		// Row 4
 		scop::dot(-s, eye), scop::dot(-u, eye), scop::dot(f, eye), 1
+	};
+}
+
+/**
+ * @brief Produces lookAt matrix, but instead of center, takes direction
+ * 
+ * @param eye:		position of the camera
+ * @param dir:		direction of the camera. It must be normalized.
+ * @param up:		up vector, usually (0, 0, 1).
+*/
+Mat4	lookAtDir(const Vect3& eye, const Vect3& dir, const Vect3& up) noexcept {
+	const Vect3 s = scop::normalize(scop::cross(dir, up));
+	const Vect3 u = scop::cross(s, dir);
+
+	return Mat4 {
+		// Row 1
+		s.x, u.x, -dir.x, 0,
+		// Row 2
+		s.y, u.y, -dir.y, 0,
+		// Row 3
+		s.z, u.z, -dir.z, 0,
+		// Row 4
+		scop::dot(-s, eye), scop::dot(-u, eye), scop::dot(dir, eye), 1
 	};
 }
 
