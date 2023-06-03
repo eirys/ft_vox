@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/04 15:06:05 by etran             #+#    #+#             */
-/*   Updated: 2023/05/29 00:38:30 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/03 12:54:46 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -289,7 +289,7 @@ void	ObjParser::storeTriangles(
 	for (std::size_t i = 0; i < nb_triangles; ++i) {
 		// Replace occurence of -1 by last element of corresponding list
 		auto	selectIndex =
-			[indices, attr_sizes](std::size_t pos, std::size_t attr) -> int {
+			[&indices, &attr_sizes](std::size_t pos, std::size_t attr) -> int {
 				if (indices[pos][attr] < 0) {
 					return attr_sizes[attr] - 1;
 				} else {

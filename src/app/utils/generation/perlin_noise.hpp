@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/17 18:33:56 by etran             #+#    #+#             */
-/*   Updated: 2023/06/02 16:11:25 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/03 12:27:05 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -94,6 +94,7 @@ public:
 
 	std::vector<uint32_t>		toPixels() const;
 	PerlinMesh					toMesh() const;
+	scop::obj::Model			toModel() const;
 
 	/* GETTERS ================================================================= */
 

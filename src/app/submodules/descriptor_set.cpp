@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/15 20:56:05 by etran             #+#    #+#             */
-/*   Updated: 2023/06/02 23:13:18 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/03 13:15:24 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -323,7 +323,7 @@ void	DescriptorSet::updateCamera(
 		scop::math::radians(45.0f),
 		extent.width / static_cast<float>(extent.height),
 		0.1f,
-		100.0f
+		1000.0f
 	);
 	// Invert y axis (because y axis is inverted in Vulkan)
 	camera.proj[5] *= -1;

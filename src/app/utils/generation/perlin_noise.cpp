@@ -6,14 +6,13 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/23 10:26:08 by etran             #+#    #+#             */
-/*   Updated: 2023/06/03 00:26:58 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/03 13:15:59 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "perlin_noise.hpp"
 #include "math.hpp"
 #include "vector.hpp"
-#include "model.hpp"
 
 #include <cstdint> // uint32_t
 #include <vector> // std::vector
@@ -81,45 +80,97 @@ std::vector<uint32_t>	PerlinNoise::toPixels() const {
  * @brief Converts the noise map to a model.
 */
 PerlinNoise::PerlinMesh	PerlinNoise::toMesh() const {
-	PerlinMesh			mesh;
-	const float			half_width = width / 2;
-	const float			half_height = height / 2;
-	std::size_t			vertice_count = width * height;
+	PerlinMesh		mesh;
+	const float		half_width = width / 2;
+	const float		half_height = height / 2;
 
-	std::vector<scop::Vect3>	vertice_coords;
-	std::vector<uint32_t>		indices;
-	vertice_coords.reserve(vertice_count);
-	indices.reserve(vertice_count);
+	// Generate vertices
+	auto&			vertices = mesh.vertices;
+	vertices.reserve(width * height);
 
-	float scale = 64.0f / depth;
-	float shift = 8.0f;
+	const float				scale = 64.0f / depth;
+	const constexpr float	shift = -8.0f;
 
-	// Store vertices coordinates
-	for (std::size_t y = 0; y < height; ++y) {
-		for (std::size_t x = 0; x < width; ++x) {
-			std::size_t	i = std::fma(y, width, x); // y * width + x
+	for (std::size_t row = 0; row < height; ++row) {
+		for (std::size_t col = 0; col < width; ++col) {
 
-			// Retrieve raw height from noise map
-			vertice_coords.emplace_back(Vect3(
-				x - half_width,							// x
-				std::fma(noise_map[i], scale, -shift),	// y
-				y - half_height							// z
-			));
+			// Retrieve raw height from noise map, scaled down and shifted
+			Vect3	vertex{};
+			vertex.x = (col - half_width);
+			vertex.z = (row - half_height);
+			// y = noise_map[row * width + col] * scale + shift
+			vertex.y = std::fma(noise_map[std::fma(row, width, col)], scale, shift);
 
-			// TODO: Missing indices, redo up to STOP
-			// Upper left triangle: y * width + x
-			indices.emplace_back(static_cast<uint32_t>(i));
-			// Lower right triangle: (y + 1) * width + x
-			indices.emplace_back(static_cast<uint32_t>(
-				std::fma(y + 1, width, x)
-			));
-
-			// STOP
+			vertices.emplace_back(vertex);
 		}
 	}
-	mesh.vertices = std::move(vertice_coords);
-	mesh.indices = std::move(indices);
+
+	// Generate indices
+	//  a __ b	// a = row * width + col
+	//  |  / |  // b = (row + 1) * width + col
+	//  | /  |  // c = (row + 1) * width + (col + 1)
+	//  c __ d  // d = row * width + (col + 1)
+	// auto&			indices = mesh.indices;
+	// indices.reserve((width - 1) * (height - 1) * 6);
+
+	// TODO
+
 	return mesh;
+}
+
+scop::obj::Model	PerlinNoise::toModel() const {
+	typedef scop::obj::Model	Model;
+
+	Model			model;
+
+	const float		half_width = width / 2;
+	const float		half_height = height / 2;
+
+	// Generate vertices
+	model.reserveVertices(width * height);
+	const float				scale = 64.0f / depth;
+	const constexpr float	shift = -8.0f;
+
+	for (std::size_t row = 0; row < height; ++row) {
+		for (std::size_t col = 0; col < width; ++col) {
+
+			// Retrieve raw height from noise map, scaled down and shifted
+			// Note: retrieve from center of the map
+			Vect3	vertex{};
+			vertex.x = (col - half_width);
+			vertex.z = (row - half_height);
+			// y = noise_map[row * width + col] * scale + shift
+			vertex.y = std::fma(noise_map[std::fma(row, width, col)], scale, shift);
+
+			model.addVertex(vertex);
+		}
+	}
+
+	// Generate triangles
+	model.reserveTriangles((width - 1) * (height - 1) * 2);
+	for (std::size_t row = 0; row < height - 1; ++row) {
+		for (std::size_t col = 0; col < width - 1; ++col) {
+			//  a __ b
+			//  |  / |
+			//  | /  |
+			//  c __ d
+			// Note: Rasterization is counter clockwise
+
+			Model::Index	a {static_cast<int>(row * width + col), 0, 0};
+			Model::Index	b {static_cast<int>(row * width + (col + 1)), 0, 0};
+			Model::Index	c {static_cast<int>((row + 1) * width + col), 0, 0};
+			Model::Index	d {static_cast<int>((row + 1) * width + (col + 1)), 0, 0};
+
+			Model::Triangle	triangle_1({b, a, c}); // (a, b, c)
+			Model::Triangle	triangle_2({b, c, d}); // (b, d, c)
+
+			model.addTriangle(triangle_1);
+			model.addTriangle(triangle_2);
+		}
+	}
+	// model.setDefaultTextureCoords();
+	// model.setDefaultNormalCoords();
+	return model;
 }
 
 /* GETTERS ================================================================== */

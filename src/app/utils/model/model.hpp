@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/04 19:23:53 by eli               #+#    #+#             */
-/*   Updated: 2023/06/01 13:49:41 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/03 12:48:51 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -101,6 +101,9 @@ public:
 	void							addNormal(const Vect3& normal);
 	void							addIndex(const Index& index);
 	void							addTriangle(const Triangle& triangle);
+
+	void							reserveVertices(const std::size_t size);
+	void							reserveTriangles(const std::size_t size);
 
 	void							setDefaultTextureCoords();
 	void							setDefaultNormalCoords();

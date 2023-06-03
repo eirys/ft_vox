@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/04 19:23:47 by eli               #+#    #+#             */
-/*   Updated: 2023/05/28 11:56:57 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/03 12:49:52 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,6 +52,14 @@ void 	Model::addNormal(const Vect3& normal) {
 
 void	Model::addIndex(const Index& index) {
 	indices.emplace_back(index);
+}
+
+void	Model::reserveVertices(const std::size_t size) {
+	vertex_coords.reserve(size);
+}
+
+void	Model::reserveTriangles(const std::size_t size) {
+	triangles.reserve(size);
 }
 
 void	Model::setDefaultTextureCoords() {
