@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/02 16:09:44 by etran             #+#    #+#             */
-/*   Updated: 2023/06/03 13:16:04 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/03 20:50:40 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -265,7 +265,7 @@ void	Engine::createGraphicsPipeline() {
 	// Vertex input assembly descriptor: regular triangles here
 	VkPipelineInputAssemblyStateCreateInfo	input_assembly_info{};
 	input_assembly_info.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
-	input_assembly_info.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+	input_assembly_info.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST; //VK_PRIMITIVE_TOPOLOGY_LINE_LIST; 
 	input_assembly_info.primitiveRestartEnable = VK_FALSE;
 
 	// Viewport state

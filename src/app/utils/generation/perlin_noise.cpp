@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/23 10:26:08 by etran             #+#    #+#             */
-/*   Updated: 2023/06/03 14:54:57 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/03 20:49:54 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -77,7 +77,11 @@ std::vector<uint32_t>	PerlinNoise::toPixels() const {
 }
 
 /**
- * @brief Converts the noise map to a model.
+ * @brief Converts the noise map to a polymesh.
+ * 
+ * @todo Optimize conversion.
+ * @todo Generate blocks instead of a mesh.
+ * @todo Normals and texture coordinates.
 */
 PerlinNoise::PerlinMesh	PerlinNoise::toMesh() const {
 	PerlinMesh		mesh;
@@ -88,8 +92,8 @@ PerlinNoise::PerlinMesh	PerlinNoise::toMesh() const {
 	auto&			vertices = mesh.vertices;
 	vertices.reserve(width * height);
 
-	const float				scale = 64.0f / depth;
-	const constexpr float	shift = -8.0f;
+	const float				scale = depth;
+	const constexpr float	shift = -30.0f;
 
 	for (std::size_t row = 0; row < height; ++row) {
 		for (std::size_t col = 0; col < width; ++col) {
@@ -106,18 +110,41 @@ PerlinNoise::PerlinMesh	PerlinNoise::toMesh() const {
 	}
 
 	// Generate indices
-	//  a __ b	// a = row * width + col
-	//  |  / |  // b = (row + 1) * width + col
-	//  | /  |  // c = (row + 1) * width + (col + 1)
-	//  c __ d  // d = row * width + (col + 1)
-	// auto&			indices = mesh.indices;
-	// indices.reserve((width - 1) * (height - 1) * 6);
+	auto&	indices = mesh.indices;
+	// 2 triangles per square, 3 indices per triangle
+	indices.reserve(6 * (width - 1) * (height - 1));
+	for (std::size_t row = 0; row < height - 1; ++row) {
+		for (std::size_t col = 0; col < width - 1; ++col) {
+			//  a __ b <- Common vertex
+			//  |  / |
+			//  | /  |
+			//  c __ d
 
-	// TODO
+			uint32_t	a = static_cast<int>(row * width + col);
+			uint32_t	b = static_cast<int>(row * width + (col + 1));
+			uint32_t	c = static_cast<int>((row + 1) * width + col);
+			uint32_t	d = static_cast<int>((row + 1) * width + (col + 1));
 
+			// First triangle
+			indices.emplace_back(b);
+			indices.emplace_back(a);
+			indices.emplace_back(c);
+
+			// Second triangle
+			indices.emplace_back(b);
+			indices.emplace_back(c);
+			indices.emplace_back(d);
+		}
+	}
 	return mesh;
 }
 
+/**
+ * @brief Converts the noise map to a model object.
+ * 
+ * @note This is not optimal, as we don't use some of the model's features.
+ * @note I'll leave it in the code though, for posterity. lol
+*/
 scop::obj::Model	PerlinNoise::toModel() const {
 	typedef scop::obj::Model	Model;
 
@@ -129,7 +156,7 @@ scop::obj::Model	PerlinNoise::toModel() const {
 	// Generate vertices
 	model.reserveVertices(width * height);
 	const constexpr float	shift = -30.0f;
-	const float				scale = 50;
+	const float				scale = depth;
 
 	for (std::size_t row = 0; row < height; ++row) {
 		for (std::size_t col = 0; col < width; ++col) {
@@ -140,7 +167,6 @@ scop::obj::Model	PerlinNoise::toModel() const {
 			vertex.x = (col - half_width);
 			vertex.z = (row - half_height);
 			// y = noise_map[row * width + col] * depth + shift
-			// vertex.y = noise_map[row * width + col] * 10;
 			vertex.y = std::fma(noise_map[std::fma(row, width, col)], scale, shift);
 
 			model.addVertex(vertex);
@@ -155,7 +181,7 @@ scop::obj::Model	PerlinNoise::toModel() const {
 			//  |  / |
 			//  | /  |
 			//  c __ d
-			// Note: Rasterization is counter clockwise
+			// Note: Rasterization is done counter clockwise
 
 			Model::Index	a {static_cast<int>(row * width + col), 0, 0};
 			Model::Index	b {static_cast<int>(row * width + (col + 1)), 0, 0};
@@ -169,6 +195,8 @@ scop::obj::Model	PerlinNoise::toModel() const {
 			model.addTriangle(triangle_2);
 		}
 	}
+
+	// Funsies todo: set texture and normals. (not needed for now)
 	// model.setDefaultTextureCoords();
 	// model.setDefaultNormalCoords();
 	return model;

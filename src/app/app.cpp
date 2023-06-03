@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/28 11:12:12 by eli               #+#    #+#             */
-/*   Updated: 2023/06/03 14:46:47 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/03 20:43:32 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -281,57 +281,30 @@ void	App::loadTerrain() {
 		.seed = 42,
 		.width = 256,
 		.height = 256,
-		.depth = 256,
+		.depth = 50,
 		.layers = 4,
 		.frequency_0 = .02f,
 		.frequency_mult = 1.8f,
 		.amplitude_mult = 0.5f
 	});
 
-	scop::obj::Model	model = noise.toModel();
+	vox::PerlinNoise::PerlinMesh	mesh = noise.toMesh();
 
-	const auto&	model_vertices = model.getVertexCoords();
-	// const auto& model_textures = model.getTextureCoords();
-	// const auto& model_normals = model.getNormalCoords();
-	const auto& model_triangles = model.getTriangles();
-	uint32_t	indice = 0;
+	vertices.reserve(mesh.vertices.size());
+	for (const auto& coord: mesh.vertices) {
+		scop::Vertex	vertex{};
 
-	for (const auto& triangle: model_triangles) {
-		for (const auto& index: triangle.indices) {
-			scop::Vertex	vertex{};
-
-			vertex.pos = model_vertices[index.vertex];
-			// vertex.tex_coord = model_textures[index.texture_index];
-			vertex.tex_coord = {0.0f, 0.0f};
-			vertex.normal = {0.0f, 1.0f, 0.0f};
-			// vertex.normal = model_normals[index.normal_index];
-			math::generateVibrantColor(
-				vertex.color.x,
-				vertex.color.y,
-				vertex.color.z
-			);
-			vertices.emplace_back(vertex);
-			indices.emplace_back(indice++);
-		}
+		vertex.pos = coord;
+		vertex.tex_coord = {0.0f, 0.0f};
+		vertex.normal = {0.0f, 1.0f, 0.0f};
+		math::generateVibrantColor(
+			vertex.color.x,
+			vertex.color.y,
+			vertex.color.z
+		);
+		vertices.emplace_back(vertex);
 	}
-
-	// vox::PerlinNoise::PerlinMesh	mesh = noise.toMesh();
-
-	// vertices.reserve(mesh.vertices.size());
-	// for (const auto& coord: mesh.vertices) {
-	// 	scop::Vertex	vertex{};
-
-	// 	vertex.pos = coord;
-	// 	vertex.tex_coord = {0.0f, 0.0f};
-	// 	vertex.normal = {0.0f, 1.0f, 0.0f};
-	// 	math::generateVibrantColor(
-	// 		vertex.color.x,
-	// 		vertex.color.y,
-	// 		vertex.color.z
-	// 	);
-	// 	vertices.emplace_back(vertex);
-	// }
-	// indices = std::move(mesh.indices);
+	indices = std::move(mesh.indices);
 
 	scop::PpmLoader	img_loader(SCOP_TEXTURE_FILE_DEFAULT);
 	image.reset(new scop::Image(img_loader.load()));
