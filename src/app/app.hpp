@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/10 18:21:34 by eli               #+#    #+#             */
-/*   Updated: 2023/06/02 23:12:56 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/03 14:47:03 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,12 +62,6 @@ enum ObjectDirection {
 	MOVE_DOWN = -3
 };
 
-enum ZoomInput {
-	ZOOM_IN,
-	ZOOM_OUT,
-	ZOOM_NONE
-};
-
 enum TextureState {
 	TEXTURE_GRAYSCALE = 1,
 	TEXTURE_COLOR = 2,
@@ -119,7 +113,6 @@ public:
 	static void							untoggleMove(
 		ObjectDirection direction
 	) noexcept;
-	static void							toggleZoom(ZoomInput input) noexcept;
 	static void							updateCameraDir(
 		float x,
 		float y
@@ -162,9 +155,7 @@ private:
 	std::map<ObjectDirection, bool>		keys_pressed_directions;
 	static scop::Vect3					movement;
 	static scop::Vect3					position;
-
 	static scop::Vect3					eye_dir;
-	static float						zoom_input;
 
 	static std::array<scop::Vect3, 4>	light_colors;
 	static std::size_t					selected_light_color;

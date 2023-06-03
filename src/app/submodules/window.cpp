@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/06 12:28:42 by eli               #+#    #+#             */
-/*   Updated: 2023/06/02 21:28:44 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/03 14:45:36 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -157,45 +157,6 @@ static void	keyCallback(
 	}
 }
 
-/**
- * Function callback for mouse button press (unused)
-*/
-static void	mouseButtonCallback(
-	GLFWwindow* window,
-	int button,
-	int action,
-	int mods
-) {
-	(void)window;
-	(void)button;
-	(void)action;
-	(void)mods;
-
-	if (action != GLFW_PRESS) {
-		return;
-	}
-
-	// Reset zoom on scroll click
-	if (button == GLFW_MOUSE_BUTTON_MIDDLE) {
-		App::toggleZoom(ZoomInput::ZOOM_NONE);
-	}
-}
-
-static void	scrollCallback(
-	GLFWwindow* window,
-	double xoffset,
-	double yoffset
-) {
-	(void)window;
-	(void)xoffset;
-
-	if (yoffset > 0) {
-		App::toggleZoom(ZoomInput::ZOOM_IN);
-	} else {
-		App::toggleZoom(ZoomInput::ZOOM_OUT);
-	}
-}
-
 static void cursorPositionCallback(
 	GLFWwindow* window,
 	double xpos,
@@ -234,8 +195,6 @@ void	Window::init() {
 	// Setup event callbacks
 	glfwSetFramebufferSizeCallback(window, framebufferResizeCallback);
 	glfwSetKeyCallback(window, keyCallback);
-	glfwSetMouseButtonCallback(window, mouseButtonCallback);
-	glfwSetScrollCallback(window, scrollCallback);
 	glfwSetCursorPosCallback(window, cursorPositionCallback);
 
 	// Disable cursor

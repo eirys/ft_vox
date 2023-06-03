@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/23 10:26:08 by etran             #+#    #+#             */
-/*   Updated: 2023/06/03 13:15:59 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/03 14:54:57 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -128,8 +128,8 @@ scop::obj::Model	PerlinNoise::toModel() const {
 
 	// Generate vertices
 	model.reserveVertices(width * height);
-	const float				scale = 64.0f / depth;
-	const constexpr float	shift = -8.0f;
+	const constexpr float	shift = -30.0f;
+	const float				scale = 50;
 
 	for (std::size_t row = 0; row < height; ++row) {
 		for (std::size_t col = 0; col < width; ++col) {
@@ -139,7 +139,8 @@ scop::obj::Model	PerlinNoise::toModel() const {
 			Vect3	vertex{};
 			vertex.x = (col - half_width);
 			vertex.z = (row - half_height);
-			// y = noise_map[row * width + col] * scale + shift
+			// y = noise_map[row * width + col] * depth + shift
+			// vertex.y = noise_map[row * width + col] * 10;
 			vertex.y = std::fma(noise_map[std::fma(row, width, col)], scale, shift);
 
 			model.addVertex(vertex);
@@ -448,6 +449,8 @@ std::vector<float>	PerlinNoise::generate2dNoiseMap() {
 			}
 		}
 	}
+
+	// Normalize to [0, 1].
 	for (auto& value: noise_map) {
 		value /= norm;
 	}

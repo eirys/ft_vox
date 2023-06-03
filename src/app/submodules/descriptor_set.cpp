@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/15 20:56:05 by etran             #+#    #+#             */
-/*   Updated: 2023/06/03 13:15:24 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/03 14:44:54 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -313,7 +313,7 @@ void	DescriptorSet::updateCamera(
 
 	// Define camera transformation view
 	camera.view = scop::lookAtDir(
-		App::position * scop::App::zoom_input,
+		App::position,
 		scop::App::eye_dir,
 		scop::Vect3(0.0f, 1.0f, 0.0f)
 	);

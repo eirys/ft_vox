@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/28 11:12:12 by eli               #+#    #+#             */
-/*   Updated: 2023/06/03 13:12:50 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/03 14:46:47 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,8 +32,6 @@ std::map<ObjectDirection, bool>	App::keys_pressed_directions = populateDirection
 scop::Vect3						App::movement = scop::Vect3(0.0f, 0.0f, 0.0f);
 scop::Vect3						App::position = scop::Vect3(1.0f, 1.0f, 3.0f);
 scop::Vect3						App::eye_dir = scop::normalize(-App::position);
-
-float							App::zoom_input = 1.0f;
 
 std::array<scop::Vect3, 4>		App::light_colors = {
 	scop::Vect3(1.0f, 1.0f, 1.0f), // white
@@ -226,17 +224,6 @@ void	App::untoggleMove(ObjectDirection dir) noexcept {
 	}
 }
 
-void	App::toggleZoom(ZoomInput zoom) noexcept {
-	if (zoom == ZoomInput::ZOOM_NONE) {
-		zoom_input = 1.0f;
-		return;
-	} else if (zoom == ZoomInput::ZOOM_IN && zoom_input < 2.0f) {
-		zoom_input += 0.1f;
-	} else if (zoom == ZoomInput::ZOOM_OUT && zoom_input > 0.2f) {
-		zoom_input -= 0.1f;
-	}
-}
-
 void	App::updateCameraDir(float x, float y) noexcept {
 	static float last_x = x;
 	static float last_y = y;
@@ -407,7 +394,7 @@ void	App::loadModel(const std::string& path) {
 		App::light_positions[0],
 		App::light_colors[0],
 		model.getMaterial().diffuse_color,
-		App::position * App::zoom_input,
+		App::position,
 		model.getMaterial().specular_color,
 		model.getMaterial().shininess
 	};
