@@ -1,7 +1,7 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   obj_parser.hpp                                     :+:      :+:    :+:   */
+/*   obj_parser.h                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
@@ -15,9 +15,9 @@
 // Std
 # include <string> // std::string
 
-# include "model.hpp"
-# include "vertex.hpp"
-# include "parser.hpp"
+# include "model.h"
+# include "vertex.h"
+# include "parser.h"
 
 namespace scop {
 class Image;

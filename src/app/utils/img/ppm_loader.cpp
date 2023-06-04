@@ -6,12 +6,12 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/12 15:00:15 by eli               #+#    #+#             */
-/*   Updated: 2023/05/28 11:58:12 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/04 16:52:39 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "ppm_loader.hpp"
-#include "utils.hpp"
+#include "ppm_loader.h"
+#include "utils.h"
 
 namespace scop {
 

@@ -6,17 +6,17 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/04 19:23:47 by eli               #+#    #+#             */
-/*   Updated: 2023/06/03 12:49:52 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/04 16:52:39 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "model.hpp"
-#include "image_handler.hpp"
-#include "vector.hpp"
-#include "vertex.hpp"
-#include "utils.hpp"
-#include "material.hpp"
-#include "ppm_loader.hpp"
+#include "model.h"
+#include "image_handler.h"
+#include "vector.h"
+#include "vertex.h"
+#include "utils.h"
+#include "material.h"
+#include "ppm_loader.h"
 
 namespace scop {
 namespace obj {

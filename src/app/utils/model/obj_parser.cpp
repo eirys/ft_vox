@@ -6,15 +6,15 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/04 15:06:05 by etran             #+#    #+#             */
-/*   Updated: 2023/06/03 12:54:46 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/04 16:52:39 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "obj_parser.hpp"
-#include "utils.hpp"	// LOG
-#include "mtl_parser.hpp"
-#include "ppm_loader.hpp"
-#include "material.hpp"
+#include "obj_parser.h"
+#include "utils.h"	// LOG
+#include "mtl_parser.h"
+#include "ppm_loader.h"
+#include "material.h"
 
 #include <fstream>		// std::ifstream
 #include <vector>		// std::vector

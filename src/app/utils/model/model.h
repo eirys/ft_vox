@@ -1,7 +1,7 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   model.hpp                                          :+:      :+:    :+:   */
+/*   model.h                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
@@ -17,7 +17,7 @@
 # include <array> // std::array
 # include <stdexcept> // std::out_of_range
 
-# include "material.hpp"
+# include "material.h"
 
 # define SCOP_TEXTURE_FILE_DEFAULT "assets/textures/hammy.ppm"
 

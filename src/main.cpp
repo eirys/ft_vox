@@ -6,11 +6,11 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/06 03:53:55 by eli               #+#    #+#             */
-/*   Updated: 2023/06/02 16:26:41 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/04 16:52:39 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "app.hpp"
+#include "app.h"
 
 int main(int ac, char** av) {
 	try {

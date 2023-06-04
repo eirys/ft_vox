@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   descriptor_set.hpp                                 :+:      :+:    :+:   */
+/*   descriptor_set.h                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/05/15 20:39:20 by etran             #+#    #+#             */
-/*   Updated: 2023/06/02 16:06:06 by etran            ###   ########.fr       */
+/*   Created: 2023/06/04 17:14:18 by etran             #+#    #+#             */
+/*   Updated: 2023/06/04 17:14:18 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,9 +22,9 @@
 // Std
 # include <chrono> // std::chrono
 
-# include "device.hpp"
-# include "texture_sampler.hpp"
-# include "uniform_buffer_object.hpp"
+# include "device.h"
+# include "texture_sampler.h"
+# include "uniform_buffer_object.h"
 
 namespace scop {
 namespace graphics {

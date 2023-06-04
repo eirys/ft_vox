@@ -6,12 +6,12 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/15 20:21:48 by etran             #+#    #+#             */
-/*   Updated: 2023/06/02 16:08:08 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/04 16:52:39 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "render_target_resources.hpp"
-#include "engine.hpp"
+#include "render_target_resources.h"
+#include "engine.h"
 
 namespace scop {
 namespace graphics {

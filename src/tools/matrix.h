@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   matrix.hpp                                         :+:      :+:    :+:   */
+/*   matrix.h                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/05/03 14:11:57 by eli               #+#    #+#             */
-/*   Updated: 2023/06/02 21:27:12 by etran            ###   ########.fr       */
+/*   Created: 2023/06/04 17:16:40 by etran             #+#    #+#             */
+/*   Updated: 2023/06/04 17:18:16 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,10 +16,10 @@
 # include <stdexcept>
 # include <cstring>
 
-# include "vector.hpp"
+# include "vector.h"
 
 namespace scop {
-struct Mat2;	// Forward declaration
+struct Mat2;
 struct Mat3;
 
 struct Mat4 {

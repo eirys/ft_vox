@@ -6,14 +6,14 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/02 16:09:44 by etran             #+#    #+#             */
-/*   Updated: 2023/06/03 20:50:40 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/04 16:52:39 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "engine.hpp"
-#include "window.hpp"
-#include "utils.hpp"
-#include "image_handler.hpp"
+#include "engine.h"
+#include "window.h"
+#include "utils.h"
+#include "image_handler.h"
 
 #include <iostream> // std::cerr std::endl
 #include <cstring> // std::strcmp
@@ -116,7 +116,7 @@ void	Engine::render(
 
 	recordCommandBuffer(
 		indices_size,
-		command_buffer.command_buffers, 
+		command_buffer.command_buffers,
 		image_index
 	);
 
@@ -265,7 +265,9 @@ void	Engine::createGraphicsPipeline() {
 	// Vertex input assembly descriptor: regular triangles here
 	VkPipelineInputAssemblyStateCreateInfo	input_assembly_info{};
 	input_assembly_info.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
-	input_assembly_info.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST; //VK_PRIMITIVE_TOPOLOGY_LINE_LIST; 
+	// input_assembly_info.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+	input_assembly_info.topology = VK_PRIMITIVE_TOPOLOGY_LINE_LIST;
+	// input_assembly_info.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
 	input_assembly_info.primitiveRestartEnable = VK_FALSE;
 
 	// Viewport state

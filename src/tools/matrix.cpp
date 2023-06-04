@@ -6,11 +6,11 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/19 23:18:11 by etran             #+#    #+#             */
-/*   Updated: 2023/06/02 21:27:40 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/04 16:52:39 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "matrix.hpp"
+#include "matrix.h"
 
 #include <cstring> // memset
 

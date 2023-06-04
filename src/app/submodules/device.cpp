@@ -6,14 +6,14 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/16 01:00:19 by etran             #+#    #+#             */
-/*   Updated: 2023/06/02 16:08:08 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/04 16:52:39 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "engine.hpp"
-#include "device.hpp"
-#include "window.hpp"
-#include "utils.hpp"
+#include "engine.h"
+#include "device.h"
+#include "window.h"
+#include "utils.h"
 
 #include <vector> // std::vector
 #include <set> // std::set

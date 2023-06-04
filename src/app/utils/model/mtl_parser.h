@@ -1,7 +1,7 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   mtl_parser.hpp                                     :+:      :+:    :+:   */
+/*   mtl_parser.h                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
@@ -12,8 +12,8 @@
 
 #pragma once
 
-# include "material.hpp"
-# include "parser.hpp"
+# include "material.h"
+# include "parser.h"
 
 # define SCOP_TEXTURE_PATH "assets/textures/"
 # define SCOP_MTL_PATH "assets/materials/"

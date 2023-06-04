@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   vk_swap_chain.hpp                                     :+:      :+:    :+:   */
+/*   render_target.h                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/05/15 17:18:40 by etran             #+#    #+#             */
-/*   Updated: 2023/05/15 17:52:12 by etran            ###   ########.fr       */
+/*   Created: 2023/06/04 17:14:50 by etran             #+#    #+#             */
+/*   Updated: 2023/06/04 17:14:51 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,7 @@
 # include <optional>	// std::optional
 # include <vector>		// std::vector
 
-# include "render_target_resources.hpp"
+# include "render_target_resources.h"
 
 namespace scop {
 class Window;

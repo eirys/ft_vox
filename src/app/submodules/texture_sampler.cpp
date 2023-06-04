@@ -6,15 +6,15 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/15 20:25:44 by etran             #+#    #+#             */
-/*   Updated: 2023/06/02 16:08:08 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/04 16:52:39 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "texture_sampler.hpp"
-#include "engine.hpp"
-#include "image_handler.hpp"
-#include "device.hpp"
-#include "utils.hpp"
+#include "texture_sampler.h"
+#include "engine.h"
+#include "image_handler.h"
+#include "device.h"
+#include "utils.h"
 
 #include <cmath> // std::floor
 #include <algorithm> // std::max

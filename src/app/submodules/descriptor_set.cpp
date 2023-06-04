@@ -6,14 +6,14 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/15 20:56:05 by etran             #+#    #+#             */
-/*   Updated: 2023/06/03 14:44:54 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/04 16:52:39 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "descriptor_set.hpp"
-#include "uniform_buffer_object.hpp"
-#include "app.hpp"
-#include "math.hpp"
+#include "descriptor_set.h"
+#include "uniform_buffer_object.h"
+#include "app.h"
+#include "math.h"
 
 #include <array> // std::array
 #include <stdexcept> // std::runtime_error

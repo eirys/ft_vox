@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   uniform_buffer_object.hpp                          :+:      :+:    :+:   */
+/*   uniform_buffer_object.h                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/04/29 20:12:41 by eli               #+#    #+#             */
-/*   Updated: 2023/06/02 16:19:36 by etran            ###   ########.fr       */
+/*   Created: 2023/06/04 17:17:15 by etran             #+#    #+#             */
+/*   Updated: 2023/06/04 17:17:21 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,7 @@
 # define __ALIGNMENT_SCAL 4
 # define __ALIGNMENT_BUFF 64
 
-# include "matrix.hpp"
+# include "matrix.h"
 
 namespace scop {
 

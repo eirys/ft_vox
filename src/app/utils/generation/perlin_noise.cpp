@@ -6,13 +6,13 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/23 10:26:08 by etran             #+#    #+#             */
-/*   Updated: 2023/06/03 20:49:54 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/04 16:52:39 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "perlin_noise.hpp"
-#include "math.hpp"
-#include "vector.hpp"
+#include "perlin_noise.h"
+#include "math.h"
+#include "vector.h"
 
 #include <cstdint> // uint32_t
 #include <vector> // std::vector
@@ -78,34 +78,86 @@ std::vector<uint32_t>	PerlinNoise::toPixels() const {
 
 /**
  * @brief Converts the noise map to a polymesh.
- * 
+ *
  * @todo Optimize conversion.
  * @todo Generate blocks instead of a mesh.
  * @todo Normals and texture coordinates.
 */
 PerlinNoise::PerlinMesh	PerlinNoise::toMesh() const {
 	PerlinMesh		mesh;
-	const float		half_width = width / 2;
-	const float		half_height = height / 2;
+
+	// Center the mesh
+	const float				half_width = width / 2;
+	const float				half_height = height / 2;
+	// TODO: Make this configurable
+	const constexpr float	shift = -30.0f;
+	const constexpr float	block_size = 1.0f;
 
 	// Generate vertices
 	auto&			vertices = mesh.vertices;
 	vertices.reserve(width * height);
 
-	const float				scale = depth;
-	const constexpr float	shift = -30.0f;
-
 	for (std::size_t row = 0; row < height; ++row) {
 		for (std::size_t col = 0; col < width; ++col) {
+			// We want to generate blocks. A pixel of the noise map will be a block.
+			//   c_____d    Frame of reference:
+			// a/|___b/|    y z
+			// | h---|-g    |/
+			// |/    |/     O___x
+			// e_____f
+			// The current pos is abcd.
 
-			// Retrieve raw height from noise map, scaled down and shifted
-			Vect3	vertex{};
+			// Perlin value at abcd
+			const std::size_t	index = std::fma(row, width, col);
+			const float			perlin = noise_map[index];
+
+			// Vertex a
+			vertices.emplace_back(Vect3{
+				.x = col - half_width,
+				.z = row - half_height,
+				.y = perlin + block_size
+			});
+
+			// Vertex b
+			vertices.emplace_back(Vect3{
+				.x = col - half_width + block_size,
+				.z = row - half_height,
+				.y = perlin + block_size
+			});
+
+			// Vertex c
+			vertices.emplace_back(Vect3{
+				.x = col - half_width,
+				.z = row - half_height + block_size,
+				.y = perlin + block_size
+			});
+
+			// Vertex d
+			vertices.emplace_back(Vect3{
+				.x = col - half_width + block_size,
+				.z = row - half_height + block_size,
+				.y = perlin + block_size
+			});
+
+			// Check if we need to generate the full block
+			if (perlin != noise_map[index + 1]) {
+				// There is a change in the next column, we need to generate the full block.
+
+			}
+
+			// Vertex e
 			vertex.x = (col - half_width);
 			vertex.z = (row - half_height);
-			// y = noise_map[row * width + col] * scale + shift
-			vertex.y = std::fma(noise_map[std::fma(row, width, col)], scale, shift);
-
+			vertex.y = noise_map[std::fma(row, width, col)];
 			vertices.emplace_back(vertex);
+
+			// DEPRECTATED Old version:
+			// This creates a smooth valey kind of polymesh.
+			// Vect3	vertex{};
+			// vertex.x = (col - half_width);
+			// vertex.z = (row - half_height);
+			// vertex.y = std::fma(noise_map[std::fma(row, width, col)], depth, shift);
+			// vertices.emplace_back(vertex);
 		}
 	}
 
@@ -113,6 +165,7 @@ PerlinNoise::PerlinMesh	PerlinNoise::toMesh() const {
 	auto&	indices = mesh.indices;
 	// 2 triangles per square, 3 indices per triangle
 	indices.reserve(6 * (width - 1) * (height - 1));
+
 	for (std::size_t row = 0; row < height - 1; ++row) {
 		for (std::size_t col = 0; col < width - 1; ++col) {
 			//  a __ b <- Common vertex
@@ -141,7 +194,7 @@ PerlinNoise::PerlinMesh	PerlinNoise::toMesh() const {
 
 /**
  * @brief Converts the noise map to a model object.
- * 
+ *
  * @note This is not optimal, as we don't use some of the model's features.
  * @note I'll leave it in the code though, for posterity. lol
 */
@@ -478,9 +531,12 @@ std::vector<float>	PerlinNoise::generate2dNoiseMap() {
 		}
 	}
 
-	// Normalize to [0, 1].
+	// Normalize noise map to [0, 1]: divide by norm.
+	// Since we want to generate a terrain with values between [0, depth],
+	// we can do `value = value * depth / norm`.
+	norm = depth / norm;
 	for (auto& value: noise_map) {
-		value /= norm;
+		value *= norm;
 	}
 	return noise_map;
 }

@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   command_buffer.hpp                                 :+:      :+:    :+:   */
+/*   vertex_input.h                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/05/16 12:44:56 by etran             #+#    #+#             */
-/*   Updated: 2023/06/02 16:06:06 by etran            ###   ########.fr       */
+/*   Created: 2023/06/04 17:15:01 by etran             #+#    #+#             */
+/*   Updated: 2023/06/04 17:15:01 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,51 +19,67 @@
 
 # include <GLFW/glfw3.h>
 
+// Std
+# include <vector>
+# include "vertex.h"
+# include "vector.h"
+
 namespace scop {
 namespace graphics {
-
 class Engine;
 class Device;
 
-class CommandBuffer {
+class VertexInput {
 public:
-
 	friend Engine;
 
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
 
-	CommandBuffer() = default;
-	CommandBuffer(CommandBuffer&& other) = default;
-	~CommandBuffer() = default;
+	VertexInput() = default;
+	VertexInput(VertexInput&& x) = default;
+	~VertexInput() = default;
 
-	CommandBuffer(const CommandBuffer& other) = delete;
-	CommandBuffer& operator=(const CommandBuffer& other) = delete;
+	VertexInput(const VertexInput& x) = delete;
+	VertexInput&	operator=(VertexInput&& x) = delete;
 
 	/* ========================================================================= */
 
-	void							initPool(Device& device);
-	void							initBuffer(Device& device);
-	void							destroy(Device& device);
+	void	init(
+		Device& device,
+		VkCommandPool command_pool,
+		const std::vector<Vertex>& vertices,
+		const std::vector<uint32_t>& indices
+	);
+	void	destroy(Device& device);
 
 private:
 	/* ========================================================================= */
 	/*                               CLASS MEMBERS                               */
 	/* ========================================================================= */
 
-	VkCommandPool					vk_command_pool;
-	VkCommandBuffer					command_buffers;
-	
+	VkBuffer						vertex_buffer;
+	VkDeviceMemory					vertex_buffer_memory;
+	VkBuffer						index_buffer;
+	VkDeviceMemory					index_buffer_memory;
+
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
 
-	void							createCommandPool(Device& device);
-	void							createCommandBuffers(Device& device);
+	void							createVertexBuffer(
+		Device& device,
+	VkCommandPool command_pool,
+		const std::vector<Vertex>& vertices
+	);
+	void							createIndexBuffer(
+		Device& device,
+	VkCommandPool command_pool,
+		const std::vector<uint32_t>& indices
+	);
 
-}; // class CommandBuffer
+}; // class VertexInput
 
 } // namespace graphics
 } // namespace scop
-

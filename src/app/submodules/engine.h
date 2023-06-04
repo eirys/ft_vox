@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   engine.hpp                              :+:      :+:    :+:   */
+/*   engine.h                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/05/15 16:27:44 by etran             #+#    #+#             */
-/*   Updated: 2023/06/02 16:06:06 by etran            ###   ########.fr       */
+/*   Created: 2023/06/04 17:14:35 by etran             #+#    #+#             */
+/*   Updated: 2023/06/04 17:14:38 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,13 +23,13 @@
 # include <optional>	// std::optional
 # include <vector>		// std::vector
 
-# include "debug_module.hpp"
-# include "device.hpp"
-# include "render_target.hpp"
-# include "texture_sampler.hpp"
-# include "descriptor_set.hpp"
-# include "command_buffer.hpp"
-# include "vertex_input.hpp"
+# include "debug_module.h"
+# include "device.h"
+# include "render_target.h"
+# include "texture_sampler.h"
+# include "descriptor_set.h"
+# include "command_buffer.h"
+# include "vertex_input.h"
 
 namespace scop {
 namespace graphics {

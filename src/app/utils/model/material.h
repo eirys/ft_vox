@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   material.hpp                                       :+:      :+:    :+:   */
+/*   material.h                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/05/26 13:27:15 by etran             #+#    #+#             */
-/*   Updated: 2023/05/29 10:54:42 by etran            ###   ########.fr       */
+/*   Created: 2023/06/04 17:15:29 by etran             #+#    #+#             */
+/*   Updated: 2023/06/04 17:15:30 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,8 +14,8 @@
 
 # include <memory> // std::unique_ptr
 
-# include "vector.hpp"
-# include "image_handler.hpp"
+# include "vector.h"
+# include "image_handler.h"
 
 namespace scop {
 namespace mtl {

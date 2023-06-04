@@ -6,13 +6,13 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/16 13:03:48 by etran             #+#    #+#             */
-/*   Updated: 2023/06/02 16:08:08 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/04 16:52:39 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "vertex_input.hpp"
-#include "engine.hpp"
-#include "device.hpp"
+#include "vertex_input.h"
+#include "engine.h"
+#include "device.h"
 
 #include <cstring> // memcpy
 

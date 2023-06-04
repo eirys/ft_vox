@@ -6,18 +6,18 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/28 11:12:12 by eli               #+#    #+#             */
-/*   Updated: 2023/06/03 20:43:32 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/04 16:52:39 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "app.hpp"
-#include "model.hpp"
-#include "obj_parser.hpp"
-#include "ppm_loader.hpp"
-#include "math.hpp"
-#include "mtl_parser.hpp"
+#include "app.h"
+#include "model.h"
+#include "obj_parser.h"
+#include "ppm_loader.h"
+#include "math.h"
+#include "mtl_parser.h"
 
-#include "perlin_noise.hpp"
+#include "perlin_noise.h"
 
 namespace scop {
 
@@ -30,7 +30,7 @@ scop::Vect3						App::rotating_input = scop::Vect3(0.0f, 0.0f, 0.0f);
 
 std::map<ObjectDirection, bool>	App::keys_pressed_directions = populateDirectionKeys();
 scop::Vect3						App::movement = scop::Vect3(0.0f, 0.0f, 0.0f);
-scop::Vect3						App::position = scop::Vect3(1.0f, 1.0f, 3.0f);
+scop::Vect3						App::position = scop::Vect3(1.0f, 30.0f, 3.0f);
 scop::Vect3						App::eye_dir = scop::normalize(-App::position);
 
 std::array<scop::Vect3, 4>		App::light_colors = {
@@ -276,11 +276,14 @@ void	App::update() {
 }
 
 void	App::loadTerrain() {
-	vox::PerlinNoise	noise(vox::PerlinNoise::NoiseMapInfo{
+	LOG("Loading terrain...");
+	const constexpr float	chunk_size = 16.0f;
+
+	vox::PerlinNoise	noise({
 		.type = vox::PerlinNoiseType::PERLIN_NOISE_2D,
 		.seed = 42,
-		.width = 256,
-		.height = 256,
+		.width = 1 * chunk_size,
+		.height = 1 * chunk_size,
 		.depth = 50,
 		.layers = 4,
 		.frequency_0 = .02f,
@@ -305,6 +308,7 @@ void	App::loadTerrain() {
 		vertices.emplace_back(vertex);
 	}
 	indices = std::move(mesh.indices);
+	LOG("Terrain loaded.");
 
 	scop::PpmLoader	img_loader(SCOP_TEXTURE_FILE_DEFAULT);
 	image.reset(new scop::Image(img_loader.load()));

@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   render_target_resources.hpp                        :+:      :+:    :+:   */
+/*   command_buffer.h                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/05/15 20:07:43 by etran             #+#    #+#             */
-/*   Updated: 2023/05/17 01:20:40 by etran            ###   ########.fr       */
+/*   Created: 2023/06/04 17:14:01 by etran             #+#    #+#             */
+/*   Updated: 2023/06/04 17:14:03 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,41 +19,32 @@
 
 # include <GLFW/glfw3.h>
 
-// Std
-# include <vector> // std::vector
-
-# include "device.hpp"
-
 namespace scop {
 namespace graphics {
 
-class RenderTarget;
+class Engine;
 class Device;
 
-class RenderTargetResources {
+class CommandBuffer {
 public:
 
-	friend RenderTarget;
+	friend Engine;
 
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
 
-	RenderTargetResources() = default;
-	RenderTargetResources(RenderTargetResources&& other) = default;
-	~RenderTargetResources() = default;
+	CommandBuffer() = default;
+	CommandBuffer(CommandBuffer&& other) = default;
+	~CommandBuffer() = default;
 
-	RenderTargetResources(const RenderTargetResources& other) = delete;
-	RenderTargetResources& operator=(const RenderTargetResources& other) = delete;
+	CommandBuffer(const CommandBuffer& other) = delete;
+	CommandBuffer& operator=(const CommandBuffer& other) = delete;
 
 	/* ========================================================================= */
 
-	void							init(
-		Device& device,
-		VkExtent2D swap_chain_extent,
-		VkFormat swap_chain_image_format
-	);
-
+	void							initPool(Device& device);
+	void							initBuffer(Device& device);
 	void							destroy(Device& device);
 
 private:
@@ -61,38 +52,18 @@ private:
 	/*                               CLASS MEMBERS                               */
 	/* ========================================================================= */
 
-	VkImage							depth_image;
-	VkDeviceMemory					depth_image_memory;
-	VkImageView						depth_image_view;
-
-	VkImage							color_image;
-	VkDeviceMemory					color_image_memory;
-	VkImageView						color_image_view;
-
+	VkCommandPool					vk_command_pool;
+	VkCommandBuffer					command_buffers;
+	
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
 
-	void							createColorResources(
-		Device& device,
-		VkExtent2D extent,
-		VkFormat image_format
-	);
-	void							createDepthResources(
-		Device& device,
-		VkExtent2D extent
-	);
+	void							createCommandPool(Device& device);
+	void							createCommandBuffers(Device& device);
 
-}; // class DepthStencil
-
-/* ========================================================================== */
-/*                                    OTHER                                   */
-/* ========================================================================== */
-
-VkFormat	findDepthFormat(VkPhysicalDevice physical_device);
-bool		hasStencilCompotent(VkFormat format) noexcept;
-
+}; // class CommandBuffer
 
 } // namespace graphics
-}  // namespace scop
+} // namespace scop
 

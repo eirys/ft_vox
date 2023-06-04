@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ppm_loader.hpp                                     :+:      :+:    :+:   */
+/*   ppm_loader.h                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/05/12 13:57:01 by eli               #+#    #+#             */
-/*   Updated: 2023/05/27 01:20:48 by etran            ###   ########.fr       */
+/*   Created: 2023/06/04 17:17:49 by etran             #+#    #+#             */
+/*   Updated: 2023/06/04 17:17:49 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,8 +17,8 @@
 # include <fstream>
 # include <functional>
 
-# include "image_loader.hpp"
-# include "image_handler.hpp"
+# include "image_loader.h"
+# include "image_handler.h"
 
 namespace scop {
 

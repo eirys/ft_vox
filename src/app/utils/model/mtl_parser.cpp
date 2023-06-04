@@ -6,13 +6,13 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/26 13:32:56 by etran             #+#    #+#             */
-/*   Updated: 2023/05/29 10:56:49 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/04 16:52:39 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "mtl_parser.hpp"
-#include "utils.hpp"
-#include "ppm_loader.hpp"
+#include "mtl_parser.h"
+#include "utils.h"
+#include "ppm_loader.h"
 
 #include <fstream> // std::ifstream
 #include <stdexcept> // std::invalid_argument

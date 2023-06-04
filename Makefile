@@ -6,7 +6,7 @@
 #    By: etran <etran@student.42.fr>                +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/04/06 03:40:09 by eli               #+#    #+#              #
-#    Updated: 2023/06/03 14:49:33 by etran            ###   ########.fr        #
+#    Updated: 2023/06/04 16:52:56 by etran            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -44,32 +44,32 @@ OBJ_SUBDIRS	:=	$(addprefix $(OBJ_DIR)/,$(SUBDIRS))
 INC_SUBDIRS	:=	$(addprefix $(SRC_DIR)/,$(SUBDIRS))
 
 # cpp files
-INC_FILES	:=	$(TOOLS_DIR)/utils.hpp \
-				$(TOOLS_DIR)/math.hpp \
-				$(TOOLS_DIR)/matrix.hpp \
-				$(TOOLS_DIR)/vector.hpp \
-				$(UTILS_DIR)/vertex.hpp \
-				$(UTILS_DIR)/uniform_buffer_object.hpp \
-				$(MODEL_DIR)/model.hpp \
-				$(MODEL_DIR)/material.hpp \
-				$(MODEL_DIR)/parser.hpp \
-				$(MODEL_DIR)/obj_parser.hpp \
-				$(MODEL_DIR)/mtl_parser.hpp \
-				$(GEN_DIR)/perlin_noise.hpp \
-				$(IMG_DIR)/image_loader.hpp \
-				$(IMG_DIR)/image_handler.hpp \
-				$(IMG_DIR)/ppm_loader.hpp \
-				$(SUBMOD_DIR)/window.hpp \
-				$(SUBMOD_DIR)/debug_module.hpp \
-				$(SUBMOD_DIR)/device.hpp \
-				$(SUBMOD_DIR)/render_target.hpp \
-				$(SUBMOD_DIR)/render_target_resources.hpp \
-				$(SUBMOD_DIR)/descriptor_set.hpp \
-				$(SUBMOD_DIR)/command_buffer.hpp \
-				$(SUBMOD_DIR)/texture_sampler.hpp \
-				$(SUBMOD_DIR)/vertex_input.hpp \
-				$(SUBMOD_DIR)/engine.hpp \
-				$(APP_DIR)/app.hpp
+INC_FILES	:=	$(TOOLS_DIR)/utils.h \
+				$(TOOLS_DIR)/math.h \
+				$(TOOLS_DIR)/matrix.h \
+				$(TOOLS_DIR)/vector.h \
+				$(UTILS_DIR)/vertex.h \
+				$(UTILS_DIR)/uniform_buffer_object.h \
+				$(MODEL_DIR)/model.h \
+				$(MODEL_DIR)/material.h \
+				$(MODEL_DIR)/parser.h \
+				$(MODEL_DIR)/obj_parser.h \
+				$(MODEL_DIR)/mtl_parser.h \
+				$(GEN_DIR)/perlin_noise.h \
+				$(IMG_DIR)/image_loader.h \
+				$(IMG_DIR)/image_handler.h \
+				$(IMG_DIR)/ppm_loader.h \
+				$(SUBMOD_DIR)/window.h \
+				$(SUBMOD_DIR)/debug_module.h \
+				$(SUBMOD_DIR)/device.h \
+				$(SUBMOD_DIR)/render_target.h \
+				$(SUBMOD_DIR)/render_target_resources.h \
+				$(SUBMOD_DIR)/descriptor_set.h \
+				$(SUBMOD_DIR)/command_buffer.h \
+				$(SUBMOD_DIR)/texture_sampler.h \
+				$(SUBMOD_DIR)/vertex_input.h \
+				$(SUBMOD_DIR)/engine.h \
+				$(APP_DIR)/app.h
 
 SRC_FILES	:=	$(TOOLS_DIR)/matrix.cpp \
 				$(MODEL_DIR)/model.cpp \

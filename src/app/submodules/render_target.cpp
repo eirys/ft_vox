@@ -10,10 +10,10 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "render_target.hpp"
-#include "device.hpp"
-#include "engine.hpp"
-#include "window.hpp"
+#include "render_target.h"
+#include "device.h"
+#include "engine.h"
+#include "window.h"
 
 #include <algorithm> // std::min, std::max
 #include <stdexcept> // std::runtime_error

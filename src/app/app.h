@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   app.hpp                                            :+:      :+:    :+:   */
+/*   app.h                                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/04/10 18:21:34 by eli               #+#    #+#             */
-/*   Updated: 2023/06/03 14:47:03 by etran            ###   ########.fr       */
+/*   Created: 2023/06/04 17:17:06 by etran             #+#    #+#             */
+/*   Updated: 2023/06/04 17:17:23 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,13 +24,13 @@
 # include <memory> // std::unique_ptr
 # include <map> // std::map
 
-# include "window.hpp"
-# include "utils.hpp"
-# include "matrix.hpp"
-# include "vertex.hpp"
-# include "image_handler.hpp"
-# include "engine.hpp"
-# include "uniform_buffer_object.hpp"
+# include "window.h"
+# include "utils.h"
+# include "matrix.h"
+# include "vertex.h"
+# include "image_handler.h"
+# include "engine.h"
+# include "uniform_buffer_object.h"
 
 # define SCOP_MOUSE_SENSITIVITY	0.25f
 # define SCOP_MOVE_SPEED		0.05f

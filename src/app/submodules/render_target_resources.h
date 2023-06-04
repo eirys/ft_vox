@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   vertex_input.hpp                                   :+:      :+:    :+:   */
+/*   render_target_resources.h                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/05/15 20:43:53 by etran             #+#    #+#             */
-/*   Updated: 2023/06/02 16:06:06 by etran            ###   ########.fr       */
+/*   Created: 2023/06/04 17:14:42 by etran             #+#    #+#             */
+/*   Updated: 2023/06/04 17:14:43 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,66 +20,79 @@
 # include <GLFW/glfw3.h>
 
 // Std
-# include <vector>
-# include "vertex.hpp"
-# include "vector.hpp"
+# include <vector> // std::vector
+
+# include "device.h"
 
 namespace scop {
 namespace graphics {
-class Engine;
+
+class RenderTarget;
 class Device;
 
-class VertexInput {
+class RenderTargetResources {
 public:
-	friend Engine;
+
+	friend RenderTarget;
 
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
 
-	VertexInput() = default;
-	VertexInput(VertexInput&& x) = default;
-	~VertexInput() = default;
+	RenderTargetResources() = default;
+	RenderTargetResources(RenderTargetResources&& other) = default;
+	~RenderTargetResources() = default;
 
-	VertexInput(const VertexInput& x) = delete;
-	VertexInput&	operator=(VertexInput&& x) = delete;
+	RenderTargetResources(const RenderTargetResources& other) = delete;
+	RenderTargetResources& operator=(const RenderTargetResources& other) = delete;
 
 	/* ========================================================================= */
 
-	void	init(
+	void							init(
 		Device& device,
-		VkCommandPool command_pool,
-		const std::vector<Vertex>& vertices,
-		const std::vector<uint32_t>& indices
+		VkExtent2D swap_chain_extent,
+		VkFormat swap_chain_image_format
 	);
-	void	destroy(Device& device);
+
+	void							destroy(Device& device);
 
 private:
 	/* ========================================================================= */
 	/*                               CLASS MEMBERS                               */
 	/* ========================================================================= */
 
-	VkBuffer						vertex_buffer;
-	VkDeviceMemory					vertex_buffer_memory;
-	VkBuffer						index_buffer;
-	VkDeviceMemory					index_buffer_memory;
+	VkImage							depth_image;
+	VkDeviceMemory					depth_image_memory;
+	VkImageView						depth_image_view;
+
+	VkImage							color_image;
+	VkDeviceMemory					color_image_memory;
+	VkImageView						color_image_view;
 
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
 
-	void							createVertexBuffer(
+	void							createColorResources(
 		Device& device,
-	VkCommandPool command_pool,
-		const std::vector<Vertex>& vertices
+		VkExtent2D extent,
+		VkFormat image_format
 	);
-	void							createIndexBuffer(
+	void							createDepthResources(
 		Device& device,
-	VkCommandPool command_pool,
-		const std::vector<uint32_t>& indices
+		VkExtent2D extent
 	);
 
-}; // class VertexInput
+}; // class DepthStencil
+
+/* ========================================================================== */
+/*                                    OTHER                                   */
+/* ========================================================================== */
+
+VkFormat	findDepthFormat(VkPhysicalDevice physical_device);
+bool		hasStencilCompotent(VkFormat format) noexcept;
+
 
 } // namespace graphics
-} // namespace scop
+}  // namespace scop
+

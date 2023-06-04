@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   utils.hpp                                          :+:      :+:    :+:   */
+/*   utils.h                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/04/06 14:23:35 by eli               #+#    #+#             */
-/*   Updated: 2023/05/27 01:24:00 by etran            ###   ########.fr       */
+/*   Created: 2023/06/04 17:16:25 by etran             #+#    #+#             */
+/*   Updated: 2023/06/04 17:16:28 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,8 +28,8 @@
 #  define LOG(X)
 # endif
 
-# include "vector.hpp"
-# include "vertex.hpp"
+# include "vector.h"
+# include "vertex.h"
 
 namespace scop {
 namespace utils {
