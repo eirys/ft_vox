@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:19:11 by etran             #+#    #+#             */
-/*   Updated: 2023/06/04 21:40:23 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/04 22:41:44 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,7 +35,17 @@ struct Cube {
 	/*                                  TYPEDEFS                                 */
 	/* ========================================================================= */
 
-	typedef std::array<scop::Vect3, 4>	Face;
+	struct	Face {
+		scop::Vect3	vertices[4];
+
+		const scop::Vect3& operator[](std::size_t index) const noexcept {
+			return vertices[index];
+		}
+
+		scop::Vect3& operator[](std::size_t index) noexcept {
+			return vertices[index];
+		}
+	};
 
 	/* ========================================================================= */
 	/*                               CONST MEMBERS                               */
@@ -68,19 +78,12 @@ struct Cube {
 
 	/* FACES =================================================================== */
 
-	void				top(Face& face) const noexcept;
-	void				bottom(Face& face) const noexcept;
-	void				left(Face& face) const noexcept;
-	void				right(Face& face) const noexcept;
-	void				front(Face& face) const noexcept;
-	void				back(Face& face) const noexcept;
-
-	Face				top_face() const noexcept;
-	Face				bottom_face() const noexcept;
-	Face				left_face() const noexcept;
-	Face				right_face() const noexcept;
-	Face				front_face() const noexcept;
-	Face				back_face() const noexcept;
+	Face				top() const noexcept;
+	Face				bottom() const noexcept;
+	Face				left() const noexcept;
+	Face				right() const noexcept;
+	Face				front() const noexcept;
+	Face				back() const noexcept;
 
 	/* ========================================================================= */
 	/*                               CLASS MEMBERS                               */

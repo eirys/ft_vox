@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/28 11:12:12 by eli               #+#    #+#             */
-/*   Updated: 2023/06/04 22:02:15 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/04 22:22:24 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -278,14 +278,15 @@ void	App::update() {
 void	App::loadTerrain() {
 	LOG("Loading terrain...");
 	const constexpr std::size_t	chunk_size = 16;
-	const constexpr std::size_t	chunk_count = 4;
+	const constexpr std::size_t	render_distance_xy = 4;
+	const constexpr std::size_t	render_distance_z = 2;
 
 	vox::PerlinNoise	noise({
 		.type = vox::PerlinNoiseType::PERLIN_NOISE_2D,
 		.seed = 42,
-		.width = chunk_count * chunk_size,
-		.height = chunk_count * chunk_size,
-		.depth = 50,
+		.width = render_distance_xy * chunk_size,
+		.height = render_distance_xy * chunk_size,
+		.depth = render_distance_z * chunk_size,
 		.layers = 4,
 		.frequency_0 = .02f,
 		.frequency_mult = 1.8f,

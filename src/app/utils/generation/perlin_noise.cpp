@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/23 10:26:08 by etran             #+#    #+#             */
-/*   Updated: 2023/06/04 21:59:00 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/04 22:46:39 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -92,6 +92,7 @@ PerlinNoise::PerlinMesh	PerlinNoise::toMesh() const {
 	const float				half_height = height / 2;
 	// TODO: Make this configurable
 	const constexpr float	shift = -30.0f;
+	const constexpr float	scale = 20;
 
 	auto&	vertices = mesh.vertices;
 	auto&	indices = mesh.indices;
@@ -99,12 +100,11 @@ PerlinNoise::PerlinMesh	PerlinNoise::toMesh() const {
 	indices.reserve((width - 1) * (height - 1) * 6);
 
 	auto	addFace = [&vertices](const Cube::Face& face) -> void {
-		for (const auto& vertex: face) {
-			vertices.emplace_back(vertex);
+		for (std::size_t i = 0; i < 4; ++i) {
+			vertices.emplace_back(face[i]);
 		}
 	};
 
-	Cube::Face	top_face;
 	for (std::size_t row = 0; row < height; ++row) {
 		for (std::size_t col = 0; col < width; ++col) {
 			// A pixel of the noise map will be a block.
@@ -120,7 +120,7 @@ PerlinNoise::PerlinMesh	PerlinNoise::toMesh() const {
 
 			const Cube	cube {{
 				col - half_width,
-				perlin + shift,
+				std::floor(perlin * scale + shift),
 				row - half_height
 			}};
 
@@ -134,59 +134,18 @@ PerlinNoise::PerlinMesh	PerlinNoise::toMesh() const {
 				uint32_t h = e + 3;
 
 				// First triangle
-				indices.emplace_back(f);
 				indices.emplace_back(e);
 				indices.emplace_back(g);
+				indices.emplace_back(f);
 
 				// Second triangle
-				indices.emplace_back(f);
-				indices.emplace_back(g);
+				indices.emplace_back(e);
 				indices.emplace_back(h);
+				indices.emplace_back(g);
 			}
 
 			// Vertices
-			cube.top(top_face);
-			addFace(top_face);
-
-			// // Vertex a
-			// vertices.emplace_back(Vect3{
-			// 	.x = col - half_width,
-			// 	.z = row - half_height,
-			// 	.y = perlin + block_size
-			// });
-
-			// // Vertex b
-			// vertices.emplace_back(Vect3{
-			// 	.x = col - half_width + block_size,
-			// 	.z = row - half_height,
-			// 	.y = perlin + block_size
-			// });
-
-			// // Vertex c
-			// vertices.emplace_back(Vect3{
-			// 	.x = col - half_width,
-			// 	.z = row - half_height + block_size,
-			// 	.y = perlin + block_size
-			// });
-
-			// // Vertex d
-			// vertices.emplace_back(Vect3{
-			// 	.x = col - half_width + block_size,
-			// 	.z = row - half_height + block_size,
-			// 	.y = perlin + block_size
-			// });
-
-			// Check if we need to generate the full block
-			// if (perlin != noise_map[index + 1]) {
-			// 	// There is a change in the next column, we need to generate the full block.
-
-			// }
-
-			// // Vertex e
-			// vertex.x = (col - half_width);
-			// vertex.z = (row - half_height);
-			// vertex.y = noise_map[std::fma(row, width, col)];
-			// vertices.emplace_back(vertex);
+			addFace(cube.top());
 
 			// DEPRECTATED Old version:
 			// This creates a smooth valey kind of polymesh.
@@ -198,34 +157,6 @@ PerlinNoise::PerlinMesh	PerlinNoise::toMesh() const {
 		}
 	}
 
-	// Generate indices
-	// auto&	indices = mesh.indices;
-	// // 2 triangles per square, 3 indices per triangle
-	// indices.reserve(6 * (width - 1) * (height - 1));
-
-	// for (std::size_t row = 0; row < height - 1; ++row) {
-	// 	for (std::size_t col = 0; col < width - 1; ++col) {
-	// 		//  a __ b <- Common vertex
-	// 		//  |  / |
-	// 		//  | /  |
-	// 		//  c __ d
-
-	// 		uint32_t	a = static_cast<int>(row * width + col);
-	// 		uint32_t	b = static_cast<int>(row * width + (col + 1));
-	// 		uint32_t	c = static_cast<int>((row + 1) * width + col);
-	// 		uint32_t	d = static_cast<int>((row + 1) * width + (col + 1));
-
-	// 		// First triangle
-	// 		indices.emplace_back(b);
-	// 		indices.emplace_back(a);
-	// 		indices.emplace_back(c);
-
-	// 		// Second triangle
-	// 		indices.emplace_back(b);
-	// 		indices.emplace_back(c);
-	// 		indices.emplace_back(d);
-	// 	}
-	// }
 	return mesh;
 }
 
@@ -569,11 +500,8 @@ std::vector<float>	PerlinNoise::generate2dNoiseMap() {
 	}
 
 	// Normalize noise map to [0, 1]: divide by norm.
-	// Since we want to generate a terrain with values between [0, depth],
-	// we can do `value = value * depth / norm`.
-	norm = depth / norm;
 	for (auto& value: noise_map) {
-		value *= norm;
+		value /= norm;
 	}
 	return noise_map;
 }
@@ -680,39 +608,4 @@ std::vector<float>	PerlinNoise::generate3dNoiseMap() {
 	return noise_map;
 }
 
-} // namespace scop
-
-// TODO remove
-// #include<iostream>
-// #include <fstream>
-// int main() {
-// 	std::ofstream	file("noise_map.ppm", std::ios::out | std::ios::binary);
-
-// 	scop::PerlinNoise::NoiseMapInfo	info = {
-// 		.type = scop::PerlinNoiseType::PERLIN_NOISE_2D,
-// 		.width = 450,
-// 		.height = 450,
-// 		.layers = 5,
-// 		.frequency_0 = .02f,
-// 		.frequency_mult = 1.8f,
-// 		.amplitude_mult = 0.5f,
-// 	};
-// 	scop::PerlinNoise	noise(info);
-// 	std::vector<float>	noise_map = noise.getNoiseMap();
-
-// 	std::cout << "Seed: " << noise.getSeed() << std::endl;
-
-// 	// Generate PPM file in format P6.
-// 	file << "P6\n" << noise.getWidth() << " " << noise.getHeight() << "\n255\n";
-
-// 	for (std::size_t y = 0; y < noise.getHeight(); ++y) {
-// 		for (std::size_t x = 0; x < noise.getWidth(); ++x) {
-// 			float	value = noise_map[y * noise.getWidth() + x];
-// 			uint8_t	color = static_cast<uint8_t>(value * 255.0f);
-// 			file << color << color << color;
-// 		}
-// 	}
-
-// 	file.close();
-// 	return 0;
-// }
+} // namespace vox
