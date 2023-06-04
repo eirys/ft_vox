@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/28 11:12:12 by eli               #+#    #+#             */
-/*   Updated: 2023/06/04 16:52:39 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/04 22:02:15 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,7 +30,7 @@ scop::Vect3						App::rotating_input = scop::Vect3(0.0f, 0.0f, 0.0f);
 
 std::map<ObjectDirection, bool>	App::keys_pressed_directions = populateDirectionKeys();
 scop::Vect3						App::movement = scop::Vect3(0.0f, 0.0f, 0.0f);
-scop::Vect3						App::position = scop::Vect3(1.0f, 30.0f, 3.0f);
+scop::Vect3						App::position = scop::Vect3(1.0f, 10.0f, 3.0f);
 scop::Vect3						App::eye_dir = scop::normalize(-App::position);
 
 std::array<scop::Vect3, 4>		App::light_colors = {
@@ -277,13 +277,14 @@ void	App::update() {
 
 void	App::loadTerrain() {
 	LOG("Loading terrain...");
-	const constexpr float	chunk_size = 16.0f;
+	const constexpr std::size_t	chunk_size = 16;
+	const constexpr std::size_t	chunk_count = 4;
 
 	vox::PerlinNoise	noise({
 		.type = vox::PerlinNoiseType::PERLIN_NOISE_2D,
 		.seed = 42,
-		.width = 1 * chunk_size,
-		.height = 1 * chunk_size,
+		.width = chunk_count * chunk_size,
+		.height = chunk_count * chunk_size,
 		.depth = 50,
 		.layers = 4,
 		.frequency_0 = .02f,

@@ -6,7 +6,7 @@
 #    By: etran <etran@student.42.fr>                +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/04/06 03:40:09 by eli               #+#    #+#              #
-#    Updated: 2023/06/04 16:52:56 by etran            ###   ########.fr        #
+#    Updated: 2023/06/04 20:44:06 by etran            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -56,6 +56,7 @@ INC_FILES	:=	$(TOOLS_DIR)/utils.h \
 				$(MODEL_DIR)/obj_parser.h \
 				$(MODEL_DIR)/mtl_parser.h \
 				$(GEN_DIR)/perlin_noise.h \
+				$(GEN_DIR)/cube.h \
 				$(IMG_DIR)/image_loader.h \
 				$(IMG_DIR)/image_handler.h \
 				$(IMG_DIR)/ppm_loader.h \
@@ -77,6 +78,7 @@ SRC_FILES	:=	$(TOOLS_DIR)/matrix.cpp \
 				$(MODEL_DIR)/obj_parser.cpp \
 				$(MODEL_DIR)/mtl_parser.cpp \
 				$(GEN_DIR)/perlin_noise.cpp \
+				$(GEN_DIR)/cube.cpp \
 				$(IMG_DIR)/ppm_loader.cpp \
 				$(IMG_DIR)/image_handler.cpp \
 				$(SUBMOD_DIR)/window.cpp \

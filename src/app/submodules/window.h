@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:15:08 by etran             #+#    #+#             */
-/*   Updated: 2023/06/04 17:15:08 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/04 22:04:10 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,7 +38,7 @@ public:
 
 	static constexpr const uint32_t		width = 800;
 	static constexpr const uint32_t		height = 600;
-	static constexpr const char			title[] = "Etran's Scop: ";
+	static constexpr const char			title[] = "FT_VOX";
 	static constexpr const milliseconds	spam_delay = std::chrono::milliseconds(500);
 
 	/* ========================================================================= */

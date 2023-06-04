@@ -6,13 +6,14 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/23 10:26:08 by etran             #+#    #+#             */
-/*   Updated: 2023/06/04 16:52:39 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/04 21:59:00 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "perlin_noise.h"
 #include "math.h"
 #include "vector.h"
+#include "cube.h"
 
 #include <cstdint> // uint32_t
 #include <vector> // std::vector
@@ -85,71 +86,107 @@ std::vector<uint32_t>	PerlinNoise::toPixels() const {
 */
 PerlinNoise::PerlinMesh	PerlinNoise::toMesh() const {
 	PerlinMesh		mesh;
-
+ 
 	// Center the mesh
 	const float				half_width = width / 2;
 	const float				half_height = height / 2;
 	// TODO: Make this configurable
 	const constexpr float	shift = -30.0f;
-	const constexpr float	block_size = 1.0f;
 
-	// Generate vertices
-	auto&			vertices = mesh.vertices;
+	auto&	vertices = mesh.vertices;
+	auto&	indices = mesh.indices;
 	vertices.reserve(width * height);
+	indices.reserve((width - 1) * (height - 1) * 6);
 
+	auto	addFace = [&vertices](const Cube::Face& face) -> void {
+		for (const auto& vertex: face) {
+			vertices.emplace_back(vertex);
+		}
+	};
+
+	Cube::Face	top_face;
 	for (std::size_t row = 0; row < height; ++row) {
 		for (std::size_t col = 0; col < width; ++col) {
-			// We want to generate blocks. A pixel of the noise map will be a block.
-			//   c_____d    Frame of reference:
-			// a/|___b/|    y z
-			// | h---|-g    |/
+			// A pixel of the noise map will be a block.
+			//   h_____g    Frame of reference:
+			// e/|___f/|    y z
+			// | d---|-c    |/
 			// |/    |/     O___x
-			// e_____f
-			// The current pos is abcd.
+			// a_____b
 
-			// Perlin value at abcd
+			// Perlin value of the current pixel
 			const std::size_t	index = std::fma(row, width, col);
 			const float			perlin = noise_map[index];
 
-			// Vertex a
-			vertices.emplace_back(Vect3{
-				.x = col - half_width,
-				.z = row - half_height,
-				.y = perlin + block_size
-			});
+			const Cube	cube {{
+				col - half_width,
+				perlin + shift,
+				row - half_height
+			}};
 
-			// Vertex b
-			vertices.emplace_back(Vect3{
-				.x = col - half_width + block_size,
-				.z = row - half_height,
-				.y = perlin + block_size
-			});
+			// Add the top face
 
-			// Vertex c
-			vertices.emplace_back(Vect3{
-				.x = col - half_width,
-				.z = row - half_height + block_size,
-				.y = perlin + block_size
-			});
+			// Indices
+			if (row != height - 1 && col != width - 1) {
+				uint32_t e = static_cast<uint32_t>(vertices.size());
+				uint32_t f = e + 1;
+				uint32_t g = e + 2;
+				uint32_t h = e + 3;
 
-			// Vertex d
-			vertices.emplace_back(Vect3{
-				.x = col - half_width + block_size,
-				.z = row - half_height + block_size,
-				.y = perlin + block_size
-			});
+				// First triangle
+				indices.emplace_back(f);
+				indices.emplace_back(e);
+				indices.emplace_back(g);
 
-			// Check if we need to generate the full block
-			if (perlin != noise_map[index + 1]) {
-				// There is a change in the next column, we need to generate the full block.
-
+				// Second triangle
+				indices.emplace_back(f);
+				indices.emplace_back(g);
+				indices.emplace_back(h);
 			}
 
-			// Vertex e
-			vertex.x = (col - half_width);
-			vertex.z = (row - half_height);
-			vertex.y = noise_map[std::fma(row, width, col)];
-			vertices.emplace_back(vertex);
+			// Vertices
+			cube.top(top_face);
+			addFace(top_face);
+
+			// // Vertex a
+			// vertices.emplace_back(Vect3{
+			// 	.x = col - half_width,
+			// 	.z = row - half_height,
+			// 	.y = perlin + block_size
+			// });
+
+			// // Vertex b
+			// vertices.emplace_back(Vect3{
+			// 	.x = col - half_width + block_size,
+			// 	.z = row - half_height,
+			// 	.y = perlin + block_size
+			// });
+
+			// // Vertex c
+			// vertices.emplace_back(Vect3{
+			// 	.x = col - half_width,
+			// 	.z = row - half_height + block_size,
+			// 	.y = perlin + block_size
+			// });
+
+			// // Vertex d
+			// vertices.emplace_back(Vect3{
+			// 	.x = col - half_width + block_size,
+			// 	.z = row - half_height + block_size,
+			// 	.y = perlin + block_size
+			// });
+
+			// Check if we need to generate the full block
+			// if (perlin != noise_map[index + 1]) {
+			// 	// There is a change in the next column, we need to generate the full block.
+
+			// }
+
+			// // Vertex e
+			// vertex.x = (col - half_width);
+			// vertex.z = (row - half_height);
+			// vertex.y = noise_map[std::fma(row, width, col)];
+			// vertices.emplace_back(vertex);
 
 			// DEPRECTATED Old version:
 			// This creates a smooth valey kind of polymesh.
@@ -162,33 +199,33 @@ PerlinNoise::PerlinMesh	PerlinNoise::toMesh() const {
 	}
 
 	// Generate indices
-	auto&	indices = mesh.indices;
-	// 2 triangles per square, 3 indices per triangle
-	indices.reserve(6 * (width - 1) * (height - 1));
+	// auto&	indices = mesh.indices;
+	// // 2 triangles per square, 3 indices per triangle
+	// indices.reserve(6 * (width - 1) * (height - 1));
 
-	for (std::size_t row = 0; row < height - 1; ++row) {
-		for (std::size_t col = 0; col < width - 1; ++col) {
-			//  a __ b <- Common vertex
-			//  |  / |
-			//  | /  |
-			//  c __ d
+	// for (std::size_t row = 0; row < height - 1; ++row) {
+	// 	for (std::size_t col = 0; col < width - 1; ++col) {
+	// 		//  a __ b <- Common vertex
+	// 		//  |  / |
+	// 		//  | /  |
+	// 		//  c __ d
 
-			uint32_t	a = static_cast<int>(row * width + col);
-			uint32_t	b = static_cast<int>(row * width + (col + 1));
-			uint32_t	c = static_cast<int>((row + 1) * width + col);
-			uint32_t	d = static_cast<int>((row + 1) * width + (col + 1));
+	// 		uint32_t	a = static_cast<int>(row * width + col);
+	// 		uint32_t	b = static_cast<int>(row * width + (col + 1));
+	// 		uint32_t	c = static_cast<int>((row + 1) * width + col);
+	// 		uint32_t	d = static_cast<int>((row + 1) * width + (col + 1));
 
-			// First triangle
-			indices.emplace_back(b);
-			indices.emplace_back(a);
-			indices.emplace_back(c);
+	// 		// First triangle
+	// 		indices.emplace_back(b);
+	// 		indices.emplace_back(a);
+	// 		indices.emplace_back(c);
 
-			// Second triangle
-			indices.emplace_back(b);
-			indices.emplace_back(c);
-			indices.emplace_back(d);
-		}
-	}
+	// 		// Second triangle
+	// 		indices.emplace_back(b);
+	// 		indices.emplace_back(c);
+	// 		indices.emplace_back(d);
+	// 	}
+	// }
 	return mesh;
 }
 
