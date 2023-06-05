@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/28 11:12:12 by eli               #+#    #+#             */
-/*   Updated: 2023/06/05 09:29:37 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/05 09:42:53 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -270,7 +270,7 @@ void	App::update() {
 	const scop::Vect3	up_dir = {0.0f, 1.0f, 0.0f};
 	const scop::Vect3	s = scop::normalize(scop::cross(eye_dir, up_dir));
 	const scop::Vect3	u = scop::normalize(scop::cross(s, eye_dir));
-	// position = eye_dir * movement.z + up_dir * movement.y + s * movement.x + position;
+
 	position = math::fma(
 		eye_dir,
 		movement.z,

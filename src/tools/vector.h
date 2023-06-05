@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:16:07 by etran             #+#    #+#             */
-/*   Updated: 2023/06/04 17:16:08 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/05 09:42:09 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -138,8 +138,10 @@ struct Vect3 {
  * @brief Returns the dot product of the vector with another vector
  */
 inline float	dot(const Vect3& lhs, const Vect3& rhs) noexcept {
-	return static_cast<float>(
-		std::fma(lhs.x, rhs.x, std::fma(lhs.y, rhs.y, std::fma(lhs.z, rhs.z, 0)))
+	return std::fma(
+		lhs.x,
+		rhs.x,
+		std::fma(lhs.y, rhs.y, std::fma(lhs.z, rhs.z, 0.0f))
 	);
 }
 
@@ -162,11 +164,11 @@ inline Vect3	normalize(const Vect3& vec) {
  * @brief Returns the cross product of the vector with another vector
 */
 inline Vect3	cross(const Vect3& lhs, const Vect3& rhs) noexcept {
-	return Vect3{
-		static_cast<float>(std::fma(lhs.y, rhs.z, std::fma(-lhs.z, rhs.y, 0))),
-		static_cast<float>(std::fma(lhs.z, rhs.x, std::fma(-lhs.x, rhs.z, 0))),
-		static_cast<float>(std::fma(lhs.x, rhs.y, std::fma(-lhs.y, rhs.x, 0)))
-	};
+	return Vect3(
+		std::fma(lhs.y, rhs.z, std::fma(-lhs.z, rhs.y, 0.0f)),
+		std::fma(lhs.z, rhs.x, std::fma(-lhs.x, rhs.z, 0.0f)),
+		std::fma(lhs.x, rhs.y, std::fma(-lhs.y, rhs.x, 0.0f))
+	);
 }
 
 struct Vect2 {

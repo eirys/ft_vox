@@ -6,7 +6,7 @@
 #    By: etran <etran@student.42.fr>                +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/04/06 03:40:09 by eli               #+#    #+#              #
-#    Updated: 2023/06/04 20:44:06 by etran            ###   ########.fr        #
+#    Updated: 2023/06/05 09:44:24 by etran            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -26,7 +26,7 @@ LIB_DIR		:=	lib
 # subdirectories
 TOOLS_DIR	:=	tools
 APP_DIR		:=	app
-SUBMOD_DIR	:=	$(APP_DIR)/submodules
+ENG_DIR		:=	$(APP_DIR)/engine
 UTILS_DIR	:=	$(APP_DIR)/utils
 IMG_DIR		:=	$(UTILS_DIR)/img
 MODEL_DIR	:=	$(UTILS_DIR)/model
@@ -34,7 +34,7 @@ GEN_DIR		:=	$(UTILS_DIR)/generation
 
 SUBDIRS		:=	$(APP_DIR) \
 				$(TOOLS_DIR) \
-				$(SUBMOD_DIR) \
+				$(ENG_DIR) \
 				$(MODEL_DIR) \
 				$(UTILS_DIR) \
 				$(GEN_DIR) \
@@ -60,16 +60,16 @@ INC_FILES	:=	$(TOOLS_DIR)/utils.h \
 				$(IMG_DIR)/image_loader.h \
 				$(IMG_DIR)/image_handler.h \
 				$(IMG_DIR)/ppm_loader.h \
-				$(SUBMOD_DIR)/window.h \
-				$(SUBMOD_DIR)/debug_module.h \
-				$(SUBMOD_DIR)/device.h \
-				$(SUBMOD_DIR)/render_target.h \
-				$(SUBMOD_DIR)/render_target_resources.h \
-				$(SUBMOD_DIR)/descriptor_set.h \
-				$(SUBMOD_DIR)/command_buffer.h \
-				$(SUBMOD_DIR)/texture_sampler.h \
-				$(SUBMOD_DIR)/vertex_input.h \
-				$(SUBMOD_DIR)/engine.h \
+				$(ENG_DIR)/window.h \
+				$(ENG_DIR)/debug_module.h \
+				$(ENG_DIR)/device.h \
+				$(ENG_DIR)/render_target.h \
+				$(ENG_DIR)/render_target_resources.h \
+				$(ENG_DIR)/descriptor_set.h \
+				$(ENG_DIR)/command_buffer.h \
+				$(ENG_DIR)/texture_sampler.h \
+				$(ENG_DIR)/vertex_input.h \
+				$(ENG_DIR)/engine.h \
 				$(APP_DIR)/app.h
 
 SRC_FILES	:=	$(TOOLS_DIR)/matrix.cpp \
@@ -81,16 +81,16 @@ SRC_FILES	:=	$(TOOLS_DIR)/matrix.cpp \
 				$(GEN_DIR)/cube.cpp \
 				$(IMG_DIR)/ppm_loader.cpp \
 				$(IMG_DIR)/image_handler.cpp \
-				$(SUBMOD_DIR)/window.cpp \
-				$(SUBMOD_DIR)/debug_module.cpp \
-				$(SUBMOD_DIR)/device.cpp \
-				$(SUBMOD_DIR)/render_target.cpp \
-				$(SUBMOD_DIR)/render_target_resources.cpp \
-				$(SUBMOD_DIR)/descriptor_set.cpp \
-				$(SUBMOD_DIR)/command_buffer.cpp \
-				$(SUBMOD_DIR)/texture_sampler.cpp \
-				$(SUBMOD_DIR)/vertex_input.cpp \
-				$(SUBMOD_DIR)/engine.cpp \
+				$(ENG_DIR)/window.cpp \
+				$(ENG_DIR)/debug_module.cpp \
+				$(ENG_DIR)/device.cpp \
+				$(ENG_DIR)/render_target.cpp \
+				$(ENG_DIR)/render_target_resources.cpp \
+				$(ENG_DIR)/descriptor_set.cpp \
+				$(ENG_DIR)/command_buffer.cpp \
+				$(ENG_DIR)/texture_sampler.cpp \
+				$(ENG_DIR)/vertex_input.cpp \
+				$(ENG_DIR)/engine.cpp \
 				$(APP_DIR)/app.cpp \
 				main.cpp
 
