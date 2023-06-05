@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:16:07 by etran             #+#    #+#             */
-/*   Updated: 2023/06/05 09:42:09 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/05 13:55:38 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -148,14 +148,14 @@ inline float	dot(const Vect3& lhs, const Vect3& rhs) noexcept {
 /**
  * @brief Returns the norm of the vector
 */
-inline float	norm(const Vect3& vec) {
+inline float	norm(const Vect3& vec) noexcept {
 	return std::sqrt(dot(vec, vec));
 }
 
 /**
  * @brief Returns a normalized vector
 */
-inline Vect3	normalize(const Vect3& vec) {
+inline Vect3	normalize(const Vect3& vec) noexcept {
 	float	n = norm(vec);
 	return Vect3{ vec.x / n, vec.y / n, vec.z / n };
 }
@@ -264,6 +264,21 @@ struct Vect2 {
 	}
 
 }; // struct Vect2
+
+/**
+ * @brief Special fma for Vect3 and float: a * b + c.
+ * 
+ * @param a		The vector to multiply.
+ * @param b		The scalar to multiply.
+ * @param c		The vector to add.
+*/
+inline scop::Vect3	fma(const Vect3& a, float b, const Vect3& c) noexcept {
+	return Vect3(
+		std::fma(a.x, b, c.x),
+		std::fma(a.y, b, c.y),
+		std::fma(a.z, b, c.z)
+	);
+}
 
 } // namespace scop
 

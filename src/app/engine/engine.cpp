@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/02 16:09:44 by etran             #+#    #+#             */
-/*   Updated: 2023/06/04 22:18:18 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/05 17:19:21 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 #include "window.h"
 #include "utils.h"
 #include "image_handler.h"
+#include "player.h"
 
 #include <iostream> // std::cerr std::endl
 #include <cstring> // std::strcmp
@@ -37,6 +38,7 @@ void	Engine::init(
 	const std::vector<Vertex>& vertices,
 	const std::vector<uint32_t>& indices
 ) {
+	nb_indices = indices.size();
 	createInstance();
 	debug_module.init(vk_instance);
 	device.init(window, vk_instance);
@@ -84,7 +86,7 @@ void	Engine::idle() {
 
 void	Engine::render(
 	scop::Window& window,
-	std::size_t indices_size
+	const vox::Player& player
 ) {
 	// Wait fence available, lock it
 	vkWaitForFences(device.logical_device, 1, &in_flight_fences, VK_TRUE, UINT64_MAX);
@@ -115,12 +117,15 @@ void	Engine::render(
 	vkResetCommandBuffer(command_buffer.command_buffers, 0);
 
 	recordCommandBuffer(
-		indices_size,
+		nb_indices,
 		command_buffer.command_buffers,
 		image_index
 	);
 
-	descriptor_set.updateUniformBuffer(render_target.swap_chain_extent);
+	descriptor_set.updateUniformBuffer(
+		render_target.swap_chain_extent,
+		player
+	);
 
 	// Set synchronization objects
 	VkSemaphore				wait_semaphore[] = {
@@ -167,7 +172,6 @@ void	Engine::render(
 		window.resized()
 	) {
 		window.toggleFrameBufferResized(false);
-		// recreateSwapChain();
 		render_target.updateSwapChain(device, window);
 	} else if (result != VK_SUCCESS) {
 		throw std::runtime_error("failed to present swapchain image");

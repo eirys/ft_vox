@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:19:11 by etran             #+#    #+#             */
-/*   Updated: 2023/06/04 22:41:44 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/06 00:26:26 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,7 +51,7 @@ struct Cube {
 	/*                               CONST MEMBERS                               */
 	/* ========================================================================= */
 
-	static constexpr float	size = 1.0f;
+	static constexpr const float	size = 1.0f;
 
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
@@ -75,6 +75,8 @@ struct Cube {
 	scop::Vect3			upperBottomRight() const noexcept;
 	scop::Vect3			upperTopLeft() const noexcept;
 	scop::Vect3			upperTopRight() const noexcept;
+
+	scop::Vect3			center() const noexcept;
 
 	/* FACES =================================================================== */
 

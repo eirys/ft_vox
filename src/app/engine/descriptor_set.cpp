@@ -6,14 +6,13 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/15 20:56:05 by etran             #+#    #+#             */
-/*   Updated: 2023/06/04 16:52:39 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/06 00:52:18 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "descriptor_set.h"
 #include "uniform_buffer_object.h"
-#include "app.h"
-#include "math.h"
+#include "engine.h"
 
 #include <array> // std::array
 #include <stdexcept> // std::runtime_error
@@ -65,8 +64,11 @@ void	DescriptorSet::destroy(
 /**
  * Update transformation of vertices
 */
-void	DescriptorSet::updateUniformBuffer(VkExtent2D extent) {
-	updateCamera(extent);
+void	DescriptorSet::updateUniformBuffer(
+	VkExtent2D extent,
+	const vox::Player& player
+) {
+	updateCamera(extent, player);
 	// updateTexture();
 	// updateLight();
 }
@@ -274,13 +276,13 @@ void	DescriptorSet::initUniformBuffer(
 	const UniformBufferObject::Light& light
 ) noexcept {
 	(void)light;
-	// UniformBufferObject	ubo{};
+	UniformBufferObject	ubo{};
 
 	// ubo.texture.state = static_cast<int32_t>(App::texture_state);
 	// ubo.texture.mix = -1.0f;
 	// ubo.light = light;
 
-	// memcpy(uniform_buffers_mapped, &ubo, sizeof(UniformBufferObject));
+	memcpy(uniform_buffers_mapped, &ubo, sizeof(UniformBufferObject));
 }
 
 /**
@@ -289,38 +291,24 @@ void	DescriptorSet::initUniformBuffer(
  * TODO: Only update when needed.
 */
 void	DescriptorSet::updateCamera(
-	VkExtent2D extent
+	VkExtent2D extent,
+	const vox::Player& player
 ) {
 	UniformBufferObject::Camera	camera{};
 
 	// Define object transformation model
-	camera.model = scop::rotate(
-		scop::rotate(
-			scop::rotate(
-				// Rotate around x
-				scop::Mat4(1.0f),
-				scop::math::radians(App::rotation_angles[0]),
-				Vect3(1.0f, 0.0f, 0.0f)
-			),
-			// Rotate around y
-			scop::math::radians(App::rotation_angles[1]),
-			Vect3(0.0f, 1.0f, 0.0f)
-		),
-		// Rotate around z
-		scop::math::radians(App::rotation_angles[2]),
-		Vect3(0.0f, 0.0f, 1.0f)
-	);
+	camera.model = scop::Mat4(1.0f);
 
 	// Define camera transformation view
 	camera.view = scop::lookAtDir(
-		App::position,
-		scop::App::eye_dir,
+		player.getPosition(),
+		player.getEyeDir(),
 		scop::Vect3(0.0f, 1.0f, 0.0f)
 	);
 
 	// Define persp. projection transformation
 	camera.proj = scop::perspective(
-		scop::math::radians(45.0f),
+		scop::math::radians(70.0f),
 		extent.width / static_cast<float>(extent.height),
 		0.1f,
 		1000.0f

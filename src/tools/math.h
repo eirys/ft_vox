@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:16:47 by etran             #+#    #+#             */
-/*   Updated: 2023/06/05 09:31:31 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/05 13:55:27 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -99,23 +99,8 @@ inline void	generateVibrantColor(float& red, float& green, float& blue) {
  * @note T must be a basic type (float, int, etc.).
 */
 template <typename T>
-inline float	lerp(T x, T y, float t) {
+inline float	lerp(T x, T y, float t) noexcept {
 	return std::fma(t, y - x, x);
-}
-
-/**
- * @brief Special fma for Vect3 and float: a * b + c.
- * 
- * @param a		The vector to multiply.
- * @param b		The scalar to multiply.
- * @param c		The vector to add.
-*/
-inline Vect3	fma(const Vect3& a, float b, const Vect3& c) {
-	return Vect3(
-		std::fma(a.x, b, c.x),
-		std::fma(a.y, b, c.y),
-		std::fma(a.z, b, c.z)
-	);
 }
 
 } // namespace math

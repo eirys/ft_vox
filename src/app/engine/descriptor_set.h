@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:14:18 by etran             #+#    #+#             */
-/*   Updated: 2023/06/04 17:14:18 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/05 21:10:25 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,6 +25,7 @@
 # include "device.h"
 # include "texture_sampler.h"
 # include "uniform_buffer_object.h"
+# include "player.h"
 
 namespace scop {
 namespace graphics {
@@ -50,12 +51,15 @@ public:
 
 	void					initLayout(Device& device);
 	void					initSets(
-		Device& device, 
+		Device& device,
 		TextureSampler& texture_sampler,
 		const UniformBufferObject::Light& light
 	);
 	void					destroy(Device& device);
-	void					updateUniformBuffer(VkExtent2D extent);
+	void					updateUniformBuffer(
+		VkExtent2D extent,
+		const vox::Player& player
+	);
 
 private:
 	/* ========================================================================= */
@@ -92,7 +96,10 @@ private:
 		const UniformBufferObject::Light& light
 	) noexcept;
 
-	void					updateCamera(VkExtent2D extent);
+	void					updateCamera(
+		VkExtent2D extent,
+		const vox::Player& player
+	);
 	void					updateTexture();
 	void					updateLight();
 

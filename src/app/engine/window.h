@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:15:08 by etran             #+#    #+#             */
-/*   Updated: 2023/06/04 22:04:10 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/05 20:44:13 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,7 @@
 # include <chrono>
 
 namespace scop {
+class App;
 
 /**
  * Window handler
@@ -52,8 +53,10 @@ public:
 	Window(Window&& x) = delete;
 	Window& operator=(const Window& rhs) = delete;
 
-	void							init();
+	void							init(App* app_ptr);
+
 	void							pause() const;
+	void							poll() const;
 	void							await() const;
 	bool							alive() const;
 	bool							resized() const noexcept;
@@ -61,6 +64,8 @@ public:
 	void							retrieveSize(int& width, int& height) const;
 	GLFWwindow*						getWindow() noexcept;
 	GLFWwindow const*				getWindow() const noexcept;
+	App*							getApp() noexcept;
+	App const*						getApp() const noexcept;
 
 	void							toggleFrameBufferResized(bool resized) noexcept;
 
@@ -70,6 +75,7 @@ private:
 	/* ========================================================================= */
 
 	GLFWwindow*						window = nullptr;
+	App*							app = nullptr;
 	bool							frame_buffer_resized = false;
 
 }; // class Window

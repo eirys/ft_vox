@@ -6,13 +6,17 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:50:12 by etran             #+#    #+#             */
-/*   Updated: 2023/06/04 22:39:48 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/06 00:26:08 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "cube.h"
 
 namespace vox {
+
+/* ========================================================================== */
+/*                                   PUBLIC                                   */
+/* ========================================================================== */
 
 typedef scop::Vect3	Vect3;
 
@@ -65,6 +69,15 @@ Vect3	Cube::upperTopRight() const noexcept {
 // Vertice h
 Vect3	Cube::upperTopLeft() const noexcept {
 	return {pos.x, pos.y + size, pos.z + size};
+}
+
+// Center of upper face
+Vect3	Cube::center() const noexcept {
+	return {
+		std::fma(size, 0.5f, pos.x),
+		pos.y + size,
+		std::fma(size, 0.5f, pos.z)
+	};
 }
 
 /* FACES ==================================================================== */

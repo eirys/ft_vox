@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:17:06 by etran             #+#    #+#             */
-/*   Updated: 2023/06/04 17:17:23 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/06 00:18:19 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,6 +31,7 @@
 # include "image_handler.h"
 # include "engine.h"
 # include "uniform_buffer_object.h"
+# include "gameplay.h"
 
 # define SCOP_MOUSE_SENSITIVITY	0.25f
 # define SCOP_MOVE_SPEED		0.05f
@@ -38,28 +39,13 @@
 
 namespace scop {
 
-enum RotationAxis {
-	ROTATION_AXIS_X = 0,
-	ROTATION_AXIS_Y = 1,
-	ROTATION_AXIS_Z = 2
-};
-
-enum RotationInput {
-	ROTATION_ADD_X = 1,
-	ROTATION_SUB_X = -1,
-	ROTATION_ADD_Y = 2,
-	ROTATION_SUB_Y = -2,
-	ROTATION_ADD_Z = 3,
-	ROTATION_SUB_Z = -3
-};
-
 enum ObjectDirection {
-	MOVE_FORWARD = 1,
-	MOVE_BACKWARD = -1,
+	MOVE_FORWARD = 0,
+	MOVE_BACKWARD = 1,
 	MOVE_LEFT = 2,
-	MOVE_RIGHT = -2,
-	MOVE_UP = 3,
-	MOVE_DOWN = -3
+	MOVE_RIGHT = 3,
+	MOVE_UP = 4,
+	MOVE_DOWN = 5
 };
 
 enum TextureState {
@@ -69,13 +55,10 @@ enum TextureState {
 };
 
 /**
- * Core engine.
+ * @brief Main class of the program.
 */
 class App {
 public:
-
-	friend graphics::DescriptorSet;
-
 	/* ========================================================================= */
 	/*                               CONST MEMBERS                               */
 	/* ========================================================================= */
@@ -99,26 +82,18 @@ public:
 
 	/* ========================================================================= */
 
-	static void							toggleTexture() noexcept;
-	static void							resetModel() noexcept;
-	static void							toggleRotation(
-		RotationInput value
-	) noexcept;
-	static void							untoggleRotation(
-		RotationInput value
-	) noexcept;
-	static void							toggleMove(
+	void							toggleTexture() noexcept;
+	void							reset() noexcept;
+	void							toggleMove(ObjectDirection direction) noexcept;
+	void							untoggleMove(
 		ObjectDirection direction
 	) noexcept;
-	static void							untoggleMove(
-		ObjectDirection direction
-	) noexcept;
-	static void							updateCameraDir(
+	void							updateCameraDir(
 		float x,
 		float y
 	) noexcept;
-	static void							toggleLightColor() noexcept;
-	static void							toggleLightPos() noexcept;
+	void							toggleLightColor() noexcept;
+	void							toggleLightPos() noexcept;
 
 private:
 	/* ========================================================================= */
@@ -131,36 +106,39 @@ private:
 	/*                               CLASS MEMBERS                               */
 	/* ========================================================================= */
 
-	scop::Window						window;
-	scop::graphics::Engine				engine;
+	vox::Gameplay					game;
+	scop::Window					window;
+	scop::graphics::Engine			engine;
 
-	std::vector<scop::Vertex>			vertices;
-	std::vector<uint32_t>				indices;
-	std::unique_ptr<scop::Image>		image;
-	UniformBufferObject::Light			light;
+	std::vector<scop::Vertex>		vertices;
+	std::vector<uint32_t>			indices;
+	std::unique_ptr<scop::Image>	image;
+	UniformBufferObject::Light		light;
+
+	TextureState					texture_state = TextureState::TEXTURE_ENABLED;
+	std::optional<time_point>		texture_transition_start;
+
+	bool							keys_pressed_directions[6] = { false };
+	scop::Vect3						movement{};
+	std::size_t						selected_light_color = 0;
+	std::size_t						selected_light_pos = 0;
 
 	/* ========================================================================= */
-	/*                               STATIC MEMBERS                              */
+	/*                               CONST MEMBERS                               */
 	/* ========================================================================= */
 
-	static TextureState					texture_state;
-	static std::optional<time_point>	texture_transition_start;
-
-	static
-	std::map<RotationInput, bool>		keys_pressed_rotations;
-	static scop::Vect3					rotation_angles;
-	static scop::Vect3					rotating_input;
-
-	static
-	std::map<ObjectDirection, bool>		keys_pressed_directions;
-	static scop::Vect3					movement;
-	static scop::Vect3					position;
-	static scop::Vect3					eye_dir;
-
-	static std::array<scop::Vect3, 4>	light_colors;
-	static std::size_t					selected_light_color;
-	static std::array<scop::Vect3, 4>	light_positions;
-	static std::size_t					selected_light_pos;
+	const scop::Vect3				light_colors[4] = {
+		scop::Vect3(1.0f, 1.0f, 1.0f), // white
+		scop::Vect3(1.0f, 0.0f, 0.0f), // red
+		scop::Vect3(0.0f, 1.0f, 0.0f), // green
+		scop::Vect3(0.0f, 0.0f, 1.0f) // blue
+	};
+	const scop::Vect3				light_positions[4] = {
+		scop::Vect3(1.0f, 1.5f, 2.0f),
+		scop::Vect3(0.0f, 0.5f, 0.5f),
+		scop::Vect3(-1.0f, -1.8f, 1.75f),
+		scop::Vect3(0.0f, -1.0f, 0.0f)
+	};
 
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
@@ -172,12 +150,5 @@ private:
 	void								update();
 
 }; // class App
-
-/* ========================================================================== */
-/*                                    OTHER                                   */
-/* ========================================================================== */
-
-std::map<ObjectDirection, bool>			populateDirectionKeys();
-std::map<RotationInput, bool>			populateRotationKeys();
 
 } // namespace scop

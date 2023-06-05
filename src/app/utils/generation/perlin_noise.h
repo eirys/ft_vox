@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:13:52 by etran             #+#    #+#             */
-/*   Updated: 2023/06/05 09:13:52 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/06 00:33:16 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -72,6 +72,7 @@ public:
 	 * generated from a perlin noise map.
 	*/
 	struct PerlinMesh {
+		Vect3						origin;
 		std::vector<Vect3>			vertices;
 		std::vector<uint32_t>		indices;
 		std::vector<Vect3>			normals;

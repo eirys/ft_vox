@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/06 12:28:42 by eli               #+#    #+#             */
-/*   Updated: 2023/06/04 16:52:39 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/06 00:18:33 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,14 +29,19 @@ static void	framebufferResizeCallback(
 ) {
 	(void)width;
 	(void)height;
-	auto	handler = reinterpret_cast<Window*>(glfwGetWindowUserPointer(window));
+
+	Window*	handler = reinterpret_cast<Window*>(
+		glfwGetWindowUserPointer(window)
+	);
 	handler->toggleFrameBufferResized(true);
 }
 
 /**
  * Toggles texture on/off
 */
-static void	toggleTextureCallback() noexcept {
+static void	toggleTextureCallback(
+	App* app_ptr
+) noexcept {
 	using std::chrono::steady_clock;
 
 	static steady_clock::time_point	key_pressed{};
@@ -51,7 +56,7 @@ static void	toggleTextureCallback() noexcept {
 	if (duration < Window::spam_delay) {
 		return;
 	}
-	scop::App::toggleTexture();
+	app_ptr->toggleTexture();
 
 	// Update last key press
 	key_pressed = now;
@@ -70,89 +75,46 @@ static void	keyCallback(
 	(void)scancode;
 	(void)mods;
 
+	Window* win = reinterpret_cast<Window*>(
+		glfwGetWindowUserPointer(window)
+	);
 	if (action == GLFW_PRESS) {
-		switch (key) {
-			case GLFW_KEY_ESCAPE:
-				return glfwSetWindowShouldClose(window, GLFW_TRUE);
-
-			// Texture toggle
-			case GLFW_KEY_T:
-				return toggleTextureCallback();
-
-			// Light position
-			case GLFW_KEY_L:
-				return App::toggleLightPos();
-
-			// Light color
-			case GLFW_KEY_K:
-				return App::toggleLightColor();
-
-			// Rotation
-			case GLFW_KEY_1:
-				return App::toggleRotation(RotationInput::ROTATION_SUB_X);
-			case GLFW_KEY_7:
-				return App::toggleRotation(RotationInput::ROTATION_ADD_X);
-			case GLFW_KEY_2:
-				return App::toggleRotation(RotationInput::ROTATION_SUB_Y);
-			case GLFW_KEY_8:
-				return App::toggleRotation(RotationInput::ROTATION_ADD_Y);
-			case GLFW_KEY_3:
-				return App::toggleRotation(RotationInput::ROTATION_SUB_Z);
-			case GLFW_KEY_9:
-				return App::toggleRotation(RotationInput::ROTATION_ADD_Z);
-
-			// Translation
-			case GLFW_KEY_W:
-				return App::toggleMove(ObjectDirection::MOVE_FORWARD);
-			case GLFW_KEY_S:
-				return App::toggleMove(ObjectDirection::MOVE_BACKWARD);
-			case GLFW_KEY_A:
-				return App::toggleMove(ObjectDirection::MOVE_LEFT);
-			case GLFW_KEY_D:
-				return App::toggleMove(ObjectDirection::MOVE_RIGHT);
-			case GLFW_KEY_SPACE:
-				return App::toggleMove(ObjectDirection::MOVE_UP);
-			case GLFW_KEY_LEFT_CONTROL:
-				return App::toggleMove(ObjectDirection::MOVE_DOWN);
-
-			// Reset
-			case GLFW_KEY_R:
-				return App::resetModel();
-
-			default:
-				break;
+		if (key == GLFW_KEY_ESCAPE) {
+			return glfwSetWindowShouldClose(window, GLFW_TRUE);
+		} else if (key == GLFW_KEY_T) {
+			return toggleTextureCallback(win->getApp());
+		} else if (key == GLFW_KEY_L) {
+			return win->getApp()->toggleLightPos();
+		} else if (key == GLFW_KEY_K) {
+			return win->getApp()->toggleLightColor();
+		} else if (key == GLFW_KEY_W) {
+			return win->getApp()->toggleMove(ObjectDirection::MOVE_FORWARD);
+		} else if (key == GLFW_KEY_S) {
+			return win->getApp()->toggleMove(ObjectDirection::MOVE_BACKWARD);
+		} else if (key == GLFW_KEY_A) {
+			return win->getApp()->toggleMove(ObjectDirection::MOVE_LEFT);
+		} else if (key == GLFW_KEY_D) {
+			return win->getApp()->toggleMove(ObjectDirection::MOVE_RIGHT);
+		} else if (key == GLFW_KEY_SPACE) {
+			return win->getApp()->toggleMove(ObjectDirection::MOVE_UP);
+		} else if (key == GLFW_KEY_LEFT_CONTROL) {
+			return win->getApp()->toggleMove(ObjectDirection::MOVE_DOWN);
+		} else if (key == GLFW_KEY_R) {
+			return win->getApp()->reset();
 		}
 	} else if (action == GLFW_RELEASE) {
-		switch (key) {
-			// Rotation
-			case GLFW_KEY_1:
-				return App::untoggleRotation(RotationInput::ROTATION_SUB_X);
-			case GLFW_KEY_7:
-				return App::untoggleRotation(RotationInput::ROTATION_ADD_X);
-			case GLFW_KEY_2:
-				return App::untoggleRotation(RotationInput::ROTATION_SUB_Y);
-			case GLFW_KEY_8:
-				return App::untoggleRotation(RotationInput::ROTATION_ADD_Y);
-			case GLFW_KEY_3:
-				return App::untoggleRotation(RotationInput::ROTATION_SUB_Z);
-			case GLFW_KEY_9:
-				return App::untoggleRotation(RotationInput::ROTATION_ADD_Z);
-
-			// Translation
-			case GLFW_KEY_W:
-				return App::untoggleMove(ObjectDirection::MOVE_FORWARD);
-			case GLFW_KEY_S:
-				return App::untoggleMove(ObjectDirection::MOVE_BACKWARD);
-			case GLFW_KEY_A:
-				return App::untoggleMove(ObjectDirection::MOVE_LEFT);
-			case GLFW_KEY_D:
-				return App::untoggleMove(ObjectDirection::MOVE_RIGHT);
-			case GLFW_KEY_SPACE:
-				return App::untoggleMove(ObjectDirection::MOVE_UP);
-			case GLFW_KEY_LEFT_CONTROL:
-				return App::untoggleMove(ObjectDirection::MOVE_DOWN);
-			default:
-				break;
+		if (key == GLFW_KEY_W) {
+			return win->getApp()->untoggleMove(ObjectDirection::MOVE_FORWARD);
+		} else if (key == GLFW_KEY_S) {
+			return win->getApp()->untoggleMove(ObjectDirection::MOVE_BACKWARD);
+		} else if (key == GLFW_KEY_A) {
+			return win->getApp()->untoggleMove(ObjectDirection::MOVE_LEFT);
+		} else if (key == GLFW_KEY_D) {
+			return win->getApp()->untoggleMove(ObjectDirection::MOVE_RIGHT);
+		} else if (key == GLFW_KEY_SPACE) {
+			return win->getApp()->untoggleMove(ObjectDirection::MOVE_UP);
+		} else if (key == GLFW_KEY_LEFT_CONTROL) {
+			return win->getApp()->untoggleMove(ObjectDirection::MOVE_DOWN);
 		}
 	}
 }
@@ -162,8 +124,16 @@ static void cursorPositionCallback(
 	double xpos,
 	double ypos
 ) {
-	(void)window;
-	App::updateCameraDir(xpos, ypos);
+	static float last_x = xpos;
+	static float last_y = ypos;
+
+	Window* win = reinterpret_cast<Window*>(
+		glfwGetWindowUserPointer(window)
+	);
+	win->getApp()->updateCameraDir(xpos - last_x, last_y - ypos);
+
+	last_x = xpos;
+	last_y = ypos;
 }
 
 /* ========================================================================== */
@@ -178,7 +148,23 @@ Window::Window() {
 	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 }
 
-void	Window::init() {
+Window::~Window() {
+	if (window != nullptr) {
+		// Remove window instance
+		glfwDestroyWindow(window);
+	}
+	// Remove glfw instance
+	glfwTerminate();
+}
+
+/* ========================================================================== */
+
+/**
+ * @brief Initiate the window handle.
+*/
+void	Window::init(App* app_ptr) {
+	app = app_ptr;
+
 	// create a window pointer
 	window = glfwCreateWindow(
 		width,
@@ -201,42 +187,51 @@ void	Window::init() {
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 }
 
-Window::~Window() {
-	if (window != nullptr) {
-		// Remove window instance
-		glfwDestroyWindow(window);
-	}
-
-	// Remove glfw instance
-	glfwTerminate();
-}
-
-/* ========================================================================== */
-
-void	Window::retrieveSize(int& width, int& height) const {
-	glfwGetFramebufferSize(window, &width, &height);
-}
-
+/**
+ * @brief Freezes the program until the window is resized.
+*/
 void	Window::pause() const {
 	int	current_width, current_height;
 	retrieveSize(current_width, current_height);
 
 	while (current_width == 0 || current_height == 0) {
 		retrieveSize(current_width, current_height);
-		glfwWaitEvents();
+		await();
 	}
 }
 
-void	Window::await() const {
+/**
+ * @brief Processes pending input events before returning.
+*/
+void	Window::poll() const {
 	glfwPollEvents();
 }
 
+/**
+ * @brief Awaits for input.
+*/
+void	Window::await() const {
+	glfwWaitEvents();
+}
+
+/**
+ * @brief Returns whether the window is still alive.
+*/
 bool	Window::alive() const {
 	return !glfwWindowShouldClose(window);
 }
 
+/**
+ * @brief Returns whether the window was resized.
+*/
 bool	Window::resized() const noexcept {
 	return frame_buffer_resized;
+}
+
+/* ========================================================================== */
+
+void	Window::retrieveSize(int& width, int& height) const {
+	glfwGetFramebufferSize(window, &width, &height);
 }
 
 GLFWwindow*	Window::getWindow() noexcept {
@@ -247,7 +242,13 @@ GLFWwindow const*	Window::getWindow() const noexcept {
 	return window;
 }
 
-/* ========================================================================== */
+App*	Window::getApp() noexcept {
+	return app;
+}
+
+App const*	Window::getApp() const noexcept {
+	return app;
+}
 
 void	Window::toggleFrameBufferResized(bool is_resized) noexcept {
 	frame_buffer_resized = is_resized;

@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/23 10:26:08 by etran             #+#    #+#             */
-/*   Updated: 2023/06/04 22:58:57 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/06 00:50:04 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -147,6 +147,15 @@ PerlinNoise::PerlinMesh	PerlinNoise::toMesh() const {
 		}
 	}
 
+	// Set mesh origin
+	// Perlin noise at the center of the mesh:
+	mesh.origin = {
+		0.5f,
+		std::floor(
+			std::fma(noise_map[half_height * width + half_width], scale, shift)
+		) + Cube::size,
+		0.5f
+	};
 	return mesh;
 }
 

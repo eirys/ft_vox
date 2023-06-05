@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:14:35 by etran             #+#    #+#             */
-/*   Updated: 2023/06/04 17:14:38 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/05 21:11:32 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,6 +30,7 @@
 # include "descriptor_set.h"
 # include "command_buffer.h"
 # include "vertex_input.h"
+# include "player.h"
 
 namespace scop {
 namespace graphics {
@@ -83,7 +84,7 @@ public:
 	void						idle();
 	void						render(
 		scop::Window& window,
-		std::size_t indices_size
+		const vox::Player& player
 	);
 
 private:
@@ -123,6 +124,8 @@ private:
 
 	VkPipelineLayout				pipeline_layout;
 	VkPipeline						engine;
+
+	std::size_t						nb_indices;
 
 	/* ========================================================================= */
 	/*                                  METHODS                                  */

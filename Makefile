@@ -6,7 +6,7 @@
 #    By: etran <etran@student.42.fr>                +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/04/06 03:40:09 by eli               #+#    #+#              #
-#    Updated: 2023/06/05 09:44:24 by etran            ###   ########.fr        #
+#    Updated: 2023/06/05 21:14:50 by etran            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -21,19 +21,20 @@ NAME		:=	ft_vox
 SRC_DIR		:=	src
 OBJ_DIR		:=	obj
 SHD_DIR		:=	shaders
-LIB_DIR		:=	lib
 
 # subdirectories
 TOOLS_DIR	:=	tools
 APP_DIR		:=	app
 ENG_DIR		:=	$(APP_DIR)/engine
 UTILS_DIR	:=	$(APP_DIR)/utils
+GAME_DIR	:=	$(APP_DIR)/gameplay
 IMG_DIR		:=	$(UTILS_DIR)/img
 MODEL_DIR	:=	$(UTILS_DIR)/model
 GEN_DIR		:=	$(UTILS_DIR)/generation
 
 SUBDIRS		:=	$(APP_DIR) \
 				$(TOOLS_DIR) \
+				$(GAME_DIR) \
 				$(ENG_DIR) \
 				$(MODEL_DIR) \
 				$(UTILS_DIR) \
@@ -60,6 +61,9 @@ INC_FILES	:=	$(TOOLS_DIR)/utils.h \
 				$(IMG_DIR)/image_loader.h \
 				$(IMG_DIR)/image_handler.h \
 				$(IMG_DIR)/ppm_loader.h \
+				$(GAME_DIR)/gameplay.h \
+				$(GAME_DIR)/character.h \
+				$(GAME_DIR)/player.h \
 				$(ENG_DIR)/window.h \
 				$(ENG_DIR)/debug_module.h \
 				$(ENG_DIR)/device.h \
@@ -81,6 +85,9 @@ SRC_FILES	:=	$(TOOLS_DIR)/matrix.cpp \
 				$(GEN_DIR)/cube.cpp \
 				$(IMG_DIR)/ppm_loader.cpp \
 				$(IMG_DIR)/image_handler.cpp \
+				$(GAME_DIR)/gameplay.cpp \
+				$(GAME_DIR)/character.cpp \
+				$(GAME_DIR)/player.cpp \
 				$(ENG_DIR)/window.cpp \
 				$(ENG_DIR)/debug_module.cpp \
 				$(ENG_DIR)/device.cpp \
@@ -101,6 +108,7 @@ OBJ			:=	$(addprefix $(OBJ_DIR)/,$(SRC_FILES:.cpp=.o))
 # shaders
 SHD_FILES	:=	vert \
 				frag
+
 SHD			:=	$(addprefix $(SHD_DIR)/,$(SHD_FILES))
 SHD_BIN		:=	$(addsuffix .spv,$(SHD))
 
