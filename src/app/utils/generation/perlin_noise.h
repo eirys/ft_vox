@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:13:52 by etran             #+#    #+#             */
-/*   Updated: 2023/06/04 17:13:54 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/05 09:13:52 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,7 @@
 # include <random> // std::mt19937
 # include <optional> // std::optional
 
-# include "model.h"
+# include "vector.h"
 
 namespace vox {
 
@@ -94,7 +94,6 @@ public:
 
 	std::vector<uint32_t>		toPixels() const;
 	PerlinMesh					toMesh() const;
-	scop::obj::Model			toModel() const;
 
 	/* GETTERS ================================================================= */
 

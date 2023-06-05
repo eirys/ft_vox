@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/23 10:26:08 by etran             #+#    #+#             */
-/*   Updated: 2023/06/04 22:46:39 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/04 22:58:57 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -78,7 +78,7 @@ std::vector<uint32_t>	PerlinNoise::toPixels() const {
 }
 
 /**
- * @brief Converts the noise map to a polymesh.
+ * @brief Converts the noise map to a cube world.
  *
  * @todo Optimize conversion.
  * @todo Generate blocks instead of a mesh.
@@ -120,12 +120,11 @@ PerlinNoise::PerlinMesh	PerlinNoise::toMesh() const {
 
 			const Cube	cube {{
 				col - half_width,
-				std::floor(perlin * scale + shift),
+				std::floor(std::fma(perlin, scale, shift)),
 				row - half_height
 			}};
 
 			// Add the top face
-
 			// Indices
 			if (row != height - 1 && col != width - 1) {
 				uint32_t e = static_cast<uint32_t>(vertices.size());
@@ -143,84 +142,12 @@ PerlinNoise::PerlinMesh	PerlinNoise::toMesh() const {
 				indices.emplace_back(h);
 				indices.emplace_back(g);
 			}
-
 			// Vertices
 			addFace(cube.top());
-
-			// DEPRECTATED Old version:
-			// This creates a smooth valey kind of polymesh.
-			// Vect3	vertex{};
-			// vertex.x = (col - half_width);
-			// vertex.z = (row - half_height);
-			// vertex.y = std::fma(noise_map[std::fma(row, width, col)], depth, shift);
-			// vertices.emplace_back(vertex);
 		}
 	}
 
 	return mesh;
-}
-
-/**
- * @brief Converts the noise map to a model object.
- *
- * @note This is not optimal, as we don't use some of the model's features.
- * @note I'll leave it in the code though, for posterity. lol
-*/
-scop::obj::Model	PerlinNoise::toModel() const {
-	typedef scop::obj::Model	Model;
-
-	Model			model;
-
-	const float		half_width = width / 2;
-	const float		half_height = height / 2;
-
-	// Generate vertices
-	model.reserveVertices(width * height);
-	const constexpr float	shift = -30.0f;
-	const float				scale = depth;
-
-	for (std::size_t row = 0; row < height; ++row) {
-		for (std::size_t col = 0; col < width; ++col) {
-
-			// Retrieve raw height from noise map, scaled down and shifted
-			// Note: retrieve from center of the map
-			Vect3	vertex{};
-			vertex.x = (col - half_width);
-			vertex.z = (row - half_height);
-			// y = noise_map[row * width + col] * depth + shift
-			vertex.y = std::fma(noise_map[std::fma(row, width, col)], scale, shift);
-
-			model.addVertex(vertex);
-		}
-	}
-
-	// Generate triangles
-	model.reserveTriangles((width - 1) * (height - 1) * 2);
-	for (std::size_t row = 0; row < height - 1; ++row) {
-		for (std::size_t col = 0; col < width - 1; ++col) {
-			//  a __ b
-			//  |  / |
-			//  | /  |
-			//  c __ d
-			// Note: Rasterization is done counter clockwise
-
-			Model::Index	a {static_cast<int>(row * width + col), 0, 0};
-			Model::Index	b {static_cast<int>(row * width + (col + 1)), 0, 0};
-			Model::Index	c {static_cast<int>((row + 1) * width + col), 0, 0};
-			Model::Index	d {static_cast<int>((row + 1) * width + (col + 1)), 0, 0};
-
-			Model::Triangle	triangle_1({b, a, c}); // (a, b, c)
-			Model::Triangle	triangle_2({b, c, d}); // (b, d, c)
-
-			model.addTriangle(triangle_1);
-			model.addTriangle(triangle_2);
-		}
-	}
-
-	// Funsies todo: set texture and normals. (not needed for now)
-	// model.setDefaultTextureCoords();
-	// model.setDefaultNormalCoords();
-	return model;
 }
 
 /* GETTERS ================================================================== */

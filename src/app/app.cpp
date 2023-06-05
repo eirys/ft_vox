@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/28 11:12:12 by eli               #+#    #+#             */
-/*   Updated: 2023/06/04 22:22:24 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/05 09:29:37 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -169,27 +169,27 @@ void	App::toggleMove(ObjectDirection dir) noexcept {
 	keys_pressed_directions[dir] = true;
 	switch (dir) {
 		case ObjectDirection::MOVE_FORWARD: {
-			movement.z = -SCOP_MOVE_SPEED;
+			movement.z += SCOP_MOVE_SPEED;
 			break;
 		}
 		case ObjectDirection::MOVE_BACKWARD: {
-			movement.z = SCOP_MOVE_SPEED;
+			movement.z += -SCOP_MOVE_SPEED;
 			break;
 		}
 		case ObjectDirection::MOVE_RIGHT: {
-			movement.x = SCOP_MOVE_SPEED;
+			movement.x += SCOP_MOVE_SPEED;
 			break;
 		}
 		case ObjectDirection::MOVE_LEFT: {
-			movement.x = -SCOP_MOVE_SPEED;
+			movement.x += -SCOP_MOVE_SPEED;
 			break;
 		}
 		case ObjectDirection::MOVE_UP: {
-			movement.y = SCOP_MOVE_SPEED;
+			movement.y += SCOP_MOVE_SPEED;
 			break;
 		}
 		case ObjectDirection::MOVE_DOWN: {
-			movement.y = -SCOP_MOVE_SPEED;
+			movement.y += -SCOP_MOVE_SPEED;
 			break;
 		}
 		default:
@@ -235,8 +235,8 @@ void	App::updateCameraDir(float x, float y) noexcept {
 	yaw += (x - last_x) * SCOP_MOUSE_SENSITIVITY;
 	pitch = std::clamp(
 		std::fma(last_y - y, SCOP_MOUSE_SENSITIVITY, pitch),
-		-89.f,
-		89.f
+		-90.f,
+		90.f
 	);
 
 	last_x = x;
@@ -267,7 +267,15 @@ void	App::drawFrame() {
 
 void	App::update() {
 	// Update camera position
-	position += movement;
+	const scop::Vect3	up_dir = {0.0f, 1.0f, 0.0f};
+	const scop::Vect3	s = scop::normalize(scop::cross(eye_dir, up_dir));
+	const scop::Vect3	u = scop::normalize(scop::cross(s, eye_dir));
+	// position = eye_dir * movement.z + up_dir * movement.y + s * movement.x + position;
+	position = math::fma(
+		eye_dir,
+		movement.z,
+		math::fma(up_dir, movement.y, math::fma(s, movement.x, position))
+	);
 
 	// Update model rotation
 	rotation_angles.x += rotating_input.x;
@@ -300,8 +308,8 @@ void	App::loadTerrain() {
 		scop::Vertex	vertex{};
 
 		vertex.pos = coord;
-		vertex.tex_coord = {0.0f, 0.0f};
-		vertex.normal = {0.0f, 1.0f, 0.0f};
+		vertex.tex_coord = {0.0f, 0.0f}; // TODO
+		vertex.normal = {0.0f, 1.0f, 0.0f}; // TODO
 		math::generateVibrantColor(
 			vertex.color.x,
 			vertex.color.y,
