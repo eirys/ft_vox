@@ -6,6 +6,7 @@ layout(location = 2) in vec2 in_tex_coord;
 layout(location = 3) in vec3 in_normal;
 
 layout(location = 0) out vec3 frag_color;
+// layout(location = 0) out vec2 frag_tex_coord;
 
 layout(binding = 0) uniform Camera {
 	mat4 model;
@@ -21,4 +22,5 @@ void	main() {
 		* vec4(in_position, 1.0)
 	);
 	frag_color = in_color;
+	// frag_tex_coord = in_tex_coord;
 }

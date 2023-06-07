@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:19:11 by etran             #+#    #+#             */
-/*   Updated: 2023/06/06 00:26:26 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/07 02:35:03 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,6 +18,20 @@
 # include "vector.h"
 
 namespace vox {
+
+// TODO
+enum MaterialType {
+	GRASS,
+	DIRT,
+	STONE,
+	WOOD,
+	LEAVES,
+	SAND,
+	WATER,
+	LAVA,
+	ICE,
+	SNOW
+};
 
 /**
  * @brief Cube handler. Generates a cube from a position.
@@ -92,6 +106,7 @@ struct Cube {
 	/* ========================================================================= */
 
 	scop::Vect3			pos;
+	// MaterialType			material;
 
 }; // class Cube
 

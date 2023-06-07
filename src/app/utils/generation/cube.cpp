@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:50:12 by etran             #+#    #+#             */
-/*   Updated: 2023/06/06 00:26:08 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/07 02:09:28 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -102,13 +102,13 @@ Cube::Face	Cube::bottom() const noexcept {
 	}};
 }
 
-// Face a-d-h-e
+// Face d-a-e-h
 Cube::Face	Cube::left() const noexcept {
 	return {{
-		lowerBottomLeft(),
 		lowerTopLeft(),
-		upperTopLeft(),
-		upperBottomLeft()
+		lowerBottomLeft(),
+		upperBottomLeft(),
+		upperTopLeft()
 	}};
 }
 

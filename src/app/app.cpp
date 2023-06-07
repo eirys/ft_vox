@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/28 11:12:12 by eli               #+#    #+#             */
-/*   Updated: 2023/06/06 00:46:21 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/07 02:39:39 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -195,7 +195,8 @@ void	App::loadTerrain() {
 	});
 
 	vox::PerlinNoise::PerlinMesh	mesh = noise.toMesh();
-
+	Vect3	color {};
+	int i = 0;
 	vertices.reserve(mesh.vertices.size());
 	for (const auto& coord: mesh.vertices) {
 		scop::Vertex	vertex{};
@@ -203,11 +204,14 @@ void	App::loadTerrain() {
 		vertex.pos = coord;
 		vertex.tex_coord = {0.0f, 0.0f}; // TODO
 		vertex.normal = {0.0f, 1.0f, 0.0f}; // TODO
-		math::generateVibrantColor(
-			vertex.color.x,
-			vertex.color.y,
-			vertex.color.z
-		);
+		if (i++ % 8 == 0)
+			math::generateVibrantColor(
+				color.x,
+				color.y,
+				color.z
+			);
+		vertex.color = color;
+
 		vertices.emplace_back(vertex);
 	}
 	indices = std::move(mesh.indices);

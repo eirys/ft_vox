@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:13:52 by etran             #+#    #+#             */
-/*   Updated: 2023/06/06 00:33:16 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/07 01:38:41 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -65,7 +65,6 @@ public:
 		const float				frequency_mult;
 		const float				amplitude_mult;
 	};
-
 
 	/**
 	 * @brief Contains the vertices, normals and vertex indices of a mesh,
