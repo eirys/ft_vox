@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/23 10:26:08 by etran             #+#    #+#             */
-/*   Updated: 2023/06/07 02:35:19 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/07 14:37:28 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -91,11 +91,6 @@ PerlinNoise::PerlinMesh	PerlinNoise::toMesh() const {
 	const float				half_width = width / 2;
 	const float				half_height = height / 2;
 
-	auto&	vertices = mesh.vertices;
-	auto&	indices = mesh.indices;
-	vertices.reserve(width * height);
-	indices.reserve((width - 1) * (height - 1) * 6);
-
 	auto	noiseAt = [this](
 		std::size_t x,
 		std::size_t y
@@ -109,27 +104,28 @@ PerlinNoise::PerlinMesh	PerlinNoise::toMesh() const {
 		);
 	};
 
-	auto	addFace = [&vertices](const Cube::Face& face) -> void {
+	auto	addFace = [&mesh](const Cube::Face& face) -> void {
+		scop::Vect3	normal = face.normal();
 		for (std::size_t i = 0; i < 4; ++i) {
-			vertices.emplace_back(face[i]);
+			mesh.vertices.emplace_back(face[i]);
+			mesh.normals.emplace_back(normal);
 		}
 	};
-
-	auto	addIndices = [this, &indices](uint32_t pos) -> void {
+	auto	addIndices = [this, &mesh](uint32_t pos) -> void {
 		uint32_t e = pos;
 		uint32_t f = pos + 1;
 		uint32_t g = pos + 2;
 		uint32_t h = pos + 3;
 
 		// First triangle
-		indices.emplace_back(e);
-		indices.emplace_back(g);
-		indices.emplace_back(f);
+		mesh.indices.emplace_back(e);
+		mesh.indices.emplace_back(g);
+		mesh.indices.emplace_back(f);
 
 		// Second triangle
-		indices.emplace_back(e);
-		indices.emplace_back(h);
-		indices.emplace_back(g);
+		mesh.indices.emplace_back(e);
+		mesh.indices.emplace_back(h);
+		mesh.indices.emplace_back(g);
 	};
 
 	// Todo
@@ -152,10 +148,9 @@ PerlinNoise::PerlinMesh	PerlinNoise::toMesh() const {
 				perlin,
 				row - half_height
 			}};
-
 			// Add the top face
 			if (row != height - 1 && col != width - 1) {
-				addIndices(vertices.size());
+				addIndices(mesh.vertices.size());
 			}
 			addFace(cube.top());
 
@@ -165,7 +160,7 @@ PerlinNoise::PerlinMesh	PerlinNoise::toMesh() const {
 				if (south < perlin) {
 					// Add the south face
 					if (row != height - 1 && col != width - 1) {
-						addIndices(vertices.size());
+						addIndices(mesh.vertices.size());
 					}
 					addFace(cube.back());
 				}
@@ -175,7 +170,7 @@ PerlinNoise::PerlinMesh	PerlinNoise::toMesh() const {
 				if (north < perlin) {
 					// Add the north face
 					if (row != height - 1 && col != width - 1) {
-						addIndices(vertices.size());
+						addIndices(mesh.vertices.size());
 					}
 					addFace(cube.front());
 				}
@@ -185,7 +180,7 @@ PerlinNoise::PerlinMesh	PerlinNoise::toMesh() const {
 				if (west < perlin) {
 					// Add the west face
 					if (row != height - 1 && col != width - 1) {
-						addIndices(vertices.size());
+						addIndices(mesh.vertices.size());
 					}
 					addFace(cube.left());
 				}
@@ -195,7 +190,7 @@ PerlinNoise::PerlinMesh	PerlinNoise::toMesh() const {
 				if (east < perlin) {
 					// Add the east face
 					if (row != height - 1 && col != width - 1) {
-						addIndices(vertices.size());
+						addIndices(mesh.vertices.size());
 					}
 					addFace(cube.right());
 				}

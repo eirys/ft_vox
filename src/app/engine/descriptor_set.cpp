@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/15 20:56:05 by etran             #+#    #+#             */
-/*   Updated: 2023/06/06 00:52:18 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/07 20:22:51 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -69,8 +69,6 @@ void	DescriptorSet::updateUniformBuffer(
 	const vox::Player& player
 ) {
 	updateCamera(extent, player);
-	// updateTexture();
-	// updateLight();
 }
 
 /* ========================================================================== */
@@ -97,27 +95,18 @@ void	DescriptorSet::createDescriptorSetLayout(Device& device) {
 	sampler_layout_binding.pImmutableSamplers = nullptr;
 	sampler_layout_binding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 
-	// // Uniform buffer layout: used during fragment shading
-	// VkDescriptorSetLayoutBinding	texture_layout_binding{};
-	// texture_layout_binding.binding = 2;
-	// texture_layout_binding.descriptorCount = 1;
-	// texture_layout_binding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	// texture_layout_binding.pImmutableSamplers = nullptr;
-	// texture_layout_binding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+	// Light layout
+	VkDescriptorSetLayoutBinding	light_layout_binding{};
+	light_layout_binding.binding = 2;
+	light_layout_binding.descriptorCount = 1;
+	light_layout_binding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	light_layout_binding.pImmutableSamplers = nullptr;
+	light_layout_binding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 
-	// // Light layout
-	// VkDescriptorSetLayoutBinding	light_layout_binding{};
-	// light_layout_binding.binding = 3;
-	// light_layout_binding.descriptorCount = 1;
-	// light_layout_binding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	// light_layout_binding.pImmutableSamplers = nullptr;
-	// light_layout_binding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-
-	std::array<VkDescriptorSetLayoutBinding, 2>	bindings = {
+	std::array<VkDescriptorSetLayoutBinding, 3>	bindings = {
 		camera_layout_binding,
 		sampler_layout_binding,
-		// texture_layout_binding,
-		// light_layout_binding
+		light_layout_binding
 	};
 
 	VkDescriptorSetLayoutCreateInfo	layout_info{};
@@ -134,15 +123,13 @@ void	DescriptorSet::createDescriptorSetLayout(Device& device) {
  * Handler for descriptor sets (like command pool)
 */
 void	DescriptorSet::createDescriptorPool(Device& device, uint32_t frames_in_flight) {
-	std::array<VkDescriptorPoolSize, 2>	pool_sizes{};
+	std::array<VkDescriptorPoolSize, 3>	pool_sizes{};
 	pool_sizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 	pool_sizes[0].descriptorCount = frames_in_flight;
 	pool_sizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 	pool_sizes[1].descriptorCount = frames_in_flight;
-	// pool_sizes[2].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	// pool_sizes[2].descriptorCount = frames_in_flight;
-	// pool_sizes[3].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	// pool_sizes[3].descriptorCount = frames_in_flight;
+	pool_sizes[2].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	pool_sizes[2].descriptorCount = frames_in_flight;
 
 	VkDescriptorPoolCreateInfo	pool_info{};
 	pool_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
@@ -182,20 +169,14 @@ void	DescriptorSet::createDescriptorSets(
 	image_info.imageView = texture_sampler.vk_texture_image_view;
 	image_info.sampler = texture_sampler.vk_texture_sampler;
 
-	// // Ubo Texture
-	// VkDescriptorBufferInfo	ubo_info_texture{};
-	// ubo_info_texture.buffer = uniform_buffers;
-	// ubo_info_texture.offset = offsetof(UniformBufferObject, texture);
-	// ubo_info_texture.range = sizeof(UniformBufferObject::Texture);
-
-	// // Ubo light
-	// VkDescriptorBufferInfo	ubo_info_light{};
-	// ubo_info_light.buffer = uniform_buffers;
-	// ubo_info_light.offset = offsetof(UniformBufferObject, light);
-	// ubo_info_light.range = sizeof(UniformBufferObject::Light);
+	// Ubo light
+	VkDescriptorBufferInfo	ubo_info_light{};
+	ubo_info_light.buffer = uniform_buffers;
+	ubo_info_light.offset = offsetof(UniformBufferObject, light);
+	ubo_info_light.range = sizeof(UniformBufferObject::Light);
 
 	// Allow buffer udpate using descriptor write
-	std::array<VkWriteDescriptorSet, 2>	descriptor_writes{};
+	std::array<VkWriteDescriptorSet, 3>	descriptor_writes{};
 	descriptor_writes[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 	descriptor_writes[0].dstSet = vk_descriptor_sets;
 	descriptor_writes[0].dstBinding = 0;
@@ -216,25 +197,15 @@ void	DescriptorSet::createDescriptorSets(
 	descriptor_writes[1].pImageInfo = &image_info;
 	descriptor_writes[1].pTexelBufferView = nullptr;
 
-	// descriptor_writes[2].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-	// descriptor_writes[2].dstSet = vk_descriptor_sets;
-	// descriptor_writes[2].dstBinding = 2;
-	// descriptor_writes[2].dstArrayElement = 0;
-	// descriptor_writes[2].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	// descriptor_writes[2].descriptorCount = 1;
-	// descriptor_writes[2].pBufferInfo = &ubo_info_texture;
-	// descriptor_writes[2].pImageInfo = nullptr;
-	// descriptor_writes[2].pTexelBufferView = nullptr;
-
-	// descriptor_writes[3].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-	// descriptor_writes[3].dstSet = vk_descriptor_sets;
-	// descriptor_writes[3].dstBinding = 3;
-	// descriptor_writes[3].dstArrayElement = 0;
-	// descriptor_writes[3].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	// descriptor_writes[3].descriptorCount = 1;
-	// descriptor_writes[3].pBufferInfo = &ubo_info_light;
-	// descriptor_writes[3].pImageInfo = nullptr;
-	// descriptor_writes[3].pTexelBufferView = nullptr;
+	descriptor_writes[2].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+	descriptor_writes[2].dstSet = vk_descriptor_sets;
+	descriptor_writes[2].dstBinding = 2;
+	descriptor_writes[2].dstArrayElement = 0;
+	descriptor_writes[2].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	descriptor_writes[2].descriptorCount = 1;
+	descriptor_writes[2].pBufferInfo = &ubo_info_light;
+	descriptor_writes[2].pImageInfo = nullptr;
+	descriptor_writes[2].pTexelBufferView = nullptr;
 
 	vkUpdateDescriptorSets(
 		device.logical_device,
@@ -275,20 +246,13 @@ void	DescriptorSet::createUniformBuffers(Device& device) {
 void	DescriptorSet::initUniformBuffer(
 	const UniformBufferObject::Light& light
 ) noexcept {
-	(void)light;
 	UniformBufferObject	ubo{};
-
-	// ubo.texture.state = static_cast<int32_t>(App::texture_state);
-	// ubo.texture.mix = -1.0f;
-	// ubo.light = light;
-
+	ubo.light = light;
 	memcpy(uniform_buffers_mapped, &ubo, sizeof(UniformBufferObject));
 }
 
 /**
  * Update the camera part of the uniform buffer.
- * 
- * TODO: Only update when needed.
 */
 void	DescriptorSet::updateCamera(
 	VkExtent2D extent,
@@ -296,10 +260,7 @@ void	DescriptorSet::updateCamera(
 ) {
 	UniformBufferObject::Camera	camera{};
 
-	// Define object transformation model
-	camera.model = scop::Mat4(1.0f);
-
-	// Define camera transformation view
+	// Define camera view
 	camera.view = scop::lookAtDir(
 		player.getPosition(),
 		player.getEyeDir(),
@@ -322,57 +283,6 @@ void	DescriptorSet::updateCamera(
 		&camera,
 		sizeof(UniformBufferObject::Camera)
 	);
-}
-
-/**
- * Update the texture part of the uniform buffer.
-*/
-void	DescriptorSet::updateTexture() {
-	// // Only udpate if it was recently toggled
-	// if (!App::texture_transition_start.has_value()) {
-	// 	return;
-	// }
-	// UniformBufferObject::Texture	texture;
-	// time_point	current_time = std::chrono::high_resolution_clock::now();
-
-	// // Transition from 0 to 1 in /*transition_duration*/ ms	float
-	// float	time = std::chrono::duration<float, std::chrono::milliseconds::period>(
-	// 	current_time - App::texture_transition_start.value()
-	// ).count() / App::transition_duration;
-
-	// texture.state = static_cast<int32_t>(App::texture_state);
-	// texture.mix = time;
-	// memcpy(
-	// 	(char*)uniform_buffers_mapped + offsetof(UniformBufferObject, texture),
-	// 	&texture,
-	// 	sizeof(UniformBufferObject::Texture)
-	// );
-
-	// // Reset texture_transition_start if time is up
-	// if (time >= 1.0f) {
-	// 	App::texture_transition_start.reset();
-	// }
-}
-
-/**
- * Update the light part of the uniform buffer.
-*/
-void	DescriptorSet::updateLight() {
-	// struct {
-	// 	alignas(__ALIGNMENT_VEC3) scop::Vect3	position;
-	// 	alignas(__ALIGNMENT_VEC3) scop::Vect3	color;
-	// } light_info = {
-	// 	App::light_positions[App::selected_light_pos],
-	// 	App::light_colors[App::selected_light_color]
-	// };
-	
-	// memcpy(
-	// 	(char*)uniform_buffers_mapped + 
-	// 	offsetof(UniformBufferObject, light) +
-	// 	offsetof(UniformBufferObject::Light, light_pos),
-	// 	&light_info,
-	// 	sizeof(light_info)
-	// );
 }
 
 } // namespace graphics

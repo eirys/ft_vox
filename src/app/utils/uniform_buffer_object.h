@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:17:15 by etran             #+#    #+#             */
-/*   Updated: 2023/06/04 17:17:21 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/07 20:23:39 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,24 +28,15 @@ public:
 	/* ========================================================================= */
 
 	struct Camera {
-		alignas(__ALIGNMENT_MAT4) scop::Mat4	model;
 		alignas(__ALIGNMENT_MAT4) scop::Mat4	view;
 		alignas(__ALIGNMENT_MAT4) scop::Mat4	proj;
 	};
 
-	struct Texture {
-		alignas(__ALIGNMENT_SCAL) int32_t		state;
-		alignas(__ALIGNMENT_SCAL) float			mix;
-	};
-
 	struct Light {
 		alignas(__ALIGNMENT_VEC3) scop::Vect3	ambient_color;
-		alignas(__ALIGNMENT_VEC3) scop::Vect3	light_pos;
+		alignas(__ALIGNMENT_VEC3) scop::Vect3	light_vector;
 		alignas(__ALIGNMENT_VEC3) scop::Vect3	light_color;
-		alignas(__ALIGNMENT_VEC3) scop::Vect3	diffuse_color;
-		alignas(__ALIGNMENT_VEC3) scop::Vect3	eye_position;
-		alignas(__ALIGNMENT_VEC3) scop::Vect3	specular_color;
-		alignas(__ALIGNMENT_SCAL) int32_t		shininess;
+		alignas(__ALIGNMENT_SCAL) float			light_intensity;
 	};
 
 	/* ========================================================================= */
@@ -63,8 +54,7 @@ public:
 	/* ========================================================================= */
 
 	alignas(__ALIGNMENT_BUFF) Camera		camera;
-	// alignas(__ALIGNMENT_BUFF) Texture		texture;
-	// alignas(__ALIGNMENT_BUFF) Light			light;
+	alignas(__ALIGNMENT_BUFF) Light			light;
 
 };
 

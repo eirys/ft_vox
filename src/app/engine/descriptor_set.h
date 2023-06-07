@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:14:18 by etran             #+#    #+#             */
-/*   Updated: 2023/06/05 21:10:25 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/07 20:09:39 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -100,8 +100,6 @@ private:
 		VkExtent2D extent,
 		const vox::Player& player
 	);
-	void					updateTexture();
-	void					updateLight();
 
 }; // class DescriptorSet
 

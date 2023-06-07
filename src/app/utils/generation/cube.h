@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:19:11 by etran             #+#    #+#             */
-/*   Updated: 2023/06/07 02:35:03 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/07 15:58:51 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,18 +49,18 @@ struct Cube {
 	/*                                  TYPEDEFS                                 */
 	/* ========================================================================= */
 
-	struct	Face {
+	/**
+	 * @brief Face handler. Contains the vertices of a face, counter clockwise order.
+	*/
+	struct Face {
 		scop::Vect3	vertices[4];
 
-		const scop::Vect3& operator[](std::size_t index) const noexcept {
-			return vertices[index];
-		}
+		const scop::Vect3&	operator[](std::size_t index) const noexcept;
+		scop::Vect3&		operator[](std::size_t index) noexcept;
+		scop::Vect3			normal() const noexcept;
 
-		scop::Vect3& operator[](std::size_t index) noexcept {
-			return vertices[index];
-		}
 	};
-
+	
 	/* ========================================================================= */
 	/*                               CONST MEMBERS                               */
 	/* ========================================================================= */

@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/02 16:09:44 by etran             #+#    #+#             */
-/*   Updated: 2023/06/05 17:19:21 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/07 21:20:57 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 #include "utils.h"
 #include "image_handler.h"
 #include "player.h"
+#include "timer.h"
 
 #include <iostream> // std::cerr std::endl
 #include <cstring> // std::strcmp
@@ -86,7 +87,8 @@ void	Engine::idle() {
 
 void	Engine::render(
 	scop::Window& window,
-	const vox::Player& player
+	const vox::Player& player,
+	Timer& timer
 ) {
 	// Wait fence available, lock it
 	vkWaitForFences(device.logical_device, 1, &in_flight_fences, VK_TRUE, UINT64_MAX);
@@ -165,6 +167,7 @@ void	Engine::render(
 
 	// Submit to swap chain, check if swap chain is still compatible
 	result = vkQueuePresentKHR(device.present_queue, &present_info);
+	timer.update();
 
 	if (
 		result == VK_ERROR_OUT_OF_DATE_KHR ||

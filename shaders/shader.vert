@@ -5,22 +5,23 @@ layout(location = 1) in vec3 in_color;
 layout(location = 2) in vec2 in_tex_coord;
 layout(location = 3) in vec3 in_normal;
 
-layout(location = 0) out vec3 frag_color;
+layout(location = 0) out vec3 frag_position;
+layout(location = 1) out vec3 frag_normal;
+
 // layout(location = 0) out vec2 frag_tex_coord;
 
 layout(binding = 0) uniform Camera {
-	mat4 model;
 	mat4 view;
 	mat4 proj;
 } camera_ubo;
 
 void	main() {
-	gl_Position = (
+	frag_position = in_position;
+	frag_normal = in_normal;
+	// frag_tex_coord = in_tex_coord;
+
+	gl_Position =
 		camera_ubo.proj
 		* camera_ubo.view
-		* camera_ubo.model
-		* vec4(in_position, 1.0)
-	);
-	frag_color = in_color;
-	// frag_tex_coord = in_tex_coord;
+		* vec4(in_position, 1.0f);
 }

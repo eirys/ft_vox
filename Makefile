@@ -6,7 +6,7 @@
 #    By: etran <etran@student.42.fr>                +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/04/06 03:40:09 by eli               #+#    #+#              #
-#    Updated: 2023/06/05 21:14:50 by etran            ###   ########.fr        #
+#    Updated: 2023/06/07 21:20:17 by etran            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -51,6 +51,7 @@ INC_FILES	:=	$(TOOLS_DIR)/utils.h \
 				$(TOOLS_DIR)/vector.h \
 				$(UTILS_DIR)/vertex.h \
 				$(UTILS_DIR)/uniform_buffer_object.h \
+				$(UTILS_DIR)/timer.h \
 				$(MODEL_DIR)/model.h \
 				$(MODEL_DIR)/material.h \
 				$(MODEL_DIR)/parser.h \

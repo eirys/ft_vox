@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:17:06 by etran             #+#    #+#             */
-/*   Updated: 2023/06/06 00:18:19 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/07 21:23:39 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,6 +32,8 @@
 # include "engine.h"
 # include "uniform_buffer_object.h"
 # include "gameplay.h"
+# include "material.h"
+# include "timer.h"
 
 # define SCOP_MOUSE_SENSITIVITY	0.25f
 # define SCOP_MOVE_SPEED		0.05f
@@ -60,12 +62,6 @@ enum TextureState {
 class App {
 public:
 	/* ========================================================================= */
-	/*                               CONST MEMBERS                               */
-	/* ========================================================================= */
-
-	static constexpr float			transition_duration = 300.0f;	// ms
-
-	/* ========================================================================= */
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
 
@@ -78,30 +74,16 @@ public:
 
 	/* MAIN FUNCTION =========================================================== */
 
-	void								run();
+	void							run();
 
 	/* ========================================================================= */
 
-	void							toggleTexture() noexcept;
-	void							reset() noexcept;
-	void							toggleMove(ObjectDirection direction) noexcept;
-	void							untoggleMove(
-		ObjectDirection direction
-	) noexcept;
-	void							updateCameraDir(
-		float x,
-		float y
-	) noexcept;
-	void							toggleLightColor() noexcept;
-	void							toggleLightPos() noexcept;
+	void							resetGame() noexcept;
+	void							toggleMove(ObjectDirection dir) noexcept;
+	void							untoggleMove(ObjectDirection dir) noexcept;
+	void							updateCameraDir(float x, float y) noexcept;
 
 private:
-	/* ========================================================================= */
-	/*                                  TYPEDEF                                  */
-	/* ========================================================================= */
-
-	typedef	std::chrono::high_resolution_clock::time_point	time_point;
-
 	/* ========================================================================= */
 	/*                               CLASS MEMBERS                               */
 	/* ========================================================================= */
@@ -115,39 +97,24 @@ private:
 	std::unique_ptr<scop::Image>	image;
 	UniformBufferObject::Light		light;
 
-	TextureState					texture_state = TextureState::TEXTURE_ENABLED;
-	std::optional<time_point>		texture_transition_start;
-
 	bool							keys_pressed_directions[6] = { false };
 	scop::Vect3						movement{};
-	std::size_t						selected_light_color = 0;
-	std::size_t						selected_light_pos = 0;
 
-	/* ========================================================================= */
-	/*                               CONST MEMBERS                               */
-	/* ========================================================================= */
-
-	const scop::Vect3				light_colors[4] = {
-		scop::Vect3(1.0f, 1.0f, 1.0f), // white
-		scop::Vect3(1.0f, 0.0f, 0.0f), // red
-		scop::Vect3(0.0f, 1.0f, 0.0f), // green
-		scop::Vect3(0.0f, 0.0f, 1.0f) // blue
-	};
-	const scop::Vect3				light_positions[4] = {
-		scop::Vect3(1.0f, 1.5f, 2.0f),
-		scop::Vect3(0.0f, 0.5f, 0.5f),
-		scop::Vect3(-1.0f, -1.8f, 1.75f),
-		scop::Vect3(0.0f, -1.0f, 0.0f)
-	};
+	Timer							timer;
 
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
 
-	void								drawFrame();
-	void								loadModel(const std::string& path);
-	void								loadTerrain();
-	void								update();
+	void							loadModel(const std::string& path);
+	void							loadTerrain();
+	void							loadLight(
+		const scop::mtl::Material& mat = scop::mtl::Material()
+	);
+	void							loadTexture(
+		std::unique_ptr<scop::Image>&& image = nullptr
+	);
+	void							updateGame();
 
 }; // class App
 

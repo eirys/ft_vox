@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:14:35 by etran             #+#    #+#             */
-/*   Updated: 2023/06/05 21:11:32 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/07 21:19:09 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,6 +33,8 @@
 # include "player.h"
 
 namespace scop {
+class Timer;
+
 namespace graphics {
 
 struct QueueFamilyIndices {
@@ -84,7 +86,8 @@ public:
 	void						idle();
 	void						render(
 		scop::Window& window,
-		const vox::Player& player
+		const vox::Player& player,
+		Timer& timer
 	);
 
 private:

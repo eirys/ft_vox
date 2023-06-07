@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/28 11:12:12 by eli               #+#    #+#             */
-/*   Updated: 2023/06/07 02:39:39 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/07 21:23:33 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,6 @@
 #include "ppm_loader.h"
 #include "math.h"
 #include "mtl_parser.h"
-
 #include "perlin_noise.h"
 
 namespace scop {
@@ -46,7 +45,8 @@ static ObjectDirection	opposite(ObjectDirection dir) noexcept {
 
 App::App() {
 	loadTerrain();
-	reset();
+	resetGame();
+	loadLight();
 	window.init(this);
 	engine.init(window, *image, light, vertices, indices);
 }
@@ -55,13 +55,15 @@ App::~App() {
 	engine.destroy();
 }
 
-/* ========================================================================== */
+/* MAIN FUNCTION ============================================================ */
 
 void	App::run() {
+	timer.start();
 	while (window.alive()) {
 		window.poll();
-		update();
-		drawFrame();
+		updateGame();
+		engine.render(window, game.player, timer);
+		timer.check();
 	}
 	engine.idle();
 }
@@ -69,27 +71,15 @@ void	App::run() {
 /* ========================================================================== */
 
 /**
- * On toggle, changes the texture of the model.
+ * @brief Resets the model to its original position and rotation.
 */
-void	App::toggleTexture() noexcept {
-	texture_state = static_cast<TextureState>(
-		(static_cast<int>(texture_state) + 1) % 3
-	);
-	texture_transition_start.emplace(
-		std::chrono::high_resolution_clock::now()
-	);
-}
-
-/**
- * Resets the model to its original position and rotation.
-*/
-void	App::reset() noexcept {
+void	App::resetGame() noexcept {
 	// Reset player
 	game.player.reset(game.world_origin, {0.0f, 0.0f, 1.0f});
 }
 
 /**
- * On toggle, the model is moved in the given direction.
+ * @brief On toggle, the model is moved in the given direction.
 */
 void	App::toggleMove(ObjectDirection dir) noexcept {
 	keys_pressed_directions[dir] = true;
@@ -124,7 +114,7 @@ void	App::toggleMove(ObjectDirection dir) noexcept {
 }
 
 /**
- * On untoggle, the model stops moving in the given direction.
+ * @brief On untoggle, the model stops moving in the given direction.
 */
 void	App::untoggleMove(ObjectDirection dir) noexcept {
 	keys_pressed_directions[dir] = false;
@@ -154,32 +144,23 @@ void	App::updateCameraDir(float x, float y) noexcept {
 	game.player.updateEyeDir(x, y);
 }
 
-void	App::toggleLightColor() noexcept {
-	selected_light_color = (selected_light_color + 1) % 4;
-}
-
-void	App::toggleLightPos() noexcept {
-	selected_light_pos = (selected_light_pos + 1) % 4;
-}
-
 /* ========================================================================== */
 /*                                   PRIVATE                                  */
 /* ========================================================================== */
 
-void	App::drawFrame() {
-	engine.render(window, game.player);
-}
-
-void	App::update() {
+/**
+ * @brief Updates state of the game.
+*/
+void	App::updateGame() {
 	game.player.move(movement);
 }
 
-/* ========================================================================== */
+/* INIT FUNCTIONS =========================================================== */
 
 void	App::loadTerrain() {
 	LOG("Loading terrain...");
 	const constexpr std::size_t	chunk_size = 16;
-	const constexpr std::size_t	render_distance_xy = 4;
+	const constexpr std::size_t	render_distance_xy = 10;
 	const constexpr std::size_t	render_distance_z = 2;
 
 	vox::PerlinNoise	noise({
@@ -195,22 +176,14 @@ void	App::loadTerrain() {
 	});
 
 	vox::PerlinNoise::PerlinMesh	mesh = noise.toMesh();
-	Vect3	color {};
-	int i = 0;
 	vertices.reserve(mesh.vertices.size());
-	for (const auto& coord: mesh.vertices) {
+	for (std::size_t i = 0; i < mesh.vertices.size(); ++i) {
 		scop::Vertex	vertex{};
 
-		vertex.pos = coord;
+		vertex.pos = mesh.vertices[i];
 		vertex.tex_coord = {0.0f, 0.0f}; // TODO
-		vertex.normal = {0.0f, 1.0f, 0.0f}; // TODO
-		if (i++ % 8 == 0)
-			math::generateVibrantColor(
-				color.x,
-				color.y,
-				color.z
-			);
-		vertex.color = color;
+		vertex.normal = mesh.normals[i];
+		vertex.color = {0.0f, 0.0f, 0.0f}; // TODO
 
 		vertices.emplace_back(vertex);
 	}
@@ -218,9 +191,7 @@ void	App::loadTerrain() {
 	LOG("Terrain loaded.");
 
 	game.setOrigin(mesh.origin);
-
-	scop::PpmLoader	img_loader(SCOP_TEXTURE_FILE_DEFAULT);
-	image.reset(new scop::Image(img_loader.load()));
+	loadTexture();
 }
 
 void	App::loadModel(const std::string& path) {
@@ -268,21 +239,28 @@ void	App::loadModel(const std::string& path) {
 	}
 
 	// Pass ownership of texture image from model to app
-	image.reset(
-		new scop::Image(std::move(*model.getMaterial().ambient_texture))
-	);
+	loadTexture(std::move(model.getMaterial().ambient_texture));
 	model.getMaterial().ambient_texture.release();
+}
 
-	// Load light
-	light = UniformBufferObject::Light{
-		model.getMaterial().ambient_color,
-		light_positions[0],
-		light_colors[0],
-		model.getMaterial().diffuse_color,
-		game.player.getPosition(),
-		model.getMaterial().specular_color,
-		model.getMaterial().shininess
+void	App::loadLight(const scop::mtl::Material& mat) {
+	light = scop::UniformBufferObject::Light{
+		.ambient_color = mat.ambient_color,
+		.light_vector = scop::normalize(scop::Vect3(0.1f, 1.0f, 0.3f)),
+		.light_color = scop::Vect3(1.0f, 1.0f, 0.7f),
+		.light_intensity = 0.1f
 	};
+}
+
+void	App::loadTexture(std::unique_ptr<scop::Image>&& img) {
+	if (img == nullptr) {
+		scop::PpmLoader	img_loader(SCOP_TEXTURE_FILE_DEFAULT);
+		image.reset(new scop::Image(img_loader.load()));
+	} else {
+		image.reset(
+			new scop::Image(std::move(*img))
+		);
+	}
 }
 
 } // namespace scop

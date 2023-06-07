@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/05 09:55:33 by etran             #+#    #+#             */
-/*   Updated: 2023/06/05 23:41:38 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/07 14:30:26 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,11 +51,12 @@ public:
 		float speed
 	);
 
-	Character() = default;
-	Character(const Character& other) = default;
-	Character(Character&& other) = default;
-	Character& operator=(const Character& rhs) = default;
 	virtual ~Character() = default;
+
+	Character(Character&& other) = delete;
+	Character() = delete;
+	Character(const Character& other) = delete;
+	Character& operator=(const Character& rhs) = delete;
 
 	/* ========================================================================= */
 
