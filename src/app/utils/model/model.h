@@ -19,7 +19,7 @@
 
 # include "material.h"
 
-# define SCOP_TEXTURE_FILE_DEFAULT "assets/textures/hammy.ppm"
+# define SCOP_TEXTURE_FILE_DEFAULT "assets/textures/grass_block.ppm"
 
 namespace scop {
 class Image;

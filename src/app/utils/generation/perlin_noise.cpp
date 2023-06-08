@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/23 10:26:08 by etran             #+#    #+#             */
-/*   Updated: 2023/06/07 14:37:28 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/08 11:34:42 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -107,7 +107,8 @@ PerlinNoise::PerlinMesh	PerlinNoise::toMesh() const {
 	auto	addFace = [&mesh](const Cube::Face& face) -> void {
 		scop::Vect3	normal = face.normal();
 		for (std::size_t i = 0; i < 4; ++i) {
-			mesh.vertices.emplace_back(face[i]);
+			mesh.vertices.emplace_back(face.vertices[i]);
+			mesh.uvs.emplace_back(face.uvs[i]);
 			mesh.normals.emplace_back(normal);
 		}
 	};
@@ -128,8 +129,7 @@ PerlinNoise::PerlinMesh	PerlinNoise::toMesh() const {
 		mesh.indices.emplace_back(g);
 	};
 
-	// Todo
-	// optimize...
+	// TODO: Use a better algorithm
 
 	for (std::size_t row = 0; row < height; ++row) {
 		for (std::size_t col = 0; col < width; ++col) {
@@ -140,7 +140,7 @@ PerlinNoise::PerlinMesh	PerlinNoise::toMesh() const {
 			// |/    |/     O___x
 			// a_____b
 
-			// Perlin value of the current pixel
+			// Evaluate the current cube
 			const float	perlin = noiseAt(col, row);
 
 			const Cube	cube{{
@@ -148,50 +148,46 @@ PerlinNoise::PerlinMesh	PerlinNoise::toMesh() const {
 				perlin,
 				row - half_height
 			}};
+
 			// Add the top face
-			if (row != height - 1 && col != width - 1) {
+			if (row != height - 1 && col != width - 1)
 				addIndices(mesh.vertices.size());
-			}
 			addFace(cube.top());
 
 			// Check Perlin noise on side blocks
+			// Add the south face
 			if (row != 0) {
 				const float	south = noiseAt(col, row - 1);
 				if (south < perlin) {
-					// Add the south face
-					if (row != height - 1 && col != width - 1) {
+					if (row != height - 1 && col != width - 1)
 						addIndices(mesh.vertices.size());
-					}
 					addFace(cube.back());
 				}
 			}
+			// Add the north face
 			if (row != height - 1) {
 				const float	north = noiseAt(col, row + 1);
 				if (north < perlin) {
-					// Add the north face
-					if (row != height - 1 && col != width - 1) {
+					if (col != width - 1)
 						addIndices(mesh.vertices.size());
-					}
 					addFace(cube.front());
 				}
 			}
+			// Add the west face
 			if (col != 0) {
 				const float	west = noiseAt(col - 1, row);
 				if (west < perlin) {
-					// Add the west face
-					if (row != height - 1 && col != width - 1) {
+					if (row != height - 1 && col != width - 1)
 						addIndices(mesh.vertices.size());
-					}
 					addFace(cube.left());
 				}
 			}
+			// Add the east face
 			if (col != width - 1) {
 				const float	east = noiseAt(col + 1, row);
 				if (east < perlin) {
-					// Add the east face
-					if (row != height - 1 && col != width - 1) {
+					if (row != height - 1)
 						addIndices(mesh.vertices.size());
-					}
 					addFace(cube.right());
 				}
 			}

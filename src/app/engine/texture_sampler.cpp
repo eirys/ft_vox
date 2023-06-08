@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/15 20:25:44 by etran             #+#    #+#             */
-/*   Updated: 2023/06/04 16:52:39 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/08 12:39:06 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,7 +50,8 @@ void	TextureSampler::destroy(Device& device) {
 /* ========================================================================== */
 
 /**
- * Texture loader
+ * Texture loader. Will load image into a buffer,
+ * then copy it into a texture image.
 */
 void	TextureSampler::createTextureImage(
 	Device& device,
@@ -153,23 +154,19 @@ void	TextureSampler::createTextureImageView(Device& device) {
 void	TextureSampler::createTextureSampler(
 	Device& device
 ) {
-	VkPhysicalDeviceProperties	properties{};
-	vkGetPhysicalDeviceProperties(device.physical_device, &properties);
-
 	VkSamplerCreateInfo	sampler_info{};
 	sampler_info.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
-	sampler_info.magFilter = VK_FILTER_LINEAR;
-	sampler_info.minFilter = VK_FILTER_LINEAR;
+	sampler_info.magFilter = VK_FILTER_NEAREST;
+	sampler_info.minFilter = VK_FILTER_NEAREST;
 	sampler_info.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
 	sampler_info.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
 	sampler_info.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-	sampler_info.anisotropyEnable = VK_TRUE;
-	sampler_info.maxAnisotropy = properties.limits.maxSamplerAnisotropy;
-	sampler_info.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
+	sampler_info.anisotropyEnable = VK_FALSE;
+	sampler_info.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK;
 	sampler_info.unnormalizedCoordinates = VK_FALSE;
 	sampler_info.compareEnable = VK_FALSE;
 	sampler_info.compareOp = VK_COMPARE_OP_ALWAYS;
-	sampler_info.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+	sampler_info.mipmapMode = VK_SAMPLER_MIPMAP_MODE_NEAREST;
 	sampler_info.mipLodBias = 0.0f;
 	sampler_info.minLod = 0.0f;
 	sampler_info.maxLod = static_cast<float>(mip_levels);

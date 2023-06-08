@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/28 11:12:12 by eli               #+#    #+#             */
-/*   Updated: 2023/06/07 21:23:33 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/08 12:42:12 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,7 +46,9 @@ static ObjectDirection	opposite(ObjectDirection dir) noexcept {
 App::App() {
 	loadTerrain();
 	resetGame();
-	loadLight();
+	scop::mtl::Material material;
+	material.ambient_color= {0.5,0.5,0.5};
+	loadLight(material);
 	window.init(this);
 	engine.init(window, *image, light, vertices, indices);
 }
@@ -181,7 +183,7 @@ void	App::loadTerrain() {
 		scop::Vertex	vertex{};
 
 		vertex.pos = mesh.vertices[i];
-		vertex.tex_coord = {0.0f, 0.0f}; // TODO
+		vertex.tex_coord = mesh.uvs[i];
 		vertex.normal = mesh.normals[i];
 		vertex.color = {0.0f, 0.0f, 0.0f}; // TODO
 
@@ -247,8 +249,8 @@ void	App::loadLight(const scop::mtl::Material& mat) {
 	light = scop::UniformBufferObject::Light{
 		.ambient_color = mat.ambient_color,
 		.light_vector = scop::normalize(scop::Vect3(0.1f, 1.0f, 0.3f)),
-		.light_color = scop::Vect3(1.0f, 1.0f, 0.7f),
-		.light_intensity = 0.1f
+		.light_color = scop::Vect3(1.0f, 1.0f, 0.8f),
+		.light_intensity = 0.4f
 	};
 }
 

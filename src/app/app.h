@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:17:06 by etran             #+#    #+#             */
-/*   Updated: 2023/06/07 21:23:39 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/08 11:36:19 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,7 +37,6 @@
 
 # define SCOP_MOUSE_SENSITIVITY	0.25f
 # define SCOP_MOVE_SPEED		0.05f
-# define SCOP_ROTATION_SPEED	0.25f // deg
 
 namespace scop {
 
@@ -48,12 +47,6 @@ enum ObjectDirection {
 	MOVE_RIGHT = 3,
 	MOVE_UP = 4,
 	MOVE_DOWN = 5
-};
-
-enum TextureState {
-	TEXTURE_GRAYSCALE = 1,
-	TEXTURE_COLOR = 2,
-	TEXTURE_ENABLED = 0
 };
 
 /**

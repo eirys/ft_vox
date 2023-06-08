@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:50:12 by etran             #+#    #+#             */
-/*   Updated: 2023/06/07 16:11:20 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/08 11:34:13 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,6 +23,7 @@ namespace vox {
  * a_____b
 */
 
+typedef scop::Vect2	Vect2;
 typedef scop::Vect3	Vect3;
 
 /* ========================================================================== */
@@ -33,16 +34,8 @@ typedef scop::Vect3	Vect3;
 /* ========================================================================== */
 /* ========================================================================== */
 
-scop::Vect3&		Cube::Face::operator[](std::size_t index) noexcept {
-	return vertices[index];
-}
-
-const scop::Vect3&	Cube::Face::operator[](std::size_t index) const noexcept {
-	return vertices[index];
-}
-
 scop::Vect3	Cube::Face::normal() const noexcept {
-	return -scop::cross(vertices[1] - vertices[0], vertices[3] - vertices[0]);
+	return scop::cross(vertices[3] - vertices[0], vertices[1] - vertices[0]);
 }
 
 /* ========================================================================== */
@@ -52,7 +45,6 @@ scop::Vect3	Cube::Face::normal() const noexcept {
 
 /* ========================================================================== */
 /* ========================================================================== */
-
 
 /* ========================================================================== */
 /*                                   PUBLIC                                   */
@@ -111,6 +103,22 @@ Vect3	Cube::center() const noexcept {
 
 /* FACES ==================================================================== */
 
+/**
+ * @details Here is the mapping of the texture coordinates:
+ * 
+ * x: 0    0.25  0.5   0.75   1
+ *                               y:
+ *                h ___ g        0
+ *                |  T  |
+ *    g ___ h ___ e ___ f ___ g  0.25
+ *    |  N  |  W  |  S  |  E  |
+ *    c ___ d ___ a ___ b ___ c  0.5
+ *                |  B  |
+ *                d ___ c        0.75
+ * 
+ * { Empty line }                1
+*/
+
 // Face e-f-g-h
 Cube::Face	Cube::top() const noexcept {
 	return {{
@@ -118,6 +126,11 @@ Cube::Face	Cube::top() const noexcept {
 		upperBottomRight(),
 		upperTopRight(),
 		upperTopLeft()
+	}, {
+		{0.5f, 0.25f},
+		{0.75f, 0.25f},
+		{0.75f, 0.0f},
+		{0.5f, 0.0f}
 	}};
 }
 
@@ -128,6 +141,11 @@ Cube::Face	Cube::bottom() const noexcept {
 		lowerBottomRight(),
 		lowerTopRight(),
 		lowerTopLeft()
+	}, {
+		{0.5f, 0.5f},
+		{0.75f, 0.5f},
+		{0.75f, 0.75f},
+		{0.5f, 0.75f}
 	}};
 }
 
@@ -138,6 +156,11 @@ Cube::Face	Cube::left() const noexcept {
 		lowerBottomLeft(),
 		upperBottomLeft(),
 		upperTopLeft()
+	}, {
+		{0.25f, 0.5f},
+		{0.5f, 0.5f},
+		{0.5f, 0.25f},
+		{0.25f, 0.25f}
 	}};
 }
 
@@ -148,6 +171,11 @@ Cube::Face	Cube::right() const noexcept {
 		lowerTopRight(),
 		upperTopRight(),
 		upperBottomRight()
+	}, {
+		{0.75f, 0.5f},
+		{1.0f, 0.5f},
+		{1.0f, 0.25f},
+		{0.75f, 0.25f}
 	}};
 }
 
@@ -158,6 +186,11 @@ Cube::Face	Cube::back() const noexcept {
 		lowerBottomRight(),
 		upperBottomRight(),
 		upperBottomLeft()
+	}, {
+		{0.5f, 0.5f},
+		{0.75f, 0.5f},
+		{0.75f, 0.25f},
+		{0.5f, 0.25f}
 	}};
 }
 
@@ -168,6 +201,11 @@ Cube::Face	Cube::front() const noexcept {
 		lowerTopLeft(),
 		upperTopLeft(),
 		upperTopRight()
+	}, {
+		{0.0f, 0.5f},
+		{0.25f, 0.5f},
+		{0.25f, 0.25f},
+		{0.0f, 0.25f}
 	}};
 }
 

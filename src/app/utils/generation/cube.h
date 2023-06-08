@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:19:11 by etran             #+#    #+#             */
-/*   Updated: 2023/06/07 15:58:51 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/08 11:37:00 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,18 +19,17 @@
 
 namespace vox {
 
-// TODO
 enum MaterialType {
-	GRASS,
-	DIRT,
-	STONE,
-	WOOD,
-	LEAVES,
-	SAND,
-	WATER,
-	LAVA,
-	ICE,
-	SNOW
+	MATERIAL_GRASS,
+	MATERIAL_DIRT,
+	MATERIAL_STONE,
+	MATERIAL_WOOD,
+	MATERIAL_LEAVES,
+	MATERIAL_SAND,
+	MATERIAL_WATER,
+	MATERIAL_LAVA,
+	MATERIAL_ICE,
+	MATERIAL_SNOW
 };
 
 /**
@@ -54,9 +53,8 @@ struct Cube {
 	*/
 	struct Face {
 		scop::Vect3	vertices[4];
+		scop::Vect2	uvs[4];
 
-		const scop::Vect3&	operator[](std::size_t index) const noexcept;
-		scop::Vect3&		operator[](std::size_t index) noexcept;
 		scop::Vect3			normal() const noexcept;
 
 	};
@@ -106,7 +104,7 @@ struct Cube {
 	/* ========================================================================= */
 
 	scop::Vect3			pos;
-	// MaterialType			material;
+	MaterialType		material = MaterialType::MATERIAL_GRASS;
 
 }; // class Cube
 
