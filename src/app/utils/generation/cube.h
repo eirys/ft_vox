@@ -6,14 +6,11 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:19:11 by etran             #+#    #+#             */
-/*   Updated: 2023/06/08 11:37:00 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/08 13:06:16 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
-
-// Std
-# include <array> // std::array
 
 # include "vector.h"
 
@@ -64,6 +61,7 @@ struct Cube {
 	/* ========================================================================= */
 
 	static constexpr const float	size = 1.0f;
+	static constexpr const float	uv_offset = 1.0f / (64 * 16 * 4);
 
 	/* ========================================================================= */
 	/*                                  METHODS                                  */

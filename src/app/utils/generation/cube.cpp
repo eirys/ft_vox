@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:50:12 by etran             #+#    #+#             */
-/*   Updated: 2023/06/08 11:34:13 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/08 12:57:50 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -127,10 +127,10 @@ Cube::Face	Cube::top() const noexcept {
 		upperTopRight(),
 		upperTopLeft()
 	}, {
-		{0.5f, 0.25f},
-		{0.75f, 0.25f},
-		{0.75f, 0.0f},
-		{0.5f, 0.0f}
+		{0.5f + uv_offset, 0.25f - uv_offset},
+		{0.75f - uv_offset, 0.25f - uv_offset},
+		{0.75f - uv_offset, 0.0f + uv_offset},
+		{0.5f + uv_offset, 0.0f + uv_offset}
 	}};
 }
 
@@ -142,10 +142,10 @@ Cube::Face	Cube::bottom() const noexcept {
 		lowerTopRight(),
 		lowerTopLeft()
 	}, {
-		{0.5f, 0.5f},
-		{0.75f, 0.5f},
-		{0.75f, 0.75f},
-		{0.5f, 0.75f}
+		{0.5f + uv_offset, 0.5f - uv_offset},
+		{0.75f - uv_offset, 0.5f - uv_offset},
+		{0.75f - uv_offset, 0.75f + uv_offset},
+		{0.5f + uv_offset, 0.75f + uv_offset}
 	}};
 }
 
@@ -157,10 +157,10 @@ Cube::Face	Cube::left() const noexcept {
 		upperBottomLeft(),
 		upperTopLeft()
 	}, {
-		{0.25f, 0.5f},
-		{0.5f, 0.5f},
-		{0.5f, 0.25f},
-		{0.25f, 0.25f}
+		{0.25f + uv_offset, 0.5f - uv_offset},
+		{0.5f - uv_offset, 0.5f - uv_offset},
+		{0.5f - uv_offset, 0.25f + uv_offset},
+		{0.25f + uv_offset, 0.25f + uv_offset}
 	}};
 }
 
@@ -172,10 +172,10 @@ Cube::Face	Cube::right() const noexcept {
 		upperTopRight(),
 		upperBottomRight()
 	}, {
-		{0.75f, 0.5f},
-		{1.0f, 0.5f},
-		{1.0f, 0.25f},
-		{0.75f, 0.25f}
+		{0.75f + uv_offset, 0.5f - uv_offset},
+		{1.0f - uv_offset, 0.5f - uv_offset},
+		{1.0f - uv_offset, 0.25f + uv_offset},
+		{0.75f + uv_offset, 0.25f + uv_offset}
 	}};
 }
 
@@ -187,10 +187,10 @@ Cube::Face	Cube::back() const noexcept {
 		upperBottomRight(),
 		upperBottomLeft()
 	}, {
-		{0.5f, 0.5f},
-		{0.75f, 0.5f},
-		{0.75f, 0.25f},
-		{0.5f, 0.25f}
+		{0.5f + uv_offset, 0.5f - uv_offset},
+		{0.75f - uv_offset, 0.5f - uv_offset},
+		{0.75f - uv_offset, 0.25f + uv_offset},
+		{0.5f + uv_offset, 0.25f + uv_offset}
 	}};
 }
 
@@ -202,10 +202,10 @@ Cube::Face	Cube::front() const noexcept {
 		upperTopLeft(),
 		upperTopRight()
 	}, {
-		{0.0f, 0.5f},
-		{0.25f, 0.5f},
-		{0.25f, 0.25f},
-		{0.0f, 0.25f}
+		{0.0f + uv_offset, 0.5f - uv_offset},
+		{0.25f - uv_offset, 0.5f - uv_offset},
+		{0.25f - uv_offset, 0.25f + uv_offset},
+		{0.0f + uv_offset, 0.25f + uv_offset}
 	}};
 }
 
