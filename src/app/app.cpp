@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/28 11:12:12 by eli               #+#    #+#             */
-/*   Updated: 2023/06/08 12:42:12 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/08 21:13:30 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -183,7 +183,7 @@ void	App::loadTerrain() {
 		scop::Vertex	vertex{};
 
 		vertex.pos = mesh.vertices[i];
-		vertex.tex_coord = mesh.uvs[i];
+		vertex.tex_coord = {0,0};
 		vertex.normal = mesh.normals[i];
 		vertex.color = {0.0f, 0.0f, 0.0f}; // TODO
 

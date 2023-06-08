@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/12 22:44:13 by eli               #+#    #+#             */
-/*   Updated: 2023/06/04 16:52:39 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/08 20:31:42 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,13 +20,11 @@ namespace scop {
 
 Image::Image(
 	const std::string& path,
-	// ImageType type,
 	std::vector<uint32_t>&& pixels,
 	std::size_t width,
 	std::size_t height
 ):
 path(path),
-// type(type),
 pixels(std::move(pixels)),
 width(width),
 height(height) {}

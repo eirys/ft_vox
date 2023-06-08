@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:14:35 by etran             #+#    #+#             */
-/*   Updated: 2023/06/07 21:19:09 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/08 21:46:58 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -96,8 +96,7 @@ private:
 	/* ========================================================================= */
 
 	struct PushConstantData {
-		scop::Vect2		offset;
-		scop::Vect3		color;
+		int32_t	image_index;
 	};
 
 	/* ========================================================================= */
@@ -115,6 +114,7 @@ private:
 	DebugModule						debug_module;
 
 	Device							device;
+
 	RenderTarget					render_target;
 	TextureSampler					texture_sampler;
 	DescriptorSet					descriptor_set;

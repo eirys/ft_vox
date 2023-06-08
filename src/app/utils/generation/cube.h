@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:19:11 by etran             #+#    #+#             */
-/*   Updated: 2023/06/08 13:06:16 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/08 21:09:37 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,6 +27,15 @@ enum MaterialType {
 	MATERIAL_LAVA,
 	MATERIAL_ICE,
 	MATERIAL_SNOW
+};
+
+enum FaceType {
+	FACE_TOP,
+	FACE_BOTTOM,
+	FACE_LEFT,
+	FACE_RIGHT,
+	FACE_FRONT,
+	FACE_BACK
 };
 
 /**
@@ -50,9 +59,10 @@ struct Cube {
 	*/
 	struct Face {
 		scop::Vect3	vertices[4];
-		scop::Vect2	uvs[4];
+		// scop::Vect2	uvs[4];
+		FaceType	side;
 
-		scop::Vect3			normal() const noexcept;
+		scop::Vect3	normal() const noexcept;
 
 	};
 	
@@ -61,7 +71,6 @@ struct Cube {
 	/* ========================================================================= */
 
 	static constexpr const float	size = 1.0f;
-	static constexpr const float	uv_offset = 1.0f / (64 * 16 * 4);
 
 	/* ========================================================================= */
 	/*                                  METHODS                                  */

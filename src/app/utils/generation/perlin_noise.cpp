@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/23 10:26:08 by etran             #+#    #+#             */
-/*   Updated: 2023/06/08 11:34:42 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/08 21:49:33 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -105,10 +105,17 @@ PerlinNoise::PerlinMesh	PerlinNoise::toMesh() const {
 	};
 
 	auto	addFace = [&mesh](const Cube::Face& face) -> void {
+		static const constexpr Vect2	uvs[4] = {
+			{0.0f, 0.0f},
+			{1.0f, 0.0f},
+			{1.0f, 1.0f},
+			{0.0f, 1.0f}
+		};
 		scop::Vect3	normal = face.normal();
+
 		for (std::size_t i = 0; i < 4; ++i) {
 			mesh.vertices.emplace_back(face.vertices[i]);
-			mesh.uvs.emplace_back(face.uvs[i]);
+			mesh.uvs.emplace_back(uvs[i]);
 			mesh.normals.emplace_back(normal);
 		}
 	};
@@ -130,6 +137,7 @@ PerlinNoise::PerlinMesh	PerlinNoise::toMesh() const {
 	};
 
 	// TODO: Use a better algorithm
+	// TODO store cube map
 
 	for (std::size_t row = 0; row < height; ++row) {
 		for (std::size_t col = 0; col < width; ++col) {

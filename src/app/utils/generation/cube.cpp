@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:50:12 by etran             #+#    #+#             */
-/*   Updated: 2023/06/08 12:57:50 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/08 21:11:27 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -126,12 +126,13 @@ Cube::Face	Cube::top() const noexcept {
 		upperBottomRight(),
 		upperTopRight(),
 		upperTopLeft()
-	}, {
-		{0.5f + uv_offset, 0.25f - uv_offset},
-		{0.75f - uv_offset, 0.25f - uv_offset},
-		{0.75f - uv_offset, 0.0f + uv_offset},
-		{0.5f + uv_offset, 0.0f + uv_offset}
-	}};
+	}, FaceType::FACE_TOP
+	// }, {
+	// 	{0.5f, 0.25f},
+	// 	{0.75f, 0.25f},
+	// 	{0.75f, 0.0f},
+	// 	{0.5f, 0.0f}
+	};
 }
 
 // Face a-b-c-d
@@ -141,12 +142,13 @@ Cube::Face	Cube::bottom() const noexcept {
 		lowerBottomRight(),
 		lowerTopRight(),
 		lowerTopLeft()
-	}, {
-		{0.5f + uv_offset, 0.5f - uv_offset},
-		{0.75f - uv_offset, 0.5f - uv_offset},
-		{0.75f - uv_offset, 0.75f + uv_offset},
-		{0.5f + uv_offset, 0.75f + uv_offset}
-	}};
+	}, FaceType::FACE_BOTTOM
+	// }, {
+	// 	{0.5f, 0.5f},
+	// 	{0.75f, 0.5f},
+	// 	{0.75f, 0.75f},
+	// 	{0.5f, 0.75f}
+	};
 }
 
 // Face d-a-e-h
@@ -156,12 +158,14 @@ Cube::Face	Cube::left() const noexcept {
 		lowerBottomLeft(),
 		upperBottomLeft(),
 		upperTopLeft()
-	}, {
-		{0.25f + uv_offset, 0.5f - uv_offset},
-		{0.5f - uv_offset, 0.5f - uv_offset},
-		{0.5f - uv_offset, 0.25f + uv_offset},
-		{0.25f + uv_offset, 0.25f + uv_offset}
-	}};
+	}, FaceType::FACE_LEFT
+	};
+	// }, {
+	// 	{0.25f, 0.5f},
+	// 	{0.5f, 0.5f},
+	// 	{0.5f, 0.25f},
+	// 	{0.25f, 0.25f}
+	// }};
 }
 
 // Face b-c-g-f
@@ -171,12 +175,14 @@ Cube::Face	Cube::right() const noexcept {
 		lowerTopRight(),
 		upperTopRight(),
 		upperBottomRight()
-	}, {
-		{0.75f + uv_offset, 0.5f - uv_offset},
-		{1.0f - uv_offset, 0.5f - uv_offset},
-		{1.0f - uv_offset, 0.25f + uv_offset},
-		{0.75f + uv_offset, 0.25f + uv_offset}
-	}};
+	}, FaceType::FACE_RIGHT
+	};
+	// }, {
+	// 	{0.75f, 0.5f},
+	// 	{1.0f, 0.5f},
+	// 	{1.0f, 0.25f},
+	// 	{0.75f, 0.25f}
+	// }};
 }
 
 // Face a-b-f-e
@@ -186,12 +192,14 @@ Cube::Face	Cube::back() const noexcept {
 		lowerBottomRight(),
 		upperBottomRight(),
 		upperBottomLeft()
-	}, {
-		{0.5f + uv_offset, 0.5f - uv_offset},
-		{0.75f - uv_offset, 0.5f - uv_offset},
-		{0.75f - uv_offset, 0.25f + uv_offset},
-		{0.5f + uv_offset, 0.25f + uv_offset}
-	}};
+	}, FaceType::FACE_BACK
+	};
+	// }, {
+	// 	{0.5f, 0.5f},
+	// 	{0.75f, 0.5f},
+	// 	{0.75f, 0.25f},
+	// 	{0.5f, 0.25f}
+	// }};
 }
 
 // Face c-d-h-g
@@ -201,12 +209,14 @@ Cube::Face	Cube::front() const noexcept {
 		lowerTopLeft(),
 		upperTopLeft(),
 		upperTopRight()
-	}, {
-		{0.0f + uv_offset, 0.5f - uv_offset},
-		{0.25f - uv_offset, 0.5f - uv_offset},
-		{0.25f - uv_offset, 0.25f + uv_offset},
-		{0.0f + uv_offset, 0.25f + uv_offset}
-	}};
+	}, FaceType::FACE_FRONT
+	};
+	// }, {
+	// 	{0.0f, 0.5f},
+	// 	{0.25f, 0.5f},
+	// 	{0.25f, 0.25f},
+	// 	{0.0f, 0.25f}
+	// }};
 }
 
 } // namespace vox
