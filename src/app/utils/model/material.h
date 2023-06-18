@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:15:29 by etran             #+#    #+#             */
-/*   Updated: 2023/06/04 17:15:30 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/09 02:03:41 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,10 +55,9 @@ struct Material {
 
 	Material() = default;
 	Material&	operator=(Material&& other) = default;
+	Material(const Material& other) = default;
+	Material&	operator=(const Material& other) = default;
 	~Material() = default;
-
-	Material(const Material& other) = delete;
-	Material&	operator=(const Material& other) = delete;
 
 	/* ========================================================================= */
 	/*                               CLASS MEMBERS                               */
@@ -89,12 +88,16 @@ struct Material {
 	IlluminationModel	illum = IlluminationModel::ILLUM_LAMBERTIAN;
 
 	// map_Ka (ambient texture)
-	ImagePtr			ambient_texture{};	// map_Ka
+	ImagePtr			ambient_texture;
 
 }; // class Material
 
 } // namespace mtl
 } // namespace scop
+
+/* ========================================================================== */
+/*                                    OTHER                                   */
+/* ========================================================================== */
 
 inline std::ostream& operator<<(
 	std::ostream& o,

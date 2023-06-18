@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/02 16:09:44 by etran             #+#    #+#             */
-/*   Updated: 2023/06/08 21:46:33 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/18 22:21:43 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,7 +34,7 @@ const std::vector<const char*>	Engine::validation_layers = {
 
 void	Engine::init(
 	scop::Window& window,
-	const scop::Image& image,
+	const std::vector<scop::Image>& images,
 	const UniformBufferObject::Light& light,
 	const std::vector<Vertex>& vertices,
 	const std::vector<uint32_t>& indices
@@ -47,7 +47,7 @@ void	Engine::init(
 	descriptor_set.initLayout(device);
 	createGraphicsPipeline();
 	command_buffer.initPool(device);
-	texture_sampler.init(device, command_buffer.vk_command_pool, image);
+	texture_sampler.init(device, command_buffer.vk_command_pool, images);
 	vertex_input.init(device, command_buffer.vk_command_pool, vertices, indices);
 	descriptor_set.initSets(device, texture_sampler, light);
 	command_buffer.initBuffer(device);
@@ -60,7 +60,7 @@ void	Engine::destroy() {
 	texture_sampler.destroy(device);
 
 	// Remove graphics pipeline
-	vkDestroyPipeline(device.logical_device, engine, nullptr);
+	vkDestroyPipeline(device.logical_device, pipeline, nullptr);
 	vkDestroyPipelineLayout(device.logical_device, pipeline_layout, nullptr);
 
 	descriptor_set.destroy(device);
@@ -116,13 +116,9 @@ void	Engine::render(
 	vkResetFences(device.logical_device, 1, &in_flight_fences);
 
 	// Record buffer
-	vkResetCommandBuffer(command_buffer.command_buffers, 0);
-
-	recordCommandBuffer(
-		nb_indices,
-		command_buffer.command_buffers,
-		image_index
-	);
+	// vkResetCommandBuffer(command_buffer.command_buffers, 0);
+	command_buffer.reset();
+	recordDrawingCommand(nb_indices, image_index);
 
 	descriptor_set.updateUniformBuffer(
 		render_target.swap_chain_extent,
@@ -393,7 +389,7 @@ void	Engine::createGraphicsPipeline() {
 	pipeline_info.basePipelineIndex = -1;
 
 	if (vkCreateGraphicsPipelines(device.logical_device, VK_NULL_HANDLE, 1, &pipeline_info,
-	nullptr, &engine) != VK_SUCCESS) {
+	nullptr, &pipeline) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create graphics pipeline");
 	}
 
@@ -482,9 +478,8 @@ VkShaderModule	Engine::createShaderModule(const std::vector<char>& code) {
 /**
  *  Write commands to command buffer to be subimtted to queue.
  */
-void	Engine::recordCommandBuffer(
+void	Engine::recordDrawingCommand(
 	std::size_t indices_size,
-	VkCommandBuffer command_buffer,
 	uint32_t image_index
 ) {
 	VkCommandBufferBeginInfo	begin_info{};
@@ -492,7 +487,7 @@ void	Engine::recordCommandBuffer(
 	begin_info.flags = 0;
 	begin_info.pInheritanceInfo = nullptr;
 
-	if (vkBeginCommandBuffer(command_buffer, &begin_info) != VK_SUCCESS) {
+	if (vkBeginCommandBuffer(command_buffer.command_buffers, &begin_info) != VK_SUCCESS) {
 		throw std::runtime_error("failed to begin recording command buffer");
 	}
 
@@ -513,8 +508,8 @@ void	Engine::recordCommandBuffer(
 	render_pass_info.pClearValues = clear_values.data();
 
 	// Begin rp and bind pipeline
-	vkCmdBeginRenderPass(command_buffer, &render_pass_info, VK_SUBPASS_CONTENTS_INLINE);
-	vkCmdBindPipeline(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, engine);
+	vkCmdBeginRenderPass(command_buffer.command_buffers, &render_pass_info, VK_SUBPASS_CONTENTS_INLINE);
+	vkCmdBindPipeline(command_buffer.command_buffers, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
 
 	// Set viewport and scissors
 	VkViewport	viewport{};
@@ -524,38 +519,36 @@ void	Engine::recordCommandBuffer(
 	viewport.height = static_cast<float>(render_target.swap_chain_extent.height);
 	viewport.minDepth = 0.0f;
 	viewport.maxDepth = 1.0f;
-	vkCmdSetViewport(command_buffer, 0, 1, &viewport);
+	vkCmdSetViewport(command_buffer.command_buffers, 0, 1, &viewport);
 
 	VkRect2D	scissor{};
 	scissor.offset = { 0, 0 };
 	scissor.extent = render_target.swap_chain_extent;
-	vkCmdSetScissor(command_buffer, 0, 1, &scissor);
+	vkCmdSetScissor(command_buffer.command_buffers, 0, 1, &scissor);
 
 	// Bind vertex buffer && index buffer
 	VkBuffer		vertex_buffers[] = { vertex_input.vertex_buffer };
 	VkDeviceSize	offsets[] = { 0 };
-	vkCmdBindVertexBuffers(command_buffer, 0, 1, vertex_buffers, offsets);
-	vkCmdBindIndexBuffer(command_buffer, vertex_input.index_buffer, 0, VK_INDEX_TYPE_UINT32);
+	vkCmdBindVertexBuffers(command_buffer.command_buffers, 0, 1, vertex_buffers, offsets);
+	vkCmdBindIndexBuffer(command_buffer.command_buffers, vertex_input.index_buffer, 0, VK_INDEX_TYPE_UINT32);
 
 	// Bind descriptor sets
 	vkCmdBindDescriptorSets(
-		command_buffer,
+		command_buffer.command_buffers,
 		VK_PIPELINE_BIND_POINT_GRAPHICS,
 		pipeline_layout,
 		0,
-		1,
-		&descriptor_set.vk_descriptor_sets,
-		0,
-		nullptr
+		1, &descriptor_set.vk_descriptor_sets,
+		0, nullptr
 	);
 
 	// Issue draw command
-	vkCmdDrawIndexed(command_buffer, static_cast<uint32_t>(indices_size), 1, 0, 0, 0);
+	vkCmdDrawIndexed(command_buffer.command_buffers, static_cast<uint32_t>(indices_size), 1, 0, 0, 0);
 
 	// Stop the render target work
-	vkCmdEndRenderPass(command_buffer);
+	vkCmdEndRenderPass(command_buffer.command_buffers);
 
-	if (vkEndCommandBuffer(command_buffer) != VK_SUCCESS) {
+	if (vkEndCommandBuffer(command_buffer.command_buffers) != VK_SUCCESS) {
 		throw std::runtime_error("failed to record command buffer");
 	}
 }
@@ -601,8 +594,21 @@ void	endSingleTimeCommands(
 	submit_info.commandBufferCount = 1;
 	submit_info.pCommandBuffers = &buffer;
 
-	vkQueueSubmit(queue, 1, &submit_info, VK_NULL_HANDLE);
-	vkQueueWaitIdle(queue);
+	// Create fence to wait for transfer to complete before deallocating
+	VkFence				fence;
+	VkFenceCreateInfo	fence_info{};
+	fence_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+
+	if (vkCreateFence(device, &fence_info, nullptr, &fence) != VK_SUCCESS) {
+		throw std::runtime_error("failed to create fence for buffer flush");
+	}
+	vkQueueSubmit(queue, 1, &submit_info, fence);
+	vkWaitForFences(device, 1, &fence, VK_TRUE, UINT64_MAX);
+	vkDestroyFence(device, fence, nullptr);
+
+	// Old way
+	// vkQueueSubmit(queue, 1, &submit_info, VK_NULL_HANDLE);
+	// vkQueueWaitIdle(queue);
 
 	// Deallocate temporary command buffer
 	vkFreeCommandBuffers(
@@ -618,18 +624,20 @@ VkImageView	createImageView(
 	VkImage image,
 	VkFormat format,
 	VkImageAspectFlags aspect_flags,
-	uint32_t mip_level
+	VkImageViewType view_type,
+	uint32_t mip_level_count,
+	uint32_t layer_count
 ) {
 	VkImageViewCreateInfo	view_info{};
 	view_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
 	view_info.image = image;
-	view_info.viewType = VK_IMAGE_VIEW_TYPE_2D;
+	view_info.viewType = view_type;
 	view_info.format = format;
 	view_info.subresourceRange.aspectMask = aspect_flags;
 	view_info.subresourceRange.baseMipLevel = 0;
-	view_info.subresourceRange.levelCount = mip_level;
+	view_info.subresourceRange.levelCount = mip_level_count;
 	view_info.subresourceRange.baseArrayLayer = 0;
-	view_info.subresourceRange.layerCount = 1;
+	view_info.subresourceRange.layerCount = layer_count;
 
 	VkImageView	image_view;
 
@@ -701,6 +709,85 @@ void	copyBufferToImage(
 	);
 
 	endSingleTimeCommands(device, queue, command_pool, command_buffer);
+}
+
+/* ========================================================================== */
+
+/**
+ * Specific to cube maps.
+*/
+void	copyBufferToImage(
+	VkCommandBuffer buffer,
+	VkBuffer src_buffer,
+	VkImage dst_image,
+	uint32_t side,
+	VkDeviceSize bytes_per_pixel,
+	std::size_t image_count,
+	std::size_t mip_levels_count
+) {
+	constexpr const std::size_t	face_count = 6;
+	const uint32_t	face_size = side * side * bytes_per_pixel;
+
+	// Setup buffer copy regions for each face including all miplevels
+	std::vector<VkBufferImageCopy>	buffer_copy_regions;
+	buffer_copy_regions.reserve(face_count * image_count * mip_levels_count);
+	for (std::size_t face = 0; face < face_count; ++face) {
+		for (std::size_t image = 0; image < image_count; ++image) {
+			for (std::size_t level = 0; level < mip_levels_count; ++level) {
+				VkBufferImageCopy	region{};
+				region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+				region.imageSubresource.mipLevel = level;
+				region.imageSubresource.layerCount = 1;
+				region.imageSubresource.baseArrayLayer = image * face_count + face;
+				region.imageExtent = { side >> level, side >> level, 1 };
+				region.bufferOffset = image * face_size;
+				buffer_copy_regions.emplace_back(region);
+			}
+		}
+	}
+
+	// Layout transition
+	// Create image memory barrier to synchronize proper access to resources
+	VkImageMemoryBarrier	barrier{};
+	barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+	barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+	barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+	barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+	barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+	barrier.image = dst_image;
+	barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+	barrier.subresourceRange.baseMipLevel = 0;
+	barrier.subresourceRange.levelCount = mip_levels_count;
+	barrier.subresourceRange.layerCount = face_count * image_count;
+	barrier.subresourceRange.baseArrayLayer = 0;
+	barrier.srcAccessMask = 0;
+	barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+
+	// Set access maks depending on layout in transition,
+	// cause multiple actions will be performed during pipeline execution
+	VkPipelineStageFlags	src_stage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+	VkPipelineStageFlags	dst_stage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+
+	// Submit barrier for this buffer
+	vkCmdPipelineBarrier(
+		buffer,
+		src_stage,
+		dst_stage,
+		0,
+		0, nullptr,
+		0, nullptr,
+		1, &barrier
+	);
+
+	// Send cmd
+	vkCmdCopyBufferToImage(
+		buffer,
+		src_buffer,
+		dst_image,
+		VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+		static_cast<uint32_t>(buffer_copy_regions.size()),
+		buffer_copy_regions.data()
+	);
 }
 
 } // namespace graphics

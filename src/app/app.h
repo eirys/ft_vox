@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:17:06 by etran             #+#    #+#             */
-/*   Updated: 2023/06/08 11:36:19 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/12 15:24:08 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,47 +67,42 @@ public:
 
 	/* MAIN FUNCTION =========================================================== */
 
-	void							run();
+	void						run();
 
 	/* ========================================================================= */
 
-	void							resetGame() noexcept;
-	void							toggleMove(ObjectDirection dir) noexcept;
-	void							untoggleMove(ObjectDirection dir) noexcept;
-	void							updateCameraDir(float x, float y) noexcept;
+	void						resetGame() noexcept;
+	void						toggleMove(ObjectDirection dir) noexcept;
+	void						untoggleMove(ObjectDirection dir) noexcept;
+	void						updateCameraDir(float x, float y) noexcept;
 
 private:
 	/* ========================================================================= */
 	/*                               CLASS MEMBERS                               */
 	/* ========================================================================= */
 
-	vox::Gameplay					game;
-	scop::Window					window;
-	scop::graphics::Engine			engine;
+	vox::Gameplay				game;
+	scop::Window				window;
+	scop::graphics::Engine		engine;
 
-	std::vector<scop::Vertex>		vertices;
-	std::vector<uint32_t>			indices;
-	std::unique_ptr<scop::Image>	image;
-	UniformBufferObject::Light		light;
+	std::vector<scop::Vertex>	vertices;
+	std::vector<uint32_t>		indices;
+	std::vector<scop::Image>	textures;
+	UniformBufferObject::Light	light;
 
-	bool							keys_pressed_directions[6] = { false };
-	scop::Vect3						movement{};
+	bool						keys_pressed_directions[6] = { false };
+	scop::Vect3					movement{};
 
-	Timer							timer;
+	Timer						timer;
 
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
 
-	void							loadModel(const std::string& path);
-	void							loadTerrain();
-	void							loadLight(
-		const scop::mtl::Material& mat = scop::mtl::Material()
-	);
-	void							loadTexture(
-		std::unique_ptr<scop::Image>&& image = nullptr
-	);
-	void							updateGame();
+	void						loadModel(const std::string& path);
+	void						loadTerrain();
+	void						loadLight(const scop::mtl::Material& mat);
+	void						updateGame();
 
 }; // class App
 

@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:14:30 by etran             #+#    #+#             */
-/*   Updated: 2023/06/04 17:14:30 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/12 18:13:09 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -69,14 +69,27 @@ public:
 		uint32_t width,
 		uint32_t height,
 		uint32_t mip_level,
+		uint32_t layers,
 		VkSampleCountFlagBits num_samples,
 		VkFormat format,
 		VkImageTiling tiling,
 		VkImageUsageFlags usage,
 		VkMemoryPropertyFlags properties,
+		VkImageCreateFlags flags,
 		VkImage& image,
 		VkDeviceMemory& image_memory
 	);
+	// 	void							createImageArray(
+	// 	uint32_t side_size,
+	// 	uint32_t mip_level,
+	// 	VkSampleCountFlagBits num_samples,
+	// 	VkFormat format,
+	// 	VkImageTiling tiling,
+	// 	VkImageUsageFlags usage,
+	// 	VkMemoryPropertyFlags properties,
+	// 	VkImage& image,
+	// 	VkDeviceMemory& image_memory
+	// );
 	void							createBuffer(
 		VkDeviceSize size,
 		VkBufferUsageFlags usage,
@@ -113,7 +126,10 @@ private:
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
 
-	void							createSurface(VkInstance instance, scop::Window& window);
+	void							createSurface(
+		VkInstance instance,
+		scop::Window& window
+	);
 	void							pickPhysicalDevice(VkInstance vk_instance);
 	void							createLogicalDevice();
 

@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:14:18 by etran             #+#    #+#             */
-/*   Updated: 2023/06/07 20:09:39 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/17 10:34:32 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,7 +49,9 @@ public:
 
 	/* ========================================================================= */
 
-	void					initLayout(Device& device);
+	void					initLayout(
+		Device& device
+	);
 	void					initSets(
 		Device& device,
 		TextureSampler& texture_sampler,
@@ -84,7 +86,9 @@ private:
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
 
-	void					createDescriptorSetLayout(Device& device);
+	void					createDescriptorSetLayout(
+		Device& device
+	);
 	void					createDescriptorPool(Device& device, uint32_t fif);
 	void					createDescriptorSets(
 		Device& device,

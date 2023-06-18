@@ -6,17 +6,21 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:14:56 by etran             #+#    #+#             */
-/*   Updated: 2023/06/04 17:14:56 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/18 22:15:26 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
+// Graphics
 # ifndef GLFW_INCLUDE_VULKAN
 #  define GLFW_INCLUDE_VULKAN
 # endif
 
 # include <GLFW/glfw3.h>
+
+// Std
+# include <vector> // std::vector
 
 namespace scop {
 class Image;
@@ -46,9 +50,8 @@ public:
 	void							init(
 		Device& device,
 		VkCommandPool command_pool,
-		const scop::Image& image
+		const std::vector<scop::Image>& images
 	);
-
 	void							destroy(Device& device);
 	
 private:
@@ -60,29 +63,33 @@ private:
 	VkImage							vk_texture_image;
 	VkDeviceMemory					vk_texture_image_memory;
 	VkImageView						vk_texture_image_view;
-	VkSampler 						vk_texture_sampler;
+
+	VkSampler						vk_texture_sampler;
 
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
 
-	void							createTextureImage(
+	void							createTextureImages(
 		Device& device,
 		VkCommandPool command_pool,
-		const scop::Image& image
+		const std::vector<scop::Image>& images
 	);
-	void							createTextureImageView(Device& device);
+	void							createTextureImageView(
+		Device& device,
+		std::size_t image_count
+	);
 	void							createTextureSampler(
 		Device& device
 	);
 	void							generateMipmaps(
+		VkCommandBuffer buffer,
 		Device& device,
-		VkCommandPool command_pool,
 		VkImage image,
 		VkFormat image_format,
-		int32_t tex_width,
-		int32_t tex_height,
-		uint32_t mip_level
+		int32_t tex_side,
+		uint32_t mip_level_count,
+		uint32_t layers_count
 	) const;
 
 }; // class TextureSampler
@@ -92,9 +99,7 @@ private:
 /* ========================================================================== */
 
 void	transitionImageLayout(
-	VkDevice device,
-	VkCommandPool command_pool,
-	VkQueue graphics_queue,
+	VkCommandBuffer buffer,
 	VkImage image,
 	VkFormat format,
 	VkImageLayout old_layout,

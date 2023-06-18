@@ -306,6 +306,8 @@ void	RenderTarget::createImageViews(Device& device) {
 			swap_chain_images[i],
 			swap_chain_image_format,
 			VK_IMAGE_ASPECT_COLOR_BIT,
+			VK_IMAGE_VIEW_TYPE_2D,
+			1,
 			1
 		);
 	}

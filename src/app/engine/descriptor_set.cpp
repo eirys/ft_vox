@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/15 20:56:05 by etran             #+#    #+#             */
-/*   Updated: 2023/06/07 20:22:51 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/17 10:34:27 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,7 +26,9 @@ namespace graphics {
 /*                                   PUBLIC                                   */
 /* ========================================================================== */
 
-void	DescriptorSet::initLayout(Device& device) {
+void	DescriptorSet::initLayout(
+	Device& device
+) {
 	createDescriptorSetLayout(device);
 }
 
@@ -78,7 +80,9 @@ void	DescriptorSet::updateUniformBuffer(
 /**
  * Descriptor set layout for uniform buffer and combined image sampler
 */
-void	DescriptorSet::createDescriptorSetLayout(Device& device) {
+void	DescriptorSet::createDescriptorSetLayout(
+	Device& device
+) {
 	// Uniform buffer layout: used during vertex shading
 	VkDescriptorSetLayoutBinding	camera_layout_binding{};
 	camera_layout_binding.binding = 0;
@@ -177,6 +181,7 @@ void	DescriptorSet::createDescriptorSets(
 
 	// Allow buffer udpate using descriptor write
 	std::array<VkWriteDescriptorSet, 3>	descriptor_writes{};
+	// Camera UBO
 	descriptor_writes[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 	descriptor_writes[0].dstSet = vk_descriptor_sets;
 	descriptor_writes[0].dstBinding = 0;
@@ -187,6 +192,7 @@ void	DescriptorSet::createDescriptorSets(
 	descriptor_writes[0].pImageInfo = nullptr;
 	descriptor_writes[0].pTexelBufferView = nullptr;
 
+	// Sampler
 	descriptor_writes[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 	descriptor_writes[1].dstSet = vk_descriptor_sets;
 	descriptor_writes[1].dstBinding = 1;
@@ -197,6 +203,7 @@ void	DescriptorSet::createDescriptorSets(
 	descriptor_writes[1].pImageInfo = &image_info;
 	descriptor_writes[1].pTexelBufferView = nullptr;
 
+	// Light UBO
 	descriptor_writes[2].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 	descriptor_writes[2].dstSet = vk_descriptor_sets;
 	descriptor_writes[2].dstBinding = 2;

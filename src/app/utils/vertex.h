@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:17:01 by etran             #+#    #+#             */
-/*   Updated: 2023/06/04 17:17:01 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/09 02:17:53 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,9 +28,9 @@ struct Vertex {
 	/* ========================================================================= */
 
 	scop::Vect3		pos;
-	scop::Vect3		color;
-	scop::Vect2		tex_coord;
+	scop::Vect2		uv;
 	scop::Vect3		normal;
+	int32_t			texture_id;
 
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
@@ -69,33 +69,33 @@ struct Vertex {
 		attribute_descriptions[0].format = VK_FORMAT_R32G32B32_SFLOAT;
 		attribute_descriptions[0].offset = offsetof(Vertex, pos);
 
-		// `color` attribute
+		// `uv` attribute
 		attribute_descriptions[1].binding = 0;
 		attribute_descriptions[1].location = 1;
-		attribute_descriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
-		attribute_descriptions[1].offset = offsetof(Vertex, color);
-
-		// `tex_coord` attribute
-		attribute_descriptions[2].binding = 0;
-		attribute_descriptions[2].location = 2;
-		attribute_descriptions[2].format = VK_FORMAT_R32G32_SFLOAT;
-		attribute_descriptions[2].offset = offsetof(Vertex, tex_coord);
+		attribute_descriptions[1].format = VK_FORMAT_R32G32_SFLOAT;
+		attribute_descriptions[1].offset = offsetof(Vertex, uv);
 
 		// `normal` attribute
+		attribute_descriptions[2].binding = 0;
+		attribute_descriptions[2].location = 2;
+		attribute_descriptions[2].format = VK_FORMAT_R32G32B32_SFLOAT;
+		attribute_descriptions[2].offset = offsetof(Vertex, normal);
+
+		// `texture_id` attribute
 		attribute_descriptions[3].binding = 0;
 		attribute_descriptions[3].location = 3;
-		attribute_descriptions[3].format = VK_FORMAT_R32G32B32_SFLOAT;
-		attribute_descriptions[3].offset = offsetof(Vertex, normal);
+		attribute_descriptions[3].format = VK_FORMAT_R32_SINT;
+		attribute_descriptions[3].offset = offsetof(Vertex, texture_id);
 
 		return attribute_descriptions;
 	}
 
 	bool	operator==(const Vertex& rhs) const {
-		return (
+		return
 			pos == rhs.pos &&
-			tex_coord == rhs.tex_coord &&
-			normal == rhs.normal
-		);
+			uv == rhs.uv &&
+			normal == rhs.normal &&
+			texture_id == rhs.texture_id;
 	}
 }; // struct Vertex
 
@@ -104,11 +104,10 @@ struct Vertex {
 template<>
 struct std::hash<scop::Vertex> {
 	std::size_t	operator()(const scop::Vertex& vertex) const {
-		return (
+		return
 			(std::hash<scop::Vect3>()(vertex.pos)) ^
-			(std::hash<scop::Vect3>()(vertex.color)) ^
-			(std::hash<scop::Vect2>()(vertex.tex_coord)) ^
-			(std::hash<scop::Vect3>()(vertex.normal))
-		);
+			(std::hash<scop::Vect2>()(vertex.uv)) ^
+			(std::hash<scop::Vect3>()(vertex.normal)) ^
+			(std::hash<float>()(vertex.texture_id));
 	}
 };

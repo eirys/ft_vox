@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/28 11:12:12 by eli               #+#    #+#             */
-/*   Updated: 2023/06/08 21:13:30 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/09 02:46:02 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,10 +47,10 @@ App::App() {
 	loadTerrain();
 	resetGame();
 	scop::mtl::Material material;
-	material.ambient_color= {0.5,0.5,0.5};
+	material.ambient_color = {0.5,0.5,0.5};
 	loadLight(material);
 	window.init(this);
-	engine.init(window, *image, light, vertices, indices);
+	engine.init(window, textures, light, vertices, indices);
 }
 
 App::~App() {
@@ -183,9 +183,9 @@ void	App::loadTerrain() {
 		scop::Vertex	vertex{};
 
 		vertex.pos = mesh.vertices[i];
-		vertex.tex_coord = {0,0};
+		vertex.uv = mesh.uvs[i];
 		vertex.normal = mesh.normals[i];
-		vertex.color = {0.0f, 0.0f, 0.0f}; // TODO
+		vertex.texture_id = mesh.texture_indices[i];
 
 		vertices.emplace_back(vertex);
 	}
@@ -193,7 +193,20 @@ void	App::loadTerrain() {
 	LOG("Terrain loaded.");
 
 	game.setOrigin(mesh.origin);
-	loadTexture();
+
+	// TEMPORARY ===
+	const std::vector<std::string>	paths {
+		SCOP_TEXTURE_PATH "dirt.ppm",
+		SCOP_TEXTURE_PATH "grass_side.ppm",
+		SCOP_TEXTURE_PATH "grass_top.ppm"
+	};
+
+	textures.resize(paths.size());
+
+	for (const std::string& path: paths) {
+		scop::PpmLoader	loader(path);
+		textures.emplace_back(loader.load());
+	}
 }
 
 void	App::loadModel(const std::string& path) {
@@ -215,16 +228,16 @@ void	App::loadModel(const std::string& path) {
 			scop::Vertex	vertex{};
 
 			vertex.pos = model_vertices[index.vertex];
-			vertex.tex_coord = {
+			vertex.uv = {
 				model_textures[index.texture].x,
 				1.0f - model_textures[index.texture].y
 			};
 			vertex.normal = model_normals[index.normal];
-			math::generateVibrantColor(
-				vertex.color.x,
-				vertex.color.y,
-				vertex.color.z
-			);
+			// math::generateVibrantColor(
+			// 	vertex.color.x,
+			// 	vertex.color.y,
+			// 	vertex.color.z
+			// );
 
 			if (unique_vertices.count(vertex) == 0) {
 				unique_vertices[vertex] = static_cast<uint32_t>(vertices.size());
@@ -241,7 +254,9 @@ void	App::loadModel(const std::string& path) {
 	}
 
 	// Pass ownership of texture image from model to app
-	loadTexture(std::move(model.getMaterial().ambient_texture));
+	textures.emplace_back(
+		std::move(*model.getMaterial().ambient_texture)
+	);
 	model.getMaterial().ambient_texture.release();
 }
 
@@ -252,17 +267,6 @@ void	App::loadLight(const scop::mtl::Material& mat) {
 		.light_color = scop::Vect3(1.0f, 1.0f, 0.8f),
 		.light_intensity = 0.4f
 	};
-}
-
-void	App::loadTexture(std::unique_ptr<scop::Image>&& img) {
-	if (img == nullptr) {
-		scop::PpmLoader	img_loader(SCOP_TEXTURE_FILE_DEFAULT);
-		image.reset(new scop::Image(img_loader.load()));
-	} else {
-		image.reset(
-			new scop::Image(std::move(*img))
-		);
-	}
 }
 
 } // namespace scop

@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:14:01 by etran             #+#    #+#             */
-/*   Updated: 2023/06/04 17:14:03 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/09 14:05:24 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,6 +46,9 @@ public:
 	void							initPool(Device& device);
 	void							initBuffer(Device& device);
 	void							destroy(Device& device);
+
+	void							reset();
+	void							record();
 
 private:
 	/* ========================================================================= */

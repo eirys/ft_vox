@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:14:35 by etran             #+#    #+#             */
-/*   Updated: 2023/06/08 21:46:58 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/18 22:17:40 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -76,7 +76,7 @@ public:
 
 	void						init(
 		scop::Window& window,
-		const scop::Image& image,
+		const std::vector<scop::Image>& images,
 		const UniformBufferObject::Light& light,
 		const std::vector<Vertex>& vertices,
 		const std::vector<uint32_t>& indices
@@ -126,7 +126,7 @@ private:
 	VkFence							in_flight_fences;
 
 	VkPipelineLayout				pipeline_layout;
-	VkPipeline						engine;
+	VkPipeline						pipeline;
 
 	std::size_t						nb_indices;
 
@@ -145,9 +145,8 @@ private:
 	VkShaderModule					createShaderModule(
 		const std::vector<char>& code
 	);
-	void							recordCommandBuffer(
+	void							recordDrawingCommand(
 		std::size_t indices_size,
-		VkCommandBuffer command_buffer,
 		uint32_t image_index
 	);
 
@@ -174,7 +173,9 @@ VkImageView	createImageView(
 	VkImage image,
 	VkFormat format,
 	VkImageAspectFlags aspect_flags,
-	uint32_t mip_level
+	VkImageViewType view_type,
+	uint32_t mip_level_count,
+	uint32_t layer_count
 );
 
 void	copyBuffer(
@@ -194,6 +195,16 @@ void	copyBufferToImage(
 	VkImage image,
 	uint32_t width,
 	uint32_t height
+);
+
+void	copyBufferToImage(
+	VkCommandBuffer buffer,
+	VkBuffer src_buffer,
+	VkImage dst_image,
+	uint32_t side,
+	VkDeviceSize bytes_per_pixel,
+	std::size_t image_count,
+	std::size_t mip_levels_count
 );
 
 } // namespace graphics

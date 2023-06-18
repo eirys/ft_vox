@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/23 10:26:08 by etran             #+#    #+#             */
-/*   Updated: 2023/06/08 21:49:33 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/09 02:17:42 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -91,50 +91,69 @@ PerlinNoise::PerlinMesh	PerlinNoise::toMesh() const {
 	const float				half_width = width / 2;
 	const float				half_height = height / 2;
 
-	auto	noiseAt = [this](
-		std::size_t x,
-		std::size_t y
-	) -> float {
-		// TODO: Make this configurable
-		static const constexpr float	shift = -30.0f;
-		static const constexpr float	scale = 20;
+	auto	noiseAt =
+		[this]
+		(std::size_t x, std::size_t y) -> float {
+			// TODO: Make this configurable
+			static const constexpr float	shift = -30.0f;
+			static const constexpr float	scale = 20;
 
-		return std::floor(
-			std::fma(noise_map[std::fma(y, width, x)], scale, shift)
-		);
-	};
-
-	auto	addFace = [&mesh](const Cube::Face& face) -> void {
-		static const constexpr Vect2	uvs[4] = {
-			{0.0f, 0.0f},
-			{1.0f, 0.0f},
-			{1.0f, 1.0f},
-			{0.0f, 1.0f}
+			return std::floor(
+				std::fma(noise_map[std::fma(y, width, x)], scale, shift)
+			);
 		};
-		scop::Vect3	normal = face.normal();
 
-		for (std::size_t i = 0; i < 4; ++i) {
-			mesh.vertices.emplace_back(face.vertices[i]);
-			mesh.uvs.emplace_back(uvs[i]);
-			mesh.normals.emplace_back(normal);
-		}
-	};
-	auto	addIndices = [this, &mesh](uint32_t pos) -> void {
-		uint32_t e = pos;
-		uint32_t f = pos + 1;
-		uint32_t g = pos + 2;
-		uint32_t h = pos + 3;
+	auto	addFace =
+		[&mesh]
+		(const Cube::Face& face) -> void {
+			static const Vect2	uvs[4] = {
+				{0.0f, 0.0f},
+				{1.0f, 0.0f},
+				{1.0f, 1.0f},
+				{0.0f, 1.0f}
+			};
 
-		// First triangle
-		mesh.indices.emplace_back(e);
-		mesh.indices.emplace_back(g);
-		mesh.indices.emplace_back(f);
+			int32_t	texture_index;
+			if (face.side == FaceType::FACE_BOTTOM) {
+				texture_index = 0;
+			} else if (
+				face.side == FaceType::FACE_FRONT ||
+				face.side == FaceType::FACE_BACK ||
+				face.side == FaceType::FACE_LEFT ||
+				face.side == FaceType::FACE_RIGHT
+			) {
+				texture_index = 1;
+			} else if (face.side == FaceType::FACE_TOP) {
+				texture_index = 2;
+			}
 
-		// Second triangle
-		mesh.indices.emplace_back(e);
-		mesh.indices.emplace_back(h);
-		mesh.indices.emplace_back(g);
-	};
+			scop::Vect3	normal = face.normal();
+			for (std::size_t i = 0; i < 4; ++i) {
+				mesh.vertices.emplace_back(face.vertices[i]);
+				mesh.uvs.emplace_back(uvs[i]);
+				mesh.normals.emplace_back(normal);
+				mesh.texture_indices.emplace_back(texture_index);
+			}
+		};
+
+	auto	addIndices =
+		[this, &mesh]
+		(uint32_t pos) -> void {
+			uint32_t e = pos;
+			uint32_t f = pos + 1;
+			uint32_t g = pos + 2;
+			uint32_t h = pos + 3;
+
+			// First triangle
+			mesh.indices.emplace_back(e);
+			mesh.indices.emplace_back(g);
+			mesh.indices.emplace_back(f);
+
+			// Second triangle
+			mesh.indices.emplace_back(e);
+			mesh.indices.emplace_back(h);
+			mesh.indices.emplace_back(g);
+		};
 
 	// TODO: Use a better algorithm
 	// TODO store cube map
@@ -370,8 +389,7 @@ std::size_t	PerlinNoise::hash(
 		permutation_table[
 			permutation_table[static_cast<std::size_t>(x)] +
 			static_cast<std::size_t>(y)
-		] +
-		static_cast<std::size_t>(z)
+		] + static_cast<std::size_t>(z)
 	];
 }
 
@@ -387,23 +405,26 @@ std::vector<float>	PerlinNoise::generate1dNoiseMap() {
 	std::vector<float>	random_table = generateRandomTable();
 
 	std::function<float(const float&)>	floorFn =
-		[](const float& x){
-		return std::floor(x);
-	};
+		[]
+		(const float& x) -> float {
+			return std::floor(x);
+		};
 
 	std::function<float(const float&, int32_t)> modFn =
-		[](const float& x, int32_t len){
-		return static_cast<int32_t>(x) & len;
-	};
+		[]
+		(const float& x, int32_t len) -> float {
+			return static_cast<int32_t>(x) & len;
+		};
 
 	std::function<float(float, float, float)>	lerpFn =
-		[&random_table, this](float x_min, float x_max, float t){
-		return scop::math::lerp(
-			random_table[hash(x_min)],
-			random_table[hash(x_max)],
-			t
-		);
-	};
+		[&random_table, this]
+		(float x_min, float x_max, float t) -> float {
+			return scop::math::lerp(
+				random_table[hash(x_min)],
+				random_table[hash(x_max)],
+				t
+			);
+		};
 
 	for (std::size_t x = 0; x < width; ++x) {
 		noise_map[x] = evaluateAt(
@@ -425,40 +446,42 @@ std::vector<float>	PerlinNoise::generate2dNoiseMap() {
 	std::vector<float>	random_table = generateRandomTable();
 
 	std::function<scop::Vect2(const scop::Vect2&)> floorFn =
-		[](const scop::Vect2& vec){
-		return scop::Vect2(std::floor(vec.x), std::floor(vec.y));
-	};
+		[]
+		(const scop::Vect2& vec) -> scop::Vect2 {
+			return scop::Vect2(std::floor(vec.x), std::floor(vec.y));
+		};
 
 	std::function<scop::Vect2(const scop::Vect2&, int32_t)> modFn =
-		[](const scop::Vect2& vec, int32_t len){
-		return scop::Vect2(
-			static_cast<int32_t>(vec.x) & len,
-			static_cast<int32_t>(vec.y) & len
-		);
-	};
+		[]
+		(const scop::Vect2& vec, int32_t len) -> scop::Vect2 {
+			return scop::Vect2(
+				static_cast<int32_t>(vec.x) & len,
+				static_cast<int32_t>(vec.y) & len
+			);
+		};
 
 	std::function<float(scop::Vect2, scop::Vect2, scop::Vect2)> lerpFn =
-		[&random_table, this](scop::Vect2 min, scop::Vect2 max, scop::Vect2 t){
+		[&random_table, this]
+		(scop::Vect2 min, scop::Vect2 max, scop::Vect2 t) -> float {
 		// Retrieve corners.
-		float c00 = random_table[hash(min.x, min.y)];
-		float c10 = random_table[hash(max.x, min.y)];
-		float c01 = random_table[hash(min.x, max.y)];
-		float c11 = random_table[hash(max.x, max.y)];
+			float c00 = random_table[hash(min.x, min.y)];
+			float c10 = random_table[hash(max.x, min.y)];
+			float c01 = random_table[hash(min.x, max.y)];
+			float c11 = random_table[hash(max.x, max.y)];
 
-		// Smoothen t.
-		scop::Vect2 s = scop::Vect2(
-			scop::math::smoothen(t.x),
-			scop::math::smoothen(t.y)
-		);
+			// Smoothen t.
+			scop::Vect2 s = scop::Vect2(
+				scop::math::smoothen(t.x),
+				scop::math::smoothen(t.y)
+			);
 
-		// Interpolate between corners using s.
-		return
-			scop::math::lerp(
+			// Interpolate between corners using s.
+			return scop::math::lerp(
 				scop::math::lerp(c00, c10, s.x),
 				scop::math::lerp(c01, c11, s.x),
 				s.y
 			);
-	};
+		};
 
 	float	norm = 0;
 	for (std::size_t y = 0; y < height; ++y) {
@@ -505,25 +528,28 @@ std::vector<float>	PerlinNoise::generate3dNoiseMap() {
 	std::vector<scop::Vect3>	gradients = generateGradientTable();
 
 	std::function<scop::Vect3(const scop::Vect3&)>	floorFn =
-		[](const scop::Vect3& vec){
-		return scop::Vect3(
-			std::floor(vec.x),
-			std::floor(vec.y),
-			std::floor(vec.z)
-		);
-	};
+		[]
+		(const scop::Vect3& vec) -> scop::Vect3 {
+			return scop::Vect3(
+				std::floor(vec.x),
+				std::floor(vec.y),
+				std::floor(vec.z)
+			);
+		};
 
 	std::function<scop::Vect3(const scop::Vect3&, int32_t)>	modFn =
-		[](const scop::Vect3& vec, int32_t len){
-		return scop::Vect3(
-			static_cast<int32_t>(vec.x) & len,
-			static_cast<int32_t>(vec.y) & len,
-			static_cast<int32_t>(vec.z) & len
-		);
-	};
+		[]
+		(const scop::Vect3& vec, int32_t len) -> scop::Vect3 {
+			return scop::Vect3(
+				static_cast<int32_t>(vec.x) & len,
+				static_cast<int32_t>(vec.y) & len,
+				static_cast<int32_t>(vec.z) & len
+			);
+		};
 
 	std::function<float(scop::Vect3, scop::Vect3, scop::Vect3 t)>	lerpFn =
-		[&gradients, this](scop::Vect3 min, scop::Vect3 max, scop::Vect3 t){
+		[&gradients, this]
+		(scop::Vect3 min, scop::Vect3 max, scop::Vect3 t) -> float {
 			// Retrieve gradients at corners.
 			scop::Vect3 c000 = gradients[hash(min.x, min.y, min.z)];
 			scop::Vect3 c100 = gradients[hash(max.x, min.y, min.z)];
@@ -586,7 +612,12 @@ std::vector<float>	PerlinNoise::generate3dNoiseMap() {
 	for (std::size_t z = 0; z < depth; ++z) {
 		for (std::size_t y = 0; y < height; ++y) {
 			for (std::size_t x = 0; x < width; ++x) {
-				noise_map[z * width * height + y * width + x] = evaluateAt(
+				std::size_t	index = std::fma(
+					z * width,
+					height,
+					std::fma(y, width, x)
+				);
+				noise_map[index] = evaluateAt(
 					scop::Vect3(x, y, z),
 					floorFn,
 					modFn,

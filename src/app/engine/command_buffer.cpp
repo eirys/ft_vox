@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/16 12:47:19 by etran             #+#    #+#             */
-/*   Updated: 2023/06/04 16:52:39 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/09 14:08:16 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,6 +31,15 @@ void	CommandBuffer::initBuffer(Device& device) {
 
 void	CommandBuffer::destroy(Device& device) {
 	vkDestroyCommandPool(device.logical_device, vk_command_pool, nullptr);
+}
+
+/* ========================================================================== */
+
+/**
+ * @brief Initialize the command buffer
+*/
+void	CommandBuffer::reset() {
+	vkResetCommandBuffer(command_buffers, 0);
 }
 
 /* ========================================================================== */

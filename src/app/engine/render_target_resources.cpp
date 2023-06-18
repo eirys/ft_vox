@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/15 20:21:48 by etran             #+#    #+#             */
-/*   Updated: 2023/06/04 16:52:39 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/17 10:29:19 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,11 +57,14 @@ void	RenderTargetResources::createColorResources(
 		extent.width,
 		extent.height,
 		1,
+		1,
 		device.msaa_samples,
 		image_format,
 		VK_IMAGE_TILING_OPTIMAL,
-		VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
+		VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT |
+		VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
 		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+		0,
 		color_image,
 		color_image_memory
 	);
@@ -70,6 +73,8 @@ void	RenderTargetResources::createColorResources(
 		color_image,
 		image_format,
 		VK_IMAGE_ASPECT_COLOR_BIT,
+		VK_IMAGE_VIEW_TYPE_2D,
+		1,
 		1
 	);
 }
@@ -84,11 +89,13 @@ void	RenderTargetResources::createDepthResources(
 		extent.width,
 		extent.height,
 		1,
+		1,
 		device.msaa_samples,
 		depth_format,
 		VK_IMAGE_TILING_OPTIMAL,
 		VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
 		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+		0,
 		depth_image,
 		depth_image_memory
 	);
@@ -97,6 +104,8 @@ void	RenderTargetResources::createDepthResources(
 		depth_image,
 		depth_format,
 		VK_IMAGE_ASPECT_DEPTH_BIT,
+		VK_IMAGE_VIEW_TYPE_2D,
+		1,
 		1
 	);
 }
