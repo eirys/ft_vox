@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:14:18 by etran             #+#    #+#             */
-/*   Updated: 2023/06/17 10:34:32 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/19 09:40:55 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,7 +50,8 @@ public:
 	/* ========================================================================= */
 
 	void					initLayout(
-		Device& device
+		Device& device,
+		uint32_t texture_count
 	);
 	void					initSets(
 		Device& device,
@@ -87,13 +88,15 @@ private:
 	/* ========================================================================= */
 
 	void					createDescriptorSetLayout(
-		Device& device
+		Device& device,
+		uint32_t texture_count
 	);
 	void					createDescriptorPool(Device& device, uint32_t fif);
 	void					createDescriptorSets(
 		Device& device,
 		TextureSampler& texture_sampler,
-		uint32_t fif
+		uint32_t frames_in_flight,
+		uint32_t texture_count
 	);
 	void					createUniformBuffers(Device& device);
 	void					initUniformBuffer(

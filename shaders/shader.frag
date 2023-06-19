@@ -6,7 +6,7 @@ layout(location = 2) flat in int frag_texture_id;
 
 layout(location = 0) out vec4 out_color;
 
-layout(binding = 1) uniform sampler2D tex_sampler[3];
+layout(binding = 1) uniform sampler2D tex_sampler;
 layout(binding = 2) uniform Light {
 	vec3 ambient_color;
 	vec3 light_vector;

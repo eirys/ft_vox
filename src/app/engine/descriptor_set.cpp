@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/15 20:56:05 by etran             #+#    #+#             */
-/*   Updated: 2023/06/17 10:34:27 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/19 09:41:55 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,9 +27,10 @@ namespace graphics {
 /* ========================================================================== */
 
 void	DescriptorSet::initLayout(
-	Device& device
+	Device& device,
+	uint32_t texture_count
 ) {
-	createDescriptorSetLayout(device);
+	createDescriptorSetLayout(device, texture_count);
 }
 
 void	DescriptorSet::initSets(
@@ -42,7 +43,12 @@ void	DescriptorSet::initSets(
 	);
 	createUniformBuffers(device);
 	createDescriptorPool(device, frames_in_flight);
-	createDescriptorSets(device, texture_sampler, frames_in_flight);
+	createDescriptorSets(
+		device,
+		texture_sampler,
+		frames_in_flight,
+		texture_sampler.texture_count
+	);
 
 	initUniformBuffer(light);
 }
@@ -81,7 +87,8 @@ void	DescriptorSet::updateUniformBuffer(
  * Descriptor set layout for uniform buffer and combined image sampler
 */
 void	DescriptorSet::createDescriptorSetLayout(
-	Device& device
+	Device& device,
+	uint32_t texture_count
 ) {
 	// Uniform buffer layout: used during vertex shading
 	VkDescriptorSetLayoutBinding	camera_layout_binding{};
@@ -94,7 +101,7 @@ void	DescriptorSet::createDescriptorSetLayout(
 	// Sampler descriptor layout: used during fragment shading
 	VkDescriptorSetLayoutBinding	sampler_layout_binding{};
 	sampler_layout_binding.binding = 1;
-	sampler_layout_binding.descriptorCount = 1;
+	sampler_layout_binding.descriptorCount = texture_count;
 	sampler_layout_binding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 	sampler_layout_binding.pImmutableSamplers = nullptr;
 	sampler_layout_binding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
@@ -149,7 +156,8 @@ void	DescriptorSet::createDescriptorPool(Device& device, uint32_t frames_in_flig
 void	DescriptorSet::createDescriptorSets(
 	Device& device,
 	TextureSampler& texture_sampler,
-	uint32_t frames_in_flight
+	uint32_t frames_in_flight,
+	uint32_t texture_count
 ) {
 	VkDescriptorSetAllocateInfo			alloc_info{};
 	alloc_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
@@ -198,7 +206,7 @@ void	DescriptorSet::createDescriptorSets(
 	descriptor_writes[1].dstBinding = 1;
 	descriptor_writes[1].dstArrayElement = 0;
 	descriptor_writes[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-	descriptor_writes[1].descriptorCount = 1;
+	descriptor_writes[1].descriptorCount = texture_count;
 	descriptor_writes[1].pBufferInfo = nullptr;
 	descriptor_writes[1].pImageInfo = &image_info;
 	descriptor_writes[1].pTexelBufferView = nullptr;

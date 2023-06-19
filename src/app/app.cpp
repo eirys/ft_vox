@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/28 11:12:12 by eli               #+#    #+#             */
-/*   Updated: 2023/06/09 02:46:02 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/19 09:17:10 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -196,9 +196,7 @@ void	App::loadTerrain() {
 
 	// TEMPORARY ===
 	const std::vector<std::string>	paths {
-		SCOP_TEXTURE_PATH "dirt.ppm",
-		SCOP_TEXTURE_PATH "grass_side.ppm",
-		SCOP_TEXTURE_PATH "grass_top.ppm"
+		SCOP_TEXTURE_PATH "grass_block.ppm",
 	};
 
 	textures.resize(paths.size());

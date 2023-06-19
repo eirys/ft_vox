@@ -6,7 +6,7 @@
 #    By: etran <etran@student.42.fr>                +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/04/06 03:40:09 by eli               #+#    #+#              #
-#    Updated: 2023/06/07 21:20:17 by etran            ###   ########.fr        #
+#    Updated: 2023/06/19 09:02:44 by etran            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -135,7 +135,7 @@ LDFLAGS		:=	-lglfw \
 				-lXrandr \
 				-lXi
 
-GLSLC		:=	glslc
+GLSLC		:=	~/my_sgoinfre/glslc
 
 # misc
 RM			:=	rm -rf
@@ -174,8 +174,3 @@ fclean: clean
 
 .PHONY: re
 re: fclean all
-
-# TODO: Remove
-.PHONY: test
-test:
-	c++ $(INCLUDES) -std=c++17 -g -D__DEBUG src/app/utils/generation/perlin_noise.cpp

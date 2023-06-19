@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:14:56 by etran             #+#    #+#             */
-/*   Updated: 2023/06/18 22:15:26 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/19 09:43:01 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,6 +59,7 @@ private:
 	/*                                CLASS MEMBER                               */
 	/* ========================================================================= */
 
+	uint32_t						texture_count;
 	uint32_t						mip_levels;
 	VkImage							vk_texture_image;
 	VkDeviceMemory					vk_texture_image_memory;
@@ -76,8 +77,7 @@ private:
 		const std::vector<scop::Image>& images
 	);
 	void							createTextureImageView(
-		Device& device,
-		std::size_t image_count
+		Device& device
 	);
 	void							createTextureSampler(
 		Device& device
@@ -88,8 +88,7 @@ private:
 		VkImage image,
 		VkFormat image_format,
 		int32_t tex_side,
-		uint32_t mip_level_count,
-		uint32_t layers_count
+		uint32_t mip_level_count
 	) const;
 
 }; // class TextureSampler

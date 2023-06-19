@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/23 10:26:08 by etran             #+#    #+#             */
-/*   Updated: 2023/06/09 02:17:42 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/19 09:11:29 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -137,7 +137,7 @@ PerlinNoise::PerlinMesh	PerlinNoise::toMesh() const {
 		};
 
 	auto	addIndices =
-		[this, &mesh]
+		[&mesh]
 		(uint32_t pos) -> void {
 			uint32_t e = pos;
 			uint32_t f = pos + 1;

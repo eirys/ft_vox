@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/15 20:25:44 by etran             #+#    #+#             */
-/*   Updated: 2023/06/18 22:24:45 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/19 09:45:28 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,8 +33,9 @@ void	TextureSampler::init(
 	VkCommandPool command_pool,
 	const std::vector<scop::Image>& images
 ) {
+	texture_count = static_cast<uint32_t>(images.size());
 	createTextureImages(device, command_pool, images);
-	createTextureImageView(device, images.size());
+	createTextureImageView(device);
 	createTextureSampler(device);
 }
 
@@ -63,7 +64,7 @@ void	TextureSampler::createTextureImages(
 	// Retrieve data from image vector
 	const std::size_t	side_size = images[0].getWidth();
 	// A layer = a cube map face
-	const std::size_t	layer_count = 6 * images.size();
+	const std::size_t	layer_count = 6 * texture_count;
 
 	// Evaluate mip levels count for each image
 	mip_levels = 1 + static_cast<uint32_t>(
@@ -87,7 +88,7 @@ void	TextureSampler::createTextureImages(
 	// Copy every images data to staging buffer
 	void*		data;
 	vkMapMemory(device.logical_device, staging_buffer_memory, 0, image_size, 0, &data);
-	for (std::size_t i = 0; i < images.size(); ++i) {
+	for (std::size_t i = 0; i < texture_count; ++i) {
 		std::size_t	offset = static_cast<std::size_t>(image_size) * i;
 		memcpy(
 			static_cast<char*>(data) + offset,
@@ -138,7 +139,7 @@ void	TextureSampler::createTextureImages(
 		vk_texture_image,
 		static_cast<uint32_t>(side_size),
 		4 * sizeof(uint8_t), // Bytes per pixel: 4 (RGBA)
-		images.size(),
+		texture_count,
 		mip_levels
 	);
 
@@ -152,8 +153,7 @@ void	TextureSampler::createTextureImages(
 		vk_texture_image,
 		VK_FORMAT_R8G8B8A8_SRGB,
 		side_size,
-		mip_levels,
-		layer_count
+		mip_levels
 	);
 
 	// Submit and wait for transfer to be done before destroying buffer
@@ -172,8 +172,7 @@ void	TextureSampler::createTextureImages(
  * Same concept as swap chain image views
 */
 void	TextureSampler::createTextureImageView(
-	Device& device,
-	std::size_t image_count
+	Device& device
 ) {
 	vk_texture_image_view = createImageView(
 		device.logical_device,
@@ -182,7 +181,7 @@ void	TextureSampler::createTextureImageView(
 		VK_IMAGE_ASPECT_COLOR_BIT,
 		VK_IMAGE_VIEW_TYPE_CUBE_ARRAY,
 		mip_levels,
-		static_cast<uint32_t>(image_count * 6) // Nb layers = nb images * 6 (cube map)
+		texture_count * 6 // Nb layers = nb images * 6 (cube map)
 	);
 }
 
@@ -366,8 +365,7 @@ void	TextureSampler::generateMipmaps(
 	VkImage image,
 	VkFormat image_format,
 	int32_t tex_side,
-	uint32_t mip_level_count,
-	uint32_t layers_count
+	uint32_t mip_level_count
 ) const {
 	// Check if support blitting
 	VkFormatProperties	properties;
@@ -392,7 +390,7 @@ void	TextureSampler::generateMipmaps(
 
 	// Redefine parts of barrier for each level, for each layer, for each face
 	for (uint32_t face = 0; face < face_count; ++face) {
-		for (uint32_t layer = 0; layer < layers_count; ++layer) {
+		for (uint32_t layer = 0; layer < texture_count; ++layer) {
 			for (uint32_t level = 1; level < mip_level_count; ++level) {
 				barrier.subresourceRange.baseMipLevel = level - 1;
 				barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;

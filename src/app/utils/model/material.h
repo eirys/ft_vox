@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:15:29 by etran             #+#    #+#             */
-/*   Updated: 2023/06/09 02:03:41 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/19 09:11:09 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,22 +42,14 @@ struct Material {
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
 
-	Material(Material&& other):
-		name(std::move(other.name)),
-		ambient_color(std::move(other.ambient_color)),
-		diffuse_color(std::move(other.diffuse_color)),
-		specular_color(std::move(other.specular_color)),
-		emissive_color(std::move(other.emissive_color)),
-		opacity(std::move(other.opacity)),
-		shininess(std::move(other.shininess)),
-		illum(std::move(other.illum)),
-		ambient_texture(std::move(other.ambient_texture)) {}
 
 	Material() = default;
+	Material(Material&& other) = default;
 	Material&	operator=(Material&& other) = default;
-	Material(const Material& other) = default;
-	Material&	operator=(const Material& other) = default;
 	~Material() = default;
+
+	Material(const Material& other) = delete;
+	Material&	operator=(const Material& other) = delete;
 
 	/* ========================================================================= */
 	/*                               CLASS MEMBERS                               */
@@ -88,7 +80,7 @@ struct Material {
 	IlluminationModel	illum = IlluminationModel::ILLUM_LAMBERTIAN;
 
 	// map_Ka (ambient texture)
-	ImagePtr			ambient_texture;
+	ImagePtr			ambient_texture = nullptr;
 
 }; // class Material
 
