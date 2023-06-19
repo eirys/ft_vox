@@ -1,4 +1,5 @@
 #version 450
+#define TEXTURE_SAMPLER_COUNT 16
 
 layout(location = 0) in vec3 frag_normal;
 layout(location = 1) in vec2 frag_uv;
@@ -6,7 +7,7 @@ layout(location = 2) flat in int frag_texture_id;
 
 layout(location = 0) out vec4 out_color;
 
-layout(binding = 1) uniform sampler2D tex_sampler;
+layout(binding = 1) uniform sampler2D tex_sampler[TEXTURE_SAMPLER_COUNT];
 layout(binding = 2) uniform Light {
 	vec3 ambient_color;
 	vec3 light_vector;

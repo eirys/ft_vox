@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/15 20:25:44 by etran             #+#    #+#             */
-/*   Updated: 2023/06/19 09:45:28 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/19 18:23:15 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,10 +61,11 @@ void	TextureSampler::createTextureImages(
 	VkCommandPool command_pool,
 	const std::vector<scop::Image>& images
 ) {
-	// Retrieve data from image vector
-	const std::size_t	side_size = images[0].getWidth();
-	// A layer = a cube map face
+	// Length of a side of the cube map
+	const std::size_t	side_size = 16;
+	// A layer = a face of the cube map
 	const std::size_t	layer_count = 6 * texture_count;
+	const std::size_t	src_image_size = images[0].getWidth();
 
 	// Evaluate mip levels count for each image
 	mip_levels = 1 + static_cast<uint32_t>(
@@ -77,7 +78,7 @@ void	TextureSampler::createTextureImages(
 	VkDeviceSize	image_size = side_size * side_size * sizeof(uint32_t);
 
 	device.createBuffer(
-		image_size,
+		image_size * layer_count,
 		VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
 		VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
 		VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
@@ -88,7 +89,7 @@ void	TextureSampler::createTextureImages(
 	// Copy every images data to staging buffer
 	void*		data;
 	vkMapMemory(device.logical_device, staging_buffer_memory, 0, image_size, 0, &data);
-	for (std::size_t i = 0; i < texture_count; ++i) {
+	for (std::size_t i = 0; i < images.size(); ++i) {
 		std::size_t	offset = static_cast<std::size_t>(image_size) * i;
 		memcpy(
 			static_cast<char*>(data) + offset,
@@ -121,16 +122,6 @@ void	TextureSampler::createTextureImages(
 		device.logical_device,
 		command_pool
 	);
-	// // Set image layout to be optimal for transfer
-	// transitionImageLayout(
-	// 	command_buffer,
-	// 	device.graphics_queue,
-	// 	vk_texture_image,
-	// 	VK_FORMAT_R8G8B8A8_SRGB,
-	// 	VK_IMAGE_LAYOUT_UNDEFINED,
-	// 	VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-	// 	mip_levels
-	// );
 
 	// Send copy command
 	copyBufferToImage(
@@ -144,7 +135,13 @@ void	TextureSampler::createTextureImages(
 	);
 
 	// Submit to graphics queue to execute transfer
-	vkEndCommandBuffer(command_buffer);
+	endSingleTimeCommands(
+		device.logical_device,
+		device.graphics_queue,
+		command_pool,
+		command_buffer,
+		false
+	);
 
 	// Fill mipmaps images (directly handled by gpu)
 	generateMipmaps(
@@ -152,7 +149,7 @@ void	TextureSampler::createTextureImages(
 		device,
 		vk_texture_image,
 		VK_FORMAT_R8G8B8A8_SRGB,
-		side_size,
+		src_image_size,
 		mip_levels
 	);
 
@@ -163,7 +160,7 @@ void	TextureSampler::createTextureImages(
 		command_pool,
 		command_buffer
 	);
-
+	// LOG("Finished mipmaps")
 	vkDestroyBuffer(device.logical_device, staging_buffer, nullptr);
 	vkFreeMemory(device.logical_device, staging_buffer_memory, nullptr);
 }
@@ -365,7 +362,9 @@ void	TextureSampler::generateMipmaps(
 	VkImage image,
 	VkFormat image_format,
 	int32_t tex_side,
-	uint32_t mip_level_count
+	int32_t src_size,
+	uint32_t mip_level_count,
+	uint32_t layer_count
 ) const {
 	// Check if support blitting
 	VkFormatProperties	properties;
@@ -374,6 +373,7 @@ void	TextureSampler::generateMipmaps(
 	if (!(properties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT)) {
 		throw std::runtime_error("texture image format doesn't support linear blitting");
 	}
+	const constexpr uint32_t	face_count = 6;
 
 	VkImageMemoryBarrier	barrier{};
 	barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
@@ -382,16 +382,17 @@ void	TextureSampler::generateMipmaps(
 	barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 	barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 	barrier.subresourceRange.baseArrayLayer = 0;
-	barrier.subresourceRange.layerCount = 1;
+	barrier.subresourceRange.layerCount = face_count;
 	barrier.subresourceRange.levelCount = 1;
 
 	int32_t	mip_side = tex_side;
-	const constexpr uint32_t	face_count = 6;
+
+	std::vector<VkImageBlit>	blits(mip_level_count * face_count * layer_count);
 
 	// Redefine parts of barrier for each level, for each layer, for each face
-	for (uint32_t face = 0; face < face_count; ++face) {
-		for (uint32_t layer = 0; layer < texture_count; ++layer) {
-			for (uint32_t level = 1; level < mip_level_count; ++level) {
+	for (uint32_t layer = 0; layer < layer_count ; ++layer) {
+		for (uint32_t level = 1; level < mip_level_count; ++level) {
+			for (uint32_t face = 0; face < face_count; ++face) {
 				barrier.subresourceRange.baseMipLevel = level - 1;
 				barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
 				barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
@@ -413,27 +414,29 @@ void	TextureSampler::generateMipmaps(
 				// Define blit region for current level
 				VkImageBlit	blit{};
 				blit.srcOffsets[0] = { 0, 0, 0 };
-				blit.srcOffsets[1] = { tex_side, tex_side, 1 };
+				blit.srcOffsets[1] = { src_size, src_size, 1 };
 				blit.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 				blit.srcSubresource.mipLevel = level - 1;
-				blit.srcSubresource.baseArrayLayer = layer * face_count + face;
+				blit.srcSubresource.baseArrayLayer = face + layer * face_count;
 				blit.srcSubresource.layerCount = 1;
 
 				blit.dstOffsets[0] = { 0, 0, 0 };
 				blit.dstOffsets[1] = { mip_offset, mip_offset, 1 };
 				blit.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 				blit.dstSubresource.mipLevel = level;
-				blit.dstSubresource.baseArrayLayer = layer * face_count + face;
+				blit.dstSubresource.baseArrayLayer = face;
 				blit.dstSubresource.layerCount = 1;
 
-				// Record blit command
-				vkCmdBlitImage(
-					buffer,
-					image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-					image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-					1, &blit,
-					VK_FILTER_LINEAR
-				);
+				// // Record blit command
+				// vkCmdBlitImage(
+				// 	buffer,
+				// 	image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+				// 	image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+				// 	1, &blit,
+				// 	VK_FILTER_LINEAR
+				// );
+
+				blits.emplace_back(blit);
 
 				// Transition to shader readable layout
 				barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
@@ -465,6 +468,16 @@ void	TextureSampler::generateMipmaps(
 	barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 	barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
 	barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+
+	// Record blit command
+	vkCmdBlitImage(
+		buffer,
+		image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+		image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+		// 1, &blit,
+		blits.size(), blits.data(),
+		VK_FILTER_LINEAR
+	);
 
 	vkCmdPipelineBarrier(
 		buffer,

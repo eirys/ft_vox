@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/02 16:09:44 by etran             #+#    #+#             */
-/*   Updated: 2023/06/18 22:21:43 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/19 17:21:08 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -573,6 +573,7 @@ VkCommandBuffer	beginSingleTimeCommands(
 
 	VkCommandBufferBeginInfo	begin_info{};
 	begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+	// After submission, the buffer will be reset and recorded again
 	begin_info.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
 
 	vkBeginCommandBuffer(buffer, &begin_info);
@@ -584,7 +585,8 @@ void	endSingleTimeCommands(
 	VkDevice device,
 	VkQueue queue,
 	VkCommandPool command_pool,
-	VkCommandBuffer buffer
+	VkCommandBuffer buffer,
+	bool reset
 ) {
 	// Submit to graphics queue to execute transfer
 	vkEndCommandBuffer(buffer);
@@ -606,17 +608,24 @@ void	endSingleTimeCommands(
 	vkWaitForFences(device, 1, &fence, VK_TRUE, UINT64_MAX);
 	vkDestroyFence(device, fence, nullptr);
 
-	// Old way
-	// vkQueueSubmit(queue, 1, &submit_info, VK_NULL_HANDLE);
-	// vkQueueWaitIdle(queue);
+	if (reset) {
+		// Deallocate temporary command buffer
+		vkFreeCommandBuffers(
+			device,
+			command_pool,
+			1, &buffer
+		);
+	} else {
+		// Reset command buffer
+		vkResetCommandBuffer(buffer, 0);
 
-	// Deallocate temporary command buffer
-	vkFreeCommandBuffers(
-		device,
-		command_pool,
-		1,
-		&buffer
-	);
+		VkCommandBufferBeginInfo	begin_info{};
+		begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+		// After submission, the buffer will be reset and recorded again
+		begin_info.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+
+		vkBeginCommandBuffer(buffer, &begin_info);
+	}
 }
 
 VkImageView	createImageView(

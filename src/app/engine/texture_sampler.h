@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:14:56 by etran             #+#    #+#             */
-/*   Updated: 2023/06/19 09:43:01 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/19 17:40:39 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -87,7 +87,8 @@ private:
 		Device& device,
 		VkImage image,
 		VkFormat image_format,
-		int32_t tex_side,
+		// int32_t tex_side,
+		int32_t src_size,
 		uint32_t mip_level_count
 	) const;
 

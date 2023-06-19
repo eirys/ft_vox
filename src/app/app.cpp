@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/28 11:12:12 by eli               #+#    #+#             */
-/*   Updated: 2023/06/19 09:17:10 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/19 17:13:47 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -199,11 +199,15 @@ void	App::loadTerrain() {
 		SCOP_TEXTURE_PATH "grass_block.ppm",
 	};
 
+	if (paths.size() > TEXTURE_SAMPLER_COUNT) {
+		throw std::runtime_error("Too many textures to be loaded");
+	}
 	textures.resize(paths.size());
 
-	for (const std::string& path: paths) {
-		scop::PpmLoader	loader(path);
-		textures.emplace_back(loader.load());
+	// for (const std::string& path: paths) {
+	for (std::size_t i = 0; i < paths.size(); ++i) {
+		scop::PpmLoader	loader(paths[i]);
+		textures[i] = loader.load();
 	}
 }
 

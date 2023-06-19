@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:14:18 by etran             #+#    #+#             */
-/*   Updated: 2023/06/19 09:40:55 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/19 14:42:46 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,6 +26,8 @@
 # include "texture_sampler.h"
 # include "uniform_buffer_object.h"
 # include "player.h"
+
+# define TEXTURE_SAMPLER_COUNT 16
 
 namespace scop {
 namespace graphics {
@@ -50,8 +52,7 @@ public:
 	/* ========================================================================= */
 
 	void					initLayout(
-		Device& device,
-		uint32_t texture_count
+		Device& device
 	);
 	void					initSets(
 		Device& device,
@@ -88,15 +89,13 @@ private:
 	/* ========================================================================= */
 
 	void					createDescriptorSetLayout(
-		Device& device,
-		uint32_t texture_count
+		Device& device
 	);
 	void					createDescriptorPool(Device& device, uint32_t fif);
 	void					createDescriptorSets(
 		Device& device,
 		TextureSampler& texture_sampler,
-		uint32_t frames_in_flight,
-		uint32_t texture_count
+		uint32_t frames_in_flight
 	);
 	void					createUniformBuffers(Device& device);
 	void					initUniformBuffer(

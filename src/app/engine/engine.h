@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:14:35 by etran             #+#    #+#             */
-/*   Updated: 2023/06/18 22:17:40 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/19 17:19:57 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -165,7 +165,8 @@ void	endSingleTimeCommands(
 	VkDevice device,
 	VkQueue queue,
 	VkCommandPool command_pool,
-	VkCommandBuffer command_buffer
+	VkCommandBuffer command_buffer,
+	bool reset = true
 );
 
 VkImageView	createImageView(
