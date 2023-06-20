@@ -513,7 +513,7 @@ public:
 		setupDescriptorPool();
 		setupDescriptorSets();
 		buildCommandBuffers();
-		prepared = true;
+		prepared = true;shader_stages
 	}
 
 	virtual void render()

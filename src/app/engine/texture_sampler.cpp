@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/15 20:25:44 by etran             #+#    #+#             */
-/*   Updated: 2023/06/19 18:23:15 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/20 12:14:00 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -149,8 +149,10 @@ void	TextureSampler::createTextureImages(
 		device,
 		vk_texture_image,
 		VK_FORMAT_R8G8B8A8_SRGB,
+		static_cast<int32_t>(side_size),
 		src_image_size,
-		mip_levels
+		mip_levels,
+		layer_count
 	);
 
 	// Submit and wait for transfer to be done before destroying buffer
@@ -399,6 +401,7 @@ void	TextureSampler::generateMipmaps(
 				barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
 				barrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
 
+				// Set current layout to transfer source
 				vkCmdPipelineBarrier(
 					buffer,
 					VK_PIPELINE_STAGE_TRANSFER_BIT,
@@ -409,9 +412,10 @@ void	TextureSampler::generateMipmaps(
 					1, &barrier
 				);
 
-				int32_t	mip_offset = mip_side > 1 ? mip_side / 2 : 1;
+				// Evaluate mip level size
+				int32_t	mip_size = mip_side > 1 ? mip_side >> 2 : 1;
 
-				// Define blit region for current level
+				// Define blit region for current level: reuse previous level
 				VkImageBlit	blit{};
 				blit.srcOffsets[0] = { 0, 0, 0 };
 				blit.srcOffsets[1] = { src_size, src_size, 1 };
@@ -421,24 +425,22 @@ void	TextureSampler::generateMipmaps(
 				blit.srcSubresource.layerCount = 1;
 
 				blit.dstOffsets[0] = { 0, 0, 0 };
-				blit.dstOffsets[1] = { mip_offset, mip_offset, 1 };
+				blit.dstOffsets[1] = { mip_size, mip_size, 1 };
 				blit.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 				blit.dstSubresource.mipLevel = level;
-				blit.dstSubresource.baseArrayLayer = face;
+				blit.dstSubresource.baseArrayLayer = face + layer * face_count;
 				blit.dstSubresource.layerCount = 1;
 
-				// // Record blit command
-				// vkCmdBlitImage(
-				// 	buffer,
-				// 	image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-				// 	image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-				// 	1, &blit,
-				// 	VK_FILTER_LINEAR
-				// );
+				// Record blit command
+				vkCmdBlitImage(
+					buffer,
+					image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+					image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+					1, &blit,
+					VK_FILTER_LINEAR
+				);
 
-				blits.emplace_back(blit);
-
-				// Transition to shader readable layout
+				// Transition to shader readable layout for the next level
 				barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
 				barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 				barrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
@@ -456,7 +458,7 @@ void	TextureSampler::generateMipmaps(
 
 				// Set next mip level size
 				if (mip_side > 1) {
-					mip_side /= 2;
+					mip_side >>= 2;
 				}
 			}
 		}
@@ -468,16 +470,6 @@ void	TextureSampler::generateMipmaps(
 	barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 	barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
 	barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-
-	// Record blit command
-	vkCmdBlitImage(
-		buffer,
-		image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-		image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-		// 1, &blit,
-		blits.size(), blits.data(),
-		VK_FILTER_LINEAR
-	);
 
 	vkCmdPipelineBarrier(
 		buffer,
