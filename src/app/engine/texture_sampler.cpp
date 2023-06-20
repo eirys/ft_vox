@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/15 20:25:44 by etran             #+#    #+#             */
-/*   Updated: 2023/06/20 12:14:00 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/20 18:20:39 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,11 +61,14 @@ void	TextureSampler::createTextureImages(
 	VkCommandPool command_pool,
 	const std::vector<scop::Image>& images
 ) {
-	// Length of a side of the cube map
-	const std::size_t	side_size = 16;
+	// Size of a side of the cube map
+	constexpr const std::size_t	side_size = 16;
+
 	// A layer = a face of the cube map
 	const std::size_t	layer_count = 6 * texture_count;
-	const std::size_t	src_image_size = images[0].getWidth();
+
+	// Side of the image
+	constexpr const std::size_t	src_image_size = 64;
 
 	// Evaluate mip levels count for each image
 	mip_levels = 1 + static_cast<uint32_t>(
@@ -75,10 +78,11 @@ void	TextureSampler::createTextureImages(
 	// Create single staging buffer
 	VkBuffer		staging_buffer;
 	VkDeviceMemory	staging_buffer_memory;
-	VkDeviceSize	image_size = side_size * side_size * sizeof(uint32_t);
+	const VkDeviceSize	layer_size = src_image_size * src_image_size * sizeof(uint32_t);
+	const VkDeviceSize	image_size = layer_size * layer_count;
 
 	device.createBuffer(
-		image_size * layer_count,
+		image_size,
 		VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
 		VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
 		VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
@@ -90,7 +94,7 @@ void	TextureSampler::createTextureImages(
 	void*		data;
 	vkMapMemory(device.logical_device, staging_buffer_memory, 0, image_size, 0, &data);
 	for (std::size_t i = 0; i < images.size(); ++i) {
-		std::size_t	offset = static_cast<std::size_t>(image_size) * i;
+		std::size_t	offset = layer_size * i;
 		memcpy(
 			static_cast<char*>(data) + offset,
 			images[i].getPixels(),
@@ -101,8 +105,8 @@ void	TextureSampler::createTextureImages(
 
 	// Create texture image to be filled
 	device.createImage(
-		side_size,
-		side_size,
+		src_image_size,
+		src_image_size,
 		mip_levels,
 		layer_count,
 		VK_SAMPLE_COUNT_1_BIT,
@@ -128,7 +132,7 @@ void	TextureSampler::createTextureImages(
 		command_buffer,
 		staging_buffer,
 		vk_texture_image,
-		static_cast<uint32_t>(side_size),
+		static_cast<uint32_t>(src_image_size),
 		4 * sizeof(uint8_t), // Bytes per pixel: 4 (RGBA)
 		texture_count,
 		mip_levels
@@ -376,6 +380,7 @@ void	TextureSampler::generateMipmaps(
 		throw std::runtime_error("texture image format doesn't support linear blitting");
 	}
 	const constexpr uint32_t	face_count = 6;
+	int32_t	mip_side = tex_side;
 
 	VkImageMemoryBarrier	barrier{};
 	barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
@@ -383,19 +388,15 @@ void	TextureSampler::generateMipmaps(
 	barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 	barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 	barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-	barrier.subresourceRange.baseArrayLayer = 0;
-	barrier.subresourceRange.layerCount = face_count;
-	barrier.subresourceRange.levelCount = 1;
-
-	int32_t	mip_side = tex_side;
-
-	std::vector<VkImageBlit>	blits(mip_level_count * face_count * layer_count);
 
 	// Redefine parts of barrier for each level, for each layer, for each face
 	for (uint32_t layer = 0; layer < layer_count ; ++layer) {
-		for (uint32_t level = 1; level < mip_level_count; ++level) {
-			for (uint32_t face = 0; face < face_count; ++face) {
+		for (uint32_t face = 0; face < face_count; ++face) {
+			for (uint32_t level = 1; level < mip_level_count; ++level) {
 				barrier.subresourceRange.baseMipLevel = level - 1;
+				barrier.subresourceRange.baseArrayLayer = face + layer * face_count;
+				barrier.subresourceRange.layerCount = 1;
+				barrier.subresourceRange.levelCount = 1;
 				barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
 				barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
 				barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
@@ -412,9 +413,6 @@ void	TextureSampler::generateMipmaps(
 					1, &barrier
 				);
 
-				// Evaluate mip level size
-				int32_t	mip_size = mip_side > 1 ? mip_side >> 2 : 1;
-
 				// Define blit region for current level: reuse previous level
 				VkImageBlit	blit{};
 				blit.srcOffsets[0] = { 0, 0, 0 };
@@ -424,8 +422,11 @@ void	TextureSampler::generateMipmaps(
 				blit.srcSubresource.baseArrayLayer = face + layer * face_count;
 				blit.srcSubresource.layerCount = 1;
 
+				// Evaluate mip level size
+				int32_t	mip_offset = mip_side > 1 ? mip_side >> 2 : 1;
+
 				blit.dstOffsets[0] = { 0, 0, 0 };
-				blit.dstOffsets[1] = { mip_size, mip_size, 1 };
+				blit.dstOffsets[1] = { mip_offset, mip_offset, 1 };
 				blit.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 				blit.dstSubresource.mipLevel = level;
 				blit.dstSubresource.baseArrayLayer = face + layer * face_count;
