@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:14:35 by etran             #+#    #+#             */
-/*   Updated: 2023/06/19 17:19:57 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/23 11:14:16 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -177,15 +177,6 @@ VkImageView	createImageView(
 	VkImageViewType view_type,
 	uint32_t mip_level_count,
 	uint32_t layer_count
-);
-
-void	copyBuffer(
-	VkDevice device,
-	VkQueue queue,
-	VkCommandPool command_pool,
-	VkBuffer src_buffer,
-	VkBuffer dst_buffer,
-	VkDeviceSize size
 );
 
 void	copyBufferToImage(

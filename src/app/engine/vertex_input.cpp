@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/16 13:03:48 by etran             #+#    #+#             */
-/*   Updated: 2023/06/04 16:52:39 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/23 16:40:06 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,10 +34,8 @@ void	VertexInput::init(
 }
 
 void	VertexInput::destroy(Device& device) {
-	vkDestroyBuffer(device.logical_device, index_buffer, nullptr);
-	vkFreeMemory(device.logical_device, index_buffer_memory, nullptr);
-	vkDestroyBuffer(device.logical_device, vertex_buffer, nullptr);
-	vkFreeMemory(device.logical_device, vertex_buffer_memory, nullptr);
+	index_buffer.destroy(device.logical_device);
+	vertex_buffer.destroy(device.logical_device);
 }
 
 /* ========================================================================== */
@@ -52,49 +50,50 @@ void	VertexInput::createVertexBuffer(
 	VkCommandPool command_pool,
 	const std::vector<Vertex>& vertices
 ) {
-	VkDeviceSize	buffer_size = sizeof(Vertex) * vertices.size();
+	const VkDeviceSize	buffer_size = sizeof(Vertex) * vertices.size();
 
-	// Create staging buffer to upload cpu memory to
-	VkBuffer		staging_buffer;
-	VkDeviceMemory	staging_buffer_memory;
-
-	// Cpu accessible memory
-	device.createBuffer(
+	// Create staging buffer to upload from cpu to
+	scop::graphics::Buffer	staging_buffer = device.createBuffer(
 		buffer_size,
 		VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-		VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-		staging_buffer,
-		staging_buffer_memory
+		VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
 	);
 
 	// Fill staging buffer
-	void*	data;
-	vkMapMemory(device.logical_device, staging_buffer_memory, 0, buffer_size, 0, &data);
-	memcpy(data, vertices.data(), static_cast<std::size_t>(buffer_size));
-	vkUnmapMemory(device.logical_device, staging_buffer_memory);
+	staging_buffer.map(device.logical_device);
+	staging_buffer.copyFrom(
+		vertices.data(),
+		static_cast<std::size_t>(buffer_size)
+	);
+	staging_buffer.unmap(device.logical_device);
 
 	// Create vertex buffer that'll interact with gpu
-	device.createBuffer(
+	vertex_buffer = device.createBuffer(
 		buffer_size,
-		VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
-		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-		vertex_buffer,
-		vertex_buffer_memory
+		VK_BUFFER_USAGE_TRANSFER_DST_BIT |
+		VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
 	);
 
-	// Now transfer data from staging buffer to vertex buffer
-	copyBuffer(
+	// Transfer data from staging buffer to vertex buffer
+	VkCommandBuffer	command_buffer = beginSingleTimeCommands(
+		device.logical_device,
+		command_pool
+	);
+	vertex_buffer.copyBuffer(
+		command_buffer,
+		staging_buffer,
+		buffer_size
+	);
+	endSingleTimeCommands(
 		device.logical_device,
 		device.graphics_queue,
 		command_pool,
-		staging_buffer,
-		vertex_buffer,
-		buffer_size
+		command_buffer
 	);
 
 	// Cleanup staging buffer
-	vkDestroyBuffer(device.logical_device, staging_buffer, nullptr);
-	vkFreeMemory(device.logical_device, staging_buffer_memory, nullptr);
+	staging_buffer.destroy(device.logical_device);
 }
 
 /**
@@ -105,45 +104,51 @@ void	VertexInput::createIndexBuffer(
 	VkCommandPool command_pool,
 	const std::vector<uint32_t>& indices
 ) {
-	VkDeviceSize	buffer_size = sizeof(uint32_t) * indices.size();
-	VkBuffer		staging_buffer;
-	VkDeviceMemory	staging_buffer_memory;
+	const VkDeviceSize	buffer_size = sizeof(uint32_t) * indices.size();
 
-	device.createBuffer(
+	scop::graphics::Buffer	staging_buffer;
+	staging_buffer = device.createBuffer(
 		buffer_size,
 		VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-		VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-		staging_buffer,
-		staging_buffer_memory
+		VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | 
+		VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
 	);
 
 	// Fill staging buffer with indices
-	void*	data;
-	vkMapMemory(device.logical_device, staging_buffer_memory, 0, buffer_size, 0, &data);
-	memcpy(data, indices.data(), static_cast<std::size_t>(buffer_size));
-	vkUnmapMemory(device.logical_device, staging_buffer_memory);
+	staging_buffer.map(device.logical_device, buffer_size);
+	staging_buffer.copyFrom(
+		indices.data(),
+		static_cast<std::size_t>(buffer_size)
+	);
+	staging_buffer.unmap(device.logical_device);
 
-	device.createBuffer(
+	// Create index buffer
+	index_buffer = device.createBuffer(
 		buffer_size,
-		VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
-		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-		index_buffer,
-		index_buffer_memory
+		VK_BUFFER_USAGE_TRANSFER_DST_BIT |
+		VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
+		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
 	);
 
 	// Transfer data from staging buffer to index buffer
-	copyBuffer(
+	VkCommandBuffer	command_buffer = beginSingleTimeCommands(
+		device.logical_device,
+		command_pool
+	);
+	index_buffer.copyBuffer(
+		command_buffer,
+		staging_buffer,
+		buffer_size
+	);
+	endSingleTimeCommands(
 		device.logical_device,
 		device.graphics_queue,
 		command_pool,
-		staging_buffer,
-		index_buffer,
-		buffer_size
+		command_buffer
 	);
-
-	// Flush temporary buffers
-	vkDestroyBuffer(device.logical_device, staging_buffer, nullptr);
-	vkFreeMemory(device.logical_device, staging_buffer_memory, nullptr);
+	
+	// Cleanup staging buffer
+	staging_buffer.destroy(device.logical_device);
 }
 
 }  // namespace graphics

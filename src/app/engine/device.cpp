@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/16 01:00:19 by etran             #+#    #+#             */
-/*   Updated: 2023/06/12 18:12:58 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/26 09:50:08 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 #include "device.h"
 #include "window.h"
 #include "utils.h"
+#include "buffer.h"
 
 #include <vector> // std::vector
 #include <set> // std::set
@@ -118,99 +119,17 @@ void	Device::createImage(
 }
 
 /**
- * Create image array (for block map texture array)
+ * @brief Creates a buffer object.
 */
-// void	Device::createImageArray(
-// 	uint32_t side,
-// 	uint32_t mip_level,
-// 	VkSampleCountFlagBits num_samples,
-// 	VkFormat format,
-// 	VkImageTiling tiling,
-// 	VkImageUsageFlags usage,
-// 	VkMemoryPropertyFlags properties,
-// 	VkImage& image,
-// 	VkDeviceMemory& image_memory,
-// 	uint32_t array_layers
-// ) {
-// 	VkImageCreateInfo	image_info{};
-// 	image_info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-// 	image_info.imageType = VK_IMAGE_TYPE_2D;
-// 	image_info.extent.width = side;
-// 	image_info.extent.height = side;
-// 	image_info.extent.depth = 1;
-// 	image_info.mipLevels = mip_level;
-// 	image_info.arrayLayers = array_layers;
-// 	image_info.format = format;
-// 	image_info.tiling = tiling;
-// 	image_info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-// 	image_info.usage = usage;
-// 	image_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-// 	image_info.samples = num_samples;
-// 	image_info.flags = VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT; // For cube map
-
-// 	if (vkCreateImage(logical_device, &image_info, nullptr, &image) != VK_SUCCESS) {
-// 		throw std::runtime_error("failed to create image");
-// 	}
-
-// 	// Allocate memory for image
-// 	VkMemoryRequirements	mem_requirements;
-// 	vkGetImageMemoryRequirements(logical_device, image, &mem_requirements);
-
-// 	VkMemoryAllocateInfo	alloc_info{};
-// 	alloc_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-// 	alloc_info.allocationSize = mem_requirements.size;
-// 	alloc_info.memoryTypeIndex = findMemoryType(
-// 		mem_requirements.memoryTypeBits,
-// 		properties
-// 	);
-
-// 	if (vkAllocateMemory(logical_device, &alloc_info, nullptr, &image_memory) != VK_SUCCESS) {
-// 		throw std::runtime_error("failed to allocate image memory");
-// 	}
-
-// 	// Bind memory to instance
-// 	vkBindImageMemory(logical_device, image, image_memory, 0);
-// }
-
-/**
- * Create a vk buffer and allocate memory for it
-*/
-void	Device::createBuffer(
+scop::graphics::Buffer	Device::createBuffer(
 	VkDeviceSize size,
 	VkBufferUsageFlags usage,
-	VkMemoryPropertyFlags properties,
-	VkBuffer& buffer,
-	VkDeviceMemory& buffer_memory
+	VkMemoryPropertyFlags properties
 ) {
-	// Create buffer instance
-	VkBufferCreateInfo	buffer_info{};
-	buffer_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-	buffer_info.size = size;
-	buffer_info.usage = usage;
-	buffer_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+	scop::graphics::Buffer	buffer;
 
-	if (vkCreateBuffer(logical_device, &buffer_info, nullptr, &buffer) != VK_SUCCESS) {
-		throw std::runtime_error("failed to create buffer");
-	}
-
-	// Allocate memory for buffer
-	VkMemoryRequirements	mem_requirements;
-	vkGetBufferMemoryRequirements(logical_device, buffer, &mem_requirements);
-
-	VkMemoryAllocateInfo	alloc_info{};
-	alloc_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-	alloc_info.allocationSize = mem_requirements.size;
-	alloc_info.memoryTypeIndex = findMemoryType(
-		mem_requirements.memoryTypeBits,
-		properties
-	);
-
-	if (vkAllocateMemory(logical_device, &alloc_info, nullptr, &buffer_memory) != VK_SUCCESS) {
-		throw std::runtime_error("failed to allocate buffer memory");
-	}
-
-	// Bind memory to instance
-	vkBindBufferMemory(logical_device, buffer, buffer_memory, 0);
+	buffer.init(*this, size, usage, properties);
+	return buffer;
 }
 
 /* ========================================================================== */
@@ -278,9 +197,10 @@ void	Device::createLogicalDevice() {
 		queue_create_infos.emplace_back(queue_create_info);
 	}
 
-	// Enable device features
+	// Enable device features: anisotropic filtering and cube map array
 	VkPhysicalDeviceFeatures	device_features{};
 	device_features.samplerAnisotropy = VK_TRUE;
+	device_features.imageCubeArray = VK_TRUE;
 
 	VkDeviceCreateInfo			create_info{};
 	create_info.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
@@ -390,7 +310,8 @@ bool	Device::isDeviceSuitable(VkPhysicalDevice device) {
 		indices.isComplete() &&
 		extensions_supported &&
 		swap_chain_adequate &&
-		supported_features.samplerAnisotropy
+		supported_features.samplerAnisotropy &&
+		supported_features.imageCubeArray
 	);
 }
 

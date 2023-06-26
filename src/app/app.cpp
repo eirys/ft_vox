@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/28 11:12:12 by eli               #+#    #+#             */
-/*   Updated: 2023/06/19 17:13:47 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/23 16:50:15 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -196,19 +196,53 @@ void	App::loadTerrain() {
 
 	// TEMPORARY ===
 	const std::vector<std::string>	paths {
-		SCOP_TEXTURE_PATH "grass_block.ppm",
+		SCOP_TEXTURE_PATH "grass_top.ppm",
+		SCOP_TEXTURE_PATH "grass_side.ppm",
+		SCOP_TEXTURE_PATH "dirt.ppm"
 	};
 
 	if (paths.size() > TEXTURE_SAMPLER_COUNT) {
 		throw std::runtime_error("Too many textures to be loaded");
 	}
-	textures.resize(paths.size());
 
-	// for (const std::string& path: paths) {
+	std::vector<scop::Image> texture_elements(paths.size());
+
 	for (std::size_t i = 0; i < paths.size(); ++i) {
 		scop::PpmLoader	loader(paths[i]);
-		textures[i] = loader.load();
+		texture_elements[i] = loader.load();
 	}
+
+	// Dynamically compose texture map: an array of 6 faces of 16x16 pixels.
+	const constexpr std::size_t	face_length = 16;
+	const constexpr std::size_t	face_count = 6;
+
+	std::vector<uint32_t>	texture_map(face_count * face_length * face_length, 0);
+
+	// Copy each face of each texture element into the texture map.
+	// offset is the index on x axis of the texture map.
+	auto copy_face = [&texture_map](const uint32_t* face, std::size_t offset) -> void {
+		for (std::size_t x = 0; x < face_length; ++x) {
+			for (std::size_t y = 0; y < face_length; ++y) {
+				// Fill the map from left to right, bottom to top.
+				texture_map[offset + x + y * face_length] = face[x + y * face_length];
+			}
+		}
+	};
+
+	// Top and bottom
+	copy_face(texture_elements[0].getPixels(), 0);
+	copy_face(texture_elements[2].getPixels(), 5 * face_length);
+	// Sides
+	for (std::size_t i = 0; i < 4; ++i) {
+		copy_face(texture_elements[1].getPixels(), (1 + i) * face_length);
+	}
+
+	textures.emplace_back(scop::Image(
+		"no_path",
+		std::move(texture_map),
+		face_length * face_count,
+		face_length
+	));
 }
 
 void	App::loadModel(const std::string& path) {

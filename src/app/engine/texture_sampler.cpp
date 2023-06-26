@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/15 20:25:44 by etran             #+#    #+#             */
-/*   Updated: 2023/06/20 18:20:39 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/26 14:07:45 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 #include "image_handler.h"
 #include "device.h"
 #include "utils.h"
+#include "buffer.h"
 
 #include <cmath> // std::floor
 #include <algorithm> // std::max
@@ -61,52 +62,47 @@ void	TextureSampler::createTextureImages(
 	VkCommandPool command_pool,
 	const std::vector<scop::Image>& images
 ) {
-	// Size of a side of the cube map
+	constexpr const std::size_t	face_count = 6;
+	
+	// Size of a side
 	constexpr const std::size_t	side_size = 16;
-
 	// A layer = a face of the cube map
-	const std::size_t	layer_count = 6 * texture_count;
+	const std::size_t	layer_count = face_count * texture_count;
 
-	// Side of the image
-	constexpr const std::size_t	src_image_size = 64;
+	// Size of a layer (an image). A layer is a face of the cube map.
+	const VkDeviceSize	layer_size = side_size * side_size * sizeof(uint32_t);
+	// Size of the VKImage, including all layers
+	const VkDeviceSize	image_size = layer_size * layer_count;
 
 	// Evaluate mip levels count for each image
 	mip_levels = 1 + static_cast<uint32_t>(
 		std::floor(std::log2(side_size))
 	);
+	LOG("Mip levels count: " << mip_levels);
 
-	// Create single staging buffer
-	VkBuffer		staging_buffer;
-	VkDeviceMemory	staging_buffer_memory;
-	const VkDeviceSize	layer_size = src_image_size * src_image_size * sizeof(uint32_t);
-	const VkDeviceSize	image_size = layer_size * layer_count;
-
-	device.createBuffer(
+	// Create staging buffer to copy images data to
+	scop::graphics::Buffer	staging_buffer = device.createBuffer(
 		image_size,
 		VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
 		VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
-		VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-		staging_buffer,
-		staging_buffer_memory
+		VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
 	);
 
 	// Copy every images data to staging buffer
-	void*		data;
-	vkMapMemory(device.logical_device, staging_buffer_memory, 0, image_size, 0, &data);
+	staging_buffer.map(device.logical_device);
 	for (std::size_t i = 0; i < images.size(); ++i) {
-		std::size_t	offset = layer_size * i;
-		memcpy(
-			static_cast<char*>(data) + offset,
+		staging_buffer.copyFrom(
 			images[i].getPixels(),
-			static_cast<std::size_t>(image_size)
+			static_cast<std::size_t>(image_size),
+			static_cast<std::size_t>(image_size) * i
 		);
 	}
-	vkUnmapMemory(device.logical_device, staging_buffer_memory);
+	staging_buffer.unmap(device.logical_device);
 
 	// Create texture image to be filled
 	device.createImage(
-		src_image_size,
-		src_image_size,
+		image_size,
+		image_size,
 		mip_levels,
 		layer_count,
 		VK_SAMPLE_COUNT_1_BIT,
@@ -130,10 +126,10 @@ void	TextureSampler::createTextureImages(
 	// Send copy command
 	copyBufferToImage(
 		command_buffer,
-		staging_buffer,
+		staging_buffer.getBuffer(),
 		vk_texture_image,
-		static_cast<uint32_t>(src_image_size),
-		4 * sizeof(uint8_t), // Bytes per pixel: 4 (RGBA)
+		static_cast<uint32_t>(side_size),
+		sizeof(uint32_t),
 		texture_count,
 		mip_levels
 	);
@@ -154,7 +150,6 @@ void	TextureSampler::createTextureImages(
 		vk_texture_image,
 		VK_FORMAT_R8G8B8A8_SRGB,
 		static_cast<int32_t>(side_size),
-		src_image_size,
 		mip_levels,
 		layer_count
 	);
@@ -164,11 +159,11 @@ void	TextureSampler::createTextureImages(
 		device.logical_device,
 		device.graphics_queue,
 		command_pool,
-		command_buffer
+		command_buffer,
+		true
 	);
-	// LOG("Finished mipmaps")
-	vkDestroyBuffer(device.logical_device, staging_buffer, nullptr);
-	vkFreeMemory(device.logical_device, staging_buffer_memory, nullptr);
+
+	staging_buffer.destroy(device.logical_device);
 }
 
 /**
@@ -216,159 +211,12 @@ void	TextureSampler::createTextureSampler(
 	}
 }
 
-/**
- * Record command to generate mipmaps levels
-*/
-// void	TextureSampler::generateMipmaps(
-// 	Device& device,
-// 	VkCommandPool command_pool,
-// 	VkImage image,
-// 	VkFormat image_format,
-// 	int32_t tex_width,
-// 	int32_t tex_height,
-// 	uint32_t mip_level
-// ) const {
-// 	// Check if support blitting
-// 	VkFormatProperties	properties;
-// 	vkGetPhysicalDeviceFormatProperties(device.physical_device, image_format, &properties);
-
-// 	if (!(properties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT)) {
-// 		throw std::runtime_error("texture image format doesn't support linear blitting");
-// 	}
-
-// 	VkCommandBuffer	command_buffer = beginSingleTimeCommands(
-// 		device.logical_device,
-// 		command_pool
-// 	);
-
-// 	VkImageMemoryBarrier	barrier{};
-// 	barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-// 	barrier.image = image;
-// 	barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-// 	barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-// 	barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-// 	barrier.subresourceRange.baseArrayLayer = 0;
-// 	barrier.subresourceRange.layerCount = 1;
-// 	barrier.subresourceRange.levelCount = 1;
-
-// 	int32_t	mip_width = tex_width;
-// 	int32_t	mip_height = tex_height;
-
-// 	// Redefine parts of barrier for each level
-// 	for (uint32_t i = 1; i < mip_level; ++i) {
-// 		barrier.subresourceRange.baseMipLevel = i - 1;
-// 		barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
-// 		barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
-// 		barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-// 		barrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
-
-// 		vkCmdPipelineBarrier(
-// 			command_buffer,
-// 			VK_PIPELINE_STAGE_TRANSFER_BIT,
-// 			VK_PIPELINE_STAGE_TRANSFER_BIT,
-// 			0,
-// 			0,
-// 			nullptr,
-// 			0,
-// 			nullptr,
-// 			1,
-// 			&barrier
-// 		);
-
-// 		// Define blit region
-// 		VkImageBlit	blit{};
-// 		blit.srcOffsets[0] = { 0, 0, 0 };
-// 		blit.srcOffsets[1] = { mip_width, mip_height, 1 };
-// 		blit.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-// 		blit.srcSubresource.mipLevel = i - 1;
-// 		blit.srcSubresource.baseArrayLayer = 0;
-// 		blit.srcSubresource.layerCount = 1;
-// 		blit.dstOffsets[0] = { 0, 0, 0 };
-// 		blit.dstOffsets[1] = {
-// 			mip_width > 1 ? mip_width / 2 : 1,
-// 			mip_height > 1 ? mip_height / 2: 1,
-// 			1
-// 		};
-// 		blit.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-// 		blit.dstSubresource.mipLevel = i;
-// 		blit.dstSubresource.baseArrayLayer = 0;
-// 		blit.dstSubresource.layerCount = 1;
-
-// 		// Record blit command
-// 		vkCmdBlitImage(
-// 			command_buffer,
-// 			image,
-// 			VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-// 			image,
-// 			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-// 			1,
-// 			&blit,
-// 			VK_FILTER_LINEAR
-// 		);
-
-// 		// Transition to shader readable layout
-// 		barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
-// 		barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-// 		barrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
-// 		barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-
-// 		vkCmdPipelineBarrier(
-// 			command_buffer,
-// 			VK_PIPELINE_STAGE_TRANSFER_BIT,
-// 			VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-// 			0,
-// 			0,
-// 			nullptr,
-// 			0,
-// 			nullptr,
-// 			1,
-// 			&barrier
-// 		);
-
-// 		// Set next mip level size
-// 		if (mip_width > 1) {
-// 			mip_width /= 2;
-// 		}
-// 		if (mip_height > 1) {
-// 			mip_height /= 2;
-// 		}
-// 	}
-
-// 	// Last mip level
-// 	barrier.subresourceRange.baseMipLevel = mip_level - 1;
-// 	barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
-// 	barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-// 	barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-// 	barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-
-// 	vkCmdPipelineBarrier(
-// 		command_buffer,
-// 		VK_PIPELINE_STAGE_TRANSFER_BIT,
-// 		VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-// 		0,
-// 		0,
-// 		nullptr,
-// 		0,
-// 		nullptr,
-// 		1,
-// 		&barrier
-// 	);
-
-// 	endSingleTimeCommands(
-// 		device.logical_device,
-// 		device.graphics_queue,
-// 		command_pool,
-// 		command_buffer
-// 	);
-// }
-
 void	TextureSampler::generateMipmaps(
 	VkCommandBuffer buffer,
 	Device& device,
 	VkImage image,
 	VkFormat image_format,
-	int32_t tex_side,
-	int32_t src_size,
+	int32_t face_size,
 	uint32_t mip_level_count,
 	uint32_t layer_count
 ) const {
@@ -379,108 +227,110 @@ void	TextureSampler::generateMipmaps(
 	if (!(properties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT)) {
 		throw std::runtime_error("texture image format doesn't support linear blitting");
 	}
-	const constexpr uint32_t	face_count = 6;
-	int32_t	mip_side = tex_side;
+	int32_t	mip_side = face_size;
 
 	VkImageMemoryBarrier	barrier{};
 	barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
 	barrier.image = image;
 	barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 	barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-	barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 
-	// Redefine parts of barrier for each level, for each layer, for each face
 	for (uint32_t layer = 0; layer < layer_count ; ++layer) {
-		for (uint32_t face = 0; face < face_count; ++face) {
-			for (uint32_t level = 1; level < mip_level_count; ++level) {
-				barrier.subresourceRange.baseMipLevel = level - 1;
-				barrier.subresourceRange.baseArrayLayer = face + layer * face_count;
-				barrier.subresourceRange.layerCount = 1;
-				barrier.subresourceRange.levelCount = 1;
-				barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
-				barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
-				barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-				barrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+		for (uint32_t level = 1; level < mip_level_count; ++level) {
+			LOG("========== LEVEL : " << level << " ==========");
+			// Transition previous mip level to transfer dst
+			barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+			barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+			barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+			barrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+			barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+			barrier.subresourceRange.baseMipLevel = level - 1;
+			barrier.subresourceRange.baseArrayLayer = layer;
+			barrier.subresourceRange.layerCount = 1;
+			barrier.subresourceRange.levelCount = 1;
 
-				// Set current layout to transfer source
-				vkCmdPipelineBarrier(
-					buffer,
-					VK_PIPELINE_STAGE_TRANSFER_BIT,
-					VK_PIPELINE_STAGE_TRANSFER_BIT,
-					0,
-					0, nullptr,
-					0, nullptr,
-					1, &barrier
-				);
+			VkImageBlit	blit{};
 
-				// Define blit region for current level: reuse previous level
-				VkImageBlit	blit{};
-				blit.srcOffsets[0] = { 0, 0, 0 };
-				blit.srcOffsets[1] = { src_size, src_size, 1 };
-				blit.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-				blit.srcSubresource.mipLevel = level - 1;
-				blit.srcSubresource.baseArrayLayer = face + layer * face_count;
-				blit.srcSubresource.layerCount = 1;
+			// Evaluate offset for next level
+			int32_t	mip_offset = mip_side > 1 ? mip_side >> 2 : 1;
 
-				// Evaluate mip level size
-				int32_t	mip_offset = mip_side > 1 ? mip_side >> 2 : 1;
+			// Source
+			blit.srcOffsets[0] = { 0, 0, 0 };
+			blit.srcOffsets[1] = { mip_side, mip_side, 1 };
+			blit.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+			blit.srcSubresource.baseArrayLayer = layer;
+			blit.srcSubresource.mipLevel = level - 1;
+			blit.srcSubresource.layerCount = 1;
 
-				blit.dstOffsets[0] = { 0, 0, 0 };
-				blit.dstOffsets[1] = { mip_offset, mip_offset, 1 };
-				blit.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-				blit.dstSubresource.mipLevel = level;
-				blit.dstSubresource.baseArrayLayer = face + layer * face_count;
-				blit.dstSubresource.layerCount = 1;
+			// Destination
+			blit.dstOffsets[0] = { 0, 0, 0 };
+			blit.dstOffsets[1] = { mip_offset, mip_offset, 1 };
+			blit.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+			blit.dstSubresource.baseArrayLayer = layer;
+			blit.dstSubresource.mipLevel = level;
+			blit.dstSubresource.layerCount = 1;
 
-				// Record blit command
-				vkCmdBlitImage(
-					buffer,
-					image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-					image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-					1, &blit,
-					VK_FILTER_LINEAR
-				);
+			// Change layout of previous level to transfer source
+			vkCmdPipelineBarrier(
+				buffer,
+				VK_PIPELINE_STAGE_TRANSFER_BIT,
+				VK_PIPELINE_STAGE_TRANSFER_BIT,
+				0,
+				0, nullptr,
+				0, nullptr,
+				1, &barrier
+			);
 
-				// Transition to shader readable layout for the next level
-				barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
-				barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-				barrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
-				barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+			// Blit image
+			vkCmdBlitImage(
+				buffer,
+				image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+				image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+				1, &blit,
+				VK_FILTER_LINEAR
+			);
 
-				vkCmdPipelineBarrier(
-					buffer,
-					VK_PIPELINE_STAGE_TRANSFER_BIT,
-					VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-					0,
-					0, nullptr,
-					0, nullptr,
-					1, &barrier
-				);
+			// Revert layout of previous level
+			barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+			barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+			barrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+			barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
 
-				// Set next mip level size
-				if (mip_side > 1) {
-					mip_side >>= 2;
-				}
+			vkCmdPipelineBarrier(
+				buffer,
+				VK_PIPELINE_STAGE_TRANSFER_BIT,
+				VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+				0,
+				0, nullptr,
+				0, nullptr,
+				1, &barrier
+			);
+
+			// Update mip offset for next level
+			if (mip_side > 1) {
+				mip_side >>= 2;
 			}
 		}
+
+		LOG("========== LAST LEVEL ==========");
+		// // Last mip level
+		barrier.subresourceRange.baseMipLevel = mip_level_count - 1;
+		barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+		barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+		barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+		barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+
+		vkCmdPipelineBarrier(
+			buffer,
+			VK_PIPELINE_STAGE_TRANSFER_BIT,
+			VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+			0,
+			0, nullptr,
+			0, nullptr,
+			1, &barrier
+		);
 	}
-
-	// Last mip level
-	barrier.subresourceRange.baseMipLevel = mip_level_count - 1;
-	barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
-	barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-	barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-	barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-
-	vkCmdPipelineBarrier(
-		buffer,
-		VK_PIPELINE_STAGE_TRANSFER_BIT,
-		VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-		0,
-		0, nullptr,
-		0, nullptr,
-		1, &barrier
-	);
+	LOG("Done");
 }
 
 /* ========================================================================== */

@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/02 16:09:44 by etran             #+#    #+#             */
-/*   Updated: 2023/06/19 17:21:08 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/26 10:05:22 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -116,7 +116,6 @@ void	Engine::render(
 	vkResetFences(device.logical_device, 1, &in_flight_fences);
 
 	// Record buffer
-	// vkResetCommandBuffer(command_buffer.command_buffers, 0);
 	command_buffer.reset();
 	recordDrawingCommand(nb_indices, image_index);
 
@@ -527,10 +526,10 @@ void	Engine::recordDrawingCommand(
 	vkCmdSetScissor(command_buffer.command_buffers, 0, 1, &scissor);
 
 	// Bind vertex buffer && index buffer
-	VkBuffer		vertex_buffers[] = { vertex_input.vertex_buffer };
+	VkBuffer		vertex_buffers[] = { vertex_input.vertex_buffer.getBuffer() };
 	VkDeviceSize	offsets[] = { 0 };
 	vkCmdBindVertexBuffers(command_buffer.command_buffers, 0, 1, vertex_buffers, offsets);
-	vkCmdBindIndexBuffer(command_buffer.command_buffers, vertex_input.index_buffer, 0, VK_INDEX_TYPE_UINT32);
+	vkCmdBindIndexBuffer(command_buffer.command_buffers, vertex_input.index_buffer.getBuffer(), 0, VK_INDEX_TYPE_UINT32);
 
 	// Bind descriptor sets
 	vkCmdBindDescriptorSets(
@@ -603,7 +602,7 @@ void	endSingleTimeCommands(
 
 	if (vkCreateFence(device, &fence_info, nullptr, &fence) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create fence for buffer flush");
-	}
+	} 
 	vkQueueSubmit(queue, 1, &submit_info, fence);
 	vkWaitForFences(device, 1, &fence, VK_TRUE, UINT64_MAX);
 	vkDestroyFence(device, fence, nullptr);
@@ -654,32 +653,6 @@ VkImageView	createImageView(
 		throw std::runtime_error("failed to create texture image view");
 	}
 	return image_view;
-}
-
-/**
- * Record commands to copy data from one buffer to another,
- * and submit them to the graphics queue.
-*/
-void	copyBuffer(
-	VkDevice device,
-	VkQueue queue,
-	VkCommandPool command_pool,
-	VkBuffer src_buffer,
-	VkBuffer dst_buffer,
-	VkDeviceSize size
-) {
-	VkCommandBuffer	command_buffer = beginSingleTimeCommands(
-		device,
-		command_pool
-	);
-
-	VkBufferCopy	copy_region{};
-	copy_region.srcOffset = 0;
-	copy_region.dstOffset = 0;
-	copy_region.size = size;
-	vkCmdCopyBuffer(command_buffer, src_buffer, dst_buffer, 1, &copy_region);
-
-	endSingleTimeCommands(device, queue, command_pool, command_buffer);
 }
 
 void	copyBufferToImage(
@@ -739,6 +712,7 @@ void	copyBufferToImage(
 
 	// Setup buffer copy regions for each face including all miplevels
 	std::vector<VkBufferImageCopy>	buffer_copy_regions;
+
 	buffer_copy_regions.reserve(face_count * image_count * mip_levels_count);
 	for (std::size_t face = 0; face < face_count; ++face) {
 		for (std::size_t image = 0; image < image_count; ++image) {

@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:14:18 by etran             #+#    #+#             */
-/*   Updated: 2023/06/19 14:42:46 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/23 11:12:10 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,6 +26,7 @@
 # include "texture_sampler.h"
 # include "uniform_buffer_object.h"
 # include "player.h"
+# include "buffer.h"
 
 # define TEXTURE_SAMPLER_COUNT 16
 
@@ -80,9 +81,7 @@ private:
 	VkDescriptorPool		vk_descriptor_pool;
 	VkDescriptorSet			vk_descriptor_sets;
 
-	VkBuffer				uniform_buffers;
-	VkDeviceMemory			uniform_buffers_memory;
-	void*					uniform_buffers_mapped;
+	Buffer					uniform_buffers;
 
 	/* ========================================================================= */
 	/*                                  METHODS                                  */

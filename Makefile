@@ -6,7 +6,7 @@
 #    By: etran <etran@student.42.fr>                +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/04/06 03:40:09 by eli               #+#    #+#              #
-#    Updated: 2023/06/20 10:43:07 by etran            ###   ########.fr        #
+#    Updated: 2023/06/23 16:26:02 by etran            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -75,6 +75,7 @@ INC_FILES	:=	$(TOOLS_DIR)/utils.h \
 				$(ENG_DIR)/texture_sampler.h \
 				$(ENG_DIR)/vertex_input.h \
 				$(ENG_DIR)/engine.h \
+				$(ENG_DIR)/buffer.h \
 				$(APP_DIR)/app.h
 
 SRC_FILES	:=	$(TOOLS_DIR)/matrix.cpp \
@@ -99,6 +100,7 @@ SRC_FILES	:=	$(TOOLS_DIR)/matrix.cpp \
 				$(ENG_DIR)/texture_sampler.cpp \
 				$(ENG_DIR)/vertex_input.cpp \
 				$(ENG_DIR)/engine.cpp \
+				$(ENG_DIR)/buffer.cpp \
 				$(APP_DIR)/app.cpp \
 				main.cpp
 
@@ -135,7 +137,7 @@ LDFLAGS		:=	-lglfw \
 				-lXrandr \
 				-lXi
 
-GLSLC		:=	~/my_sgoinfre/glslc
+GLSLC		:=	glslc
 
 # misc
 RM			:=	rm -rf

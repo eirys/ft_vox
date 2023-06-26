@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   vertex_input.h                                     :+:      :+:    :+:   */
+/*   buffer.h                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/06/04 17:15:01 by etran             #+#    #+#             */
-/*   Updated: 2023/06/23 16:30:52 by etran            ###   ########.fr       */
+/*   Created: 2023/06/23 06:30:15 by etran             #+#    #+#             */
+/*   Updated: 2023/06/23 16:49:15 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,66 +20,71 @@
 # include <GLFW/glfw3.h>
 
 // Std
-# include <vector>
-
-# include "vertex.h"
-# include "vector.h"
-# include "buffer.h"
+# include <cstddef> // std::size_t
 
 namespace scop {
 namespace graphics {
-class Engine;
 class Device;
 
-class VertexInput {
+/**
+ * @brief Wrapper class for VkBuffer and VkDeviceMemory
+*/
+class Buffer {
 public:
-	friend Engine;
-
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
 
-	VertexInput() = default;
-	VertexInput(VertexInput&& x) = default;
-	~VertexInput() = default;
-
-	VertexInput(const VertexInput& x) = delete;
-	VertexInput&	operator=(VertexInput&& x) = delete;
+	Buffer() = default;
+	Buffer(Buffer&& other) = default;
+	Buffer(const Buffer& other) = default;
+	Buffer& operator=(const Buffer& other) = default;
+	~Buffer() = default;
 
 	/* ========================================================================= */
 
-	void	init(
+	void				init(
 		Device& device,
-		VkCommandPool command_pool,
-		const std::vector<Vertex>& vertices,
-		const std::vector<uint32_t>& indices
+		VkDeviceSize size,
+		VkBufferUsageFlags usage,
+		VkMemoryPropertyFlags properties,
+		VkSharingMode sharing_mode = VK_SHARING_MODE_EXCLUSIVE
 	);
-	void	destroy(Device& device);
+
+	void				destroy(VkDevice device);
+
+	/* ========================================================================= */
+
+	void				map(VkDevice device, VkDeviceSize size = VK_WHOLE_SIZE);
+	void				unmap(VkDevice device) noexcept;
+
+	void				copyFrom(
+		const void* data,
+		std::size_t data_size,
+		std::size_t offset = 0
+	) noexcept;
+	void				copyBuffer(
+		VkCommandBuffer& command_buffer,
+		Buffer& src_buffer,
+		VkDeviceSize size = VK_WHOLE_SIZE,
+		VkDeviceSize src_offset = 0,
+		VkDeviceSize dst_offset = 0
+	) noexcept;
+
+	/* ========================================================================= */
+
+	VkBuffer			getBuffer() const noexcept;
 
 private:
 	/* ========================================================================= */
 	/*                               CLASS MEMBERS                               */
 	/* ========================================================================= */
 
-	Buffer	vertex_buffer;
-	Buffer	index_buffer;
+	VkBuffer			_buffer;
+	VkDeviceMemory		_memory;
+	void*				_data;
 
-	/* ========================================================================= */
-	/*                                  METHODS                                  */
-	/* ========================================================================= */
-
-	void	createVertexBuffer(
-		Device& device,
-		VkCommandPool command_pool,
-		const std::vector<Vertex>& vertices
-	);
-	void	createIndexBuffer(
-		Device& device,
-		VkCommandPool command_pool,
-		const std::vector<uint32_t>& indices
-	);
-
-}; // class VertexInput
+}; // class Buffer
 
 } // namespace graphics
-} // namespace scop
+}  // namespace scop

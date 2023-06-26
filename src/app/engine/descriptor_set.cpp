@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/15 20:56:05 by etran             #+#    #+#             */
-/*   Updated: 2023/06/19 14:30:43 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/23 18:49:18 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,9 +26,7 @@ namespace graphics {
 /*                                   PUBLIC                                   */
 /* ========================================================================== */
 
-void	DescriptorSet::initLayout(
-	Device& device
-) {
+void	DescriptorSet::initLayout(Device& device) {
 	createDescriptorSetLayout(device);
 }
 
@@ -55,8 +53,8 @@ void	DescriptorSet::destroy(
 	Device& device
 ) {
 	// Remove uniform buffers
-	vkDestroyBuffer(device.logical_device, uniform_buffers, nullptr);
-	vkFreeMemory(device.logical_device, uniform_buffers_memory, nullptr);
+	uniform_buffers.unmap(device.logical_device);
+	uniform_buffers.destroy(device.logical_device);
 
 	// Remove descriptor pool
 	vkDestroyDescriptorPool(device.logical_device, vk_descriptor_pool, nullptr);
@@ -92,7 +90,6 @@ void	DescriptorSet::createDescriptorSetLayout(
 	camera_layout_binding.binding = 0;
 	camera_layout_binding.descriptorCount = 1;
 	camera_layout_binding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	camera_layout_binding.pImmutableSamplers = nullptr;
 	camera_layout_binding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
 
 	// Sampler descriptor layout: used during fragment shading
@@ -100,7 +97,6 @@ void	DescriptorSet::createDescriptorSetLayout(
 	sampler_layout_binding.binding = 1;
 	sampler_layout_binding.descriptorCount = TEXTURE_SAMPLER_COUNT;
 	sampler_layout_binding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-	sampler_layout_binding.pImmutableSamplers = nullptr;
 	sampler_layout_binding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 
 	// Light layout
@@ -108,7 +104,6 @@ void	DescriptorSet::createDescriptorSetLayout(
 	light_layout_binding.binding = 2;
 	light_layout_binding.descriptorCount = 1;
 	light_layout_binding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	light_layout_binding.pImmutableSamplers = nullptr;
 	light_layout_binding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 
 	std::array<VkDescriptorSetLayoutBinding, 3>	bindings = {
@@ -135,7 +130,7 @@ void	DescriptorSet::createDescriptorPool(Device& device, uint32_t frames_in_flig
 	pool_sizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 	pool_sizes[0].descriptorCount = frames_in_flight;
 	pool_sizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-	pool_sizes[1].descriptorCount = frames_in_flight;
+	pool_sizes[1].descriptorCount = frames_in_flight * TEXTURE_SAMPLER_COUNT;
 	pool_sizes[2].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 	pool_sizes[2].descriptorCount = frames_in_flight;
 
@@ -167,8 +162,8 @@ void	DescriptorSet::createDescriptorSets(
 
 	// Ubo Camera
 	VkDescriptorBufferInfo	ubo_info_camera{};
-	ubo_info_camera.buffer = uniform_buffers;
-	ubo_info_camera.offset = 0;
+	ubo_info_camera.buffer = uniform_buffers.getBuffer();
+	ubo_info_camera.offset = offsetof(UniformBufferObject, camera);
 	ubo_info_camera.range = sizeof(UniformBufferObject::Camera);
 
 	// Texture sampler
@@ -179,7 +174,7 @@ void	DescriptorSet::createDescriptorSets(
 
 	// Ubo light
 	VkDescriptorBufferInfo	ubo_info_light{};
-	ubo_info_light.buffer = uniform_buffers;
+	ubo_info_light.buffer = uniform_buffers.getBuffer();
 	ubo_info_light.offset = offsetof(UniformBufferObject, light);
 	ubo_info_light.range = sizeof(UniformBufferObject::Light);
 
@@ -202,7 +197,7 @@ void	DescriptorSet::createDescriptorSets(
 	descriptor_writes[1].dstBinding = 1;
 	descriptor_writes[1].dstArrayElement = 0;
 	descriptor_writes[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-	descriptor_writes[1].descriptorCount = TEXTURE_SAMPLER_COUNT;
+	descriptor_writes[1].descriptorCount = 1;
 	descriptor_writes[1].pBufferInfo = nullptr;
 	descriptor_writes[1].pImageInfo = &image_info;
 	descriptor_writes[1].pTexelBufferView = nullptr;
@@ -222,8 +217,7 @@ void	DescriptorSet::createDescriptorSets(
 		device.logical_device,
 		static_cast<uint32_t>(descriptor_writes.size()),
 		descriptor_writes.data(),
-		0,
-		nullptr
+		0, nullptr
 	);
 }
 
@@ -232,23 +226,15 @@ void	DescriptorSet::createUniformBuffers(Device& device) {
 	VkDeviceSize	buffer_size = sizeof(UniformBufferObject);
 
 	// Create the buffer and allocate memory
-	device.createBuffer(
+	uniform_buffers = device.createBuffer(
 		buffer_size,
 		VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-		VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-		uniform_buffers,
-		uniform_buffers_memory
+		VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
+		VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
 	);
 
 	// Map it to allow CPU to write on it
-	vkMapMemory(
-		device.logical_device,
-		uniform_buffers_memory,
-		0,
-		buffer_size,
-		0,
-		&uniform_buffers_mapped
-	);
+	uniform_buffers.map(device.logical_device, buffer_size);
 }
 
 /**
@@ -259,7 +245,7 @@ void	DescriptorSet::initUniformBuffer(
 ) noexcept {
 	UniformBufferObject	ubo{};
 	ubo.light = light;
-	memcpy(uniform_buffers_mapped, &ubo, sizeof(UniformBufferObject));
+	uniform_buffers.copyFrom(&ubo, sizeof(UniformBufferObject));
 }
 
 /**
@@ -289,10 +275,10 @@ void	DescriptorSet::updateCamera(
 	camera.proj[5] *= -1;
 
 	// Copy to uniform buffer
-	memcpy(
-		(char*)uniform_buffers_mapped,
+	uniform_buffers.copyFrom(
 		&camera,
-		sizeof(UniformBufferObject::Camera)
+		sizeof(UniformBufferObject::Camera),
+		offsetof(UniformBufferObject, camera)
 	);
 }
 

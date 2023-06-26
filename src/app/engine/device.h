@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:14:30 by etran             #+#    #+#             */
-/*   Updated: 2023/06/12 18:13:09 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/23 18:19:29 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,6 +32,7 @@ class DescriptorSet;
 class CommandBuffer;
 class TextureSampler;
 class VertexInput;
+class Buffer;
 
 class Device {
 public:
@@ -42,6 +43,7 @@ public:
 	friend CommandBuffer;
 	friend TextureSampler;
 	friend VertexInput;
+	friend Buffer;
 
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
@@ -79,23 +81,10 @@ public:
 		VkImage& image,
 		VkDeviceMemory& image_memory
 	);
-	// 	void							createImageArray(
-	// 	uint32_t side_size,
-	// 	uint32_t mip_level,
-	// 	VkSampleCountFlagBits num_samples,
-	// 	VkFormat format,
-	// 	VkImageTiling tiling,
-	// 	VkImageUsageFlags usage,
-	// 	VkMemoryPropertyFlags properties,
-	// 	VkImage& image,
-	// 	VkDeviceMemory& image_memory
-	// );
-	void							createBuffer(
+	scop::graphics::Buffer			createBuffer(
 		VkDeviceSize size,
 		VkBufferUsageFlags usage,
-		VkMemoryPropertyFlags properties,
-		VkBuffer& buffer,
-		VkDeviceMemory& buffer_memory
+		VkMemoryPropertyFlags properties
 	);
 
 private:
