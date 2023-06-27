@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/15 20:56:05 by etran             #+#    #+#             */
-/*   Updated: 2023/06/23 18:49:18 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/27 14:38:46 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -95,7 +95,7 @@ void	DescriptorSet::createDescriptorSetLayout(
 	// Sampler descriptor layout: used during fragment shading
 	VkDescriptorSetLayoutBinding	sampler_layout_binding{};
 	sampler_layout_binding.binding = 1;
-	sampler_layout_binding.descriptorCount = TEXTURE_SAMPLER_COUNT;
+	sampler_layout_binding.descriptorCount = 1;
 	sampler_layout_binding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 	sampler_layout_binding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 
@@ -130,7 +130,7 @@ void	DescriptorSet::createDescriptorPool(Device& device, uint32_t frames_in_flig
 	pool_sizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 	pool_sizes[0].descriptorCount = frames_in_flight;
 	pool_sizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-	pool_sizes[1].descriptorCount = frames_in_flight * TEXTURE_SAMPLER_COUNT;
+	pool_sizes[1].descriptorCount = frames_in_flight;
 	pool_sizes[2].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 	pool_sizes[2].descriptorCount = frames_in_flight;
 

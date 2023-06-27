@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/15 20:25:44 by etran             #+#    #+#             */
-/*   Updated: 2023/06/26 14:07:45 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/27 14:22:02 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -237,7 +237,6 @@ void	TextureSampler::generateMipmaps(
 
 	for (uint32_t layer = 0; layer < layer_count ; ++layer) {
 		for (uint32_t level = 1; level < mip_level_count; ++level) {
-			LOG("========== LEVEL : " << level << " ==========");
 			// Transition previous mip level to transfer dst
 			barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
 			barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
@@ -312,7 +311,6 @@ void	TextureSampler::generateMipmaps(
 			}
 		}
 
-		LOG("========== LAST LEVEL ==========");
 		// // Last mip level
 		barrier.subresourceRange.baseMipLevel = mip_level_count - 1;
 		barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
@@ -330,7 +328,6 @@ void	TextureSampler::generateMipmaps(
 			1, &barrier
 		);
 	}
-	LOG("Done");
 }
 
 /* ========================================================================== */

@@ -1,13 +1,14 @@
 #version 450
 #define TEXTURE_SAMPLER_COUNT 16
 
-layout(location = 0) in vec3 frag_normal;
-layout(location = 1) in vec2 frag_uv;
-layout(location = 2) flat in int frag_texture_id;
+layout(location = 0) in vec3 frag_position;
+layout(location = 1) in vec3 frag_normal;
+layout(location = 2) in vec2 frag_uv;
+flat layout(location = 3) in int frag_texture_id;
 
-layout(location = 0) out vec4 out_color;
+layout(location = 0) out vec4 frag_color;
 
-layout(binding = 1) uniform sampler2D tex_sampler[TEXTURE_SAMPLER_COUNT];
+layout(binding = 1) uniform samplerCubeArray tex_sampler;
 layout(binding = 2) uniform Light {
 	vec3 ambient_color;
 	vec3 light_vector;
@@ -16,10 +17,15 @@ layout(binding = 2) uniform Light {
 } light_ubo;
 
 void main() {
-	vec4 color = texture(tex_sampler[frag_texture_id], frag_uv);
+	vec3 cI = normalize(frag_position);
+	vec3 cR = reflect(cI, normalize(frag_normal));
+	cR.y *= -1.0;
+
+	// Retrieve the color from the texture
+	vec4 color = texture(tex_sampler, vec4(cR, 1));
 
 	// Apply ambient lighting
- 	out_color =	color * vec4(light_ubo.ambient_color, 1.0);
+ 	frag_color = color * vec4(light_ubo.ambient_color, 1.0);
 
 	// Apply directional lighting
 	float directional_lighting = max(
@@ -27,5 +33,5 @@ void main() {
 		0.0
 	) * light_ubo.intensity;
 
-	out_color += color * directional_lighting;
+	frag_color += color * directional_lighting;
 }
