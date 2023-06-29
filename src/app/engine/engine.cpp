@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/02 16:09:44 by etran             #+#    #+#             */
-/*   Updated: 2023/06/29 15:58:56 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/29 22:24:41 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -706,30 +706,28 @@ void	copyBufferToImage(
 	std::size_t image_count,
 	std::size_t level_count
 ) {
-	constexpr const std::size_t	layer_count = 6;
 	const uint32_t	face_size = side * side * bytes_per_pixel;
 
 	// Setup buffer copy regions for each face including all miplevels
 	std::vector<VkBufferImageCopy>	buffer_copy_regions;
 
-	buffer_copy_regions.reserve(layer_count * image_count);
-	for (std::size_t layer = 0; layer < layer_count; ++layer) {
+	buffer_copy_regions.reserve(6 * image_count);
+	for (std::size_t layer = 0; layer < 6; ++layer) {
 		for (std::size_t image = 0; image < image_count; ++image) {
 			VkBufferImageCopy	region{};
 			region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 			region.imageSubresource.mipLevel = 0;
 			region.imageSubresource.layerCount = 1;
-			region.imageSubresource.baseArrayLayer = image * layer_count + layer;
+			region.imageSubresource.baseArrayLayer = image * 6 + layer;
 			region.imageExtent = { side, side, 1 };
 			region.bufferOffset =
-				(image * layer_count * face_size) +	// Offset to the current image
-				(layer * face_size); 				// Offset to the current face
+				(image * 6 * face_size) +	// Offset to the current image
+				(layer * face_size); 		// Offset to the current face
 			buffer_copy_regions.emplace_back(region);
 		}
 	}
 
-	// Layout transition
-	// Create image memory barrier to synchronize proper access to resources
+	// Layout transition to optimal transfer destination
 	VkImageMemoryBarrier	barrier{};
 	barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
 	barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
@@ -742,19 +740,14 @@ void	copyBufferToImage(
 	barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 	barrier.subresourceRange.baseMipLevel = 0;
 	barrier.subresourceRange.levelCount = level_count;
-	barrier.subresourceRange.layerCount = layer_count * image_count;
+	barrier.subresourceRange.layerCount = 6 * image_count;
 	barrier.subresourceRange.baseArrayLayer = 0;
-
-	// Set access maks depending on layout in transition,
-	// cause multiple actions will be performed during pipeline execution
-	VkPipelineStageFlags	src_stage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
-	VkPipelineStageFlags	dst_stage = VK_PIPELINE_STAGE_TRANSFER_BIT;
 
 	// Transition to transfer dst
 	vkCmdPipelineBarrier(
 		buffer,
-		src_stage,
-		dst_stage,
+		VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
+		VK_PIPELINE_STAGE_TRANSFER_BIT,
 		0,
 		0, nullptr,
 		0, nullptr,

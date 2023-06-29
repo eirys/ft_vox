@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/15 20:25:44 by etran             #+#    #+#             */
-/*   Updated: 2023/06/29 15:56:55 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/29 22:38:47 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -88,11 +88,11 @@ void	TextureSampler::createTextureImages(
 	// Copy every face of every image data to staging buffer
 	staging_buffer.map(device.logical_device);
 	for (std::size_t i = 0; i < images.size(); ++i) {
-		for (const auto& face: images[i]) {
+		for (std::size_t j = 0; j < 6; ++j) {
 			staging_buffer.copyFrom(
-				face.getPixels(),
+				images[i][j].getPixels(),
 				static_cast<std::size_t>(layer_size),
-				static_cast<std::size_t>(layer_size) * i
+				static_cast<std::size_t>(layer_size) * (i + j)
 			);
 		}
 	}
@@ -200,8 +200,8 @@ void	TextureSampler::createTextureSampler(
 	sampler_info.unnormalizedCoordinates = VK_FALSE;
 	sampler_info.compareEnable = VK_FALSE;
 	sampler_info.compareOp = VK_COMPARE_OP_ALWAYS;
-	sampler_info.mipmapMode = VK_SAMPLER_MIPMAP_MODE_NEAREST;
 	sampler_info.mipLodBias = 0.0f;
+	sampler_info.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
 	sampler_info.minLod = 0.0f;
 	sampler_info.maxLod = static_cast<float>(mip_levels);
 
@@ -226,7 +226,6 @@ void	TextureSampler::generateMipmaps(
 	if (!(properties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT)) {
 		throw std::runtime_error("texture image format doesn't support linear blitting");
 	}
-	int32_t	mip_side = face_size;
 
 	VkImageMemoryBarrier	barrier{};
 	barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
@@ -238,30 +237,31 @@ void	TextureSampler::generateMipmaps(
 		for (uint32_t level = 1; level < mip_level_count; ++level) {
 			barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 			barrier.subresourceRange.baseMipLevel = level - 1;
+			barrier.subresourceRange.levelCount = 1;
 			barrier.subresourceRange.baseArrayLayer = layer;
 			barrier.subresourceRange.layerCount = 1;
-			barrier.subresourceRange.levelCount = 1;
 
 			VkImageBlit	blit{};
 
-			// Evaluate offset for next level
-			int32_t	mip_offset = mip_side > 1 ? mip_side >> 2 : 1;
-
 			// Source
-			blit.srcOffsets[0] = { 0, 0, 0 };
-			blit.srcOffsets[1] = { mip_side, mip_side, 1 };
 			blit.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 			blit.srcSubresource.baseArrayLayer = layer;
 			blit.srcSubresource.mipLevel = level - 1;
 			blit.srcSubresource.layerCount = 1;
+			blit.srcOffsets[0] = { 0, 0, 0 };
+			blit.srcOffsets[1].x = face_size >> (level - 1);
+			blit.srcOffsets[1].y = face_size >> (level - 1);
+			blit.srcOffsets[1].z = 1;
 
 			// Destination
-			blit.dstOffsets[0] = { 0, 0, 0 };
-			blit.dstOffsets[1] = { mip_offset, mip_offset, 1 };
 			blit.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 			blit.dstSubresource.baseArrayLayer = layer;
 			blit.dstSubresource.mipLevel = level;
 			blit.dstSubresource.layerCount = 1;
+			blit.dstOffsets[0] = { 0, 0, 0 };
+			blit.dstOffsets[1].x = face_size >> level;
+			blit.dstOffsets[1].y = face_size >> level;
+			blit.dstOffsets[1].z = 1;
 
 			// Transition previous mip level to transfer source
 			barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
@@ -288,45 +288,42 @@ void	TextureSampler::generateMipmaps(
 				VK_FILTER_LINEAR
 			);
 
-			// Revert layout of previous level to shader read
+			// Prepare for next level
 			barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
-			barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+			barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
 			barrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
-			barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+			barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
 
 			vkCmdPipelineBarrier(
 				buffer,
 				VK_PIPELINE_STAGE_TRANSFER_BIT,
-				VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+				VK_PIPELINE_STAGE_TRANSFER_BIT,
 				0,
 				0, nullptr,
 				0, nullptr,
 				1, &barrier
 			);
-
-			// Update mip offset for next level
-			if (mip_side > 1) {
-				mip_side >>= 2;
-			}
 		}
-
-		// Revert layout of last level to shader read
-		barrier.subresourceRange.baseMipLevel = mip_level_count - 1;
-		barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
-		barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-		barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-		barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-
-		vkCmdPipelineBarrier(
-			buffer,
-			VK_PIPELINE_STAGE_TRANSFER_BIT,
-			VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-			0,
-			0, nullptr,
-			0, nullptr,
-			1, &barrier
-		);
 	}
+	// Revert layout all level to shader read
+	barrier.subresourceRange.baseMipLevel = 0;
+	barrier.subresourceRange.baseArrayLayer = 0;
+	barrier.subresourceRange.layerCount = layer_count;
+	barrier.subresourceRange.levelCount = mip_level_count;
+	barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+	barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+	barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+	barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+
+	vkCmdPipelineBarrier(
+		buffer,
+		VK_PIPELINE_STAGE_TRANSFER_BIT,
+		VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+		0,
+		0, nullptr,
+		0, nullptr,
+		1, &barrier
+	);
 }
 
 /* ========================================================================== */

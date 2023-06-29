@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/28 11:12:12 by eli               #+#    #+#             */
-/*   Updated: 2023/06/29 16:00:04 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/29 20:04:53 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -216,7 +216,7 @@ void	App::loadTerrain() {
 		texture_elements[1],
 		texture_elements[1],
 		texture_elements[1],
-		texture_elements[1],
+		std::move(texture_elements[1]),
 		std::move(texture_elements[0]),
 		std::move(texture_elements[2])
 	};

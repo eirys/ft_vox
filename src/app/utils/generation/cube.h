@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:19:11 by etran             #+#    #+#             */
-/*   Updated: 2023/06/08 21:09:37 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/29 16:38:19 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,12 +30,12 @@ enum MaterialType {
 };
 
 enum FaceType {
-	FACE_TOP,
-	FACE_BOTTOM,
-	FACE_LEFT,
-	FACE_RIGHT,
-	FACE_FRONT,
-	FACE_BACK
+	FACE_LEFT = 0,
+	FACE_RIGHT = 1,
+	FACE_FRONT = 2,
+	FACE_BACK = 3,
+	FACE_TOP = 4,
+	FACE_BOTTOM = 5
 };
 
 /**

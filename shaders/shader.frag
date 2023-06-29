@@ -1,5 +1,4 @@
 #version 450
-#define TEXTURE_SAMPLER_COUNT 16
 
 layout(location = 0) in vec3 frag_position;
 layout(location = 1) in vec3 frag_normal;
@@ -17,12 +16,12 @@ layout(binding = 2) uniform Light {
 } light_ubo;
 
 void main() {
-	vec3 cI = normalize(frag_position);
-	vec3 cR = reflect(cI, frag_normal);
-	cR.yz *= -1.0;
-
-	// Retrieve the color from the texture
-	vec4 color = texture(tex_sampler, vec4(cR, 1));
+	// Retrieve the color from the texture using 2D uv and texture id
+	vec4 color = textureLod(
+		tex_sampler,
+		vec4(frag_uv, -1, 0),
+		0.0
+	);
 
 	// Apply ambient lighting
  	frag_color = color * vec4(light_ubo.ambient_color, 1.0);
