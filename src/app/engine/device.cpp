@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/16 01:00:19 by etran             #+#    #+#             */
-/*   Updated: 2023/06/26 09:50:08 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/29 13:51:15 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -98,7 +98,7 @@ void	Device::createImage(
 		throw std::runtime_error("failed to create image");
 	}
 
-	// Allocate memory for image
+	// Allocate memory for image & bind memory to instance
 	VkMemoryRequirements	mem_requirements;
 	vkGetImageMemoryRequirements(logical_device, image, &mem_requirements);
 
@@ -112,10 +112,9 @@ void	Device::createImage(
 
 	if (vkAllocateMemory(logical_device, &alloc_info, nullptr, &image_memory) != VK_SUCCESS) {
 		throw std::runtime_error("failed to allocate image memory");
+	} else if (vkBindImageMemory(logical_device, image, image_memory, 0) != VK_SUCCESS) {
+		throw std::runtime_error("failed to bind image memory");
 	}
-
-	// Bind memory to instance
-	vkBindImageMemory(logical_device, image, image_memory, 0);
 }
 
 /**

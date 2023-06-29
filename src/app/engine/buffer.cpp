@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/23 06:44:38 by etran             #+#    #+#             */
-/*   Updated: 2023/06/23 16:49:10 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/29 10:08:53 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,8 +46,8 @@ void	Buffer::init(
 	// Allocate memory for buffer
 	VkMemoryRequirements	mem_requirements;
 	vkGetBufferMemoryRequirements(
-		device.logical_device, 
-		_buffer, 
+		device.logical_device,
+		_buffer,
 		&mem_requirements
 	);
 

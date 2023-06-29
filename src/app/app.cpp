@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/28 11:12:12 by eli               #+#    #+#             */
-/*   Updated: 2023/06/28 18:28:19 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/29 16:00:04 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -195,6 +195,7 @@ void	App::loadTerrain() {
 	game.setOrigin(mesh.origin);
 
 	// TEMPORARY ===
+	LOG("Loading textures...");
 	const std::vector<std::string>	paths {
 		SCOP_TEXTURE_PATH "grass_top.ppm",
 		SCOP_TEXTURE_PATH "grass_side.ppm",
@@ -205,46 +206,24 @@ void	App::loadTerrain() {
 		throw std::runtime_error("Too many textures to be loaded");
 	}
 
-	std::vector<scop::Image> texture_elements(paths.size());
+	std::vector<scop::Image>	texture_elements(paths.size());
 	for (std::size_t i = 0; i < paths.size(); ++i) {
 		scop::PpmLoader	loader(paths[i]);
 		texture_elements[i] = loader.load();
 	}
 
-	// Dynamically compose texture map: an array of 6 faces of 16x16 pixels.
-	const constexpr std::size_t	face_length = 16;
-	const constexpr std::size_t	face_count = 6;
-
-	std::vector<uint32_t>	texture_map(face_count * face_length * face_length, 0);
-
-	// Copy each face of each texture element into the texture map.
-	// offset is the index on x axis of the texture map.
-	// auto copy_face = [&texture_map](const uint32_t* face, std::size_t offset) -> void {
-	// 	for (std::size_t x = 0; x < face_length; ++x) {
-	// 		for (std::size_t y = 0; y < face_length; ++y) {
-	// 			Fill the map from left to right, bottom to top.
-	// 			texture_map[offset + x + y * face_length] = face[x + y * face_length];
-	// 		}
-	// 	}
-	// };
-	auto copy_face = [&texture_map](const uint32_t* face, std::size_t offset) -> void {
-		std::memcpy(texture_map.data() + offset, face, face_length * face_length * sizeof(uint32_t));
+	CubeMap	grass_cube_map {
+		texture_elements[1],
+		texture_elements[1],
+		texture_elements[1],
+		texture_elements[1],
+		std::move(texture_elements[0]),
+		std::move(texture_elements[2])
 	};
 
-	// Sides: +x, -x, +y, -y
-	for (std::size_t i = 0; i < 4; ++i) {
-		copy_face(texture_elements[1].getPixels(), i * face_length);
-	}
-	// Top and bottom: +z, -z
-	copy_face(texture_elements[0].getPixels(), 4 * face_length);
-	copy_face(texture_elements[2].getPixels(), 5 * face_length);
-
-	textures.emplace_back(scop::Image(
-		"no_path",
-		std::move(texture_map),
-		face_length * face_count,
-		face_length
-	));
+	textures.reserve(1);
+	textures.emplace_back(std::move(grass_cube_map));
+	LOG("Textures loaded.");
 }
 
 void	App::loadModel(const std::string& path) {
@@ -292,10 +271,11 @@ void	App::loadModel(const std::string& path) {
 	}
 
 	// Pass ownership of texture image from model to app
-	textures.emplace_back(
-		std::move(*model.getMaterial().ambient_texture)
-	);
-	model.getMaterial().ambient_texture.release();
+	//TODO
+	// textures.emplace_back(
+	// 	std::move(*model.getMaterial().ambient_texture)
+	// );
+	// model.getMaterial().ambient_texture.release();
 }
 
 void	App::loadLight(const scop::mtl::Material& mat) {

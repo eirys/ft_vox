@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:14:50 by etran             #+#    #+#             */
-/*   Updated: 2023/06/04 17:14:51 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/29 14:36:19 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -73,11 +73,11 @@ private:
 	VkSwapchainKHR					vk_swap_chain;
 	VkRenderPass					vk_render_pass;
 
-	std::vector<VkImage>			swap_chain_images;
 	VkFormat						swap_chain_image_format;
 	VkExtent2D						swap_chain_extent;
-
+	std::vector<VkImage>			swap_chain_images;
 	std::vector<VkImageView>		swap_chain_image_views;
+
 	std::vector<VkFramebuffer>		swap_chain_frame_buffers;
 
 	RenderTargetResources			resources;

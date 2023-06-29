@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   buffer.h                                           :+:      :+:    :+:   */
+/*   image_buffer.h                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/06/23 06:30:15 by etran             #+#    #+#             */
-/*   Updated: 2023/06/29 09:02:03 by etran            ###   ########.fr       */
+/*   Created: 2023/06/29 08:58:40 by etran             #+#    #+#             */
+/*   Updated: 2023/06/29 13:32:14 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,65 +27,81 @@ namespace graphics {
 class Device;
 
 /**
- * @brief Wrapper class for VkBuffer and VkDeviceMemory
+ * @brief Wrapper class for VkImage and VkDeviceMemory
 */
-class Buffer {
+class ImageBuffer {
 public:
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
 
-	Buffer() = default;
-	Buffer(Buffer&& other) = default;
-	Buffer(const Buffer& other) = default;
-	Buffer& operator=(Buffer&& other) = default;
-	Buffer& operator=(const Buffer& other) = default;
-	~Buffer() = default;
+	ImageBuffer() = default;
+	ImageBuffer(ImageBuffer&& other) = default;
+	ImageBuffer(const ImageBuffer& other) = default;
+	ImageBuffer& operator=(ImageBuffer&& other) = default;
+	ImageBuffer& operator=(const ImageBuffer& other) = default;
+	~ImageBuffer() = default;
 
 	/* ========================================================================= */
 
-	void				init(
+	void				initImage(
 		Device& device,
-		VkDeviceSize size,
-		VkBufferUsageFlags usage,
-		VkMemoryPropertyFlags properties,
-		VkSharingMode sharing_mode = VK_SHARING_MODE_EXCLUSIVE
+		uint32_t width,
+		uint32_t height,
+		VkFormat format,
+		VkImageUsageFlags usage,
+		VkSampleCountFlagBits sample_count,
+		uint32_t mip_level = 1,
+		uint32_t layers = 1,
+		VkImageCreateFlags flags = 0,
+		VkMemoryPropertyFlags properties = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+		VkImageTiling tiling = VK_IMAGE_TILING_OPTIMAL
 	);
 
-	void				destroy(VkDevice device);
+	void				initView(
+		//todo
+	);
+
+	void				destroy(Device& device);
 
 	/* ========================================================================= */
 
-	void				map(VkDevice device, VkDeviceSize size = VK_WHOLE_SIZE);
-	void				unmap(VkDevice device) noexcept;
+	void				setLayout(
+		VkCommandBuffer command_buffer,
+		VkImageLayout old_layout,
+		VkImageLayout new_layout,
+		VkAccessFlags src_access_mask,
+		VkAccessFlags dst_access_mask,
+		VkPipelineStageFlags src_stage_mask,
+		VkPipelineStageFlags dst_stage_mask,
+		VkImageSubresourceRange& subresource_range
+	);
 
 	void				copyFrom(
-		const void* data,
-		std::size_t data_size,
-		std::size_t offset = 0
-	) noexcept;
-	void				copyBuffer(
-		VkCommandBuffer& command_buffer,
-		Buffer& src_buffer,
-		VkDeviceSize size = VK_WHOLE_SIZE,
-		VkDeviceSize src_offset = 0,
-		VkDeviceSize dst_offset = 0
-	) noexcept;
+		VkCommandBuffer command_buffer,
+		VkBuffer src_buffer,
+		uint32_t layer_width,
+		uint32_t layer_height,
+		uint32_t layer_count = 1,
+		uint32_t image_count = 1,
+		uint32_t layer_size = 0,
+		uint32_t pixel_size = sizeof(uint32_t)
+	);
 
 	/* ========================================================================= */
 
-	VkBuffer			getBuffer() const noexcept;
+	VkImage				getImage() const noexcept;
 
 private:
 	/* ========================================================================= */
 	/*                               CLASS MEMBERS                               */
 	/* ========================================================================= */
 
-	VkBuffer			_buffer;
+	VkImage				_image;
 	VkDeviceMemory		_memory;
-	void*				_data;
+	VkImageView			_view;
 
-}; // class Buffer
+}; // class ImageBuffer
 
 } // namespace graphics
-}  // namespace scop
+} // namespace vox

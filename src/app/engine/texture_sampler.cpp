@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/15 20:25:44 by etran             #+#    #+#             */
-/*   Updated: 2023/06/29 08:14:07 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/29 15:56:55 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,7 +32,7 @@ namespace graphics {
 void	TextureSampler::init(
 	Device& device,
 	VkCommandPool command_pool,
-	const std::vector<scop::Image>& images
+	const std::vector<CubeMap>& images
 ) {
 	texture_count = static_cast<uint32_t>(images.size());
 	createTextureImages(device, command_pool, images);
@@ -60,14 +60,12 @@ void	TextureSampler::destroy(Device& device) {
 void	TextureSampler::createTextureImages(
 	Device& device,
 	VkCommandPool command_pool,
-	const std::vector<scop::Image>& images
+	const std::vector<CubeMap>& images
 ) {
-	constexpr const std::size_t	face_count = 6;
-	
 	// Size of a side
 	constexpr const std::size_t	side_size = 16;
 	// A layer = a face of the cube map
-	const std::size_t	layer_count = face_count * texture_count;
+	const std::size_t	layer_count = 6 * images.size();
 
 	// Size of a layer (an image). A layer is a face of the cube map.
 	const VkDeviceSize	layer_size = side_size * side_size * sizeof(uint32_t);
@@ -78,7 +76,6 @@ void	TextureSampler::createTextureImages(
 	mip_levels = 1 + static_cast<uint32_t>(
 		std::floor(std::log2(side_size))
 	);
-	LOG("Mip levels count: " << mip_levels);
 
 	// Create staging buffer to copy images data to
 	scop::graphics::Buffer	staging_buffer = device.createBuffer(
@@ -88,21 +85,23 @@ void	TextureSampler::createTextureImages(
 		VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
 	);
 
-	// Copy every images data to staging buffer
+	// Copy every face of every image data to staging buffer
 	staging_buffer.map(device.logical_device);
 	for (std::size_t i = 0; i < images.size(); ++i) {
-		staging_buffer.copyFrom(
-			images[i].getPixels(),
-			static_cast<std::size_t>(image_size),
-			static_cast<std::size_t>(image_size) * i
-		);
+		for (const auto& face: images[i]) {
+			staging_buffer.copyFrom(
+				face.getPixels(),
+				static_cast<std::size_t>(layer_size),
+				static_cast<std::size_t>(layer_size) * i
+			);
+		}
 	}
 	staging_buffer.unmap(device.logical_device);
 
 	// Create texture image to be filled
 	device.createImage(
-		image_size,
-		image_size,
+		side_size,
+		side_size,
 		mip_levels,
 		layer_count,
 		VK_SAMPLE_COUNT_1_BIT,
@@ -130,8 +129,8 @@ void	TextureSampler::createTextureImages(
 		vk_texture_image,
 		static_cast<uint32_t>(side_size),
 		sizeof(uint32_t),
-		texture_count,
-		mip_levels
+		static_cast<uint32_t>(texture_count),
+		static_cast<uint32_t>(mip_levels)
 	);
 
 	// Submit to graphics queue to execute transfer
@@ -150,8 +149,8 @@ void	TextureSampler::createTextureImages(
 		vk_texture_image,
 		VK_FORMAT_R8G8B8A8_SRGB,
 		static_cast<int32_t>(side_size),
-		mip_levels,
-		layer_count
+		static_cast<uint32_t>(mip_levels),
+		static_cast<uint32_t>(layer_count)
 	);
 
 	// Submit and wait for transfer to be done before destroying buffer
@@ -237,11 +236,6 @@ void	TextureSampler::generateMipmaps(
 
 	for (uint32_t layer = 0; layer < layer_count ; ++layer) {
 		for (uint32_t level = 1; level < mip_level_count; ++level) {
-			// Transition previous mip level to transfer dst
-			barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
-			barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
-			barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-			barrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
 			barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 			barrier.subresourceRange.baseMipLevel = level - 1;
 			barrier.subresourceRange.baseArrayLayer = layer;
@@ -269,7 +263,12 @@ void	TextureSampler::generateMipmaps(
 			blit.dstSubresource.mipLevel = level;
 			blit.dstSubresource.layerCount = 1;
 
-			// Change layout of previous level to transfer source
+			// Transition previous mip level to transfer source
+			barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+			barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+			barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+			barrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+
 			vkCmdPipelineBarrier(
 				buffer,
 				VK_PIPELINE_STAGE_TRANSFER_BIT,
@@ -289,7 +288,7 @@ void	TextureSampler::generateMipmaps(
 				VK_FILTER_LINEAR
 			);
 
-			// Revert layout of previous level
+			// Revert layout of previous level to shader read
 			barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
 			barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 			barrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
@@ -311,7 +310,7 @@ void	TextureSampler::generateMipmaps(
 			}
 		}
 
-		// // Last mip level
+		// Revert layout of last level to shader read
 		barrier.subresourceRange.baseMipLevel = mip_level_count - 1;
 		barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
 		barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;

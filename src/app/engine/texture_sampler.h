@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:14:56 by etran             #+#    #+#             */
-/*   Updated: 2023/06/23 16:26:52 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/29 15:51:00 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,7 @@
 
 // Std
 # include <vector> // std::vector
+# include <array> // std::array
 
 namespace scop {
 class Image;
@@ -33,6 +34,12 @@ class TextureSampler {
 public:
 
 	friend DescriptorSet;
+
+	/* ========================================================================= */
+	/*                                  TYPEDEFS                                 */
+	/* ========================================================================= */
+
+	typedef	std::array<scop::Image, 6>		CubeMap;
 
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
@@ -50,7 +57,7 @@ public:
 	void							init(
 		Device& device,
 		VkCommandPool command_pool,
-		const std::vector<scop::Image>& images
+		const std::vector<CubeMap>& images
 	);
 	void							destroy(Device& device);
 	
@@ -74,7 +81,7 @@ private:
 	void							createTextureImages(
 		Device& device,
 		VkCommandPool command_pool,
-		const std::vector<scop::Image>& images
+		const std::vector<CubeMap>& images
 	);
 	void							createTextureImageView(
 		Device& device

@@ -6,7 +6,7 @@
 #    By: etran <etran@student.42.fr>                +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/04/06 03:40:09 by eli               #+#    #+#              #
-#    Updated: 2023/06/28 18:22:23 by etran            ###   ########.fr        #
+#    Updated: 2023/06/29 15:55:35 by etran            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -20,6 +20,7 @@ NAME		:=	ft_vox
 # directory names
 SRC_DIR		:=	src
 OBJ_DIR		:=	obj
+DEP_DIR		:=	dep
 SHD_DIR		:=	shaders
 
 # subdirectories
@@ -76,6 +77,7 @@ INC_FILES	:=	$(TOOLS_DIR)/utils.h \
 				$(ENG_DIR)/vertex_input.h \
 				$(ENG_DIR)/engine.h \
 				$(ENG_DIR)/buffer.h \
+				$(ENG_DIR)/image_buffer.h \
 				$(APP_DIR)/app.h
 
 SRC_FILES	:=	$(TOOLS_DIR)/matrix.cpp \
@@ -101,12 +103,14 @@ SRC_FILES	:=	$(TOOLS_DIR)/matrix.cpp \
 				$(ENG_DIR)/vertex_input.cpp \
 				$(ENG_DIR)/engine.cpp \
 				$(ENG_DIR)/buffer.cpp \
+				$(ENG_DIR)/image_buffer.cpp \
 				$(APP_DIR)/app.cpp \
 				main.cpp
 
 INC			:=	$(addprefix	$(SRC_DIR)/,$(INC_FILES))
 SRC			:=	$(addprefix $(SRC_DIR)/,$(SRC_FILES))
 OBJ			:=	$(addprefix $(OBJ_DIR)/,$(SRC_FILES:.cpp=.o))
+DEP			:=	$(addprefix $(OBJ_DIR)/,$(SRC_FILES:.cpp=.d))
 
 # shaders
 SHD_FILES	:=	vert \
@@ -118,10 +122,9 @@ SHD_BIN		:=	$(addsuffix .spv,$(SHD))
 # compiler
 CXX			:=	c++
 EXTRA		:=	-Wall -Werror -Wextra
-INCLUDES	:=	$(addprefix -I./,\
-				$(INC_SUBDIRS))
+INCLUDES	:=	$(addprefix -I./,$(INC_SUBDIRS))
 
-CFLAGS		:=	$(EXTRA)\
+CFLAGS		:=	$(EXTRA) \
 				-std=c++17 \
 				$(INCLUDES) \
 				-g \
@@ -137,9 +140,8 @@ LDFLAGS		:=	-lglfw \
 				-lXrandr \
 				-lXi
 
-GLSLC		:=	glslc
-
 # misc
+GLSLC		:=	glslc
 RM			:=	rm -rf
 
 # ============================================================================ #
@@ -151,9 +153,14 @@ all: $(NAME)
 
 $(NAME): $(SHD_BIN) $(OBJ)
 	@$(CXX) $(CFLAGS) $(OBJ) -o $(NAME) $(LDFLAGS)
-	@echo "\`$(NAME)\` was successfully created."
+	@echo "\`$(NAME)\` successfully created."
 
-$(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp $(INC)
+$(OBJ_DIR)/%.d: $(SRC_DIR)/%.cpp
+	@mkdir -p $(OBJ_DIR) $(OBJ_SUBDIRS)
+	@echo "Generating dependencies for $<..."
+	@$(CXX) $(CFLAGS) -MM -MP -MT $(@:.d=.o) $< -o $@
+
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
 	@mkdir -p $(OBJ_DIR) $(OBJ_SUBDIRS)
 	@echo "Compiling file $<..."
 	@$(CXX) $(CFLAGS) -c $< -o $@
@@ -165,7 +172,7 @@ $(SHD_DIR)/%.spv: $(SHD_DIR)/shader.%
 .PHONY: clean
 clean:
 	@${RM} $(OBJ_DIR)
-	@echo "Cleaning object files."
+	@echo "Cleaning object files and dependencies."
 
 .PHONY: fclean
 fclean: clean
@@ -176,3 +183,5 @@ fclean: clean
 
 .PHONY: re
 re: fclean all
+
+include $(DEP)

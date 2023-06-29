@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:14:35 by etran             #+#    #+#             */
-/*   Updated: 2023/06/23 11:14:16 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/29 15:58:26 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,6 +49,12 @@ struct QueueFamilyIndices {
 class Engine {
 public:
 	/* ========================================================================= */
+	/*                                  TYPEDEFS                                 */
+	/* ========================================================================= */
+
+	typedef	std::array<scop::Image, 6>		CubeMap;
+
+	/* ========================================================================= */
 	/*                               CONST MEMBERS                               */
 	/* ========================================================================= */
 
@@ -76,7 +82,7 @@ public:
 
 	void						init(
 		scop::Window& window,
-		const std::vector<scop::Image>& images,
+		const std::vector<CubeMap>& images,
 		const UniformBufferObject::Light& light,
 		const std::vector<Vertex>& vertices,
 		const std::vector<uint32_t>& indices
@@ -196,7 +202,7 @@ void	copyBufferToImage(
 	uint32_t side,
 	VkDeviceSize bytes_per_pixel,
 	std::size_t image_count,
-	std::size_t mip_levels_count
+	std::size_t level_count
 );
 
 } // namespace graphics

@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:14:30 by etran             #+#    #+#             */
-/*   Updated: 2023/06/23 18:19:29 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/29 14:38:11 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,9 +33,11 @@ class CommandBuffer;
 class TextureSampler;
 class VertexInput;
 class Buffer;
+class ImageBuffer;
 
 class Device {
 public:
+
 	friend Engine;
 	friend RenderTarget;
 	friend RenderTargetResources;
@@ -44,6 +46,7 @@ public:
 	friend TextureSampler;
 	friend VertexInput;
 	friend Buffer;
+	friend ImageBuffer;
 
 	/* ========================================================================= */
 	/*                                  METHODS                                  */

@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/02 16:09:44 by etran             #+#    #+#             */
-/*   Updated: 2023/06/28 18:48:04 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/29 15:58:56 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,7 +34,7 @@ const std::vector<const char*>	Engine::validation_layers = {
 
 void	Engine::init(
 	scop::Window& window,
-	const std::vector<scop::Image>& images,
+	const std::vector<CubeMap>& images,
 	const UniformBufferObject::Light& light,
 	const std::vector<Vertex>& vertices,
 	const std::vector<uint32_t>& indices
@@ -104,8 +104,7 @@ void	Engine::render(
 		&image_index
 	);
 	if (result == VK_ERROR_OUT_OF_DATE_KHR) {
-		// Swap chain incompatible for rendering (resize?)
-		// recreateSwapChain();
+		// Swap chain incompatible for rendering
 		render_target.updateSwapChain(device, window);
 		return;
 	} else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
@@ -705,29 +704,27 @@ void	copyBufferToImage(
 	uint32_t side,
 	VkDeviceSize bytes_per_pixel,
 	std::size_t image_count,
-	std::size_t mip_levels_count
+	std::size_t level_count
 ) {
-	constexpr const std::size_t	face_count = 6;
+	constexpr const std::size_t	layer_count = 6;
 	const uint32_t	face_size = side * side * bytes_per_pixel;
 
 	// Setup buffer copy regions for each face including all miplevels
 	std::vector<VkBufferImageCopy>	buffer_copy_regions;
 
-	buffer_copy_regions.reserve(face_count * image_count * mip_levels_count);
-	for (std::size_t face = 0; face < face_count; ++face) {
+	buffer_copy_regions.reserve(layer_count * image_count);
+	for (std::size_t layer = 0; layer < layer_count; ++layer) {
 		for (std::size_t image = 0; image < image_count; ++image) {
-			for (std::size_t level = 0; level < mip_levels_count; ++level) {
-				VkBufferImageCopy	region{};
-				region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-				region.imageSubresource.mipLevel = level;
-				region.imageSubresource.layerCount = 1;
-				region.imageSubresource.baseArrayLayer = image * face_count + face;
-				region.imageExtent = { side >> level, side >> level, 1 };
-				region.bufferOffset =
-					(image * face_count * face_size) +	// Offset to the current image
-					(face * face_size); 				// Offset to the current face
-				buffer_copy_regions.emplace_back(region);
-			}
+			VkBufferImageCopy	region{};
+			region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+			region.imageSubresource.mipLevel = 0;
+			region.imageSubresource.layerCount = 1;
+			region.imageSubresource.baseArrayLayer = image * layer_count + layer;
+			region.imageExtent = { side, side, 1 };
+			region.bufferOffset =
+				(image * layer_count * face_size) +	// Offset to the current image
+				(layer * face_size); 				// Offset to the current face
+			buffer_copy_regions.emplace_back(region);
 		}
 	}
 
@@ -737,23 +734,23 @@ void	copyBufferToImage(
 	barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
 	barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 	barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+	barrier.srcAccessMask = 0;
+	barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
 	barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 	barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 	barrier.image = dst_image;
 	barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 	barrier.subresourceRange.baseMipLevel = 0;
-	barrier.subresourceRange.levelCount = mip_levels_count;
-	barrier.subresourceRange.layerCount = face_count * image_count;
+	barrier.subresourceRange.levelCount = level_count;
+	barrier.subresourceRange.layerCount = layer_count * image_count;
 	barrier.subresourceRange.baseArrayLayer = 0;
-	barrier.srcAccessMask = 0;
-	barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
 
 	// Set access maks depending on layout in transition,
 	// cause multiple actions will be performed during pipeline execution
 	VkPipelineStageFlags	src_stage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
 	VkPipelineStageFlags	dst_stage = VK_PIPELINE_STAGE_TRANSFER_BIT;
 
-	// Submit barrier for this buffer
+	// Transition to transfer dst
 	vkCmdPipelineBarrier(
 		buffer,
 		src_stage,

@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:17:06 by etran             #+#    #+#             */
-/*   Updated: 2023/06/12 15:24:08 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/29 14:50:56 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,6 +55,12 @@ enum ObjectDirection {
 class App {
 public:
 	/* ========================================================================= */
+	/*                                  TYPEDEFS                                 */
+	/* ========================================================================= */
+
+	typedef std::array<scop::Image, 6> CubeMap;
+
+	/* ========================================================================= */
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
 
@@ -87,7 +93,7 @@ private:
 
 	std::vector<scop::Vertex>	vertices;
 	std::vector<uint32_t>		indices;
-	std::vector<scop::Image>	textures;
+	std::vector<CubeMap>		textures;
 	UniformBufferObject::Light	light;
 
 	bool						keys_pressed_directions[6] = { false };
