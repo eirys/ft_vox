@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:50:12 by etran             #+#    #+#             */
-/*   Updated: 2023/06/08 21:11:27 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/28 18:32:05 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,7 +35,20 @@ typedef scop::Vect3	Vect3;
 /* ========================================================================== */
 
 scop::Vect3	Cube::Face::normal() const noexcept {
-	return scop::cross(vertices[3] - vertices[0], vertices[1] - vertices[0]);
+	switch (side) {
+		case FACE_TOP:
+			return {0.0f, 1.0f, 0.0f};	// +y
+		case FACE_BOTTOM:
+			return {0.0f, -1.0f, 0.0f};	// -y
+		case FACE_RIGHT:
+			return {1.0f, 0.0f, 0.0f};	// +x
+		case FACE_LEFT:
+			return {-1.0f, 0.0f, 0.0f};	// -x
+		case FACE_FRONT:
+			return {0.0f, 0.0f, 1.0f};	// +z
+		default:
+			return {0.0f, 0.0f, -1.0f};	// -z
+	}
 }
 
 /* ========================================================================== */

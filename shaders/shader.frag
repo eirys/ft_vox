@@ -18,8 +18,8 @@ layout(binding = 2) uniform Light {
 
 void main() {
 	vec3 cI = normalize(frag_position);
-	vec3 cR = reflect(cI, normalize(frag_normal));
-	cR.y *= -1.0;
+	vec3 cR = reflect(cI, frag_normal);
+	cR.yz *= -1.0;
 
 	// Retrieve the color from the texture
 	vec4 color = texture(tex_sampler, vec4(cR, 1));

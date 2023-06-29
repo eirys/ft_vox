@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/02 16:09:44 by etran             #+#    #+#             */
-/*   Updated: 2023/06/26 10:05:22 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/28 18:48:04 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -602,7 +602,7 @@ void	endSingleTimeCommands(
 
 	if (vkCreateFence(device, &fence_info, nullptr, &fence) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create fence for buffer flush");
-	} 
+	}
 	vkQueueSubmit(queue, 1, &submit_info, fence);
 	vkWaitForFences(device, 1, &fence, VK_TRUE, UINT64_MAX);
 	vkDestroyFence(device, fence, nullptr);
@@ -723,7 +723,9 @@ void	copyBufferToImage(
 				region.imageSubresource.layerCount = 1;
 				region.imageSubresource.baseArrayLayer = image * face_count + face;
 				region.imageExtent = { side >> level, side >> level, 1 };
-				region.bufferOffset = image * face_size;
+				region.bufferOffset =
+					(image * face_count * face_size) +	// Offset to the current image
+					(face * face_size); 				// Offset to the current face
 				buffer_copy_regions.emplace_back(region);
 			}
 		}

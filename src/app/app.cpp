@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/28 11:12:12 by eli               #+#    #+#             */
-/*   Updated: 2023/06/23 16:50:15 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/28 18:28:19 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -206,7 +206,6 @@ void	App::loadTerrain() {
 	}
 
 	std::vector<scop::Image> texture_elements(paths.size());
-
 	for (std::size_t i = 0; i < paths.size(); ++i) {
 		scop::PpmLoader	loader(paths[i]);
 		texture_elements[i] = loader.load();
@@ -220,22 +219,25 @@ void	App::loadTerrain() {
 
 	// Copy each face of each texture element into the texture map.
 	// offset is the index on x axis of the texture map.
+	// auto copy_face = [&texture_map](const uint32_t* face, std::size_t offset) -> void {
+	// 	for (std::size_t x = 0; x < face_length; ++x) {
+	// 		for (std::size_t y = 0; y < face_length; ++y) {
+	// 			Fill the map from left to right, bottom to top.
+	// 			texture_map[offset + x + y * face_length] = face[x + y * face_length];
+	// 		}
+	// 	}
+	// };
 	auto copy_face = [&texture_map](const uint32_t* face, std::size_t offset) -> void {
-		for (std::size_t x = 0; x < face_length; ++x) {
-			for (std::size_t y = 0; y < face_length; ++y) {
-				// Fill the map from left to right, bottom to top.
-				texture_map[offset + x + y * face_length] = face[x + y * face_length];
-			}
-		}
+		std::memcpy(texture_map.data() + offset, face, face_length * face_length * sizeof(uint32_t));
 	};
 
-	// Top and bottom
-	copy_face(texture_elements[0].getPixels(), 0);
-	copy_face(texture_elements[2].getPixels(), 5 * face_length);
-	// Sides
+	// Sides: +x, -x, +y, -y
 	for (std::size_t i = 0; i < 4; ++i) {
-		copy_face(texture_elements[1].getPixels(), (1 + i) * face_length);
+		copy_face(texture_elements[1].getPixels(), i * face_length);
 	}
+	// Top and bottom: +z, -z
+	copy_face(texture_elements[0].getPixels(), 4 * face_length);
+	copy_face(texture_elements[2].getPixels(), 5 * face_length);
 
 	textures.emplace_back(scop::Image(
 		"no_path",
