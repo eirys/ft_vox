@@ -6,13 +6,14 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/15 20:56:05 by etran             #+#    #+#             */
-/*   Updated: 2023/06/27 14:38:46 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/30 17:56:23 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "descriptor_set.h"
 #include "uniform_buffer_object.h"
 #include "engine.h"
+// #include "image_buffer.h"
 
 #include <array> // std::array
 #include <stdexcept> // std::runtime_error
@@ -169,7 +170,7 @@ void	DescriptorSet::createDescriptorSets(
 	// Texture sampler
 	VkDescriptorImageInfo	image_info{};
 	image_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-	image_info.imageView = texture_sampler.vk_texture_image_view;
+	image_info.imageView = texture_sampler.texture_buffer.getView();
 	image_info.sampler = texture_sampler.vk_texture_sampler;
 
 	// Ubo light

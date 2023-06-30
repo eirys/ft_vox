@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/02 16:09:44 by etran             #+#    #+#             */
-/*   Updated: 2023/06/29 22:24:41 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/30 17:21:14 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -694,76 +694,76 @@ void	copyBufferToImage(
 
 /* ========================================================================== */
 
-/**
- * Specific to cube maps.
-*/
-void	copyBufferToImage(
-	VkCommandBuffer buffer,
-	VkBuffer src_buffer,
-	VkImage dst_image,
-	uint32_t side,
-	VkDeviceSize bytes_per_pixel,
-	std::size_t image_count,
-	std::size_t level_count
-) {
-	const uint32_t	face_size = side * side * bytes_per_pixel;
+// /**
+//  * Specific to cube maps.
+// */
+// void	copyBufferToImage(
+// 	VkCommandBuffer buffer,
+// 	VkBuffer src_buffer,
+// 	VkImage dst_image,
+// 	uint32_t side,
+// 	VkDeviceSize bytes_per_pixel,
+// 	std::size_t image_count,
+// 	std::size_t level_count
+// ) {
+// 	const uint32_t	face_size = side * side * bytes_per_pixel;
 
-	// Setup buffer copy regions for each face including all miplevels
-	std::vector<VkBufferImageCopy>	buffer_copy_regions;
+// 	// Setup buffer copy regions for each face including all miplevels
+// 	std::vector<VkBufferImageCopy>	buffer_copy_regions;
 
-	buffer_copy_regions.reserve(6 * image_count);
-	for (std::size_t layer = 0; layer < 6; ++layer) {
-		for (std::size_t image = 0; image < image_count; ++image) {
-			VkBufferImageCopy	region{};
-			region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-			region.imageSubresource.mipLevel = 0;
-			region.imageSubresource.layerCount = 1;
-			region.imageSubresource.baseArrayLayer = image * 6 + layer;
-			region.imageExtent = { side, side, 1 };
-			region.bufferOffset =
-				(image * 6 * face_size) +	// Offset to the current image
-				(layer * face_size); 		// Offset to the current face
-			buffer_copy_regions.emplace_back(region);
-		}
-	}
+// 	buffer_copy_regions.reserve(6 * image_count);
+// 	for (std::size_t layer = 0; layer < 6; ++layer) {
+// 		for (std::size_t image = 0; image < image_count; ++image) {
+// 			VkBufferImageCopy	region{};
+// 			region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+// 			region.imageSubresource.mipLevel = 0;
+// 			region.imageSubresource.layerCount = 1;
+// 			region.imageSubresource.baseArrayLayer = image * 6 + layer;
+// 			region.imageExtent = { side, side, 1 };
+// 			region.bufferOffset =
+// 				(image * 6 * face_size) +	// Offset to the current image
+// 				(layer * face_size); 		// Offset to the current face
+// 			buffer_copy_regions.emplace_back(region);
+// 		}
+// 	}
 
-	// Layout transition to optimal transfer destination
-	VkImageMemoryBarrier	barrier{};
-	barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-	barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-	barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
-	barrier.srcAccessMask = 0;
-	barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-	barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-	barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-	barrier.image = dst_image;
-	barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-	barrier.subresourceRange.baseMipLevel = 0;
-	barrier.subresourceRange.levelCount = level_count;
-	barrier.subresourceRange.layerCount = 6 * image_count;
-	barrier.subresourceRange.baseArrayLayer = 0;
+// 	// Layout transition to optimal transfer destination
+// 	VkImageMemoryBarrier	barrier{};
+// 	barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+// 	barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+// 	barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+// 	barrier.srcAccessMask = 0;
+// 	barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+// 	barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+// 	barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+// 	barrier.image = dst_image;
+// 	barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+// 	barrier.subresourceRange.baseMipLevel = 0;
+// 	barrier.subresourceRange.levelCount = level_count;
+// 	barrier.subresourceRange.layerCount = 6 * image_count;
+// 	barrier.subresourceRange.baseArrayLayer = 0;
 
-	// Transition to transfer dst
-	vkCmdPipelineBarrier(
-		buffer,
-		VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
-		VK_PIPELINE_STAGE_TRANSFER_BIT,
-		0,
-		0, nullptr,
-		0, nullptr,
-		1, &barrier
-	);
+// 	// Transition to transfer dst
+// 	vkCmdPipelineBarrier(
+// 		buffer,
+// 		VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
+// 		VK_PIPELINE_STAGE_TRANSFER_BIT,
+// 		0,
+// 		0, nullptr,
+// 		0, nullptr,
+// 		1, &barrier
+// 	);
 
-	// Send cmd
-	vkCmdCopyBufferToImage(
-		buffer,
-		src_buffer,
-		dst_image,
-		VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-		static_cast<uint32_t>(buffer_copy_regions.size()),
-		buffer_copy_regions.data()
-	);
-}
+// 	// Send cmd
+// 	vkCmdCopyBufferToImage(
+// 		buffer,
+// 		src_buffer,
+// 		dst_image,
+// 		VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+// 		static_cast<uint32_t>(buffer_copy_regions.size()),
+// 		buffer_copy_regions.data()
+// 	);
+// }
 
 } // namespace graphics
 } // namespace scop

@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:14:56 by etran             #+#    #+#             */
-/*   Updated: 2023/06/29 15:51:00 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/30 17:23:36 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,6 +22,8 @@
 // Std
 # include <vector> // std::vector
 # include <array> // std::array
+
+# include "image_buffer.h"
 
 namespace scop {
 class Image;
@@ -68,9 +70,11 @@ private:
 
 	uint32_t						texture_count;
 	uint32_t						mip_levels;
-	VkImage							vk_texture_image;
-	VkDeviceMemory					vk_texture_image_memory;
-	VkImageView						vk_texture_image_view;
+
+	ImageBuffer						texture_buffer;
+	// VkImage							vk_texture_image;
+	// VkDeviceMemory					vk_texture_image_memory;
+	// VkImageView						vk_texture_image_view;
 
 	VkSampler						vk_texture_sampler;
 
@@ -89,31 +93,18 @@ private:
 	void							createTextureSampler(
 		Device& device
 	);
-	void							generateMipmaps(
-		VkCommandBuffer buffer,
-		Device& device,
-		VkImage image,
-		VkFormat image_format,
-		int32_t face_size,
-		uint32_t mip_level_count,
-		uint32_t layer_count
-	) const;
+	// void							generateMipmaps(
+	// 	VkCommandBuffer buffer,
+	// 	Device& device,
+	// 	VkImage image,
+	// 	VkFormat image_format,
+	// 	int32_t face_size,
+	// 	uint32_t mip_level_count,
+	// 	uint32_t layer_count
+	// ) const;
 
 }; // class TextureSampler
 
-/* ========================================================================== */
-/*                                    OTHER                                   */
-/* ========================================================================== */
-
-void	transitionImageLayout(
-	VkCommandBuffer buffer,
-	VkImage image,
-	VkFormat format,
-	VkImageLayout old_layout,
-	VkImageLayout new_layout,
-	uint32_t mip_level
-);
-
 } // namespace graphics
-}  // namespace scop
+} // namespace scop
 

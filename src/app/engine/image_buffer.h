@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/29 08:58:40 by etran             #+#    #+#             */
-/*   Updated: 2023/06/29 13:32:14 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/30 17:56:10 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,7 +59,12 @@ public:
 	);
 
 	void				initView(
-		//todo
+		Device& device,
+		VkFormat image_format,
+		VkImageAspectFlags aspect_flags,
+		VkImageViewType view_type = VK_IMAGE_VIEW_TYPE_2D,
+		uint32_t mip_count = 1,
+		uint32_t layer_count = 1
 	);
 
 	void				destroy(Device& device);
@@ -74,23 +79,35 @@ public:
 		VkAccessFlags dst_access_mask,
 		VkPipelineStageFlags src_stage_mask,
 		VkPipelineStageFlags dst_stage_mask,
-		VkImageSubresourceRange& subresource_range
+		const VkImageSubresourceRange& subresource_range
 	);
 
 	void				copyFrom(
 		VkCommandBuffer command_buffer,
 		VkBuffer src_buffer,
-		uint32_t layer_width,
-		uint32_t layer_height,
-		uint32_t layer_count = 1,
+		uint32_t image_width,
+		uint32_t image_height,
 		uint32_t image_count = 1,
+		uint32_t layer_count = 1,
 		uint32_t layer_size = 0,
+		uint32_t mip_count = 0,
 		uint32_t pixel_size = sizeof(uint32_t)
+	);
+
+	void				generateMipmap(
+		VkCommandBuffer command_buffer,
+		Device& device,
+		uint32_t image_width,
+		uint32_t image_height,
+		VkFormat image_format,
+		uint32_t mip_count,
+		uint32_t layer_count
 	);
 
 	/* ========================================================================= */
 
 	VkImage				getImage() const noexcept;
+	VkImageView			getView() const noexcept;
 
 private:
 	/* ========================================================================= */

@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:14:35 by etran             #+#    #+#             */
-/*   Updated: 2023/06/29 15:58:26 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/30 17:21:24 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -195,15 +195,15 @@ void	copyBufferToImage(
 	uint32_t height
 );
 
-void	copyBufferToImage(
-	VkCommandBuffer buffer,
-	VkBuffer src_buffer,
-	VkImage dst_image,
-	uint32_t side,
-	VkDeviceSize bytes_per_pixel,
-	std::size_t image_count,
-	std::size_t level_count
-);
+// void	copyBufferToImage(
+// 	VkCommandBuffer buffer,
+// 	VkBuffer src_buffer,
+// 	VkImage dst_image,
+// 	uint32_t side,
+// 	VkDeviceSize bytes_per_pixel,
+// 	std::size_t image_count,
+// 	std::size_t level_count
+// );
 
 } // namespace graphics
 } // namespace scop

@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/28 11:12:12 by eli               #+#    #+#             */
-/*   Updated: 2023/06/29 20:04:53 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/30 17:45:10 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -203,13 +203,25 @@ void	App::loadTerrain() {
 	};
 
 	if (paths.size() > TEXTURE_SAMPLER_COUNT) {
-		throw std::runtime_error("Too many textures to be loaded");
+		throw std::invalid_argument("Too many textures to be loaded");
 	}
 
+	std::optional<std::size_t> width, height;
 	std::vector<scop::Image>	texture_elements(paths.size());
 	for (std::size_t i = 0; i < paths.size(); ++i) {
 		scop::PpmLoader	loader(paths[i]);
 		texture_elements[i] = loader.load();
+		if (!width.has_value()) {
+			width.emplace(texture_elements[i].getWidth());
+			height.emplace(texture_elements[i].getHeight());
+		} else {
+			if (
+				width.value() != texture_elements[i].getWidth() ||
+				height.value() != texture_elements[i].getHeight()
+			) {
+				throw std::invalid_argument("Texture dimensions do not match");
+			}
+		}
 	}
 
 	CubeMap	grass_cube_map {
