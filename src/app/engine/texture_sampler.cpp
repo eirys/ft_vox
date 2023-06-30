@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/15 20:25:44 by etran             #+#    #+#             */
-/*   Updated: 2023/06/29 22:38:47 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/30 15:08:17 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -188,6 +188,9 @@ void	TextureSampler::createTextureImageView(
 void	TextureSampler::createTextureSampler(
 	Device& device
 ) {
+	// VkPhysicalDeviceProperties	properties{};
+	// vkGetPhysicalDeviceProperties(device.physical_device, &properties);
+
 	VkSamplerCreateInfo	sampler_info{};
 	sampler_info.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
 	sampler_info.magFilter = VK_FILTER_NEAREST;
@@ -195,7 +198,8 @@ void	TextureSampler::createTextureSampler(
 	sampler_info.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
 	sampler_info.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
 	sampler_info.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-	sampler_info.anisotropyEnable = VK_FALSE;
+	sampler_info.anisotropyEnable = VK_FALSE;//VK_TRUE;
+	sampler_info.maxAnisotropy = 0;// properties.limits.maxSamplerAnisotropy;
 	sampler_info.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK;
 	sampler_info.unnormalizedCoordinates = VK_FALSE;
 	sampler_info.compareEnable = VK_FALSE;
@@ -228,6 +232,7 @@ void	TextureSampler::generateMipmaps(
 	}
 
 	VkImageMemoryBarrier	barrier{};
+
 	barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
 	barrier.image = image;
 	barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;

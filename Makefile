@@ -6,7 +6,7 @@
 #    By: etran <etran@student.42.fr>                +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/04/06 03:40:09 by eli               #+#    #+#              #
-#    Updated: 2023/06/29 15:55:35 by etran            ###   ########.fr        #
+#    Updated: 2023/06/30 11:58:37 by etran            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -126,6 +126,8 @@ INCLUDES	:=	$(addprefix -I./,$(INC_SUBDIRS))
 
 CFLAGS		:=	$(EXTRA) \
 				-std=c++17 \
+				-MMD \
+				-MP \
 				$(INCLUDES) \
 				-g \
 				-D__DEBUG \
@@ -141,7 +143,7 @@ LDFLAGS		:=	-lglfw \
 				-lXi
 
 # misc
-GLSLC		:=	glslc
+GLSLC		:=	~/my_sgoinfre/glslc
 RM			:=	rm -rf
 
 # ============================================================================ #
@@ -151,14 +153,10 @@ RM			:=	rm -rf
 .PHONY: all
 all: $(NAME)
 
+include $(DEP)
 $(NAME): $(SHD_BIN) $(OBJ)
 	@$(CXX) $(CFLAGS) $(OBJ) -o $(NAME) $(LDFLAGS)
 	@echo "\`$(NAME)\` successfully created."
-
-$(OBJ_DIR)/%.d: $(SRC_DIR)/%.cpp
-	@mkdir -p $(OBJ_DIR) $(OBJ_SUBDIRS)
-	@echo "Generating dependencies for $<..."
-	@$(CXX) $(CFLAGS) -MM -MP -MT $(@:.d=.o) $< -o $@
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
 	@mkdir -p $(OBJ_DIR) $(OBJ_SUBDIRS)
@@ -183,5 +181,3 @@ fclean: clean
 
 .PHONY: re
 re: fclean all
-
-include $(DEP)
