@@ -6,12 +6,13 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/29 09:57:49 by etran             #+#    #+#             */
-/*   Updated: 2023/06/30 17:54:32 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/30 22:14:40 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "image_buffer.h"
 #include "device.h"
+#include "utils.h"
 
 #include <stdexcept> // std::runtime_error
 #include <functional> // std::function
@@ -162,11 +163,11 @@ void	ImageBuffer::setLayout(
  * @param src_buffer Staging buffer containing the data to copy.
  * @param image_width Width of the VkImage.
  * @param image_height Height of the VkImage.
- * @param image_count Number of image files.
- * @param layer_count Number of layers. 6 for cube maps.
- * @param layer_size Size of a layer in bytes.
- * @param mip_count Number of mipmaps.
- * @param pixel_size Size of a pixel in bytes.
+ * @param image_count Number of image files. Default is 1.
+ * @param layer_count Number of layers. 6 for cube maps. Default is 1.
+ * @param layer_size Size of a layer in bytes. Default is 0.
+ * @param mip_count Number of mipmaps. Default is 1.
+ * @param pixel_size Size of a pixel in bytes. Default is sizeof(uint32_t).
 */
 void	ImageBuffer::copyFrom(
 	VkCommandBuffer command_buffer,
@@ -176,7 +177,6 @@ void	ImageBuffer::copyFrom(
 	uint32_t image_count,
 	uint32_t layer_count,
 	uint32_t layer_size,
-	uint32_t mip_count,
 	uint32_t pixel_size
 ) {
 	// Create regions for transfer operation (define layout)
@@ -185,42 +185,26 @@ void	ImageBuffer::copyFrom(
 	std::vector<VkBufferImageCopy>	regions;
 	regions.reserve(image_count * layer_count);
 
+	VkDeviceSize	layer_offset = 0;
 	for (uint32_t layer = 0; layer < layer_count; layer++) {
-		VkDeviceSize	layer_offset = 0;
 		for (uint32_t image = 0; image < image_count; image++) {
 			VkBufferImageCopy	region{};
 			region.bufferOffset =
 				image_size * layer_count * image +	// offset for image
 				layer_offset;						// offset for layer
+			// LOG("current offset: " << static_cast<uint32_t>(region.bufferOffset));
+			region.imageExtent = { image_width, image_height, 1 };
 			region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 			region.imageSubresource.mipLevel = 0;
-			region.imageSubresource.baseArrayLayer = image * layer_count + layer;
 			region.imageSubresource.layerCount = 1;
-			region.imageExtent = { image_width, image_height, 1 };
+			region.imageSubresource.baseArrayLayer =
+				image * layer_count +
+				layer;
+
 			regions.emplace_back(region);
-
-			layer_offset += layer_size;
 		}
+		layer_offset += layer_size;
 	}
-
-	// Define range for layout transition
-	VkImageSubresourceRange	transfer_barrier{};
-	transfer_barrier.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-	transfer_barrier.baseMipLevel = 0;
-	transfer_barrier.levelCount = mip_count;
-	transfer_barrier.baseArrayLayer = 0;
-	transfer_barrier.layerCount = layer_count * image_count;
-
-	setLayout(
-		command_buffer,
-		VK_IMAGE_LAYOUT_UNDEFINED,
-		VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-		0,
-		VK_ACCESS_TRANSFER_WRITE_BIT,
-		VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
-		VK_PIPELINE_STAGE_TRANSFER_BIT,
-		transfer_barrier
-	);
 
 	// Send copy command
 	vkCmdCopyBufferToImage(
@@ -235,7 +219,7 @@ void	ImageBuffer::copyFrom(
 
 /**
  * @brief Generate mipmaps for the image.
- * 
+ *
  * @param command_buffer Command buffer to send the copy command.
  * @param device Device used to create the image.
  * @param image_width Width of the VkImage.

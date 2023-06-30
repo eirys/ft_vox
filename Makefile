@@ -6,7 +6,7 @@
 #    By: etran <etran@student.42.fr>                +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/04/06 03:40:09 by eli               #+#    #+#              #
-#    Updated: 2023/06/30 11:58:37 by etran            ###   ########.fr        #
+#    Updated: 2023/06/30 20:42:58 by etran            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -120,7 +120,7 @@ SHD			:=	$(addprefix $(SHD_DIR)/,$(SHD_FILES))
 SHD_BIN		:=	$(addsuffix .spv,$(SHD))
 
 # compiler
-CXX			:=	c++
+CXX			:=	clang++
 EXTRA		:=	-Wall -Werror -Wextra
 INCLUDES	:=	$(addprefix -I./,$(INC_SUBDIRS))
 
@@ -143,7 +143,7 @@ LDFLAGS		:=	-lglfw \
 				-lXi
 
 # misc
-GLSLC		:=	~/my_sgoinfre/glslc
+GLSLC		:=	glslc
 RM			:=	rm -rf
 
 # ============================================================================ #
@@ -153,7 +153,7 @@ RM			:=	rm -rf
 .PHONY: all
 all: $(NAME)
 
-include $(DEP)
+-include $(DEP)
 $(NAME): $(SHD_BIN) $(OBJ)
 	@$(CXX) $(CFLAGS) $(OBJ) -o $(NAME) $(LDFLAGS)
 	@echo "\`$(NAME)\` successfully created."

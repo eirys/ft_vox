@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/29 08:58:40 by etran             #+#    #+#             */
-/*   Updated: 2023/06/30 17:56:10 by etran            ###   ########.fr       */
+/*   Updated: 2023/06/30 22:15:56 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -90,7 +90,6 @@ public:
 		uint32_t image_count = 1,
 		uint32_t layer_count = 1,
 		uint32_t layer_size = 0,
-		uint32_t mip_count = 0,
 		uint32_t pixel_size = sizeof(uint32_t)
 	);
 
