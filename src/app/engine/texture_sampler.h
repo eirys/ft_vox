@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:14:56 by etran             #+#    #+#             */
-/*   Updated: 2023/07/03 17:47:57 by etran            ###   ########.fr       */
+/*   Updated: 2023/07/03 19:43:02 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,7 +40,7 @@ public:
 	typedef	std::array<scop::Image, 6>	CubeMap;
 	typedef	std::vector<scop::Image>	TextureArray;
 
-	typedef	CubeMap						Texture;
+	typedef	scop::Image					Texture;
 
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
@@ -66,13 +66,14 @@ public:
 
 	VkSampler						getTextureSampler() const noexcept;
 	const ImageBuffer&				getTextureBuffer() const noexcept;
-	
+
 private:
 	/* ========================================================================= */
-	/*                                CLASS MEMBER                               */
+	/*                               CLASS MEMBERS                               */
 	/* ========================================================================= */
 
 	uint32_t						_texture_count;
+	const uint32_t					_layer_count = 1; // 6 for cube map
 	uint32_t						_mip_levels;
 
 	ImageBuffer						_texture_buffer;

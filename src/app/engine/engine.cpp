@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/02 16:09:44 by etran             #+#    #+#             */
-/*   Updated: 2023/07/03 17:43:12 by etran            ###   ########.fr       */
+/*   Updated: 2023/07/03 20:36:58 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -249,8 +249,8 @@ void	Engine::_createInstance() {
 }
 
 void	Engine::_createGraphicsPipeline() {
-	std::vector<char>	vert_shader = scop::utils::readFile(_vert_shader_bin);
-	std::vector<char>	frag_shader = scop::utils::readFile(_frag_shader_bin);
+	std::vector<char>	vert_shader = scop::utils::readFile(VERT_SHADER_BIN);
+	std::vector<char>	frag_shader = scop::utils::readFile(FRAG_SHADER_BIN);
 
 	// Create shader modules to be used for shader stages
 	VkShaderModule		vert_shader_module = _createShaderModule(vert_shader);

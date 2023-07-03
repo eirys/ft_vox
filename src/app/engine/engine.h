@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:14:35 by etran             #+#    #+#             */
-/*   Updated: 2023/07/03 17:43:06 by etran            ###   ########.fr       */
+/*   Updated: 2023/07/03 20:37:13 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,6 +33,9 @@
 # include "input_buffer.h"
 # include "player.h"
 
+# define FRAG_SHADER_BIN "shaders/frag.spv"
+# define VERT_SHADER_BIN "shaders/vert.spv"
+
 namespace scop {
 class Timer;
 
@@ -45,12 +48,12 @@ public:
 	/* ========================================================================= */
 
 	static const std::vector<const char*>	validation_layers;
-	static constexpr std::size_t			max_frames_in_flight = 1;
+	static constexpr std::size_t	max_frames_in_flight = 1;
 
 	#ifndef NDEBUG
-	static constexpr bool					enable_validation_layers = false;
+	static constexpr bool			enable_validation_layers = false;
 	#else
-	static constexpr bool					enable_validation_layers = true;
+	static constexpr bool			enable_validation_layers = true;
 	#endif
 
 	/* ========================================================================= */
@@ -84,13 +87,6 @@ public:
 	);
 
 private:
-	/* ========================================================================= */
-	/*                               CONST MEMBERS                               */
-	/* ========================================================================= */
-
-	static constexpr const char*	_vert_shader_bin = "shaders/vert.spv";
-	static constexpr const char*	_frag_shader_bin = "shaders/frag.spv";
-
 	/* ========================================================================= */
 	/*                               CLASS MEMBERS                               */
 	/* ========================================================================= */

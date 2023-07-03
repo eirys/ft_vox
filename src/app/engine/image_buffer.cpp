@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/29 09:57:49 by etran             #+#    #+#             */
-/*   Updated: 2023/07/03 16:07:42 by etran            ###   ########.fr       */
+/*   Updated: 2023/07/03 22:06:09 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -85,6 +85,13 @@ void ImageBuffer::initImage(
 
 /**
  * @brief Create associated image view.
+ * 
+ * @param device Engine device.
+ * @param image_format Format of the image.
+ * @param aspect_flags Aspect flags for the image.
+ * @param view_type View type (2D, Cube map).
+ * @param mip_count Number of mip levels.
+ * @param layer_count Number of layers * textures.
 */
 void	ImageBuffer::initView(
 	Device& device,
@@ -156,8 +163,9 @@ void	ImageBuffer::setLayout(
 /**
  * @brief Copy data from a staging buffer to image.
  *
- * @note Assuming that all images have the same size, and there
- * are not mipmaps.
+ * @note Assuming that all images have the same size
+ * @note Assuming there are no mipmaps.
+ * @note Assuming all images have the same number of layers.
  *
  * @param command_buffer Command buffer to send the copy command.
  * @param src_buffer Staging buffer containing the data to copy.

@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/15 20:25:44 by etran             #+#    #+#             */
-/*   Updated: 2023/07/03 17:42:56 by etran            ###   ########.fr       */
+/*   Updated: 2023/07/03 22:07:52 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,6 +34,10 @@ void	TextureSampler::init(
 	VkCommandPool command_pool,
 	const std::vector<Texture>& images
 ) {
+	if (images.empty()) {
+		throw std::invalid_argument("TextureSampler: no image provided");
+	}
+
 	_texture_count = static_cast<uint32_t>(images.size());
 	_createTextureImages(device, command_pool, images);
 	_createTextureImageView(device);
@@ -61,8 +65,8 @@ const ImageBuffer&	TextureSampler::getTextureBuffer() const noexcept {
 
 /**
  * @brief Create texture images (VkImage).
- * Since they all have the same size (16 * 16), we optimize the process by creating
- * a single staging buffer and a single VkImage.
+ * @note Assuming all images have the same size as squares.
+ * @note All textures will be stored in the same VkImage, as layers.
 */
 void	TextureSampler::_createTextureImages(
 	Device& device,
@@ -70,12 +74,13 @@ void	TextureSampler::_createTextureImages(
 	const std::vector<Texture>& images
 ) {
 	// Size of a side
-	const uint32_t	side_size = static_cast<uint32_t>(images[0][0].getWidth());
+	const uint32_t	side_size = static_cast<uint32_t>(images[0].getWidth());
 
 	// Size of a layer (an image). A layer is a face of the cube map.
 	const VkDeviceSize	layer_size = side_size * side_size * sizeof(uint32_t);
+
 	// Size of the VKImage, including all layers
-	const VkDeviceSize	image_size = layer_size * 6 * _texture_count;
+	const VkDeviceSize	image_size = layer_size * _texture_count;
 
 	// Evaluate mip levels count for each image
 	_mip_levels = 1 + static_cast<uint32_t>(
@@ -95,13 +100,11 @@ void	TextureSampler::_createTextureImages(
 	// Copy every face of every image data to staging buffer
 	staging_buffer.map(device.getLogicalDevice());
 	for (uint32_t i = 0; i < _texture_count; ++i) {
-		for (uint32_t j = 0; j < 6; ++j) {
-			staging_buffer.copyFrom(
-				images[i][j].getPixels(),
-				static_cast<std::size_t>(layer_size),
-				static_cast<std::size_t>(layer_size) * (i + j)
-			);
-		}
+		staging_buffer.copyFrom(
+			images[i].getPixels(),
+			static_cast<std::size_t>(layer_size),
+			static_cast<std::size_t>(layer_size) * i
+		);
 	}
 	staging_buffer.unmap(device.getLogicalDevice());
 
@@ -116,8 +119,8 @@ void	TextureSampler::_createTextureImages(
 		VK_IMAGE_USAGE_SAMPLED_BIT,			// For shader access
 		VK_SAMPLE_COUNT_1_BIT,
 		_mip_levels,
-		6 * _texture_count,
-		VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT,
+		_texture_count,
+		0,
 		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
 	);
 
@@ -131,9 +134,9 @@ void	TextureSampler::_createTextureImages(
 	VkImageSubresourceRange	transfer_barrier{};
 	transfer_barrier.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 	transfer_barrier.baseMipLevel = 0;
-	transfer_barrier.levelCount = _mip_levels;
 	transfer_barrier.baseArrayLayer = 0;
-	transfer_barrier.layerCount = 6 * _texture_count;
+	transfer_barrier.levelCount = _mip_levels;
+	transfer_barrier.layerCount = _texture_count;
 
 	_texture_buffer.setLayout(
 		command_buffer,
@@ -153,7 +156,7 @@ void	TextureSampler::_createTextureImages(
 		side_size,
 		side_size,
 		_texture_count,
-		6,
+		_layer_count,
 		static_cast<uint32_t>(layer_size)
 	);
 
@@ -165,7 +168,7 @@ void	TextureSampler::_createTextureImages(
 		side_size,
 		VK_FORMAT_R8G8B8A8_SRGB,
 		_mip_levels,
-		6
+		_layer_count * _texture_count
 	);
 
 	// Submit and wait for transfer to be done before destroying buffer
@@ -173,8 +176,7 @@ void	TextureSampler::_createTextureImages(
 		device.getLogicalDevice(),
 		device.getGraphicsQueue(),
 		command_pool,
-		command_buffer,
-		true
+		command_buffer
 	);
 
 	staging_buffer.destroy(device.getLogicalDevice());
@@ -190,9 +192,9 @@ void	TextureSampler::_createTextureImageView(
 		device,
 		VK_FORMAT_R8G8B8A8_SRGB,
 		VK_IMAGE_ASPECT_COLOR_BIT,
-		VK_IMAGE_VIEW_TYPE_CUBE_ARRAY,
+		VK_IMAGE_VIEW_TYPE_2D_ARRAY,
 		_mip_levels,
-		6 * _texture_count
+		_layer_count * _texture_count
 	);
 }
 
@@ -202,8 +204,8 @@ void	TextureSampler::_createTextureImageView(
 void	TextureSampler::_createTextureSampler(
 	Device& device
 ) {
-	VkPhysicalDeviceProperties	properties{};
-	vkGetPhysicalDeviceProperties(device.getPhysicalDevice(), &properties);
+	// VkPhysicalDeviceProperties	properties{};
+	// vkGetPhysicalDeviceProperties(device.getPhysicalDevice(), &properties);
 
 	VkSamplerCreateInfo	sampler_info{};
 	sampler_info.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
@@ -212,8 +214,8 @@ void	TextureSampler::_createTextureSampler(
 	sampler_info.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
 	sampler_info.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
 	sampler_info.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-	sampler_info.anisotropyEnable = VK_TRUE;
-	sampler_info.maxAnisotropy = properties.limits.maxSamplerAnisotropy;
+	sampler_info.anisotropyEnable = VK_FALSE;//VK_TRUE;
+	sampler_info.maxAnisotropy = 0.0;// properties.limits.maxSamplerAnisotropy;
 	sampler_info.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK;
 	sampler_info.unnormalizedCoordinates = VK_FALSE;
 	sampler_info.compareEnable = VK_FALSE;

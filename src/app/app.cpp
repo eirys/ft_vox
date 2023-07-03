@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/28 11:12:12 by eli               #+#    #+#             */
-/*   Updated: 2023/07/03 17:48:26 by etran            ###   ########.fr       */
+/*   Updated: 2023/07/03 19:39:08 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -197,9 +197,9 @@ void	App::loadTerrain() {
 	// TEMPORARY ===
 	LOG("Loading textures...");
 	const std::vector<std::string>	paths {
-		SCOP_TEXTURE_PATH "top.ppm",
-		SCOP_TEXTURE_PATH "side.ppm",
-		// SCOP_TEXTURE_PATH "dirt.ppm"
+		SCOP_TEXTURE_PATH "grass_top.ppm",
+		SCOP_TEXTURE_PATH "grass_side.ppm",
+		SCOP_TEXTURE_PATH "dirt.ppm"
 	};
 
 	if (paths.size() > TEXTURE_SAMPLER_COUNT) {
@@ -207,34 +207,25 @@ void	App::loadTerrain() {
 	}
 
 	std::optional<std::size_t> width, height;
-	std::vector<scop::Image>	texture_elements(paths.size());
+	textures.reserve(paths.size());
 	for (std::size_t i = 0; i < paths.size(); ++i) {
+		// Load texture
 		scop::PpmLoader	loader(paths[i]);
-		texture_elements[i] = loader.load();
+		textures.emplace_back(loader.load());
+
+		// Check dimensions
 		if (!width.has_value()) {
-			width.emplace(texture_elements[i].getWidth());
-			height.emplace(texture_elements[i].getHeight());
+			width.emplace(textures[i].getWidth());
+			height.emplace(textures[i].getHeight());
 		} else {
 			if (
-				width.value() != texture_elements[i].getWidth() ||
-				height.value() != texture_elements[i].getHeight()
+				width.value() != textures[i].getWidth() ||
+				height.value() != textures[i].getHeight()
 			) {
 				throw std::invalid_argument("Texture dimensions do not match");
 			}
 		}
 	}
-
-	Texture	grass_cube_map {
-		texture_elements[1],
-		texture_elements[1],
-		texture_elements[1],
-		std::move(texture_elements[1]),
-		texture_elements[0],
-		std::move(texture_elements[0])
-	};
-
-	textures.reserve(1);
-	textures.emplace_back(std::move(grass_cube_map));
 	LOG("Textures loaded.");
 }
 

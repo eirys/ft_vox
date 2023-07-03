@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/16 01:00:19 by etran             #+#    #+#             */
-/*   Updated: 2023/07/03 11:48:27 by etran            ###   ########.fr       */
+/*   Updated: 2023/07/03 20:36:11 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -200,7 +200,7 @@ void	Device::_createLogicalDevice() {
 	// Enable device features: anisotropic filtering and cube map array
 	VkPhysicalDeviceFeatures	device_features{};
 	device_features.samplerAnisotropy = VK_TRUE;
-	device_features.imageCubeArray = VK_TRUE;
+	// device_features.imageCubeArray = VK_TRUE;
 
 	VkDeviceCreateInfo			create_info{};
 	create_info.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
@@ -318,8 +318,7 @@ bool	Device::_isDeviceSuitable(VkPhysicalDevice device) {
 		indices.isComplete() &&
 		extensions_supported &&
 		swap_chain_adequate &&
-		supported_features.samplerAnisotropy &&
-		supported_features.imageCubeArray
+		supported_features.samplerAnisotropy
 	);
 }
 

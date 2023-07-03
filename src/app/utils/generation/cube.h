@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:19:11 by etran             #+#    #+#             */
-/*   Updated: 2023/07/03 11:57:47 by etran            ###   ########.fr       */
+/*   Updated: 2023/07/03 22:57:19 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,17 +30,17 @@ enum MaterialType {
 };
 
 enum FaceType {
-	FACE_LEFT = 0,
-	FACE_RIGHT = 1,
-	FACE_FRONT = 2,
-	FACE_BACK = 3,
-	FACE_TOP = 4,
-	FACE_BOTTOM = 5
+	FACE_LEFT,
+	FACE_RIGHT,
+	FACE_FRONT,
+	FACE_BACK,
+	FACE_TOP,
+	FACE_BOTTOM
 };
 
 /**
  * @brief Cube handler. Generates a cube from a position.
- * 
+ *
  * @note Its position is represented by the bottom left corner of its lower face.
  *
  *   h_____g    Frame of reference:
@@ -65,7 +65,7 @@ struct Cube {
 		scop::Vect3	normal() const noexcept;
 
 	};
-	
+
 	/* ========================================================================= */
 	/*                               CONST MEMBERS                               */
 	/* ========================================================================= */
