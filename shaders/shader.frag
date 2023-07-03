@@ -1,32 +1,31 @@
 #version 450
 
-layout(location = 0) in vec3 frag_position;
-layout(location = 1) in vec3 frag_normal;
-layout(location = 2) in vec2 frag_uv;
-flat layout(location = 3) in int frag_texture_id;
+layout(location = 0) in vec3 vert_normal;
+layout(location = 1) in vec2 vert_uv;
+layout(location = 2) in float vert_texture_id;
 
-layout(location = 0) out vec4 frag_color;
+layout(location = 0) out vec4 out_color;
 
 layout(binding = 1) uniform sampler2DArray tex_sampler;
-layout(binding = 2) uniform Light {
+layout(binding = 2) uniform LightUbo {
 	vec3 ambient_color;
 	vec3 light_vector;
-	vec3 spot_color;
-	float intensity;
-} light_ubo;
+	vec3 light_color;
+	float light_intensity;
+} light;
 
 void main() {
 	// Retrieve the color from the texture using 2D uv and texture id
-	vec4 color = texture(tex_sampler, vec3(frag_uv, frag_texture_id));
+	vec4 color = texture(tex_sampler, vec3(vert_uv, vert_texture_id));
 
 	// Apply ambient lighting
- 	frag_color = color * vec4(light_ubo.ambient_color, 1.0);
+ 	out_color = color * vec4(light.ambient_color, 1.0);
 
 	// Apply directional lighting
 	float directional_lighting = max(
-		dot(frag_normal, light_ubo.light_vector),
+		dot(vert_normal, light.light_vector),
 		0.0
-	) * light_ubo.intensity;
+	) * light.intensity;
 
-	frag_color += color * directional_lighting;
+	out_color += color * directional_lighting;
 }
