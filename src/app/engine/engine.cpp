@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/02 16:09:44 by etran             #+#    #+#             */
-/*   Updated: 2023/07/03 11:42:53 by etran            ###   ########.fr       */
+/*   Updated: 2023/07/03 17:43:12 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,7 +31,7 @@ const std::vector<const char*>	Engine::validation_layers = {
 
 void	Engine::init(
 	scop::Window& window,
-	const std::vector<TextureSampler::CubeMap>& images,
+	const std::vector<TextureSampler::Texture>& images,
 	const UniformBufferObject::Light& light,
 	const std::vector<Vertex>& vertices,
 	const std::vector<uint32_t>& indices

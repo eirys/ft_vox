@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:14:35 by etran             #+#    #+#             */
-/*   Updated: 2023/07/03 11:43:14 by etran            ###   ########.fr       */
+/*   Updated: 2023/07/03 17:43:06 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -69,7 +69,7 @@ public:
 
 	void							init(
 		scop::Window& window,
-		const std::vector<TextureSampler::CubeMap>& images,
+		const std::vector<TextureSampler::Texture>& images,
 		const UniformBufferObject::Light& light,
 		const std::vector<Vertex>& vertices,
 		const std::vector<uint32_t>& indices

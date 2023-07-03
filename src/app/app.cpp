@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/28 11:12:12 by eli               #+#    #+#             */
-/*   Updated: 2023/07/03 16:29:53 by etran            ###   ########.fr       */
+/*   Updated: 2023/07/03 17:48:26 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -224,7 +224,7 @@ void	App::loadTerrain() {
 		}
 	}
 
-	CubeMap	grass_cube_map {
+	Texture	grass_cube_map {
 		texture_elements[1],
 		texture_elements[1],
 		texture_elements[1],

@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:17:06 by etran             #+#    #+#             */
-/*   Updated: 2023/07/03 11:51:41 by etran            ###   ########.fr       */
+/*   Updated: 2023/07/03 17:46:13 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,7 +58,8 @@ public:
 	/*                                  TYPEDEFS                                 */
 	/* ========================================================================= */
 
-	typedef std::array<scop::Image, 6> CubeMap;
+	// typedef std::array<scop::Image, 6> CubeMap;
+	typedef	graphics::TextureSampler::Texture	Texture;
 
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
@@ -94,7 +95,7 @@ private:
 
 	std::vector<scop::Vertex>	vertices;
 	std::vector<uint32_t>		indices;
-	std::vector<CubeMap>		textures;
+	std::vector<Texture>		textures;
 	UniformBufferObject::Light	light;
 
 	bool						keys_pressed_directions[6] = { false };

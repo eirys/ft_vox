@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/15 20:25:44 by etran             #+#    #+#             */
-/*   Updated: 2023/07/03 17:40:03 by etran            ###   ########.fr       */
+/*   Updated: 2023/07/03 17:42:56 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,7 +32,7 @@ namespace graphics {
 void	TextureSampler::init(
 	Device& device,
 	VkCommandPool command_pool,
-	const std::vector<CubeMap>& images
+	const std::vector<Texture>& images
 ) {
 	_texture_count = static_cast<uint32_t>(images.size());
 	_createTextureImages(device, command_pool, images);
@@ -67,7 +67,7 @@ const ImageBuffer&	TextureSampler::getTextureBuffer() const noexcept {
 void	TextureSampler::_createTextureImages(
 	Device& device,
 	VkCommandPool command_pool,
-	const std::vector<CubeMap>& images
+	const std::vector<Texture>& images
 ) {
 	// Size of a side
 	const uint32_t	side_size = static_cast<uint32_t>(images[0][0].getWidth());
