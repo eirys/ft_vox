@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/16 01:00:19 by etran             #+#    #+#             */
-/*   Updated: 2023/06/29 13:51:15 by etran            ###   ########.fr       */
+/*   Updated: 2023/07/03 11:48:27 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,31 +28,29 @@ namespace graphics {
 /* ========================================================================== */
 
 void	Device::init(scop::Window& window, VkInstance instance) {
-	createSurface(instance, window);
-	pickPhysicalDevice(instance);
-	createLogicalDevice();
+	_createSurface(instance, window);
+	_pickPhysicalDevice(instance);
+	_createLogicalDevice();
 }
 
 void	Device::destroy(VkInstance instance) {
-	vkDestroyDevice(logical_device, nullptr);
-	vkDestroySurfaceKHR(instance, vk_surface, nullptr);
+	vkDestroyDevice(_logical_device, nullptr);
+	vkDestroySurfaceKHR(instance, _vk_surface, nullptr);
 }
 
 void	Device::idle() {
-	vkDeviceWaitIdle(logical_device);
+	vkDeviceWaitIdle(_logical_device);
 }
 
-/* ========================================================================== */
-
 /**
- * Map memory and find one suitable with filter and properties
+ * @brief Map memory and find one suitable with filter and properties.
 */
 uint32_t	Device::findMemoryType(
 	uint32_t type_filter,
 	VkMemoryPropertyFlags properties
 ) const {
 	VkPhysicalDeviceMemoryProperties	mem_properties;
-	vkGetPhysicalDeviceMemoryProperties(physical_device, &mem_properties);
+	vkGetPhysicalDeviceMemoryProperties(_physical_device, &mem_properties);
 
 	for (uint32_t i = 0; i < mem_properties.memoryTypeCount; ++i) {
 		if ((mem_properties.memoryTypes[i].propertyFlags & properties) == properties &&
@@ -64,71 +62,74 @@ uint32_t	Device::findMemoryType(
 }
 
 /**
- * Create image object for vulkan
+ * @brief Retrieve queue families that are appropriate for
+ * the physical device and the app needs.
 */
-void	Device::createImage(
-	uint32_t width,
-	uint32_t height,
-	uint32_t mip_level,
-	uint32_t layers,
-	VkSampleCountFlagBits num_samples,
-	VkFormat format,
-	VkImageTiling tiling,
-	VkImageUsageFlags usage,
-	VkMemoryPropertyFlags properties,
-	VkImageCreateFlags flags,
-	VkImage& image,
-	VkDeviceMemory& image_memory
-) {
-	VkImageCreateInfo	image_info{};
-	image_info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-	image_info.imageType = VK_IMAGE_TYPE_2D;
-	image_info.extent = { width, height, 1 };
-	image_info.mipLevels = mip_level;
-	image_info.arrayLayers = layers;
-	image_info.format = format;
-	image_info.tiling = tiling;
-	image_info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-	image_info.usage = usage;
-	image_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-	image_info.samples = num_samples;
-	image_info.flags = flags;
-
-	if (vkCreateImage(logical_device, &image_info, nullptr, &image) != VK_SUCCESS) {
-		throw std::runtime_error("failed to create image");
-	}
-
-	// Allocate memory for image & bind memory to instance
-	VkMemoryRequirements	mem_requirements;
-	vkGetImageMemoryRequirements(logical_device, image, &mem_requirements);
-
-	VkMemoryAllocateInfo	alloc_info{};
-	alloc_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-	alloc_info.allocationSize = mem_requirements.size;
-	alloc_info.memoryTypeIndex = findMemoryType(
-		mem_requirements.memoryTypeBits,
-		properties
-	);
-
-	if (vkAllocateMemory(logical_device, &alloc_info, nullptr, &image_memory) != VK_SUCCESS) {
-		throw std::runtime_error("failed to allocate image memory");
-	} else if (vkBindImageMemory(logical_device, image, image_memory, 0) != VK_SUCCESS) {
-		throw std::runtime_error("failed to bind image memory");
-	}
+Device::QueueFamilyIndices	Device::findQueueFamilies() {
+	return _findQueueFamilies(_physical_device);
 }
 
 /**
- * @brief Creates a buffer object.
+ * @brief Checks if the physical device is suitable for the app.
 */
-scop::graphics::Buffer	Device::createBuffer(
-	VkDeviceSize size,
-	VkBufferUsageFlags usage,
-	VkMemoryPropertyFlags properties
-) {
-	scop::graphics::Buffer	buffer;
+Device::SwapChainSupportDetails	Device::querySwapChainSupport() {
+	return _querySwapChainSupport(_physical_device);
+}
 
-	buffer.init(*this, size, usage, properties);
-	return buffer;
+/**
+ * @brief Find best suited format for depth image
+*/
+VkFormat	Device::findSupportedFormat(
+	const std::vector<VkFormat>& candidates,
+	VkImageTiling tiling,
+	VkFormatFeatureFlags features
+) {
+	for (VkFormat format: candidates) {
+		// Query format properties for candidate
+		VkFormatProperties	properties;
+		vkGetPhysicalDeviceFormatProperties(
+			_physical_device,
+			format,
+			&properties
+		);
+
+		if ((
+			tiling == VK_IMAGE_TILING_LINEAR
+			&& (properties.linearTilingFeatures & features) == features
+		) || (
+			tiling == VK_IMAGE_TILING_OPTIMAL
+			&& (properties.optimalTilingFeatures & features) == features
+		)) {
+			return format;
+		}
+	}
+	throw std::runtime_error("failed to find supported format");
+}
+
+/* ========================================================================== */
+
+VkSurfaceKHR	Device::getSurface() const noexcept {
+	return _vk_surface;
+}
+
+VkSampleCountFlagBits	Device::getMsaaSamples() const noexcept {
+	return _msaa_samples;
+}
+
+VkDevice	Device::getLogicalDevice() const noexcept {
+	return _logical_device;
+}
+
+VkPhysicalDevice	Device::getPhysicalDevice() const noexcept {
+	return _physical_device;
+}
+
+VkQueue	Device::getGraphicsQueue() const noexcept {
+	return _graphics_queue;
+}
+
+VkQueue	Device::getPresentQueue() const noexcept {
+	return _present_queue;
 }
 
 /* ========================================================================== */
@@ -136,20 +137,20 @@ scop::graphics::Buffer	Device::createBuffer(
 /* ========================================================================== */
 
 /**
- * Establish connection between Vulkan instance and the window system
+ * @brief Establish connection between Vulkan instance and the window system.
 */
-void	Device::createSurface(
+void	Device::_createSurface(
 	VkInstance instance,
 	scop::Window& window
 ) {
-	if (glfwCreateWindowSurface(instance, window.getWindow(), nullptr, &vk_surface) != VK_SUCCESS)
+	if (glfwCreateWindowSurface(instance, window.getWindow(), nullptr, &_vk_surface) != VK_SUCCESS)
 		throw std::runtime_error("failed to create window surface");
 }
 
 /**
  * Pick a physical device (GPU) to use
 */
-void	Device::pickPhysicalDevice(VkInstance instance) {
+void	Device::_pickPhysicalDevice(VkInstance instance) {
 	uint32_t	device_count = 0;
 	vkEnumeratePhysicalDevices(instance, &device_count, nullptr);
 
@@ -160,23 +161,23 @@ void	Device::pickPhysicalDevice(VkInstance instance) {
 	vkEnumeratePhysicalDevices(instance, &device_count, devices.data());
 
 	for (const VkPhysicalDevice& device: devices) {
-		if (isDeviceSuitable(device)) {
-			physical_device = device;
-			msaa_samples = getMaxUsableSampleCount();
+		if (_isDeviceSuitable(device)) {
+			_physical_device = device;
+			_msaa_samples = _getMaxUsableSampleCount();
 			break;
 		}
 	}
 
-	if (physical_device == VK_NULL_HANDLE)
+	if (_physical_device == VK_NULL_HANDLE)
 		throw std::runtime_error("failed to find suitable GPU");
 }
 
 /**
  * Setup logical device, the interface between the app and the physical device (GPU).
 */
-void	Device::createLogicalDevice() {
+void	Device::_createLogicalDevice() {
 	// Indicate that we want to create a single queue, with graphics capabilities
-	QueueFamilyIndices	indices = findQueueFamilies(physical_device, vk_surface);
+	QueueFamilyIndices	indices = findQueueFamilies();
 
 	std::vector<VkDeviceQueueCreateInfo>	queue_create_infos;
 	std::set<uint32_t>						unique_queue_families = {
@@ -218,23 +219,33 @@ void	Device::createLogicalDevice() {
 	}
 
 	// Device extensions enabling, notably for swap chain support
-	create_info.enabledExtensionCount = static_cast<uint32_t>(device_extensions.size());
-	create_info.ppEnabledExtensionNames = device_extensions.data();
+	create_info.enabledExtensionCount = static_cast<uint32_t>(_device_extensions.size());
+	create_info.ppEnabledExtensionNames = _device_extensions.data();
 
-	if (vkCreateDevice(physical_device, &create_info, nullptr, &logical_device) != VK_SUCCESS)
+	if (vkCreateDevice(_physical_device, &create_info, nullptr, &_logical_device) != VK_SUCCESS)
 		throw std::runtime_error("failed to create logical device");
 
 	// Retrieve queue handles
-	vkGetDeviceQueue(logical_device, indices.graphics_family.value(), 0, &graphics_queue);
-	vkGetDeviceQueue(logical_device, indices.present_family.value(), 0, &present_queue);
+	vkGetDeviceQueue(
+		_logical_device,
+		indices.graphics_family.value(),
+		0,
+		&_graphics_queue
+	);
+	vkGetDeviceQueue(
+		_logical_device,
+		indices.present_family.value(),
+		0,
+		&_present_queue
+	);
 }
 
 /**
  * Retrieve max sample count for MSAA (multisample antialiasing)
 */
-VkSampleCountFlagBits	Device::getMaxUsableSampleCount() const {
+VkSampleCountFlagBits	Device::_getMaxUsableSampleCount() const {
 	VkPhysicalDeviceProperties	properties;
-	vkGetPhysicalDeviceProperties(physical_device, &properties);
+	vkGetPhysicalDeviceProperties(_physical_device, &properties);
 
 	VkSampleCountFlags	count =
 		properties.limits.framebufferColorSampleCounts &
@@ -260,7 +271,7 @@ VkSampleCountFlagBits	Device::getMaxUsableSampleCount() const {
 /**
  * Check if all required extensions are available for the physical device
 */
-bool	Device::checkDeviceExtensionSupport(VkPhysicalDevice device) {
+bool	Device::_checkDeviceExtensionSupport(VkPhysicalDevice device) {
 	// Verify that every device_extensions are available
 	uint32_t	extension_count;
 	vkEnumerateDeviceExtensionProperties(device, nullptr, &extension_count, nullptr);
@@ -274,8 +285,8 @@ bool	Device::checkDeviceExtensionSupport(VkPhysicalDevice device) {
 	);
 
 	std::set<std::string>	required_extensions(
-		device_extensions.begin(),
-		device_extensions.end()
+		_device_extensions.begin(),
+		_device_extensions.end()
 	);
 	for (const auto& extension: available_extensions) {
 		required_extensions.erase(extension.extensionName);
@@ -287,16 +298,14 @@ bool	Device::checkDeviceExtensionSupport(VkPhysicalDevice device) {
 /**
  * Verify that the selected physical device is suitable for the app needs
 */
-bool	Device::isDeviceSuitable(VkPhysicalDevice device) {
-	QueueFamilyIndices	indices = findQueueFamilies(device, vk_surface);
-	bool	extensions_supported = checkDeviceExtensionSupport(device);
+bool	Device::_isDeviceSuitable(VkPhysicalDevice device) {
+	QueueFamilyIndices	indices = _findQueueFamilies(device);
+	bool	extensions_supported = _checkDeviceExtensionSupport(device);
 	bool	swap_chain_adequate = false;
 
 	if (extensions_supported) {
-		SwapChainSupportDetails	swap_chain_support = querySwapChainSupport(
-			device,
-			vk_surface
-		);
+		SwapChainSupportDetails	swap_chain_support =
+			_querySwapChainSupport(device);
 		swap_chain_adequate =
 			!swap_chain_support.formats.empty() &&
 			!swap_chain_support.present_modes.empty();
@@ -314,50 +323,72 @@ bool	Device::isDeviceSuitable(VkPhysicalDevice device) {
 	);
 }
 
-/* ========================================================================== */
-/*                                    OTHER                                   */
-/* ========================================================================== */
-
 /**
- * Find best suited format for depth image
+ * @brief Make sure the swap chain support is available for this device.
 */
-VkFormat	findSupportedFormat(
-	VkPhysicalDevice physical_device,
-	const std::vector<VkFormat>& candidates,
-	VkImageTiling tiling,
-	VkFormatFeatureFlags features
+Device::SwapChainSupportDetails	Device::_querySwapChainSupport(
+	VkPhysicalDevice device
 ) {
-	for (VkFormat format: candidates) {
-		// Query format properties for candidate
-		VkFormatProperties	properties;
-		vkGetPhysicalDeviceFormatProperties(physical_device, format, &properties);
+	SwapChainSupportDetails	details;
 
-		if ((
-			tiling == VK_IMAGE_TILING_LINEAR
-			&& (properties.linearTilingFeatures & features) == features
-		) || (
-			tiling == VK_IMAGE_TILING_OPTIMAL
-			&& (properties.optimalTilingFeatures & features) == features
-		)) {
-			return format;
-		}
+	// Query supported surface formats
+	vkGetPhysicalDeviceSurfaceCapabilitiesKHR(
+		device,
+		_vk_surface,
+		&details.capabilities
+	);
+	uint32_t	format_count;
+	vkGetPhysicalDeviceSurfaceFormatsKHR(
+		device,
+		_vk_surface,
+		&format_count, nullptr
+	);
+	if (format_count != 0) {
+		details.formats.resize(format_count);
+		vkGetPhysicalDeviceSurfaceFormatsKHR(
+			device,
+			_vk_surface,
+			&format_count, details.formats.data()
+		);
 	}
-	throw std::runtime_error("failed to find supported format");
+
+	// Query supported presentation modes
+	uint32_t	present_mode_count;
+	vkGetPhysicalDeviceSurfacePresentModesKHR(
+		device,
+		_vk_surface,
+		&present_mode_count, nullptr
+	);
+	if (present_mode_count != 0) {
+		details.present_modes.resize(present_mode_count);
+		vkGetPhysicalDeviceSurfacePresentModesKHR(
+			device, _vk_surface,
+			&present_mode_count,
+			details.present_modes.data()
+		);
+	}
+
+	return details;
 }
 
 /**
- * Retrieve queue families that are appropriate for the physical device and the app needs.
+ * @brief Retrieve queue families that are appropriate for
+ * the selected physical device and the app needs.
 */
-QueueFamilyIndices	findQueueFamilies(
-	VkPhysicalDevice device,
-	VkSurfaceKHR vk_surface
+Device::QueueFamilyIndices	Device::_findQueueFamilies(
+	VkPhysicalDevice device
 ) {
 	QueueFamilyIndices	indices;
 	uint32_t			queue_family_count = 0;
-	vkGetPhysicalDeviceQueueFamilyProperties(device, &queue_family_count, nullptr);
-
+	vkGetPhysicalDeviceQueueFamilyProperties(
+		device,
+		&queue_family_count, nullptr
+	);
 	std::vector<VkQueueFamilyProperties>	queue_families(queue_family_count);
-	vkGetPhysicalDeviceQueueFamilyProperties(device, &queue_family_count, queue_families.data());
+	vkGetPhysicalDeviceQueueFamilyProperties(
+		device,
+		&queue_family_count, queue_families.data()
+	);
 
 	int	i = 0;
 	for (const auto& queue_family: queue_families) {
@@ -367,10 +398,14 @@ QueueFamilyIndices	findQueueFamilies(
 
 		// Looking for queue family that supports presenting
 		VkBool32	present_support = false;
-		vkGetPhysicalDeviceSurfaceSupportKHR(device, i, vk_surface, &present_support);
+		vkGetPhysicalDeviceSurfaceSupportKHR(
+			device,
+			i,
+			_vk_surface,
+			&present_support
+		);
 		if (present_support)
 			indices.present_family = i;
-
 		if (indices.isComplete())
 			break;
 		++i;

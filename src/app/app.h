@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:17:06 by etran             #+#    #+#             */
-/*   Updated: 2023/06/29 14:50:56 by etran            ###   ########.fr       */
+/*   Updated: 2023/07/03 11:51:41 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -69,6 +69,7 @@ public:
 
 	App(const App& x) = delete;
 	App(App&& x) = delete;
+	App& operator=(App&& rhs) = delete;
 	App& operator=(const App& rhs) = delete;
 
 	/* MAIN FUNCTION =========================================================== */

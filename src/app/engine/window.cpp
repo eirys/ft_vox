@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/06 12:28:42 by eli               #+#    #+#             */
-/*   Updated: 2023/06/07 20:24:35 by etran            ###   ########.fr       */
+/*   Updated: 2023/07/03 10:14:24 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,7 @@ namespace scop {
 /* ========================================================================== */
 
 /**
- * Function callback for window resize
+ * @brief Function callback for window resize.
 */
 static void	framebufferResizeCallback(
 	GLFWwindow* window,
@@ -37,7 +37,7 @@ static void	framebufferResizeCallback(
 }
 
 /**
- * Function callback for key press
+ * @brief Function callback for key press.
 */
 static void	keyCallback(
 	GLFWwindow* window,
@@ -87,6 +87,9 @@ static void	keyCallback(
 	}
 }
 
+/**
+ * @brief Function callback for cursor position.
+*/
 static void cursorPositionCallback(
 	GLFWwindow* window,
 	double xpos,
@@ -117,9 +120,9 @@ Window::Window() {
 }
 
 Window::~Window() {
-	if (window != nullptr) {
-		// Remove window instance
-		glfwDestroyWindow(window);
+	if (_window != nullptr) {
+		// Remove _window instance
+		glfwDestroyWindow(_window);
 	}
 	// Remove glfw instance
 	glfwTerminate();
@@ -131,10 +134,10 @@ Window::~Window() {
  * @brief Initiate the window handle.
 */
 void	Window::init(App* app_ptr) {
-	app = app_ptr;
+	_app = app_ptr;
 
 	// create a window pointer
-	window = glfwCreateWindow(
+	_window = glfwCreateWindow(
 		width,
 		height,
 		title,
@@ -144,15 +147,15 @@ void	Window::init(App* app_ptr) {
 
 	// set pointer to window to `this` instance pointer
 	// so we can access it from the callback functions
-	glfwSetWindowUserPointer(window, this);
+	glfwSetWindowUserPointer(_window, this);
 
 	// Setup event callbacks
-	glfwSetFramebufferSizeCallback(window, framebufferResizeCallback);
-	glfwSetKeyCallback(window, keyCallback);
-	glfwSetCursorPosCallback(window, cursorPositionCallback);
+	glfwSetFramebufferSizeCallback(_window, framebufferResizeCallback);
+	glfwSetKeyCallback(_window, keyCallback);
+	glfwSetCursorPosCallback(_window, cursorPositionCallback);
 
 	// Disable cursor
-	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	glfwSetInputMode(_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 }
 
 /**
@@ -186,40 +189,40 @@ void	Window::await() const {
  * @brief Returns whether the window is still alive.
 */
 bool	Window::alive() const {
-	return !glfwWindowShouldClose(window);
+	return !glfwWindowShouldClose(_window);
 }
 
 /**
  * @brief Returns whether the window was resized.
 */
 bool	Window::resized() const noexcept {
-	return frame_buffer_resized;
+	return _frame_buffer_resized;
+}
+
+void	Window::toggleFrameBufferResized(bool is_resized) noexcept {
+	_frame_buffer_resized = is_resized;
 }
 
 /* ========================================================================== */
 
 void	Window::retrieveSize(int& width, int& height) const {
-	glfwGetFramebufferSize(window, &width, &height);
+	glfwGetFramebufferSize(_window, &width, &height);
 }
 
 GLFWwindow*	Window::getWindow() noexcept {
-	return window;
+	return _window;
 }
 
 GLFWwindow const*	Window::getWindow() const noexcept {
-	return window;
+	return _window;
 }
 
 App*	Window::getApp() noexcept {
-	return app;
+	return _app;
 }
 
 App const*	Window::getApp() const noexcept {
-	return app;
-}
-
-void	Window::toggleFrameBufferResized(bool is_resized) noexcept {
-	frame_buffer_resized = is_resized;
+	return _app;
 }
 
 } // namespace scop

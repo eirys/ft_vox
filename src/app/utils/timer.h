@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/07 21:13:23 by etran             #+#    #+#             */
-/*   Updated: 2023/06/08 20:32:48 by etran            ###   ########.fr       */
+/*   Updated: 2023/07/03 11:52:11 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,6 +35,11 @@ public:
 
 	Timer() = default;
 	~Timer() = default;
+
+	Timer(Timer&& other) = delete;
+	Timer(const Timer& other) = delete;
+	Timer&	operator=(Timer&& other) = delete;
+	Timer&	operator=(const Timer& other) = delete;
 
 	/* ========================================================================= */
 

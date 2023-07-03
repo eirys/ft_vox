@@ -6,23 +6,15 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/16 15:07:01 by etran             #+#    #+#             */
-/*   Updated: 2023/06/04 16:52:39 by etran            ###   ########.fr       */
+/*   Updated: 2023/07/03 08:43:55 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "debug_module.h"
+#include "engine.h"
 
 #include <stdexcept> // std::runtime_error
 #include <iostream> // std::cerr
-
-#include "window.h"
-#include "engine.h"
-#include "device.h"
-#include "render_target.h"
-#include "texture_sampler.h"
-#include "descriptor_set.h"
-#include "command_buffer.h"
-#include "vertex_input.h"
 
 namespace scop {
 namespace graphics {

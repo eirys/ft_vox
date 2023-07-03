@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:17:39 by etran             #+#    #+#             */
-/*   Updated: 2023/06/08 23:19:43 by etran            ###   ########.fr       */
+/*   Updated: 2023/07/03 11:57:05 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,8 +39,9 @@ public:
 	);
 
 	Image() = default;
-	Image(const Image& x) = default;
 	Image(Image&& x) = default;
+	Image(const Image& x) = default;
+	Image&	operator=(Image&& x) = default;
 	Image&	operator=(const Image& x) = default;
 	~Image() = default;
 

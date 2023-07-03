@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   command_buffer.h                                   :+:      :+:    :+:   */
+/*   render_pass.h                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/06/04 17:14:01 by etran             #+#    #+#             */
-/*   Updated: 2023/07/02 22:31:43 by etran            ###   ########.fr       */
+/*   Created: 2023/06/04 17:14:50 by etran             #+#    #+#             */
+/*   Updated: 2023/07/03 10:15:16 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,51 +21,40 @@
 
 namespace scop {
 namespace graphics {
-class Engine;
 class Device;
+class SwapChain;
 
-class CommandBuffer {
+class RenderPass {
 public:
-
-	friend Engine;
-
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
 
-	CommandBuffer() = default;
-	~CommandBuffer() = default;
+	RenderPass() = default;
+	~RenderPass() = default;
 
-	CommandBuffer(CommandBuffer&& other) = delete;
-	CommandBuffer(const CommandBuffer& other) = delete;
-	CommandBuffer& operator=(CommandBuffer&& other) = delete;
-	CommandBuffer& operator=(const CommandBuffer& other) = delete;
+	RenderPass(RenderPass&& other) = delete;
+	RenderPass(const RenderPass& other) = delete;
+	RenderPass& operator=(RenderPass&& other) = delete;
+	RenderPass& operator=(const RenderPass& other) = delete;
 
 	/* ========================================================================= */
 
-	void				initPool(Device& device);
-	void				initBuffer(Device& device);
-	void				destroy(Device& device);
+	void			init(Device& device, SwapChain& swap_chain);
+	void			destroy(Device& device);
 
-	void				reset();
-	// void							record();
+	/* ========================================================================= */
+
+	VkRenderPass	getRenderPass() const noexcept;
 
 private:
 	/* ========================================================================= */
 	/*                               CLASS MEMBERS                               */
 	/* ========================================================================= */
 
-	VkCommandPool		vk_command_pool;
-	VkCommandBuffer		command_buffers;
-	
-	/* ========================================================================= */
-	/*                                  METHODS                                  */
-	/* ========================================================================= */
+	VkRenderPass	_render_pass;
 
-	void				createCommandPool(Device& device);
-	void				createCommandBuffers(Device& device);
-
-}; // class CommandBuffer
+}; // class RenderPass
 
 } // namespace graphics
 } // namespace scop

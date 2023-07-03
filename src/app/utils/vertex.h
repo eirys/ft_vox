@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:17:01 by etran             #+#    #+#             */
-/*   Updated: 2023/06/09 02:17:53 by etran            ###   ########.fr       */
+/*   Updated: 2023/07/03 11:52:45 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,8 +37,9 @@ struct Vertex {
 	/* ========================================================================= */
 
 	Vertex() = default;
-	Vertex(const Vertex&) = default;
 	Vertex(Vertex&&) = default;
+	Vertex(const Vertex&) = default;
+	Vertex&	operator=(Vertex&&) = default;
 	Vertex&	operator=(const Vertex&) = default;
 	~Vertex() = default;
 

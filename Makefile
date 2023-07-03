@@ -6,7 +6,7 @@
 #    By: etran <etran@student.42.fr>                +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/04/06 03:40:09 by eli               #+#    #+#              #
-#    Updated: 2023/06/30 20:42:58 by etran            ###   ########.fr        #
+#    Updated: 2023/07/03 09:50:04 by etran            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -69,12 +69,12 @@ INC_FILES	:=	$(TOOLS_DIR)/utils.h \
 				$(ENG_DIR)/window.h \
 				$(ENG_DIR)/debug_module.h \
 				$(ENG_DIR)/device.h \
-				$(ENG_DIR)/render_target.h \
-				$(ENG_DIR)/render_target_resources.h \
+				$(ENG_DIR)/swap_chain.h \
+				$(ENG_DIR)/render_pass.h \
 				$(ENG_DIR)/descriptor_set.h \
 				$(ENG_DIR)/command_buffer.h \
 				$(ENG_DIR)/texture_sampler.h \
-				$(ENG_DIR)/vertex_input.h \
+				$(ENG_DIR)/input_buffer.h \
 				$(ENG_DIR)/engine.h \
 				$(ENG_DIR)/buffer.h \
 				$(ENG_DIR)/image_buffer.h \
@@ -95,12 +95,12 @@ SRC_FILES	:=	$(TOOLS_DIR)/matrix.cpp \
 				$(ENG_DIR)/window.cpp \
 				$(ENG_DIR)/debug_module.cpp \
 				$(ENG_DIR)/device.cpp \
-				$(ENG_DIR)/render_target.cpp \
-				$(ENG_DIR)/render_target_resources.cpp \
+				$(ENG_DIR)/swap_chain.cpp \
+				$(ENG_DIR)/render_pass.cpp \
 				$(ENG_DIR)/descriptor_set.cpp \
 				$(ENG_DIR)/command_buffer.cpp \
 				$(ENG_DIR)/texture_sampler.cpp \
-				$(ENG_DIR)/vertex_input.cpp \
+				$(ENG_DIR)/input_buffer.cpp \
 				$(ENG_DIR)/engine.cpp \
 				$(ENG_DIR)/buffer.cpp \
 				$(ENG_DIR)/image_buffer.cpp \

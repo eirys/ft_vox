@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:13:52 by etran             #+#    #+#             */
-/*   Updated: 2023/06/09 02:16:59 by etran            ###   ########.fr       */
+/*   Updated: 2023/07/03 12:01:24 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -90,6 +90,7 @@ public:
 
 	PerlinNoise() = delete;
 	PerlinNoise(const PerlinNoise& other) = delete;
+	PerlinNoise& operator=(PerlinNoise&& other) = delete;
 	PerlinNoise& operator=(const PerlinNoise& other) = delete;
 
 	/* ========================================================================= */

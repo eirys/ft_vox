@@ -45,6 +45,7 @@ public:
 	~ObjParser() = default;
 
 	ObjParser(const ObjParser& x) = delete;
+	ObjParser&	operator=(ObjParser&& x) = delete;
 	ObjParser&	operator=(const ObjParser& x) = delete;
 
 	/* ========================================================================= */

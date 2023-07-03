@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/05 09:55:33 by etran             #+#    #+#             */
-/*   Updated: 2023/06/29 15:56:31 by etran            ###   ########.fr       */
+/*   Updated: 2023/07/03 11:59:10 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,9 +53,10 @@ public:
 
 	virtual ~Character() = default;
 
-	Character(Character&& other) = delete;
 	Character() = delete;
+	Character(Character&& other) = delete;
 	Character(const Character& other) = delete;
+	Character& operator=(Character&& rhs) = delete;
 	Character& operator=(const Character& rhs) = delete;
 
 	/* ========================================================================= */

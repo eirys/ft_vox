@@ -6,14 +6,13 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/15 20:56:05 by etran             #+#    #+#             */
-/*   Updated: 2023/06/30 17:56:23 by etran            ###   ########.fr       */
+/*   Updated: 2023/07/03 11:55:32 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "descriptor_set.h"
 #include "uniform_buffer_object.h"
 #include "engine.h"
-// #include "image_buffer.h"
 
 #include <array> // std::array
 #include <stdexcept> // std::runtime_error
@@ -54,13 +53,13 @@ void	DescriptorSet::destroy(
 	Device& device
 ) {
 	// Remove uniform buffers
-	uniform_buffers.unmap(device.logical_device);
-	uniform_buffers.destroy(device.logical_device);
+	uniform_buffers.unmap(device.getLogicalDevice());
+	uniform_buffers.destroy(device.getLogicalDevice());
 
 	// Remove descriptor pool
-	vkDestroyDescriptorPool(device.logical_device, vk_descriptor_pool, nullptr);
+	vkDestroyDescriptorPool(device.getLogicalDevice(), vk_descriptor_pool, nullptr);
 	vkDestroyDescriptorSetLayout(
-		device.logical_device,
+		device.getLogicalDevice(),
 		vk_descriptor_set_layout,
 		nullptr
 	);
@@ -118,7 +117,7 @@ void	DescriptorSet::createDescriptorSetLayout(
 	layout_info.bindingCount = static_cast<uint32_t>(bindings.size());
 	layout_info.pBindings = bindings.data();
 
-	if (vkCreateDescriptorSetLayout(device.logical_device, &layout_info, nullptr, &vk_descriptor_set_layout) != VK_SUCCESS) {
+	if (vkCreateDescriptorSetLayout(device.getLogicalDevice(), &layout_info, nullptr, &vk_descriptor_set_layout) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create descriptor set layout");
 	}
 }
@@ -141,7 +140,7 @@ void	DescriptorSet::createDescriptorPool(Device& device, uint32_t frames_in_flig
 	pool_info.pPoolSizes = pool_sizes.data();
 	pool_info.maxSets = frames_in_flight;
 
-	if (vkCreateDescriptorPool(device.logical_device, &pool_info, nullptr, &vk_descriptor_pool) != VK_SUCCESS) {
+	if (vkCreateDescriptorPool(device.getLogicalDevice(), &pool_info, nullptr, &vk_descriptor_pool) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create descriptor pool");
 	}
 }
@@ -157,7 +156,7 @@ void	DescriptorSet::createDescriptorSets(
 	alloc_info.descriptorSetCount = frames_in_flight;
 	alloc_info.pSetLayouts = &vk_descriptor_set_layout;
 
-	if (vkAllocateDescriptorSets(device.logical_device, &alloc_info, &vk_descriptor_sets) != VK_SUCCESS) {
+	if (vkAllocateDescriptorSets(device.getLogicalDevice(), &alloc_info, &vk_descriptor_sets) != VK_SUCCESS) {
 		throw std::runtime_error("failed to allocate descriptor sets");
 	}
 
@@ -215,7 +214,7 @@ void	DescriptorSet::createDescriptorSets(
 	descriptor_writes[2].pTexelBufferView = nullptr;
 
 	vkUpdateDescriptorSets(
-		device.logical_device,
+		device.getLogicalDevice(),
 		static_cast<uint32_t>(descriptor_writes.size()),
 		descriptor_writes.data(),
 		0, nullptr
@@ -227,7 +226,8 @@ void	DescriptorSet::createUniformBuffers(Device& device) {
 	VkDeviceSize	buffer_size = sizeof(UniformBufferObject);
 
 	// Create the buffer and allocate memory
-	uniform_buffers = device.createBuffer(
+	uniform_buffers.init(
+		device,
 		buffer_size,
 		VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
 		VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
@@ -235,7 +235,7 @@ void	DescriptorSet::createUniformBuffers(Device& device) {
 	);
 
 	// Map it to allow CPU to write on it
-	uniform_buffers.map(device.logical_device, buffer_size);
+	uniform_buffers.map(device.getLogicalDevice(), buffer_size);
 }
 
 /**

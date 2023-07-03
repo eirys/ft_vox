@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:19:11 by etran             #+#    #+#             */
-/*   Updated: 2023/06/30 16:34:21 by etran            ###   ########.fr       */
+/*   Updated: 2023/07/03 11:57:47 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -77,10 +77,10 @@ struct Cube {
 	/* ========================================================================= */
 
 	Cube() = default;
-	Cube(const Cube&) = default;
 	Cube(Cube&&) = default;
-	Cube& operator=(const Cube&) = default;
+	Cube(const Cube&) = default;
 	Cube& operator=(Cube&&) = default;
+	Cube& operator=(const Cube&) = default;
 	~Cube() = default;
 
 	/* VERTICES ================================================================ */

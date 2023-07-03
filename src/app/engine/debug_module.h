@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:14:08 by etran             #+#    #+#             */
-/*   Updated: 2023/06/04 17:14:09 by etran            ###   ########.fr       */
+/*   Updated: 2023/07/03 11:49:39 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,22 +21,18 @@
 namespace scop {
 namespace graphics {
 
-class Engine;
-
 class DebugModule {
 public:
-
-	friend Engine;
-
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
 
 	DebugModule() = default;
-	DebugModule(DebugModule&& other) = default;
 	~DebugModule() = default;
 
+	DebugModule(DebugModule&& other) = delete;
 	DebugModule(const DebugModule& other) = delete;
+	DebugModule& operator=(DebugModule&& other) = delete;
 	DebugModule& operator=(const DebugModule& other) = delete;
 
 	/* ========================================================================= */

@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:15:29 by etran             #+#    #+#             */
-/*   Updated: 2023/06/19 09:11:09 by etran            ###   ########.fr       */
+/*   Updated: 2023/07/03 11:53:17 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,7 @@ namespace mtl {
 enum IlluminationModel {
 	ILLUM_NONE = 0,
 	ILLUM_LAMBERTIAN = 1,
-	ILLUM_LAMBERT_PHONG = 2,
+	ILLUM_BLINN_PHONG = 2,
 	// ILLUM_OREN_NAYAR = 3,
 	// ILLUM_MINNAERT = 4,
 };

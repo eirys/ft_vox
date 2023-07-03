@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/04 15:06:05 by etran             #+#    #+#             */
-/*   Updated: 2023/06/04 16:52:39 by etran            ###   ########.fr       */
+/*   Updated: 2023/07/03 11:53:08 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -368,7 +368,7 @@ void	ObjParser::checkMtl() {
 		} else if (
 			!model_output.getMaterial().shininess &&
 			!model_output.getMaterial().specular_color &&
-			model_output.getMaterial().illum == scop::mtl::IlluminationModel::ILLUM_LAMBERT_PHONG
+			model_output.getMaterial().illum == scop::mtl::IlluminationModel::ILLUM_BLINN_PHONG
 		) {
 			throw std::invalid_argument("Specular component is incomplete");
 		}

@@ -86,9 +86,9 @@ public:
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
 
-	Model(Model&& x);
-
 	Model() = default;
+	Model(Model&& x) = default;
+	Model&	operator=(Model&& x) = default;
 	~Model() = default;
 
 	Model(const Model& x) = delete;

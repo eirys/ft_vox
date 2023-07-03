@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/29 09:57:49 by etran             #+#    #+#             */
-/*   Updated: 2023/06/30 22:14:40 by etran            ###   ########.fr       */
+/*   Updated: 2023/07/03 11:06:47 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,17 +55,18 @@ void ImageBuffer::initImage(
 	image_info.samples = sample_count;
 	image_info.flags = flags;
 
-	if (vkCreateImage(device.logical_device, &image_info, nullptr, &_image) != VK_SUCCESS) {
+	if (vkCreateImage(device.getLogicalDevice(), &image_info, nullptr, &_image) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create image");
 	}
 
 	// Look for memory requirements for allcoation
 	VkMemoryRequirements	mem_requirements;
 	vkGetImageMemoryRequirements(
-		device.logical_device,
+		device.getLogicalDevice(),
 		_image,
 		&mem_requirements
 	);
+
 	// Verify if memory type is compatible with properties
 	VkMemoryAllocateInfo	alloc_info{};
 	alloc_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
@@ -75,12 +76,11 @@ void ImageBuffer::initImage(
 		properties
 	);
 
-	if (vkAllocateMemory(device.logical_device, &alloc_info, nullptr, &_memory) != VK_SUCCESS) {
+	if (vkAllocateMemory(device.getLogicalDevice(), &alloc_info, nullptr, &_memory) != VK_SUCCESS) {
 		throw std::runtime_error("failed to allocate image memory");
+	} else if (vkBindImageMemory(device.getLogicalDevice(), _image, _memory, 0) != VK_SUCCESS) {
+		throw std::runtime_error("failed to bind image memory");
 	}
-
-	// Bind memory to instance
-	vkBindImageMemory(device.logical_device, _image, _memory, 0);
 }
 
 /**
@@ -105,15 +105,15 @@ void	ImageBuffer::initView(
 	view_info.subresourceRange.baseArrayLayer = 0;
 	view_info.subresourceRange.layerCount = layer_count;
 
-	if (vkCreateImageView(device.logical_device, &view_info, nullptr, &_view) != VK_SUCCESS) {
+	if (vkCreateImageView(device.getLogicalDevice(), &view_info, nullptr, &_view) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create texture image view");
 	}
 }
 
 void	ImageBuffer::destroy(Device& device) {
-	vkDestroyImage(device.logical_device, _image, nullptr);
-	vkFreeMemory(device.logical_device, _memory, nullptr);
-	vkDestroyImageView(device.logical_device, _view, nullptr);
+	vkDestroyImage(device.getLogicalDevice(), _image, nullptr);
+	vkFreeMemory(device.getLogicalDevice(), _memory, nullptr);
+	vkDestroyImageView(device.getLogicalDevice(), _view, nullptr);
 }
 
 /* ========================================================================== */
@@ -192,7 +192,6 @@ void	ImageBuffer::copyFrom(
 			region.bufferOffset =
 				image_size * layer_count * image +	// offset for image
 				layer_offset;						// offset for layer
-			// LOG("current offset: " << static_cast<uint32_t>(region.bufferOffset));
 			region.imageExtent = { image_width, image_height, 1 };
 			region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 			region.imageSubresource.mipLevel = 0;
@@ -239,7 +238,11 @@ void				ImageBuffer::generateMipmap(
 ) {
 	// Check if support blitting
 	VkFormatProperties	properties;
-	vkGetPhysicalDeviceFormatProperties(device.physical_device, image_format, &properties);
+	vkGetPhysicalDeviceFormatProperties(
+		device.getPhysicalDevice(),
+		image_format,
+		&properties
+	);
 
 	if (!(properties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT)) {
 		throw std::runtime_error("texture image format doesn't support linear blitting");

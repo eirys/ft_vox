@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:17:15 by etran             #+#    #+#             */
-/*   Updated: 2023/06/07 20:23:39 by etran            ###   ########.fr       */
+/*   Updated: 2023/07/03 11:52:26 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,8 +44,9 @@ public:
 	/* ========================================================================= */
 
 	UniformBufferObject() = default;
-	UniformBufferObject(const UniformBufferObject& other) = default;
 	UniformBufferObject(UniformBufferObject&& other) = default;
+	UniformBufferObject(const UniformBufferObject& other) = default;
+	UniformBufferObject& operator=(UniformBufferObject&& other) = default;
 	UniformBufferObject& operator=(const UniformBufferObject& other) = default;
 	~UniformBufferObject() = default;
 

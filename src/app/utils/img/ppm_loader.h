@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:17:49 by etran             #+#    #+#             */
-/*   Updated: 2023/06/08 19:55:34 by etran            ###   ########.fr       */
+/*   Updated: 2023/07/03 12:00:25 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,6 +43,7 @@ public:
 
 	PpmLoader() = delete;
 	PpmLoader(const PpmLoader& x) = delete;
+	PpmLoader&	operator=(PpmLoader&& x) = delete;
 	PpmLoader&	operator=(const PpmLoader& x) = delete;
 
 	/* ========================================================================= */

@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/23 06:44:38 by etran             #+#    #+#             */
-/*   Updated: 2023/06/29 10:08:53 by etran            ###   ########.fr       */
+/*   Updated: 2023/07/03 11:06:47 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,14 +39,14 @@ void	Buffer::init(
 	buffer_info.usage = usage;
 	buffer_info.sharingMode = sharing_mode;
 
-	if (vkCreateBuffer(device.logical_device, &buffer_info, nullptr, &_buffer) != VK_SUCCESS) {
+	if (vkCreateBuffer(device.getLogicalDevice(), &buffer_info, nullptr, &_buffer) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create buffer");
 	}
 
 	// Allocate memory for buffer
 	VkMemoryRequirements	mem_requirements;
 	vkGetBufferMemoryRequirements(
-		device.logical_device,
+		device.getLogicalDevice(),
 		_buffer,
 		&mem_requirements
 	);
@@ -59,12 +59,12 @@ void	Buffer::init(
 		properties
 	);
 
-	if (vkAllocateMemory(device.logical_device, &alloc_info, nullptr, &_memory) != VK_SUCCESS) {
+	if (vkAllocateMemory(device.getLogicalDevice(), &alloc_info, nullptr, &_memory) != VK_SUCCESS) {
 		throw std::runtime_error("failed to allocate buffer memory");
 	}
 
 	// Bind memory to instance
-	vkBindBufferMemory(device.logical_device, _buffer, _memory, 0);
+	vkBindBufferMemory(device.getLogicalDevice(), _buffer, _memory, 0);
 }
 
 /**

@@ -35,6 +35,7 @@ public:
 	~MtlParser() = default;
 
 	MtlParser(const MtlParser& x) = delete;
+	MtlParser&	operator=(MtlParser&& x) = delete;
 	MtlParser&	operator=(const MtlParser& x) = delete;
 
 	/* ========================================================================= */

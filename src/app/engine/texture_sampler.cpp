@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/15 20:25:44 by etran             #+#    #+#             */
-/*   Updated: 2023/06/30 22:15:50 by etran            ###   ########.fr       */
+/*   Updated: 2023/07/03 11:09:49 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,7 +41,7 @@ void	TextureSampler::init(
 }
 
 void	TextureSampler::destroy(Device& device) {
-	vkDestroySampler(device.logical_device, vk_texture_sampler, nullptr);
+	vkDestroySampler(device.getLogicalDevice(), vk_texture_sampler, nullptr);
 	texture_buffer.destroy(device);
 }
 
@@ -73,7 +73,9 @@ void	TextureSampler::createTextureImages(
 	);
 
 	// Create staging buffer to copy images data to
-	scop::graphics::Buffer	staging_buffer = device.createBuffer(
+	scop::graphics::Buffer	staging_buffer;
+	staging_buffer.init(
+		device,
 		image_size,
 		VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
 		VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
@@ -81,7 +83,7 @@ void	TextureSampler::createTextureImages(
 	);
 
 	// Copy every face of every image data to staging buffer
-	staging_buffer.map(device.logical_device);
+	staging_buffer.map(device.getLogicalDevice());
 	for (uint32_t i = 0; i < texture_count; ++i) {
 		for (uint32_t j = 0; j < 6; ++j) {
 			staging_buffer.copyFrom(
@@ -91,7 +93,7 @@ void	TextureSampler::createTextureImages(
 			);
 		}
 	}
-	staging_buffer.unmap(device.logical_device);
+	staging_buffer.unmap(device.getLogicalDevice());
 
 	// Create texture image to be filled
 	texture_buffer.initImage(
@@ -111,7 +113,7 @@ void	TextureSampler::createTextureImages(
 
 	// Setup copy command buffer
 	VkCommandBuffer	command_buffer = beginSingleTimeCommands(
-		device.logical_device,
+		device.getLogicalDevice(),
 		command_pool
 	);
 
@@ -159,14 +161,14 @@ void	TextureSampler::createTextureImages(
 
 	// Submit and wait for transfer to be done before destroying buffer
 	endSingleTimeCommands(
-		device.logical_device,
-		device.graphics_queue,
+		device.getLogicalDevice(),
+		device.getGraphicsQueue(),
 		command_pool,
 		command_buffer,
 		true
 	);
 
-	staging_buffer.destroy(device.logical_device);
+	staging_buffer.destroy(device.getLogicalDevice());
 }
 
 /**
@@ -192,7 +194,7 @@ void	TextureSampler::createTextureSampler(
 	Device& device
 ) {
 	VkPhysicalDeviceProperties	properties{};
-	vkGetPhysicalDeviceProperties(device.physical_device, &properties);
+	vkGetPhysicalDeviceProperties(device.getPhysicalDevice(), &properties);
 
 	VkSamplerCreateInfo	sampler_info{};
 	sampler_info.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
@@ -212,7 +214,7 @@ void	TextureSampler::createTextureSampler(
 	sampler_info.minLod = 0.0f;
 	sampler_info.maxLod = static_cast<float>(mip_levels);
 
-	if (vkCreateSampler(device.logical_device, &sampler_info, nullptr, &vk_texture_sampler) != VK_SUCCESS) {
+	if (vkCreateSampler(device.getLogicalDevice(), &sampler_info, nullptr, &vk_texture_sampler) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create texture sampler");
 	}
 }

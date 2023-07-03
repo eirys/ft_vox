@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/29 08:58:40 by etran             #+#    #+#             */
-/*   Updated: 2023/06/30 22:15:56 by etran            ###   ########.fr       */
+/*   Updated: 2023/07/02 16:34:30 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,7 +27,7 @@ namespace graphics {
 class Device;
 
 /**
- * @brief Wrapper class for VkImage and VkDeviceMemory
+ * @brief Wrapper class for VkImage, VkDeviceMemory and VkImageView
 */
 class ImageBuffer {
 public:

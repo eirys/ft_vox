@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:14:56 by etran             #+#    #+#             */
-/*   Updated: 2023/06/30 17:23:36 by etran            ###   ########.fr       */
+/*   Updated: 2023/07/03 09:40:21 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -72,10 +72,6 @@ private:
 	uint32_t						mip_levels;
 
 	ImageBuffer						texture_buffer;
-	// VkImage							vk_texture_image;
-	// VkDeviceMemory					vk_texture_image_memory;
-	// VkImageView						vk_texture_image_view;
-
 	VkSampler						vk_texture_sampler;
 
 	/* ========================================================================= */
@@ -93,15 +89,6 @@ private:
 	void							createTextureSampler(
 		Device& device
 	);
-	// void							generateMipmaps(
-	// 	VkCommandBuffer buffer,
-	// 	Device& device,
-	// 	VkImage image,
-	// 	VkFormat image_format,
-	// 	int32_t face_size,
-	// 	uint32_t mip_level_count,
-	// 	uint32_t layer_count
-	// ) const;
 
 }; // class TextureSampler
 

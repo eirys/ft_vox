@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:14:30 by etran             #+#    #+#             */
-/*   Updated: 2023/06/29 14:38:11 by etran            ###   ########.fr       */
+/*   Updated: 2023/07/03 11:45:24 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,84 +18,87 @@
 # endif
 # include <GLFW/glfw3.h>
 
-# include <vector>
+// Std
+# include <vector> // std::vector
+# include <optional> // std::optional
 
 namespace scop {
 class Window;
 
 namespace graphics {
-struct QueueFamilyIndices;
-class Engine;
-class RenderTarget;
-class RenderTargetResources;
-class DescriptorSet;
-class CommandBuffer;
-class TextureSampler;
-class VertexInput;
-class Buffer;
-class ImageBuffer;
 
+/**
+ * @brief Wrapper class for Vulkan device.
+*/
 class Device {
 public:
+	/* ========================================================================= */
+	/*                                HELPER CLASS                               */
+	/* ========================================================================= */
 
-	friend Engine;
-	friend RenderTarget;
-	friend RenderTargetResources;
-	friend DescriptorSet;
-	friend CommandBuffer;
-	friend TextureSampler;
-	friend VertexInput;
-	friend Buffer;
-	friend ImageBuffer;
+	struct QueueFamilyIndices {
+		std::optional<uint32_t>	graphics_family;
+		std::optional<uint32_t>	present_family;
+
+		bool	isComplete() {
+			return graphics_family.has_value() && present_family.has_value();
+		}
+	};
+
+	struct SwapChainSupportDetails {
+		VkSurfaceCapabilitiesKHR		capabilities;
+		std::vector<VkSurfaceFormatKHR>	formats;
+		std::vector<VkPresentModeKHR>	present_modes;
+	};
 
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
 
 	Device() = default;
-	Device(Device&& other) = default;
 	~Device() = default;
 
+	Device(Device&& other) = delete;
 	Device(const Device& other) = delete;
+	Device& operator=(Device&& other) = delete;
 	Device& operator=(const Device& other) = delete;
 
 	/* ========================================================================= */
 
-	void							init(scop::Window& window, VkInstance instance);
-	void							destroy(VkInstance instance);
-	void							idle();
+	void					init(
+		scop::Window& window,
+		VkInstance instance
+	);
+	void					destroy(VkInstance instance);
+	void					idle();
 
-
-	uint32_t						findMemoryType(
+	uint32_t				findMemoryType(
 		uint32_t type_filter,
 		VkMemoryPropertyFlags properties
 	) const;
-	void							createImage(
-		uint32_t width,
-		uint32_t height,
-		uint32_t mip_level,
-		uint32_t layers,
-		VkSampleCountFlagBits num_samples,
-		VkFormat format,
+	SwapChainSupportDetails	querySwapChainSupport();
+	QueueFamilyIndices		findQueueFamilies();
+	VkFormat				findSupportedFormat(
+		const std::vector<VkFormat>& candidates,
 		VkImageTiling tiling,
-		VkImageUsageFlags usage,
-		VkMemoryPropertyFlags properties,
-		VkImageCreateFlags flags,
-		VkImage& image,
-		VkDeviceMemory& image_memory
+		VkFormatFeatureFlags features
 	);
-	scop::graphics::Buffer			createBuffer(
-		VkDeviceSize size,
-		VkBufferUsageFlags usage,
-		VkMemoryPropertyFlags properties
-	);
+
+	/* ========================================================================= */
+
+	VkSurfaceKHR			getSurface() const noexcept;
+	VkSampleCountFlagBits	getMsaaSamples() const noexcept;
+	VkDevice				getLogicalDevice() const noexcept;
+	VkPhysicalDevice		getPhysicalDevice() const noexcept;
+	VkQueue					getGraphicsQueue() const noexcept;
+	VkQueue					getPresentQueue() const noexcept;
 
 private:
 	/* ========================================================================= */
 	/*                               CONST MEMBERS                               */
 	/* ========================================================================= */
 
-	const std::vector<const char*>	device_extensions = {
+	const std::vector<const char*>	_device_extensions = {
 		VK_KHR_SWAPCHAIN_EXTENSION_NAME
 	};
 
@@ -103,55 +106,37 @@ private:
 	/*                               CLASS MEMBERS                               */
 	/* ========================================================================= */
 
-	VkSurfaceKHR					vk_surface;
+	VkSurfaceKHR			_vk_surface;
+	VkSampleCountFlagBits	_msaa_samples;
 
-	VkPhysicalDevice				physical_device = VK_NULL_HANDLE;
-	VkDevice						logical_device;
+	VkPhysicalDevice		_physical_device = VK_NULL_HANDLE;
+	VkDevice				_logical_device;
 
-	VkQueue							graphics_queue;
-	VkQueue							present_queue;
-
-	VkSampleCountFlagBits			msaa_samples;
-
+	VkQueue					_graphics_queue;
+	VkQueue					_present_queue;
 
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
 
-	void							createSurface(
+	void					_createSurface(
 		VkInstance instance,
 		scop::Window& window
 	);
-	void							pickPhysicalDevice(VkInstance vk_instance);
-	void							createLogicalDevice();
+	void					_pickPhysicalDevice(VkInstance vk_instance);
+	void					_createLogicalDevice();
 
-	/* ========================================================================= */
-
-	VkSampleCountFlagBits			getMaxUsableSampleCount() const;
-	bool							checkDeviceExtensionSupport(
+	VkSampleCountFlagBits	_getMaxUsableSampleCount() const;
+	bool					_checkDeviceExtensionSupport(
 		VkPhysicalDevice device
 	);
-	bool							isDeviceSuitable(
+	bool					_isDeviceSuitable(
 		VkPhysicalDevice device
 	);
+	QueueFamilyIndices		_findQueueFamilies(VkPhysicalDevice device);
+	SwapChainSupportDetails	_querySwapChainSupport(VkPhysicalDevice device);
 
 }; // class Device
-
-/* ========================================================================== */
-/*                                    OTHER                                   */
-/* ========================================================================== */
-
-VkFormat	findSupportedFormat(
-	VkPhysicalDevice physical_device,
-	const std::vector<VkFormat>& candidates,
-	VkImageTiling tiling,
-	VkFormatFeatureFlags features
-);
-
-QueueFamilyIndices	findQueueFamilies(
-	VkPhysicalDevice device,
-	VkSurfaceKHR vk_surface
-);
 
 } // namespace graphics
 } // namespace scop

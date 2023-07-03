@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/04 19:23:47 by eli               #+#    #+#             */
-/*   Updated: 2023/06/04 16:52:39 by etran            ###   ########.fr       */
+/*   Updated: 2023/07/03 11:56:16 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,15 +24,6 @@ namespace obj {
 /* ========================================================================== */
 /*                                   PUBLIC                                   */
 /* ========================================================================== */
-
-Model::Model(Model&& x):
-vertex_coords(std::move(x.vertex_coords)),
-texture_coords(std::move(x.texture_coords)),
-normal_coords(std::move(x.normal_coords)),
-indices(std::move(x.indices)),
-triangles(std::move(x.triangles)),
-material(std::move(x.material)),
-smooth_shading(x.smooth_shading) {}
 
 void	Model::addVertex(const Vect3& vertex) {
 	vertex_coords.emplace_back(vertex);

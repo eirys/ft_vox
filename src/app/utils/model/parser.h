@@ -67,7 +67,7 @@ protected:
 	/*                               CLASS MEMBERS                               */
 	/* ========================================================================= */
 
-	std::size_t				current_pos;
+	std::size_t			current_pos;
 	std::string			line;
 	std::string			token;
 
@@ -80,6 +80,7 @@ protected:
 	~Parser() = default;
 
 	Parser(const Parser& x) = delete;
+	Parser&	operator=(Parser&& x) = delete;
 	Parser&	operator=(const Parser& x) = delete;
 
 	/* ========================================================================= */
