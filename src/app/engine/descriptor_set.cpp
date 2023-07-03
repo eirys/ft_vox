@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/15 20:56:05 by etran             #+#    #+#             */
-/*   Updated: 2023/07/03 11:55:32 by etran            ###   ########.fr       */
+/*   Updated: 2023/07/03 17:39:26 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -169,8 +169,8 @@ void	DescriptorSet::createDescriptorSets(
 	// Texture sampler
 	VkDescriptorImageInfo	image_info{};
 	image_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-	image_info.imageView = texture_sampler.texture_buffer.getView();
-	image_info.sampler = texture_sampler.vk_texture_sampler;
+	image_info.imageView = texture_sampler.getTextureBuffer().getView();
+	image_info.sampler = texture_sampler.getTextureSampler();
 
 	// Ubo light
 	VkDescriptorBufferInfo	ubo_info_light{};

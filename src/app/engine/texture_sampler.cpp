@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/15 20:25:44 by etran             #+#    #+#             */
-/*   Updated: 2023/07/03 16:40:20 by etran            ###   ########.fr       */
+/*   Updated: 2023/07/03 17:40:03 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,15 +34,25 @@ void	TextureSampler::init(
 	VkCommandPool command_pool,
 	const std::vector<CubeMap>& images
 ) {
-	texture_count = static_cast<uint32_t>(images.size());
-	createTextureImages(device, command_pool, images);
-	createTextureImageView(device);
-	createTextureSampler(device);
+	_texture_count = static_cast<uint32_t>(images.size());
+	_createTextureImages(device, command_pool, images);
+	_createTextureImageView(device);
+	_createTextureSampler(device);
 }
 
 void	TextureSampler::destroy(Device& device) {
-	vkDestroySampler(device.getLogicalDevice(), vk_texture_sampler, nullptr);
-	texture_buffer.destroy(device);
+	vkDestroySampler(device.getLogicalDevice(), _vk_texture_sampler, nullptr);
+	_texture_buffer.destroy(device);
+}
+
+/* ========================================================================== */
+
+VkSampler	TextureSampler::getTextureSampler() const noexcept {
+	return _vk_texture_sampler;
+}
+
+const ImageBuffer&	TextureSampler::getTextureBuffer() const noexcept {
+	return _texture_buffer;
 }
 
 /* ========================================================================== */
@@ -54,7 +64,7 @@ void	TextureSampler::destroy(Device& device) {
  * Since they all have the same size (16 * 16), we optimize the process by creating
  * a single staging buffer and a single VkImage.
 */
-void	TextureSampler::createTextureImages(
+void	TextureSampler::_createTextureImages(
 	Device& device,
 	VkCommandPool command_pool,
 	const std::vector<CubeMap>& images
@@ -65,10 +75,10 @@ void	TextureSampler::createTextureImages(
 	// Size of a layer (an image). A layer is a face of the cube map.
 	const VkDeviceSize	layer_size = side_size * side_size * sizeof(uint32_t);
 	// Size of the VKImage, including all layers
-	const VkDeviceSize	image_size = layer_size * 6 * texture_count;
+	const VkDeviceSize	image_size = layer_size * 6 * _texture_count;
 
 	// Evaluate mip levels count for each image
-	mip_levels = 1 + static_cast<uint32_t>(
+	_mip_levels = 1 + static_cast<uint32_t>(
 		std::floor(std::log2(side_size))
 	);
 
@@ -84,7 +94,7 @@ void	TextureSampler::createTextureImages(
 
 	// Copy every face of every image data to staging buffer
 	staging_buffer.map(device.getLogicalDevice());
-	for (uint32_t i = 0; i < texture_count; ++i) {
+	for (uint32_t i = 0; i < _texture_count; ++i) {
 		for (uint32_t j = 0; j < 6; ++j) {
 			staging_buffer.copyFrom(
 				images[i][j].getPixels(),
@@ -96,7 +106,7 @@ void	TextureSampler::createTextureImages(
 	staging_buffer.unmap(device.getLogicalDevice());
 
 	// Create texture image to be filled
-	texture_buffer.initImage(
+	_texture_buffer.initImage(
 		device,
 		side_size,
 		side_size,
@@ -105,8 +115,8 @@ void	TextureSampler::createTextureImages(
 		VK_IMAGE_USAGE_TRANSFER_DST_BIT |	// For copy command
 		VK_IMAGE_USAGE_SAMPLED_BIT,			// For shader access
 		VK_SAMPLE_COUNT_1_BIT,
-		mip_levels,
-		6 * texture_count,
+		_mip_levels,
+		6 * _texture_count,
 		VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT,
 		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
 	);
@@ -121,11 +131,11 @@ void	TextureSampler::createTextureImages(
 	VkImageSubresourceRange	transfer_barrier{};
 	transfer_barrier.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 	transfer_barrier.baseMipLevel = 0;
-	transfer_barrier.levelCount = mip_levels;
+	transfer_barrier.levelCount = _mip_levels;
 	transfer_barrier.baseArrayLayer = 0;
-	transfer_barrier.layerCount = 6 * texture_count;
+	transfer_barrier.layerCount = 6 * _texture_count;
 
-	texture_buffer.setLayout(
+	_texture_buffer.setLayout(
 		command_buffer,
 		VK_IMAGE_LAYOUT_UNDEFINED,
 		VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
@@ -137,24 +147,24 @@ void	TextureSampler::createTextureImages(
 	);
 
 	// Send copy command
-	texture_buffer.copyFrom(
+	_texture_buffer.copyFrom(
 		command_buffer,
 		staging_buffer.getBuffer(),
 		side_size,
 		side_size,
-		texture_count,
+		_texture_count,
 		6,
 		static_cast<uint32_t>(layer_size)
 	);
 
 	// Dynamically generate mipmaps
-	texture_buffer.generateMipmap(
+	_texture_buffer.generateMipmap(
 		command_buffer,
 		device,
 		side_size,
 		side_size,
 		VK_FORMAT_R8G8B8A8_SRGB,
-		mip_levels,
+		_mip_levels,
 		6
 	);
 
@@ -171,25 +181,25 @@ void	TextureSampler::createTextureImages(
 }
 
 /**
- * Same concept as swap chain image views
+ * @brief Create image view for texture sampler.
 */
-void	TextureSampler::createTextureImageView(
+void	TextureSampler::_createTextureImageView(
 	Device& device
 ) {
-	texture_buffer.initView(
+	_texture_buffer.initView(
 		device,
 		VK_FORMAT_R8G8B8A8_SRGB,
 		VK_IMAGE_ASPECT_COLOR_BIT,
 		VK_IMAGE_VIEW_TYPE_CUBE_ARRAY,
-		mip_levels,
-		6 * texture_count
+		_mip_levels,
+		6 * _texture_count
 	);
 }
 
 /**
- * Create sampler, that'll apply transformations to image when sampling
+ * @brief Create sampler for texture sampling in shaders.
 */
-void	TextureSampler::createTextureSampler(
+void	TextureSampler::_createTextureSampler(
 	Device& device
 ) {
 	VkPhysicalDeviceProperties	properties{};
@@ -211,9 +221,9 @@ void	TextureSampler::createTextureSampler(
 	sampler_info.mipLodBias = 0.0f;
 	sampler_info.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
 	sampler_info.minLod = 0.0f;
-	sampler_info.maxLod = static_cast<float>(mip_levels);
+	sampler_info.maxLod = static_cast<float>(_mip_levels);
 
-	if (vkCreateSampler(device.getLogicalDevice(), &sampler_info, nullptr, &vk_texture_sampler) != VK_SUCCESS) {
+	if (vkCreateSampler(device.getLogicalDevice(), &sampler_info, nullptr, &_vk_texture_sampler) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create texture sampler");
 	}
 }

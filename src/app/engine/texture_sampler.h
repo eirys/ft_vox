@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:14:56 by etran             #+#    #+#             */
-/*   Updated: 2023/07/03 09:40:21 by etran            ###   ########.fr       */
+/*   Updated: 2023/07/03 17:38:42 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,6 +42,7 @@ public:
 	/* ========================================================================= */
 
 	typedef	std::array<scop::Image, 6>		CubeMap;
+	typedef	std::vector<scop::Image>		TextureArray;
 
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
@@ -62,31 +63,36 @@ public:
 		const std::vector<CubeMap>& images
 	);
 	void							destroy(Device& device);
+
+	/* ========================================================================= */
+
+	VkSampler						getTextureSampler() const noexcept;
+	const ImageBuffer&				getTextureBuffer() const noexcept;
 	
 private:
 	/* ========================================================================= */
 	/*                                CLASS MEMBER                               */
 	/* ========================================================================= */
 
-	uint32_t						texture_count;
-	uint32_t						mip_levels;
+	uint32_t						_texture_count;
+	uint32_t						_mip_levels;
 
-	ImageBuffer						texture_buffer;
-	VkSampler						vk_texture_sampler;
+	ImageBuffer						_texture_buffer;
+	VkSampler						_vk_texture_sampler;
 
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
 
-	void							createTextureImages(
+	void							_createTextureImages(
 		Device& device,
 		VkCommandPool command_pool,
 		const std::vector<CubeMap>& images
 	);
-	void							createTextureImageView(
+	void							_createTextureImageView(
 		Device& device
 	);
-	void							createTextureSampler(
+	void							_createTextureSampler(
 		Device& device
 	);
 
