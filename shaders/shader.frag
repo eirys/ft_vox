@@ -15,9 +15,9 @@ layout(binding = 2) uniform Light {
 	float intensity;
 } light_ubo;
 
-void main() {	
+void main() {
 	// Retrieve the color from the texture using 2D uv and texture id
-	vec4 color = texture(tex_sampler, vec4(frag_uv, frag_texture_id, 0.0));
+	vec4 color = texture(tex_sampler, vec4(frag_uv, -5, 0));
 
 	// Apply ambient lighting
  	frag_color = color * vec4(light_ubo.ambient_color, 1.0);

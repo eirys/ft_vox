@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/15 20:25:44 by etran             #+#    #+#             */
-/*   Updated: 2023/07/03 11:09:49 by etran            ###   ########.fr       */
+/*   Updated: 2023/07/03 16:40:20 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -145,7 +145,6 @@ void	TextureSampler::createTextureImages(
 		texture_count,
 		6,
 		static_cast<uint32_t>(layer_size)
-		// mip_levels
 	);
 
 	// Dynamically generate mipmaps
@@ -203,8 +202,8 @@ void	TextureSampler::createTextureSampler(
 	sampler_info.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
 	sampler_info.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
 	sampler_info.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-	sampler_info.anisotropyEnable = VK_FALSE;//VK_TRUE;
-	// sampler_info.maxAnisotropy = properties.limits.maxSamplerAnisotropy;
+	sampler_info.anisotropyEnable = VK_TRUE;
+	sampler_info.maxAnisotropy = properties.limits.maxSamplerAnisotropy;
 	sampler_info.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK;
 	sampler_info.unnormalizedCoordinates = VK_FALSE;
 	sampler_info.compareEnable = VK_FALSE;

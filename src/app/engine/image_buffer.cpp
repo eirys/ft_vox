@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/29 09:57:49 by etran             #+#    #+#             */
-/*   Updated: 2023/07/03 11:06:47 by etran            ###   ########.fr       */
+/*   Updated: 2023/07/03 16:07:42 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -166,7 +166,6 @@ void	ImageBuffer::setLayout(
  * @param image_count Number of image files. Default is 1.
  * @param layer_count Number of layers. 6 for cube maps. Default is 1.
  * @param layer_size Size of a layer in bytes. Default is 0.
- * @param mip_count Number of mipmaps. Default is 1.
  * @param pixel_size Size of a pixel in bytes. Default is sizeof(uint32_t).
 */
 void	ImageBuffer::copyFrom(
@@ -249,6 +248,7 @@ void				ImageBuffer::generateMipmap(
 	}
 
 	VkImageSubresourceRange	range{};
+	range.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 
 	for (uint32_t layer = 0; layer < layer_count; ++layer) {
 		for (uint32_t level = 1; level < mip_count; ++level) {
@@ -276,10 +276,9 @@ void				ImageBuffer::generateMipmap(
 			blit.dstOffsets[1].z = 1;
 
 			// Set range for layout transition
-			range.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 			range.baseMipLevel = level - 1;
-			range.levelCount = 1;
 			range.baseArrayLayer = layer;
+			range.levelCount = 1;
 			range.layerCount = 1;
 
 			// Transition previous layer as transfer source
@@ -303,7 +302,7 @@ void				ImageBuffer::generateMipmap(
 				VK_FILTER_LINEAR
 			);
 
-			// Prepare for next level
+			// Transition back to destination layout
 			setLayout(
 				command_buffer,
 				VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
