@@ -6,7 +6,7 @@
 #    By: etran <etran@student.42.fr>                +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/04/06 03:40:09 by eli               #+#    #+#              #
-#    Updated: 2023/07/04 09:13:06 by etran            ###   ########.fr        #
+#    Updated: 2023/07/04 10:38:58 by etran            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -20,7 +20,6 @@ NAME		:=	ft_vox
 # directory names
 SRC_DIR		:=	src
 OBJ_DIR		:=	obj
-DEP_DIR		:=	dep
 SHD_DIR		:=	shaders
 
 # subdirectories
@@ -29,6 +28,7 @@ APP_DIR		:=	app
 ENG_DIR		:=	$(APP_DIR)/engine
 UTILS_DIR	:=	$(APP_DIR)/utils
 GAME_DIR	:=	$(APP_DIR)/gameplay
+CHAR_DIR	:=	$(GAME_DIR)/character
 IMG_DIR		:=	$(UTILS_DIR)/img
 MODEL_DIR	:=	$(UTILS_DIR)/model
 GEN_DIR		:=	$(UTILS_DIR)/generation
@@ -36,6 +36,7 @@ GEN_DIR		:=	$(UTILS_DIR)/generation
 SUBDIRS		:=	$(APP_DIR) \
 				$(TOOLS_DIR) \
 				$(GAME_DIR) \
+				$(CHAR_DIR) \
 				$(ENG_DIR) \
 				$(MODEL_DIR) \
 				$(UTILS_DIR) \
@@ -46,41 +47,6 @@ OBJ_SUBDIRS	:=	$(addprefix $(OBJ_DIR)/,$(SUBDIRS))
 INC_SUBDIRS	:=	$(addprefix $(SRC_DIR)/,$(SUBDIRS))
 
 # cpp files
-# INC_FILES	:=	$(TOOLS_DIR)/utils.h \
-				$(TOOLS_DIR)/math.h \
-				$(TOOLS_DIR)/matrix.h \
-				$(TOOLS_DIR)/vector.h \
-				$(UTILS_DIR)/vertex.h \
-				$(UTILS_DIR)/uniform_buffer_object.h \
-				$(UTILS_DIR)/timer.h \
-				$(MODEL_DIR)/model.h \
-				$(MODEL_DIR)/material.h \
-				$(MODEL_DIR)/parser.h \
-				$(MODEL_DIR)/obj_parser.h \
-				$(MODEL_DIR)/mtl_parser.h \
-				$(GEN_DIR)/perlin_noise.h \
-				$(GEN_DIR)/cube.h \
-				$(IMG_DIR)/image_loader.h \
-				$(IMG_DIR)/image_handler.h \
-				$(IMG_DIR)/ppm_loader.h \
-				$(GAME_DIR)/gameplay.h \
-				$(GAME_DIR)/character.h \
-				$(GAME_DIR)/player.h \
-				$(ENG_DIR)/window.h \
-				$(ENG_DIR)/debug_module.h \
-				$(ENG_DIR)/device.h \
-				$(ENG_DIR)/swap_chain.h \
-				$(ENG_DIR)/render_pass.h \
-				$(ENG_DIR)/descriptor_set.h \
-				$(ENG_DIR)/command_pool.h \
-				$(ENG_DIR)/texture_sampler.h \
-				$(ENG_DIR)/input_buffer.h \
-				$(ENG_DIR)/engine.h \
-				$(ENG_DIR)/buffer.h \
-				$(ENG_DIR)/command_buffer.h \
-				$(ENG_DIR)/image_buffer.h \
-				$(APP_DIR)/app.h
-
 SRC_FILES	:=	$(TOOLS_DIR)/matrix.cpp \
 				$(MODEL_DIR)/model.cpp \
 				$(MODEL_DIR)/parser.cpp \
@@ -91,8 +57,8 @@ SRC_FILES	:=	$(TOOLS_DIR)/matrix.cpp \
 				$(IMG_DIR)/ppm_loader.cpp \
 				$(IMG_DIR)/image_handler.cpp \
 				$(GAME_DIR)/gameplay.cpp \
-				$(GAME_DIR)/character.cpp \
-				$(GAME_DIR)/player.cpp \
+				$(CHAR_DIR)/character.cpp \
+				$(CHAR_DIR)/player.cpp \
 				$(ENG_DIR)/window.cpp \
 				$(ENG_DIR)/debug_module.cpp \
 				$(ENG_DIR)/device.cpp \
@@ -109,7 +75,6 @@ SRC_FILES	:=	$(TOOLS_DIR)/matrix.cpp \
 				$(APP_DIR)/app.cpp \
 				main.cpp
 
-# INC			:=	$(addprefix	$(SRC_DIR)/,$(INC_FILES))
 SRC			:=	$(addprefix $(SRC_DIR)/,$(SRC_FILES))
 OBJ			:=	$(addprefix $(OBJ_DIR)/,$(SRC_FILES:.cpp=.o))
 DEP			:=	$(addprefix $(OBJ_DIR)/,$(SRC_FILES:.cpp=.d))
