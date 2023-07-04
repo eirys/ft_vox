@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:13:52 by etran             #+#    #+#             */
-/*   Updated: 2023/07/03 12:01:24 by etran            ###   ########.fr       */
+/*   Updated: 2023/07/04 21:54:06 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,15 +44,19 @@ public:
 	 * @brief Contains the information needed to create a noise map.
 	 *
 	 * @param type				The type of noise map to generate.
-	 * @param seed				The seed to use for the noise map. If not provided,
-	 * 							a random seed will be generated.
+	 * @param seed				The seed to use for the noise map.
+	 * 							If not provided, a random seed is generated.
 	 * @param width				The width of the noise map. (1D/2D/3D noise)
 	 * @param height			The height of the noise map. (2D/3D noise)
 	 * @param depth				The depth of the noise map. (3D noise)
 	 * @param layers			The number of layers to use for the noise map.
+	 * 							More layers means more details.
 	 * @param frequency_0		The frequency of the first layer.
+	 * 							A higher frequency means slopes are steeper.
 	 * @param frequency_mult	The frequency multiplier to use for each layer.
+	 * 							A higher value means a rockier noise map.
 	 * @param amplitude_mult	The amplitude multiplier to use for each layer.
+	 * 							A higher value means a rockier noise map.
 	*/
 	struct NoiseMapInfo {
 		PerlinNoiseType			type;

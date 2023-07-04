@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:19:11 by etran             #+#    #+#             */
-/*   Updated: 2023/07/03 22:57:19 by etran            ###   ########.fr       */
+/*   Updated: 2023/07/04 10:58:02 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,7 +59,6 @@ struct Cube {
 	*/
 	struct Face {
 		scop::Vect3	vertices[4];
-		// scop::Vect2	uvs[4];
 		FaceType	side;
 
 		scop::Vect3	normal() const noexcept;

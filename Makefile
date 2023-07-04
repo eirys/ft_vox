@@ -6,7 +6,7 @@
 #    By: etran <etran@student.42.fr>                +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/04/06 03:40:09 by eli               #+#    #+#              #
-#    Updated: 2023/07/04 10:38:58 by etran            ###   ########.fr        #
+#    Updated: 2023/07/04 22:25:07 by etran            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -28,10 +28,10 @@ APP_DIR		:=	app
 ENG_DIR		:=	$(APP_DIR)/engine
 UTILS_DIR	:=	$(APP_DIR)/utils
 GAME_DIR	:=	$(APP_DIR)/gameplay
+GEN_DIR		:=	$(APP_DIR)/generation
 CHAR_DIR	:=	$(GAME_DIR)/character
 IMG_DIR		:=	$(UTILS_DIR)/img
 MODEL_DIR	:=	$(UTILS_DIR)/model
-GEN_DIR		:=	$(UTILS_DIR)/generation
 
 SUBDIRS		:=	$(APP_DIR) \
 				$(TOOLS_DIR) \

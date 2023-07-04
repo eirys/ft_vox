@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/28 11:12:12 by eli               #+#    #+#             */
-/*   Updated: 2023/07/04 10:26:08 by etran            ###   ########.fr       */
+/*   Updated: 2023/07/04 22:19:56 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -170,8 +170,8 @@ void	App::loadTerrain() {
 		.width = render_distance_xy * chunk_size,
 		.height = render_distance_xy * chunk_size,
 		.depth = render_distance_z * chunk_size,
-		.layers = 4,
-		.frequency_0 = .02f,
+		.layers = 3,
+		.frequency_0 = .03f,
 		.frequency_mult = 1.8f,
 		.amplitude_mult = 0.5f
 	});
