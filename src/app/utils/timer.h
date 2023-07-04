@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/07 21:13:23 by etran             #+#    #+#             */
-/*   Updated: 2023/07/03 12:04:50 by etran            ###   ########.fr       */
+/*   Updated: 2023/07/04 10:31:23 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,15 +47,15 @@ public:
 	 * @brief Starts the timer.
 	*/
 	void	start() noexcept {
-		begin = clock::now();
-		frames = 0;
+		_begin = clock::now();
+		_frames = 0;
 	}
 
 	/**
 	 * @brief Updates the frame counter.
 	*/
 	void	update() noexcept {
-		++frames;
+		++_frames;
 	}
 
 	/**
@@ -64,10 +64,10 @@ public:
 	void	check() {
 		clock::time_point	now = clock::now();
 
-		if (now - begin >= std::chrono::seconds(log_interval)) {
-			float fps = frames / log_interval;
-			frames = 0;
-			begin = now;
+		if (now - _begin >= std::chrono::seconds(log_interval)) {
+			float fps = _frames / log_interval;
+			_frames = 0;
+			_begin = now;
 			std::cout << fps << " fps" << std::endl;
 		}
 	}
@@ -83,8 +83,8 @@ private:
 	/*                               CLASS MEMBERS                               */
 	/* ========================================================================= */
 
-	clock::time_point		begin;
-	std::size_t				frames;
+	clock::time_point		_begin;
+	std::size_t				_frames;
 
 }; // class Timer
 

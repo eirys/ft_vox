@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:17:44 by etran             #+#    #+#             */
-/*   Updated: 2023/06/04 17:17:45 by etran            ###   ########.fr       */
+/*   Updated: 2023/07/04 10:34:43 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -89,6 +89,7 @@ protected:
 
 	ImageLoader() = delete;
 	ImageLoader(const ImageLoader& x) = delete;
+	ImageLoader& operator=(ImageLoader&& x) = delete;
 	ImageLoader& operator=(const ImageLoader& x) = delete;
 
 }; // class ImageLoader
