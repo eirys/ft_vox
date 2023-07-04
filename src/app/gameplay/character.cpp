@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/05 09:57:24 by etran             #+#    #+#             */
-/*   Updated: 2023/06/05 23:40:27 by etran            ###   ########.fr       */
+/*   Updated: 2023/07/04 10:29:50 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,11 +23,11 @@ Character::Character(
 	const scop::Vect3& dir,
 	float speed
 ):
-	position(pos),
-	eye_dir(dir),
-	cam_speed(speed) {
-		camera.yaw = scop::math::dregrees(std::atan2(dir.z, dir.x));
-		camera.pitch = scop::math::dregrees(std::asin(dir.y));
+	_position(pos),
+	_eye_dir(dir),
+	_cam_speed(speed) {
+		_camera.yaw = scop::math::dregrees(std::atan2(dir.z, dir.x));
+		_camera.pitch = scop::math::dregrees(std::asin(dir.y));
 	}
 
 /* ========================================================================== */
@@ -40,15 +40,15 @@ Character::Character(
 void	Character::move(const scop::Vect3& input) noexcept {
 	static const scop::Vect3	y_axis = scop::Vect3(0.0f, 1.0f, 0.0f);
 	const scop::Vect3	side = scop::normalize(
-		scop::cross(eye_dir, y_axis)
+		scop::cross(_eye_dir, y_axis)
 	);
-	position = scop::fma(
-		eye_dir,
+	_position = scop::fma(
+		_eye_dir,
 		input.z,
 		scop::fma(
 			y_axis,
 			input.y,
-			scop::fma(side, input.x, position)
+			scop::fma(side, input.x, _position)
 		)
 	);
 }
@@ -60,15 +60,15 @@ void	Character::move(const scop::Vect3& input) noexcept {
  * @param pitch	The added pitch, in degrees.
 */
 void	Character::updateEyeDir(float yaw, float pitch) noexcept {
-	camera.yaw = std::fma(yaw, cam_speed, camera.yaw);
+	_camera.yaw = std::fma(yaw, _cam_speed, _camera.yaw);
 
 	// Clamp to avoid camera flipping.
-	camera.pitch = std::clamp(
-		std::fma(pitch, cam_speed, camera.pitch),
+	_camera.pitch = std::clamp(
+		std::fma(pitch, _cam_speed, _camera.pitch),
 		-89.0f,
 		89.0f
 	);
-	eye_dir = scop::normalize(camera.toVector());
+	_eye_dir = scop::normalize(_camera.toVector());
 }
 
 /**
@@ -77,21 +77,21 @@ void	Character::updateEyeDir(float yaw, float pitch) noexcept {
  * @param dir	The new direction vector.
 */
 void	Character::resetEyeDir(const scop::Vect3& dir) noexcept {
-	eye_dir = dir;
-	camera.yaw = scop::math::dregrees(std::atan2(dir.z, dir.x));
-	camera.pitch = scop::math::dregrees(std::asin(dir.y));
+	_eye_dir = dir;
+	_camera.yaw = scop::math::dregrees(std::atan2(dir.z, dir.x));
+	_camera.pitch = scop::math::dregrees(std::asin(dir.y));
 }
 
 void	Character::resetPositionX(float x) noexcept {
-	position.x = x;
+	_position.x = x;
 }
 
 void	Character::resetPositionY(float y) noexcept {
-	position.y = y;
+	_position.y = y;
 }
 
 void	Character::resetPositionZ(float z) noexcept {
-	position.z = z;
+	_position.z = z;
 }
 
 /* ========================================================================== */
@@ -100,14 +100,14 @@ void	Character::resetPositionZ(float z) noexcept {
  * @brief Returns the position of the character.
 */
 const scop::Vect3&	Character::getPosition() const noexcept {
-	return position;
+	return _position;
 }
 
 /**
  * @brief Returns the eye direction of the character.
 */
 const scop::Vect3&	Character::getEyeDir() const noexcept {
-	return eye_dir;
+	return _eye_dir;
 }
 
 /**
@@ -115,7 +115,7 @@ const scop::Vect3&	Character::getEyeDir() const noexcept {
  * @note The camera is a struct containing the yaw and pitch of the character.
 */
 const Character::Camera&	Character::getCamera() const noexcept {
-	return camera;
+	return _camera;
 }
 
 } // namespace vox

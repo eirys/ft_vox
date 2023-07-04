@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/28 11:12:12 by eli               #+#    #+#             */
-/*   Updated: 2023/07/04 09:52:18 by etran            ###   ########.fr       */
+/*   Updated: 2023/07/04 10:26:08 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,65 +49,64 @@ App::App() {
 	scop::mtl::Material material;
 	material.ambient_color = {0.4,0.4,0.3};
 	loadLight(material);
-	window.init(this);
-	engine.init(window, textures, light, vertices, indices);
+	_window.init(this);
+	_engine.init(_window, _textures, _light, _vertices, _indices);
 }
 
 App::~App() {
-	engine.destroy();
+	_engine.destroy();
 }
 
 /* MAIN FUNCTION ============================================================ */
 
 void	App::run() {
-	timer.start();
-	while (window.alive()) {
-		window.poll();
+	_timer.start();
+	while (_window.alive()) {
+		_window.poll();
 		updateGame();
-		engine.render(window, game.player, timer);
-		timer.check();
+		_engine.render(_window, _game.getPlayer(), _timer);
+		_timer.check();
 	}
-	engine.idle();
+	_engine.idle();
 }
 
 /* ========================================================================== */
 
 /**
- * @brief Resets the model to its original position and rotation.
+ * @brief Resets state of the game.
 */
 void	App::resetGame() noexcept {
-	// Reset player
-	game.player.reset(game.world_origin, {0.0f, 0.0f, 1.0f});
+	_game.reset();
 }
 
 /**
  * @brief On toggle, the model is moved in the given direction.
 */
 void	App::toggleMove(ObjectDirection dir) noexcept {
-	keys_pressed_directions[dir] = true;
+	_keys_pressed_directions[dir] = true;
 	switch (dir) {
 		case ObjectDirection::MOVE_FORWARD: {
-			movement.z = SCOP_MOVE_SPEED;
+			_movement.z = SCOP_MOVE_SPEED;
 			break;
 		}
 		case ObjectDirection::MOVE_BACKWARD: {
-			movement.z = -SCOP_MOVE_SPEED;
+			_movement.z = -SCOP_MOVE_SPEED;
 			break;
 		}
 		case ObjectDirection::MOVE_RIGHT: {
-			movement.x = SCOP_MOVE_SPEED;
+			_movement.x = SCOP_MOVE_SPEED;
 			break;
 		}
 		case ObjectDirection::MOVE_LEFT: {
-			movement.x = -SCOP_MOVE_SPEED;
+			_movement.x = -SCOP_MOVE_SPEED;
 			break;
 		}
 		case ObjectDirection::MOVE_UP: {
-			movement.y = SCOP_MOVE_SPEED;
+			_movement.y = SCOP_MOVE_SPEED;
 			break;
 		}
 		case ObjectDirection::MOVE_DOWN: {
-			movement.y = -SCOP_MOVE_SPEED;
+			_movement.y = -SCOP_MOVE_SPEED;
 			break;
 		}
 		default:
@@ -119,23 +118,23 @@ void	App::toggleMove(ObjectDirection dir) noexcept {
  * @brief On untoggle, the model stops moving in the given direction.
 */
 void	App::untoggleMove(ObjectDirection dir) noexcept {
-	keys_pressed_directions[dir] = false;
-	if (keys_pressed_directions[opposite(dir)] == false) {
+	_keys_pressed_directions[dir] = false;
+	if (_keys_pressed_directions[opposite(dir)] == false) {
 		if (
 			dir == ObjectDirection::MOVE_FORWARD ||
 			dir == ObjectDirection::MOVE_BACKWARD
 		) {
-			movement.z = 0.0f;
+			_movement.z = 0.0f;
 		} else if (
 			dir == ObjectDirection::MOVE_RIGHT ||
 			dir == ObjectDirection::MOVE_LEFT
 		) {
-			movement.x = 0.0f;
+			_movement.x = 0.0f;
 		} else if (
 			dir == ObjectDirection::MOVE_UP ||
 			dir == ObjectDirection::MOVE_DOWN
 		) {
-			movement.y = 0.0f;
+			_movement.y = 0.0f;
 		}
 	} else {
 		toggleMove(opposite(dir));
@@ -143,7 +142,7 @@ void	App::untoggleMove(ObjectDirection dir) noexcept {
 }
 
 void	App::updateCameraDir(float x, float y) noexcept {
-	game.player.updateEyeDir(x, y);
+	_game.setCameraDir(x, y);
 }
 
 /* ========================================================================== */
@@ -154,7 +153,7 @@ void	App::updateCameraDir(float x, float y) noexcept {
  * @brief Updates state of the game.
 */
 void	App::updateGame() {
-	game.player.move(movement);
+	_game.setCameraPos(_movement);
 }
 
 /* INIT FUNCTIONS =========================================================== */
@@ -178,7 +177,7 @@ void	App::loadTerrain() {
 	});
 
 	vox::PerlinNoise::PerlinMesh	mesh = noise.toMesh();
-	vertices.reserve(mesh.vertices.size());
+	_vertices.reserve(mesh.vertices.size());
 	for (std::size_t i = 0; i < mesh.vertices.size(); ++i) {
 		scop::Vertex	vertex{};
 
@@ -187,12 +186,12 @@ void	App::loadTerrain() {
 		vertex.normal = mesh.normals[i];
 		vertex.texture_id = mesh.texture_indices[i];
 
-		vertices.emplace_back(vertex);
+		_vertices.emplace_back(vertex);
 	}
-	indices = std::move(mesh.indices);
+	_indices = std::move(mesh.indices);
 	LOG("Terrain loaded.");
 
-	game.setOrigin(mesh.origin);
+	_game.setOrigin(mesh.origin);
 
 	// TEMPORARY ===
 	LOG("Loading textures...");
@@ -207,20 +206,20 @@ void	App::loadTerrain() {
 	}
 
 	std::optional<std::size_t> width, height;
-	textures.reserve(paths.size());
+	_textures.reserve(paths.size());
 	for (std::size_t i = 0; i < paths.size(); ++i) {
 		// Load texture
 		scop::PpmLoader	loader(paths[i]);
-		textures.emplace_back(loader.load());
+		_textures.emplace_back(loader.load());
 
 		// Check dimensions
 		if (!width.has_value()) {
-			width.emplace(textures[i].getWidth());
-			height.emplace(textures[i].getHeight());
+			width.emplace(_textures[i].getWidth());
+			height.emplace(_textures[i].getHeight());
 		} else {
 			if (
-				width.value() != textures[i].getWidth() ||
-				height.value() != textures[i].getHeight()
+				width.value() != _textures[i].getWidth() ||
+				height.value() != _textures[i].getHeight()
 			) {
 				throw std::invalid_argument("Texture dimensions do not match");
 			}
@@ -260,29 +259,29 @@ void	App::loadModel(const std::string& path) {
 			// );
 
 			if (unique_vertices.count(vertex) == 0) {
-				unique_vertices[vertex] = static_cast<uint32_t>(vertices.size());
-				vertices.emplace_back(vertex);
+				unique_vertices[vertex] = static_cast<uint32_t>(_vertices.size());
+				_vertices.emplace_back(vertex);
 			}
-			indices.emplace_back(unique_vertices[vertex]);
+			_indices.emplace_back(unique_vertices[vertex]);
 		}
 	}
 
 	// Center model
-	scop::Vect3	barycenter = utils::computeBarycenter(vertices);
-	for (auto& vertex: vertices) {
+	scop::Vect3	barycenter = utils::computeBarycenter(_vertices);
+	for (auto& vertex: _vertices) {
 		vertex.pos -= barycenter;
 	}
 
 	// Pass ownership of texture image from model to app
 	//TODO
-	// textures.emplace_back(
+	// _textures.emplace_back(
 	// 	std::move(*model.getMaterial().ambient_texture)
 	// );
 	// model.getMaterial().ambient_texture.release();
 }
 
 void	App::loadLight(const scop::mtl::Material& mat) {
-	light = scop::UniformBufferObject::Light{
+	_light = scop::UniformBufferObject::Light{
 		.ambient_color = mat.ambient_color,
 		.light_vector = scop::normalize(scop::Vect3(0.1f, 1.0f, 0.3f)),
 		.light_color = scop::Vect3(1.0f, 1.0f, 0.8f),

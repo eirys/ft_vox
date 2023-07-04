@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:14:18 by etran             #+#    #+#             */
-/*   Updated: 2023/07/03 11:50:45 by etran            ###   ########.fr       */
+/*   Updated: 2023/07/04 10:10:13 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,23 +22,19 @@
 // Std
 # include <chrono> // std::chrono
 
-# include "device.h"
-# include "texture_sampler.h"
+# include "buffer.h"
 # include "uniform_buffer_object.h"
 # include "player.h"
-# include "buffer.h"
 
 # define TEXTURE_SAMPLER_COUNT 16
 
 namespace scop {
 namespace graphics {
-class Engine;
+class Device;
+class TextureSampler;
 
 class DescriptorSet {
 public:
-
-	friend Engine;
-
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
@@ -67,6 +63,11 @@ public:
 		const vox::Player& player
 	);
 
+	/* ========================================================================= */
+
+	VkDescriptorSetLayout	getLayout() const noexcept;
+	VkDescriptorSet			getSet() const noexcept;
+
 private:
 	/* ========================================================================= */
 	/*                                  TYPEDEF                                  */
@@ -78,31 +79,28 @@ private:
 	/*                               CLASS MEMBERS                               */
 	/* ========================================================================= */
 
-	VkDescriptorSetLayout	vk_descriptor_set_layout;
-	VkDescriptorPool		vk_descriptor_pool;
-	VkDescriptorSet			vk_descriptor_sets;
+	VkDescriptorSetLayout	_layout;
+	VkDescriptorPool		_pool;
+	VkDescriptorSet			_set;
 
-	Buffer					uniform_buffers;
+	Buffer					_ubo;
 
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
 
-	void					createDescriptorSetLayout(
-		Device& device
-	);
-	void					createDescriptorPool(Device& device, uint32_t fif);
-	void					createDescriptorSets(
+	void					_createDescriptorPool(Device& device, uint32_t count);
+	void					_createDescriptorSets(
 		Device& device,
 		TextureSampler& texture_sampler,
-		uint32_t frames_in_flight
+		uint32_t count
 	);
-	void					createUniformBuffers(Device& device);
-	void					initUniformBuffer(
+	void					_createUniformBuffers(Device& device);
+	void					_initUniformBuffer(
 		const UniformBufferObject::Light& light
 	) noexcept;
 
-	void					updateCamera(
+	void					_updateCamera(
 		VkExtent2D extent,
 		const vox::Player& player
 	);

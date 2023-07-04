@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/15 20:25:44 by etran             #+#    #+#             */
-/*   Updated: 2023/07/04 09:47:05 by etran            ###   ########.fr       */
+/*   Updated: 2023/07/04 09:54:59 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -126,12 +126,6 @@ void	TextureSampler::_createTextureImages(
 	);
 
 	// Setup copy command buffer
-	// VkCommandBuffer	command_buffer = beginSingleTimeCommands(
-	// 	device.getLogicalDevice(),
-	// 	command_pool.getPool()
-	// );
-
-	// Setup copy command buffer
 	CommandBuffer	command_buffer;
 	command_buffer.init(device, command_pool);
 	command_buffer.begin();
@@ -180,14 +174,6 @@ void	TextureSampler::_createTextureImages(
 	// Submit commands
 	command_buffer.end(device);
 	command_buffer.destroy(device, command_pool);
-
-	// endSingleTimeCommands(
-	// 	device.getLogicalDevice(),
-	// 	device.getGraphicsQueue(),
-	// 	command_pool,
-	// 	command_buffer
-	// );
-
 	staging_buffer.destroy(device.getLogicalDevice());
 }
 

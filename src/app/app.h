@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:17:06 by etran             #+#    #+#             */
-/*   Updated: 2023/07/03 17:46:13 by etran            ###   ########.fr       */
+/*   Updated: 2023/07/04 10:22:06 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,7 +58,6 @@ public:
 	/*                                  TYPEDEFS                                 */
 	/* ========================================================================= */
 
-	// typedef std::array<scop::Image, 6> CubeMap;
 	typedef	graphics::TextureSampler::Texture	Texture;
 
 	/* ========================================================================= */
@@ -89,19 +88,20 @@ private:
 	/*                               CLASS MEMBERS                               */
 	/* ========================================================================= */
 
-	vox::Gameplay				game;
-	scop::Window				window;
-	scop::graphics::Engine		engine;
+	vox::Gameplay				_game;
+	scop::Window				_window;
+	scop::graphics::Engine		_engine;
 
-	std::vector<scop::Vertex>	vertices;
-	std::vector<uint32_t>		indices;
-	std::vector<Texture>		textures;
-	UniformBufferObject::Light	light;
+	// Resources
+	std::vector<scop::Vertex>	_vertices;
+	std::vector<uint32_t>		_indices;
+	std::vector<Texture>		_textures;
+	UniformBufferObject::Light	_light;
 
-	bool						keys_pressed_directions[6] = { false };
-	scop::Vect3					movement{};
+	bool						_keys_pressed_directions[6] = { false };
+	scop::Vect3					_movement{};
 
-	Timer						timer;
+	Timer						_timer;
 
 	/* ========================================================================= */
 	/*                                  METHODS                                  */

@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/05 09:55:33 by etran             #+#    #+#             */
-/*   Updated: 2023/07/03 11:59:10 by etran            ###   ########.fr       */
+/*   Updated: 2023/07/04 10:27:45 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -82,10 +82,10 @@ protected:
 	/*                               CLASS MEMBERS                               */
 	/* ========================================================================= */
 
-	scop::Vect3			position;
-	scop::Vect3			eye_dir;
-	Character::Camera	camera;
-	const float			cam_speed;
+	scop::Vect3			_position;
+	scop::Vect3			_eye_dir;
+	Character::Camera	_camera;
+	const float			_cam_speed;
 
 }; // class Character
 

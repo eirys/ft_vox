@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/02 16:09:44 by etran             #+#    #+#             */
-/*   Updated: 2023/07/04 09:45:53 by etran            ###   ########.fr       */
+/*   Updated: 2023/07/04 10:01:38 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -388,9 +388,10 @@ void	Engine::_createGraphicsPipeline() {
 
 	// Pipeline layout setups
 	VkPipelineLayoutCreateInfo	pipeline_layout_info{};
+	VkDescriptorSetLayout descriptor_layout = _descriptor_set.getLayout();
 	pipeline_layout_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
 	pipeline_layout_info.setLayoutCount = 1;
-	pipeline_layout_info.pSetLayouts = &_descriptor_set.vk_descriptor_set_layout;
+	pipeline_layout_info.pSetLayouts = &descriptor_layout;
 	pipeline_layout_info.pushConstantRangeCount = 0;
 	pipeline_layout_info.pPushConstantRanges = nullptr;
 
@@ -597,14 +598,14 @@ void	Engine::_recordDrawingCommand(
 		0,
 		VK_INDEX_TYPE_UINT32
 	);
-
 	// Bind descriptor sets
+	VkDescriptorSet	descriptor_set = _descriptor_set.getSet();
 	vkCmdBindDescriptorSets(
 		_main_command_buffer.getBuffer(),
 		VK_PIPELINE_BIND_POINT_GRAPHICS,
 		_pipeline_layout,
 		0,
-		1, &_descriptor_set.vk_descriptor_sets,
+		1, &descriptor_set,
 		0, nullptr
 	);
 

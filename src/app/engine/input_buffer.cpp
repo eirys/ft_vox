@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/16 13:03:48 by etran             #+#    #+#             */
-/*   Updated: 2023/07/04 09:50:20 by etran            ###   ########.fr       */
+/*   Updated: 2023/07/04 09:54:05 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -94,10 +94,6 @@ void	InputBuffer::_createVertexBuffer(
 	);
 
 	// Transfer data from staging buffer to vertex buffer
-	// VkCommandBuffer	command_buffer = beginSingleTimeCommands(
-	// 	device.getLogicalDevice(),
-	// 	command_pool
-	// );
 	CommandBuffer	command_buffer;
 	command_buffer.init(device, command_pool);
 	command_buffer.begin();
@@ -106,12 +102,6 @@ void	InputBuffer::_createVertexBuffer(
 		staging_buffer,
 		buffer_size
 	);
-	// endSingleTimeCommands(
-	// 	device.getLogicalDevice(),
-	// 	device.getGraphicsQueue(),
-	// 	command_pool,
-	// 	command_buffer
-	// );
 	command_buffer.end(device);
 	command_buffer.destroy(device, command_pool);
 
@@ -156,10 +146,6 @@ void	InputBuffer::_createIndexBuffer(
 	);
 
 	// Transfer data from staging buffer to index buffer
-	// VkCommandBuffer	command_buffer = beginSingleTimeCommands(
-	// 	device.getLogicalDevice(),
-	// 	command_pool
-	// );
 	CommandBuffer	command_buffer;
 	command_buffer.init(device, command_pool);
 	command_buffer.begin();
@@ -168,12 +154,6 @@ void	InputBuffer::_createIndexBuffer(
 		staging_buffer,
 		buffer_size
 	);
-	// endSingleTimeCommands(
-	// 	device.getLogicalDevice(),
-	// 	device.getGraphicsQueue(),
-	// 	command_pool,
-	// 	command_buffer
-	// );
 	command_buffer.end(device);
 	command_buffer.destroy(device, command_pool);
 

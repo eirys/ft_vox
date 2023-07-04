@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/05 09:50:49 by etran             #+#    #+#             */
-/*   Updated: 2023/06/06 00:48:55 by etran            ###   ########.fr       */
+/*   Updated: 2023/07/04 10:27:18 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,8 +40,9 @@ public:
 	~Player() = default;
 
 	Player() = delete;
-	Player(const Player& other) = delete;
 	Player(Player&& other) = delete;
+	Player(const Player& other) = delete;
+	Player&	operator=(Player&& other) = delete;
 	Player&	operator=(const Player& other) = delete;
 
 	/* INHERITED =============================================================== */
@@ -56,12 +57,6 @@ public:
 	/* ========================================================================= */
 
 	void	reset(const scop::Vect3& pos, const scop::Vect3& eye_dir);
-
-private:
-	/* ========================================================================= */
-	/*                               CLASS MEMBERS                               */
-	/* ========================================================================= */
-
 
 }; // class Player
 

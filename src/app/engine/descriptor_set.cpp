@@ -6,12 +6,11 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/15 20:56:05 by etran             #+#    #+#             */
-/*   Updated: 2023/07/03 17:39:26 by etran            ###   ########.fr       */
+/*   Updated: 2023/07/04 10:11:12 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "descriptor_set.h"
-#include "uniform_buffer_object.h"
 #include "engine.h"
 
 #include <array> // std::array
@@ -26,8 +25,45 @@ namespace graphics {
 /*                                   PUBLIC                                   */
 /* ========================================================================== */
 
+/**
+ * @brief Descriptor set layout for uniform buffer and combined image sampler.
+*/
 void	DescriptorSet::initLayout(Device& device) {
-	createDescriptorSetLayout(device);
+	// Uniform buffer layout: used during vertex shading
+	VkDescriptorSetLayoutBinding	camera_binding{};
+	camera_binding.binding = 0;
+	camera_binding.descriptorCount = 1;
+	camera_binding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	camera_binding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+
+	// Sampler descriptor layout: used during fragment shading
+	VkDescriptorSetLayoutBinding	sampler_binding{};
+	sampler_binding.binding = 1;
+	sampler_binding.descriptorCount = 1;
+	sampler_binding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+	sampler_binding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+
+	// Light layout
+	VkDescriptorSetLayoutBinding	light_binding{};
+	light_binding.binding = 2;
+	light_binding.descriptorCount = 1;
+	light_binding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	light_binding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+
+	std::array<VkDescriptorSetLayoutBinding, 3>	bindings = {
+		camera_binding,
+		sampler_binding,
+		light_binding
+	};
+
+	VkDescriptorSetLayoutCreateInfo	layout_info{};
+	layout_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+	layout_info.bindingCount = static_cast<uint32_t>(bindings.size());
+	layout_info.pBindings = bindings.data();
+
+	if (vkCreateDescriptorSetLayout(device.getLogicalDevice(), &layout_info, nullptr, &_layout) != VK_SUCCESS) {
+		throw std::runtime_error("failed to create descriptor set layout");
+	}
 }
 
 void	DescriptorSet::initSets(
@@ -35,32 +71,32 @@ void	DescriptorSet::initSets(
 	TextureSampler& texture_sampler,
 	const UniformBufferObject::Light& light
 ) {
-	uint32_t	frames_in_flight = static_cast<uint32_t>(
+	uint32_t	count = static_cast<uint32_t>(
 		Engine::max_frames_in_flight
 	);
-	createUniformBuffers(device);
-	createDescriptorPool(device, frames_in_flight);
-	createDescriptorSets(
+	_createUniformBuffers(device);
+	_createDescriptorPool(device, count);
+	_createDescriptorSets(
 		device,
 		texture_sampler,
-		frames_in_flight
+		count
 	);
 
-	initUniformBuffer(light);
+	_initUniformBuffer(light);
 }
 
 void	DescriptorSet::destroy(
 	Device& device
 ) {
 	// Remove uniform buffers
-	uniform_buffers.unmap(device.getLogicalDevice());
-	uniform_buffers.destroy(device.getLogicalDevice());
+	_ubo.unmap(device.getLogicalDevice());
+	_ubo.destroy(device.getLogicalDevice());
 
 	// Remove descriptor pool
-	vkDestroyDescriptorPool(device.getLogicalDevice(), vk_descriptor_pool, nullptr);
+	vkDestroyDescriptorPool(device.getLogicalDevice(), _pool, nullptr);
 	vkDestroyDescriptorSetLayout(
 		device.getLogicalDevice(),
-		vk_descriptor_set_layout,
+		_layout,
 		nullptr
 	);
 }
@@ -72,7 +108,17 @@ void	DescriptorSet::updateUniformBuffer(
 	VkExtent2D extent,
 	const vox::Player& player
 ) {
-	updateCamera(extent, player);
+	_updateCamera(extent, player);
+}
+
+/* ========================================================================== */
+
+VkDescriptorSetLayout	DescriptorSet::getLayout() const noexcept {
+	return _layout;
+}
+
+VkDescriptorSet	DescriptorSet::getSet() const noexcept {
+	return _set;
 }
 
 /* ========================================================================== */
@@ -80,89 +126,46 @@ void	DescriptorSet::updateUniformBuffer(
 /* ========================================================================== */
 
 /**
- * Descriptor set layout for uniform buffer and combined image sampler
+ * @brief Handler for descriptor sets allocation.
 */
-void	DescriptorSet::createDescriptorSetLayout(
-	Device& device
-) {
-	// Uniform buffer layout: used during vertex shading
-	VkDescriptorSetLayoutBinding	camera_layout_binding{};
-	camera_layout_binding.binding = 0;
-	camera_layout_binding.descriptorCount = 1;
-	camera_layout_binding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	camera_layout_binding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-
-	// Sampler descriptor layout: used during fragment shading
-	VkDescriptorSetLayoutBinding	sampler_layout_binding{};
-	sampler_layout_binding.binding = 1;
-	sampler_layout_binding.descriptorCount = 1;
-	sampler_layout_binding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-	sampler_layout_binding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-
-	// Light layout
-	VkDescriptorSetLayoutBinding	light_layout_binding{};
-	light_layout_binding.binding = 2;
-	light_layout_binding.descriptorCount = 1;
-	light_layout_binding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	light_layout_binding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-
-	std::array<VkDescriptorSetLayoutBinding, 3>	bindings = {
-		camera_layout_binding,
-		sampler_layout_binding,
-		light_layout_binding
-	};
-
-	VkDescriptorSetLayoutCreateInfo	layout_info{};
-	layout_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-	layout_info.bindingCount = static_cast<uint32_t>(bindings.size());
-	layout_info.pBindings = bindings.data();
-
-	if (vkCreateDescriptorSetLayout(device.getLogicalDevice(), &layout_info, nullptr, &vk_descriptor_set_layout) != VK_SUCCESS) {
-		throw std::runtime_error("failed to create descriptor set layout");
-	}
-}
-
-/**
- * Handler for descriptor sets (like command pool)
-*/
-void	DescriptorSet::createDescriptorPool(Device& device, uint32_t frames_in_flight) {
+void	DescriptorSet::_createDescriptorPool(Device& device, uint32_t count) {
 	std::array<VkDescriptorPoolSize, 3>	pool_sizes{};
 	pool_sizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	pool_sizes[0].descriptorCount = frames_in_flight;
+	pool_sizes[0].descriptorCount = count;
 	pool_sizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-	pool_sizes[1].descriptorCount = frames_in_flight;
+	pool_sizes[1].descriptorCount = count;
 	pool_sizes[2].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	pool_sizes[2].descriptorCount = frames_in_flight;
+	pool_sizes[2].descriptorCount = count;
 
 	VkDescriptorPoolCreateInfo	pool_info{};
 	pool_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
 	pool_info.poolSizeCount = static_cast<uint32_t>(pool_sizes.size());
 	pool_info.pPoolSizes = pool_sizes.data();
-	pool_info.maxSets = frames_in_flight;
+	pool_info.maxSets = count;
 
-	if (vkCreateDescriptorPool(device.getLogicalDevice(), &pool_info, nullptr, &vk_descriptor_pool) != VK_SUCCESS) {
+	if (vkCreateDescriptorPool(device.getLogicalDevice(), &pool_info, nullptr, &_pool) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create descriptor pool");
 	}
 }
 
-void	DescriptorSet::createDescriptorSets(
+void	DescriptorSet::_createDescriptorSets(
 	Device& device,
 	TextureSampler& texture_sampler,
-	uint32_t frames_in_flight
+	uint32_t count
 ) {
 	VkDescriptorSetAllocateInfo			alloc_info{};
 	alloc_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-	alloc_info.descriptorPool = vk_descriptor_pool;
-	alloc_info.descriptorSetCount = frames_in_flight;
-	alloc_info.pSetLayouts = &vk_descriptor_set_layout;
+	alloc_info.descriptorPool = _pool;
+	alloc_info.descriptorSetCount = count;
+	alloc_info.pSetLayouts = &_layout;
 
-	if (vkAllocateDescriptorSets(device.getLogicalDevice(), &alloc_info, &vk_descriptor_sets) != VK_SUCCESS) {
+	if (vkAllocateDescriptorSets(device.getLogicalDevice(), &alloc_info, &_set) != VK_SUCCESS) {
 		throw std::runtime_error("failed to allocate descriptor sets");
 	}
 
 	// Ubo Camera
 	VkDescriptorBufferInfo	ubo_info_camera{};
-	ubo_info_camera.buffer = uniform_buffers.getBuffer();
+	ubo_info_camera.buffer = _ubo.getBuffer();
 	ubo_info_camera.offset = offsetof(UniformBufferObject, camera);
 	ubo_info_camera.range = sizeof(UniformBufferObject::Camera);
 
@@ -174,59 +177,59 @@ void	DescriptorSet::createDescriptorSets(
 
 	// Ubo light
 	VkDescriptorBufferInfo	ubo_info_light{};
-	ubo_info_light.buffer = uniform_buffers.getBuffer();
+	ubo_info_light.buffer = _ubo.getBuffer();
 	ubo_info_light.offset = offsetof(UniformBufferObject, light);
 	ubo_info_light.range = sizeof(UniformBufferObject::Light);
 
 	// Allow buffer udpate using descriptor write
-	std::array<VkWriteDescriptorSet, 3>	descriptor_writes{};
+	std::array<VkWriteDescriptorSet, 3>	writes{};
 	// Camera UBO
-	descriptor_writes[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-	descriptor_writes[0].dstSet = vk_descriptor_sets;
-	descriptor_writes[0].dstBinding = 0;
-	descriptor_writes[0].dstArrayElement = 0;
-	descriptor_writes[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	descriptor_writes[0].descriptorCount = 1;
-	descriptor_writes[0].pBufferInfo = &ubo_info_camera;
-	descriptor_writes[0].pImageInfo = nullptr;
-	descriptor_writes[0].pTexelBufferView = nullptr;
+	writes[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+	writes[0].dstSet = _set;
+	writes[0].dstBinding = 0;
+	writes[0].dstArrayElement = 0;
+	writes[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	writes[0].descriptorCount = 1;
+	writes[0].pBufferInfo = &ubo_info_camera;
+	writes[0].pImageInfo = nullptr;
+	writes[0].pTexelBufferView = nullptr;
 
 	// Sampler
-	descriptor_writes[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-	descriptor_writes[1].dstSet = vk_descriptor_sets;
-	descriptor_writes[1].dstBinding = 1;
-	descriptor_writes[1].dstArrayElement = 0;
-	descriptor_writes[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-	descriptor_writes[1].descriptorCount = 1;
-	descriptor_writes[1].pBufferInfo = nullptr;
-	descriptor_writes[1].pImageInfo = &image_info;
-	descriptor_writes[1].pTexelBufferView = nullptr;
+	writes[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+	writes[1].dstSet = _set;
+	writes[1].dstBinding = 1;
+	writes[1].dstArrayElement = 0;
+	writes[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+	writes[1].descriptorCount = 1;
+	writes[1].pBufferInfo = nullptr;
+	writes[1].pImageInfo = &image_info;
+	writes[1].pTexelBufferView = nullptr;
 
 	// Light UBO
-	descriptor_writes[2].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-	descriptor_writes[2].dstSet = vk_descriptor_sets;
-	descriptor_writes[2].dstBinding = 2;
-	descriptor_writes[2].dstArrayElement = 0;
-	descriptor_writes[2].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	descriptor_writes[2].descriptorCount = 1;
-	descriptor_writes[2].pBufferInfo = &ubo_info_light;
-	descriptor_writes[2].pImageInfo = nullptr;
-	descriptor_writes[2].pTexelBufferView = nullptr;
+	writes[2].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+	writes[2].dstSet = _set;
+	writes[2].dstBinding = 2;
+	writes[2].dstArrayElement = 0;
+	writes[2].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	writes[2].descriptorCount = 1;
+	writes[2].pBufferInfo = &ubo_info_light;
+	writes[2].pImageInfo = nullptr;
+	writes[2].pTexelBufferView = nullptr;
 
 	vkUpdateDescriptorSets(
 		device.getLogicalDevice(),
-		static_cast<uint32_t>(descriptor_writes.size()),
-		descriptor_writes.data(),
+		static_cast<uint32_t>(writes.size()),
+		writes.data(),
 		0, nullptr
 	);
 }
 
-void	DescriptorSet::createUniformBuffers(Device& device) {
+void	DescriptorSet::_createUniformBuffers(Device& device) {
 	// Camera and texture are dynamically updated.
 	VkDeviceSize	buffer_size = sizeof(UniformBufferObject);
 
 	// Create the buffer and allocate memory
-	uniform_buffers.init(
+	_ubo.init(
 		device,
 		buffer_size,
 		VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
@@ -235,24 +238,24 @@ void	DescriptorSet::createUniformBuffers(Device& device) {
 	);
 
 	// Map it to allow CPU to write on it
-	uniform_buffers.map(device.getLogicalDevice(), buffer_size);
+	_ubo.map(device.getLogicalDevice(), buffer_size);
 }
 
 /**
  * @brief	Initiate uniform buffer.
 */
-void	DescriptorSet::initUniformBuffer(
+void	DescriptorSet::_initUniformBuffer(
 	const UniformBufferObject::Light& light
 ) noexcept {
 	UniformBufferObject	ubo{};
 	ubo.light = light;
-	uniform_buffers.copyFrom(&ubo, sizeof(UniformBufferObject));
+	_ubo.copyFrom(&ubo, sizeof(UniformBufferObject));
 }
 
 /**
  * Update the camera part of the uniform buffer.
 */
-void	DescriptorSet::updateCamera(
+void	DescriptorSet::_updateCamera(
 	VkExtent2D extent,
 	const vox::Player& player
 ) {
@@ -276,7 +279,7 @@ void	DescriptorSet::updateCamera(
 	camera.proj[5] *= -1;
 
 	// Copy to uniform buffer
-	uniform_buffers.copyFrom(
+	_ubo.copyFrom(
 		&camera,
 		sizeof(UniformBufferObject::Camera),
 		offsetof(UniformBufferObject, camera)
