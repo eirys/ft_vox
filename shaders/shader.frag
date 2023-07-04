@@ -25,7 +25,7 @@ void main() {
 	float directional_lighting = max(
 		dot(vert_normal, light.light_vector),
 		0.0
-	) * light.intensity;
+	) * light.light_intensity;
 
 	out_color += color * directional_lighting;
 }
