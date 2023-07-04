@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:14:56 by etran             #+#    #+#             */
-/*   Updated: 2023/07/03 19:43:02 by etran            ###   ########.fr       */
+/*   Updated: 2023/07/04 09:28:02 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,6 +30,7 @@ class Image;
 
 namespace graphics {
 class Device;
+class CommandPool;
 
 class TextureSampler {
 public:
@@ -47,17 +48,18 @@ public:
 	/* ========================================================================= */
 
 	TextureSampler() = default;
-	TextureSampler(TextureSampler&& other) = default;
 	~TextureSampler() = default;
 
+	TextureSampler(TextureSampler&& other) = delete;
 	TextureSampler(const TextureSampler& other) = delete;
+	TextureSampler& operator=(TextureSampler&& other) = delete;
 	TextureSampler& operator=(const TextureSampler& other) = delete;
 
 	/* ========================================================================= */
 
 	void							init(
 		Device& device,
-		VkCommandPool command_pool,
+		CommandPool& command_pool,
 		const std::vector<Texture>& images
 	);
 	void							destroy(Device& device);
@@ -85,7 +87,7 @@ private:
 
 	void							_createTextureImages(
 		Device& device,
-		VkCommandPool command_pool,
+		CommandPool& command_pool,
 		const std::vector<Texture>& images
 	);
 	void							_createTextureImageView(

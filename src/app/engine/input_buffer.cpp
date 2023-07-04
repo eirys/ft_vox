@@ -6,15 +6,17 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/16 13:03:48 by etran             #+#    #+#             */
-/*   Updated: 2023/07/03 11:09:49 by etran            ###   ########.fr       */
+/*   Updated: 2023/07/04 09:50:20 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "input_buffer.h"
-#include "engine.h"
+// #include "engine.h"
 #include "device.h"
 #include "vertex.h"
 #include "vector.h"
+#include "command_pool.h"
+#include "command_buffer.h"
 
 #include <cstring> // memcpy
 
@@ -27,7 +29,7 @@ namespace graphics {
 
 void	InputBuffer::init(
 	Device& device,
-	VkCommandPool command_pool,
+	CommandPool& command_pool,
 	const std::vector<Vertex>& vertices,
 	const std::vector<uint32_t>& indices
 ) {
@@ -60,7 +62,7 @@ const Buffer&	InputBuffer::getIndexBuffer() const noexcept {
 */
 void	InputBuffer::_createVertexBuffer(
 	Device& device,
-	VkCommandPool command_pool,
+	CommandPool& command_pool,
 	const std::vector<Vertex>& vertices
 ) {
 	const VkDeviceSize	buffer_size = sizeof(Vertex) * vertices.size();
@@ -92,21 +94,26 @@ void	InputBuffer::_createVertexBuffer(
 	);
 
 	// Transfer data from staging buffer to vertex buffer
-	VkCommandBuffer	command_buffer = beginSingleTimeCommands(
-		device.getLogicalDevice(),
-		command_pool
-	);
+	// VkCommandBuffer	command_buffer = beginSingleTimeCommands(
+	// 	device.getLogicalDevice(),
+	// 	command_pool
+	// );
+	CommandBuffer	command_buffer;
+	command_buffer.init(device, command_pool);
+	command_buffer.begin();
 	_vertex_buffer.copyBuffer(
 		command_buffer,
 		staging_buffer,
 		buffer_size
 	);
-	endSingleTimeCommands(
-		device.getLogicalDevice(),
-		device.getGraphicsQueue(),
-		command_pool,
-		command_buffer
-	);
+	// endSingleTimeCommands(
+	// 	device.getLogicalDevice(),
+	// 	device.getGraphicsQueue(),
+	// 	command_pool,
+	// 	command_buffer
+	// );
+	command_buffer.end(device);
+	command_buffer.destroy(device, command_pool);
 
 	// Cleanup staging buffer
 	staging_buffer.destroy(device.getLogicalDevice());
@@ -117,7 +124,7 @@ void	InputBuffer::_createVertexBuffer(
  */
 void	InputBuffer::_createIndexBuffer(
 	Device& device,
-	VkCommandPool command_pool,
+	CommandPool& command_pool,
 	const std::vector<uint32_t>& indices
 ) {
 	const VkDeviceSize	buffer_size = sizeof(uint32_t) * indices.size();
@@ -149,21 +156,26 @@ void	InputBuffer::_createIndexBuffer(
 	);
 
 	// Transfer data from staging buffer to index buffer
-	VkCommandBuffer	command_buffer = beginSingleTimeCommands(
-		device.getLogicalDevice(),
-		command_pool
-	);
+	// VkCommandBuffer	command_buffer = beginSingleTimeCommands(
+	// 	device.getLogicalDevice(),
+	// 	command_pool
+	// );
+	CommandBuffer	command_buffer;
+	command_buffer.init(device, command_pool);
+	command_buffer.begin();
 	_index_buffer.copyBuffer(
 		command_buffer,
 		staging_buffer,
 		buffer_size
 	);
-	endSingleTimeCommands(
-		device.getLogicalDevice(),
-		device.getGraphicsQueue(),
-		command_pool,
-		command_buffer
-	);
+	// endSingleTimeCommands(
+	// 	device.getLogicalDevice(),
+	// 	device.getGraphicsQueue(),
+	// 	command_pool,
+	// 	command_buffer
+	// );
+	command_buffer.end(device);
+	command_buffer.destroy(device, command_pool);
 
 	// Cleanup staging buffer
 	staging_buffer.destroy(device.getLogicalDevice());

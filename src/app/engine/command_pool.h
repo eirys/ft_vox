@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   command_buffer.h                                   :+:      :+:    :+:   */
+/*   command_pool.h                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/07/04 08:34:43 by etran             #+#    #+#             */
-/*   Updated: 2023/07/04 09:42:25 by etran            ###   ########.fr       */
+/*   Created: 2023/06/04 17:14:01 by etran             #+#    #+#             */
+/*   Updated: 2023/07/04 09:42:54 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,61 +22,43 @@
 namespace scop {
 namespace graphics {
 class Device;
-class CommandPool;
 
 /**
- * @brief Wrapper class for VkCommandBuffer.
+ * @brief Simple wrapper class for VkCommandPool.
 */
-class CommandBuffer {
+class CommandPool {
 public:
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
 
-	CommandBuffer() = default;
-	~CommandBuffer() = default;
+	CommandPool() = default;
+	~CommandPool() = default;
 
-	CommandBuffer(CommandBuffer&& other) = delete;
-	CommandBuffer(const CommandBuffer& other) = delete;
-	CommandBuffer& operator=(CommandBuffer&& other) = delete;
-	CommandBuffer& operator=(const CommandBuffer& other) = delete;
-
-	/* ========================================================================= */
-
-	void				init(
-		Device& device,
-		CommandPool& pool,
-		uint32_t count = 1
-	);
-	void				destroy(Device& device, CommandPool& pool);
+	CommandPool(CommandPool&& other) = delete;
+	CommandPool(const CommandPool& other) = delete;
+	CommandPool& operator=(CommandPool&& other) = delete;
+	CommandPool& operator=(const CommandPool& other) = delete;
 
 	/* ========================================================================= */
 
-	void				begin(
-		VkCommandBufferUsageFlags flags =
-			VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT
-	);
-	void				restart(
-		Device& device,
-		VkCommandBufferUsageFlags flags =
-			VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT
-	);
-	void				reset();
-	void				end(Device& device);
+	void				init(Device& device);
+	void				destroy(Device& device);
 
 	/* ========================================================================= */
 
-	VkCommandBuffer		getBuffer() const noexcept;
-	operator VkCommandBuffer() const noexcept;
+	VkCommandPool		getPool() const noexcept;
+	operator VkCommandPool() const noexcept;
 
 private:
 	/* ========================================================================= */
 	/*                               CLASS MEMBERS                               */
 	/* ========================================================================= */
 
-	VkCommandBuffer		_buffer;
+	VkCommandPool		_pool;
 
-}; // class CommandBuffer
+}; // class CommandPool
 
 } // namespace graphics
 } // namespace scop
+

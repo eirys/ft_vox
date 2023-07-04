@@ -5,14 +5,16 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/05/16 12:47:19 by etran             #+#    #+#             */
-/*   Updated: 2023/07/03 11:06:47 by etran            ###   ########.fr       */
+/*   Created: 2023/07/04 08:39:55 by etran             #+#    #+#             */
+/*   Updated: 2023/07/04 09:46:17 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "command_buffer.h"
-#include "engine.h"
 #include "device.h"
+#include "command_pool.h"
+
+#include <stdexcept> // std::runtime_error
 
 namespace scop {
 namespace graphics {
@@ -21,61 +23,119 @@ namespace graphics {
 /*                                   PUBLIC                                   */
 /* ========================================================================== */
 
-void	CommandBuffer::initPool(Device& device) {
-	createCommandPool(device);
+/**
+ * @brief Initialize the command buffer.
+*/
+void	CommandBuffer::init(
+	Device& device,
+	CommandPool& pool,
+	uint32_t count
+) {
+	VkCommandBufferAllocateInfo	alloc{};
+	alloc.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+	alloc.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+	alloc.commandPool = pool.getPool();
+	alloc.commandBufferCount = count;
+
+	if (vkAllocateCommandBuffers(device.getLogicalDevice(), &alloc, &_buffer) != VK_SUCCESS) {
+		throw std::runtime_error("failed to allocate command buffer");
+	}
 }
 
-void	CommandBuffer::initBuffer(Device& device) {
-	createCommandBuffers(device);
-}
-
-void	CommandBuffer::destroy(Device& device) {
-	vkDestroyCommandPool(device.getLogicalDevice(), vk_command_pool, nullptr);
+/**
+ * @brief Deallocate the command buffer.
+*/
+void	CommandBuffer::destroy(
+	Device& device,
+	CommandPool& pool
+) {
+	vkFreeCommandBuffers(
+		device.getLogicalDevice(),
+		pool.getPool(),
+		1, &_buffer
+	);
 }
 
 /* ========================================================================== */
 
 /**
- * @brief Initialize the command buffer
+ * @brief Starts recording the command buffer.
+ * 
+ * @param flags Command buffer usage flags.
+ * Defaults to VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT.
+*/
+void	CommandBuffer::begin(
+	VkCommandBufferUsageFlags flags
+) {
+	VkCommandBufferBeginInfo	begin_info{};
+	begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+	begin_info.flags = flags;
+
+	if (vkBeginCommandBuffer(_buffer, &begin_info) != VK_SUCCESS) {
+		throw std::runtime_error("failed to begin recording command buffer");
+	}
+}
+
+/**
+ * @brief Reset the command buffer.
 */
 void	CommandBuffer::reset() {
-	vkResetCommandBuffer(command_buffers, 0);
-}
-
-/* ========================================================================== */
-/*                                   PRIVATE                                  */
-/* ========================================================================== */
-
-/**
- * Command buffers memory handler
-*/
-void	CommandBuffer::createCommandPool(Device& device) {
-	Device::QueueFamilyIndices	queue_family_indices =
-		device.findQueueFamilies();
-
-	VkCommandPoolCreateInfo	pool_info{};
-	pool_info.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-	pool_info.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
-	pool_info.queueFamilyIndex = queue_family_indices.graphics_family.value();
-
-	if (vkCreateCommandPool(device.getLogicalDevice(), &pool_info, nullptr, &vk_command_pool) != VK_SUCCESS) {
-		throw std::runtime_error("failed to create command pool");
-	}
+	vkResetCommandBuffer(_buffer, 0);
 }
 
 /**
- * Command buffers handler
+ * @brief Restart the command buffer.
+ * 
+ * @param flags Command buffer usage flags.
+ * Defaults to VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT.
 */
-void	CommandBuffer::createCommandBuffers(Device& device) {
-	VkCommandBufferAllocateInfo	alloc_info{};
-	alloc_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-	alloc_info.commandPool = vk_command_pool;
-	alloc_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-	alloc_info.commandBufferCount = static_cast<uint32_t>(Engine::max_frames_in_flight);
+void	CommandBuffer::restart(
+	Device& device,
+	VkCommandBufferUsageFlags flags
+) {
+	end(device);
+	reset();
+	begin(flags);
+}
 
-	if (vkAllocateCommandBuffers(device.getLogicalDevice(), &alloc_info, &command_buffers) != VK_SUCCESS) {
-		throw std::runtime_error("failed to allocate command buffers");
+/**
+ * @brief Ends recording the command buffer.
+ * 
+ * @note A fence is created to wait for the transfer to complete.
+*/
+void	CommandBuffer::end(Device& device) {
+	if (vkEndCommandBuffer(_buffer) != VK_SUCCESS) {
+		throw std::runtime_error("failed to record command buffer");
 	}
+
+	// Create fence to wait for transfer to complete before deallocating
+	VkFence				fence;
+	VkFenceCreateInfo	fence_info{};
+	fence_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+	if (vkCreateFence(device.getLogicalDevice(), &fence_info, nullptr, &fence) != VK_SUCCESS) {
+		throw std::runtime_error("failed to create fence for command buffer");
+	}
+
+	VkSubmitInfo	submit_info{};
+	submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+	submit_info.commandBufferCount = 1;
+	submit_info.pCommandBuffers = &_buffer;
+	if (vkQueueSubmit(device.getGraphicsQueue(), 1, &submit_info, fence) != VK_SUCCESS) {
+		throw std::runtime_error("failed to submit command buffer to queue");
+	}
+
+	vkWaitForFences(device.getLogicalDevice(), 1, &fence, VK_TRUE, UINT64_MAX);
+	vkDestroyFence(device.getLogicalDevice(), fence, nullptr);
+}
+
+/* ========================================================================== */
+
+VkCommandBuffer	CommandBuffer::getBuffer() const noexcept {
+	return _buffer;
+}
+
+CommandBuffer::operator VkCommandBuffer() const noexcept {
+	return _buffer;
 }
 
 } // namespace graphics

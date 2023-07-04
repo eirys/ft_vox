@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/28 11:12:12 by eli               #+#    #+#             */
-/*   Updated: 2023/07/03 19:39:08 by etran            ###   ########.fr       */
+/*   Updated: 2023/07/04 09:52:18 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,7 +47,7 @@ App::App() {
 	loadTerrain();
 	resetGame();
 	scop::mtl::Material material;
-	material.ambient_color = {0.5,0.5,0.5};
+	material.ambient_color = {0.4,0.4,0.3};
 	loadLight(material);
 	window.init(this);
 	engine.init(window, textures, light, vertices, indices);

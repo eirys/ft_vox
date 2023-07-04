@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/15 20:25:44 by etran             #+#    #+#             */
-/*   Updated: 2023/07/03 22:07:52 by etran            ###   ########.fr       */
+/*   Updated: 2023/07/04 09:47:05 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,8 @@
 #include "device.h"
 #include "utils.h"
 #include "buffer.h"
+#include "command_pool.h"
+#include "command_buffer.h"
 
 #include <cmath> // std::floor
 #include <algorithm> // std::max
@@ -31,13 +33,12 @@ namespace graphics {
 
 void	TextureSampler::init(
 	Device& device,
-	VkCommandPool command_pool,
+	CommandPool& command_pool,
 	const std::vector<Texture>& images
 ) {
 	if (images.empty()) {
 		throw std::invalid_argument("TextureSampler: no image provided");
 	}
-
 	_texture_count = static_cast<uint32_t>(images.size());
 	_createTextureImages(device, command_pool, images);
 	_createTextureImageView(device);
@@ -70,7 +71,7 @@ const ImageBuffer&	TextureSampler::getTextureBuffer() const noexcept {
 */
 void	TextureSampler::_createTextureImages(
 	Device& device,
-	VkCommandPool command_pool,
+	CommandPool& command_pool,
 	const std::vector<Texture>& images
 ) {
 	// Size of a side
@@ -125,10 +126,15 @@ void	TextureSampler::_createTextureImages(
 	);
 
 	// Setup copy command buffer
-	VkCommandBuffer	command_buffer = beginSingleTimeCommands(
-		device.getLogicalDevice(),
-		command_pool
-	);
+	// VkCommandBuffer	command_buffer = beginSingleTimeCommands(
+	// 	device.getLogicalDevice(),
+	// 	command_pool.getPool()
+	// );
+
+	// Setup copy command buffer
+	CommandBuffer	command_buffer;
+	command_buffer.init(device, command_pool);
+	command_buffer.begin();
 
 	// Transition to transfer destination layout
 	VkImageSubresourceRange	transfer_barrier{};
@@ -171,13 +177,16 @@ void	TextureSampler::_createTextureImages(
 		_layer_count * _texture_count
 	);
 
-	// Submit and wait for transfer to be done before destroying buffer
-	endSingleTimeCommands(
-		device.getLogicalDevice(),
-		device.getGraphicsQueue(),
-		command_pool,
-		command_buffer
-	);
+	// Submit commands
+	command_buffer.end(device);
+	command_buffer.destroy(device, command_pool);
+
+	// endSingleTimeCommands(
+	// 	device.getLogicalDevice(),
+	// 	device.getGraphicsQueue(),
+	// 	command_pool,
+	// 	command_buffer
+	// );
 
 	staging_buffer.destroy(device.getLogicalDevice());
 }

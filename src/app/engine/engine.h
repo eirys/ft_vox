@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:14:35 by etran             #+#    #+#             */
-/*   Updated: 2023/07/03 20:37:13 by etran            ###   ########.fr       */
+/*   Updated: 2023/07/04 09:31:34 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,9 +29,10 @@
 # include "render_pass.h"
 # include "texture_sampler.h"
 # include "descriptor_set.h"
-# include "command_buffer.h"
+# include "command_pool.h"
 # include "input_buffer.h"
 # include "player.h"
+# include "command_buffer.h"
 
 # define FRAG_SHADER_BIN "shaders/frag.spv"
 # define VERT_SHADER_BIN "shaders/vert.spv"
@@ -100,8 +101,10 @@ private:
 	RenderPass						_render_pass;
 	TextureSampler					_texture_sampler;
 	DescriptorSet					_descriptor_set;
-	CommandBuffer					_command_buffer;
+	CommandPool						_command_pool;
 	InputBuffer						_input_buffer;
+
+	CommandBuffer					_main_command_buffer;
 
 	VkSemaphore						_image_available_semaphores;
 	VkSemaphore						_render_finished_semaphores;
@@ -136,18 +139,18 @@ private:
 /*                                    UTILS                                   */
 /* ========================================================================== */
 
-VkCommandBuffer	beginSingleTimeCommands(
-	VkDevice device,
-	VkCommandPool command_pool
-);
+// VkCommandBuffer	beginSingleTimeCommands(
+// 	VkDevice device,
+// 	VkCommandPool command_pool
+// );
 
-void	endSingleTimeCommands(
-	VkDevice device,
-	VkQueue queue,
-	VkCommandPool command_pool,
-	VkCommandBuffer command_buffer,
-	bool reset = true
-);
+// void	endSingleTimeCommands(
+// 	VkDevice device,
+// 	VkQueue queue,
+// 	VkCommandPool command_pool,
+// 	VkCommandBuffer command_buffer,
+// 	bool reset = true
+// );
 
 } // namespace graphics
 } // namespace scop

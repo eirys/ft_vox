@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/02 16:09:44 by etran             #+#    #+#             */
-/*   Updated: 2023/07/03 20:36:58 by etran            ###   ########.fr       */
+/*   Updated: 2023/07/04 09:45:53 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,11 +45,11 @@ void	Engine::init(
 	_swap_chain.initFrameBuffers(_device, _render_pass);
 	_descriptor_set.initLayout(_device);
 	_createGraphicsPipeline();
-	_command_buffer.initPool(_device);
-	_texture_sampler.init(_device, _command_buffer.vk_command_pool, images);
-	_input_buffer.init(_device, _command_buffer.vk_command_pool, vertices, indices);
+	_command_pool.init(_device);
+	_texture_sampler.init(_device, _command_pool, images);
+	_input_buffer.init(_device, _command_pool, vertices, indices);
 	_descriptor_set.initSets(_device, _texture_sampler, light);
-	_command_buffer.initBuffer(_device);
+	_main_command_buffer.init(_device, _command_pool, max_frames_in_flight);
 	_createSyncObjects();
 }
 
@@ -86,7 +86,7 @@ void	Engine::destroy() {
 		nullptr
 	);
 
-	_command_buffer.destroy(_device);
+	_command_pool.destroy(_device);
 	_device.destroy(_vk_instance);
 	_debug_module.destroy(_vk_instance);
 
@@ -135,7 +135,7 @@ void	Engine::render(
 	vkResetFences(_device.getLogicalDevice(), 1, &_in_flight_fences);
 
 	// Record buffer
-	_command_buffer.reset();
+	_main_command_buffer.reset();
 	_recordDrawingCommand(_nb_indices, image_index);
 
 	_descriptor_set.updateUniformBuffer(
@@ -159,7 +159,7 @@ void	Engine::render(
 	submit_info.pWaitSemaphores = wait_semaphore;
 	submit_info.pWaitDstStageMask = wait_stages;
 	submit_info.commandBufferCount = 1;
-	submit_info.pCommandBuffers = &_command_buffer.command_buffers;
+	submit_info.pCommandBuffers = reinterpret_cast<VkCommandBuffer*>(&_main_command_buffer);
 	submit_info.signalSemaphoreCount = 1;
 	submit_info.pSignalSemaphores = signal_semaphores;
 
@@ -526,7 +526,7 @@ void	Engine::_recordDrawingCommand(
 	begin_info.flags = 0;
 	begin_info.pInheritanceInfo = nullptr;
 
-	if (vkBeginCommandBuffer(_command_buffer.command_buffers, &begin_info) != VK_SUCCESS) {
+	if (vkBeginCommandBuffer(_main_command_buffer.getBuffer(), &begin_info) != VK_SUCCESS) {
 		throw std::runtime_error("failed to begin recording command buffer");
 	}
 
@@ -551,12 +551,12 @@ void	Engine::_recordDrawingCommand(
 
 	// Begin rp and bind _pipeline
 	vkCmdBeginRenderPass(
-		_command_buffer.command_buffers,
+		_main_command_buffer.getBuffer(),
 		&render_pass_info,
 		VK_SUBPASS_CONTENTS_INLINE
 	);
 	vkCmdBindPipeline(
-		_command_buffer.command_buffers,
+		_main_command_buffer.getBuffer(),
 		VK_PIPELINE_BIND_POINT_GRAPHICS,
 		_pipeline
 	);
@@ -573,12 +573,12 @@ void	Engine::_recordDrawingCommand(
 	);
 	viewport.minDepth = 0.0f;
 	viewport.maxDepth = 1.0f;
-	vkCmdSetViewport(_command_buffer.command_buffers, 0, 1, &viewport);
+	vkCmdSetViewport(_main_command_buffer.getBuffer(), 0, 1, &viewport);
 
 	VkRect2D	scissor{};
 	scissor.offset = { 0, 0 };
 	scissor.extent = _swap_chain.getExtent();
-	vkCmdSetScissor(_command_buffer.command_buffers, 0, 1, &scissor);
+	vkCmdSetScissor(_main_command_buffer.getBuffer(), 0, 1, &scissor);
 
 	// Bind vertex buffer && index buffer
 	VkBuffer		vertex_buffers[] = {
@@ -586,13 +586,13 @@ void	Engine::_recordDrawingCommand(
 	};
 	VkDeviceSize	offsets[] = { 0 };
 	vkCmdBindVertexBuffers(
-		_command_buffer.command_buffers,
+		_main_command_buffer.getBuffer(),
 		0,
 		1, vertex_buffers,
 		offsets
 	);
 	vkCmdBindIndexBuffer(
-		_command_buffer.command_buffers,
+		_main_command_buffer.getBuffer(),
 		_input_buffer.getIndexBuffer().getBuffer(),
 		0,
 		VK_INDEX_TYPE_UINT32
@@ -600,7 +600,7 @@ void	Engine::_recordDrawingCommand(
 
 	// Bind descriptor sets
 	vkCmdBindDescriptorSets(
-		_command_buffer.command_buffers,
+		_main_command_buffer.getBuffer(),
 		VK_PIPELINE_BIND_POINT_GRAPHICS,
 		_pipeline_layout,
 		0,
@@ -610,7 +610,7 @@ void	Engine::_recordDrawingCommand(
 
 	// Issue draw command
 	vkCmdDrawIndexed(
-		_command_buffer.command_buffers,
+		_main_command_buffer.getBuffer(),
 		static_cast<uint32_t>(indices_size),
 		1,
 		0,
@@ -619,9 +619,9 @@ void	Engine::_recordDrawingCommand(
 	);
 
 	// Stop the render target work
-	vkCmdEndRenderPass(_command_buffer.command_buffers);
+	vkCmdEndRenderPass(_main_command_buffer.getBuffer());
 
-	if (vkEndCommandBuffer(_command_buffer.command_buffers) != VK_SUCCESS) {
+	if (vkEndCommandBuffer(_main_command_buffer.getBuffer()) != VK_SUCCESS) {
 		throw std::runtime_error("failed to record command buffer");
 	}
 }
@@ -630,76 +630,75 @@ void	Engine::_recordDrawingCommand(
 /*                                    OTHER                                   */
 /* ========================================================================== */
 
-VkCommandBuffer	beginSingleTimeCommands(
-	VkDevice _device,
-	VkCommandPool command_pool
-) {
-	// Allocate temporary command buffer for memory transfer
-	VkCommandBufferAllocateInfo	alloc_info{};
-	alloc_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-	alloc_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-	alloc_info.commandPool = command_pool;
-	alloc_info.commandBufferCount = 1;
+// VkCommandBuffer	beginSingleTimeCommands(
+// 	VkDevice _device,
+// 	VkCommandPool command_pool
+// ) {
+// 	// Allocate temporary command buffer for memory transfer
+// 	VkCommandBufferAllocateInfo	alloc{};
+// 	alloc.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+// 	alloc.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+// 	alloc.commandPool = command_pool;
+// 	alloc.commandBufferCount = 1;
 
-	VkCommandBuffer	buffer;
-	vkAllocateCommandBuffers(_device, &alloc_info, &buffer);
+// 	VkCommandBuffer	buffer;
+// 	vkAllocateCommandBuffers(_device, &alloc, &buffer);
 
-	VkCommandBufferBeginInfo	begin_info{};
-	begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-	// After submission, the buffer will be reset and recorded again
-	begin_info.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+// 	VkCommandBufferBeginInfo	begin_info{};
+// 	begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+// 	begin_info.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
 
-	vkBeginCommandBuffer(buffer, &begin_info);
+// 	vkBeginCommandBuffer(buffer, &begin_info);
 
-	return buffer;
-}
+// 	return buffer;
+// }
 
-void	endSingleTimeCommands(
-	VkDevice _device,
-	VkQueue queue,
-	VkCommandPool command_pool,
-	VkCommandBuffer buffer,
-	bool reset
-) {
-	// Submit to graphics queue to execute transfer
-	vkEndCommandBuffer(buffer);
+// void	endSingleTimeCommands(
+// 	VkDevice _device,
+// 	VkQueue queue,
+// 	VkCommandPool command_pool,
+// 	VkCommandBuffer buffer,
+// 	bool reset
+// ) {
+// 	// Submit to graphics queue to execute transfer
+// 	vkEndCommandBuffer(buffer);
 
-	VkSubmitInfo	submit_info{};
-	submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-	submit_info.commandBufferCount = 1;
-	submit_info.pCommandBuffers = &buffer;
+// 	VkSubmitInfo	submit_info{};
+// 	submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+// 	submit_info.commandBufferCount = 1;
+// 	submit_info.pCommandBuffers = &buffer;
 
-	// Create fence to wait for transfer to complete before deallocating
-	VkFence				fence;
-	VkFenceCreateInfo	fence_info{};
-	fence_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+// 	// Create fence to wait for transfer to complete before deallocating
+// 	VkFence				fence;
+// 	VkFenceCreateInfo	fence_info{};
+// 	fence_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
 
-	if (vkCreateFence(_device, &fence_info, nullptr, &fence) != VK_SUCCESS) {
-		throw std::runtime_error("failed to create fence for buffer flush");
-	}
-	vkQueueSubmit(queue, 1, &submit_info, fence);
-	vkWaitForFences(_device, 1, &fence, VK_TRUE, UINT64_MAX);
-	vkDestroyFence(_device, fence, nullptr);
+// 	if (vkCreateFence(_device, &fence_info, nullptr, &fence) != VK_SUCCESS) {
+// 		throw std::runtime_error("failed to create fence for buffer flush");
+// 	}
+// 	vkQueueSubmit(queue, 1, &submit_info, fence);
+// 	vkWaitForFences(_device, 1, &fence, VK_TRUE, UINT64_MAX);
+// 	vkDestroyFence(_device, fence, nullptr);
 
-	if (reset) {
-		// Deallocate temporary command buffer
-		vkFreeCommandBuffers(
-			_device,
-			command_pool,
-			1, &buffer
-		);
-	} else {
-		// Reset command buffer
-		vkResetCommandBuffer(buffer, 0);
+// 	if (reset) {
+// 		// Deallocate temporary command buffer
+// 		vkFreeCommandBuffers(
+// 			_device,
+// 			command_pool,
+// 			1, &buffer
+// 		);
+// 	} else {
+// 		// Reset command buffer
+// 		vkResetCommandBuffer(buffer, 0);
 
-		VkCommandBufferBeginInfo	begin_info{};
-		begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-		// After submission, the buffer will be reset and recorded again
-		begin_info.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+// 		VkCommandBufferBeginInfo	begin_info{};
+// 		begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+// 		// After submission, the buffer will be reset and recorded again
+// 		begin_info.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
 
-		vkBeginCommandBuffer(buffer, &begin_info);
-	}
-}
+// 		vkBeginCommandBuffer(buffer, &begin_info);
+// 	}
+// }
 
 } // namespace graphics
 } // namespace scop

@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/23 06:44:38 by etran             #+#    #+#             */
-/*   Updated: 2023/07/03 11:06:47 by etran            ###   ########.fr       */
+/*   Updated: 2023/07/04 09:42:03 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -105,7 +105,7 @@ void	Buffer::copyFrom(
 */
 
 void	Buffer::copyBuffer(
-	VkCommandBuffer& command_buffer,
+	VkCommandBuffer command_buffer,
 	Buffer& src_buffer,
 	VkDeviceSize size,
 	VkDeviceSize src_offset,

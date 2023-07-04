@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/23 06:30:15 by etran             #+#    #+#             */
-/*   Updated: 2023/06/29 09:02:03 by etran            ###   ########.fr       */
+/*   Updated: 2023/07/04 09:42:00 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -65,7 +65,7 @@ public:
 		std::size_t offset = 0
 	) noexcept;
 	void				copyBuffer(
-		VkCommandBuffer& command_buffer,
+		VkCommandBuffer command_buffer,
 		Buffer& src_buffer,
 		VkDeviceSize size = VK_WHOLE_SIZE,
 		VkDeviceSize src_offset = 0,

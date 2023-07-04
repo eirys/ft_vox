@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:15:01 by etran             #+#    #+#             */
-/*   Updated: 2023/07/03 10:21:18 by etran            ###   ########.fr       */
+/*   Updated: 2023/07/04 09:49:00 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,6 +29,7 @@ struct Vertex;
 
 namespace graphics {
 class Device;
+class CommandPool;
 
 class InputBuffer {
 public:
@@ -48,7 +49,7 @@ public:
 
 	void			init(
 		Device& device,
-		VkCommandPool command_pool,
+		CommandPool& command_pool,
 		const std::vector<Vertex>& vertices,
 		const std::vector<uint32_t>& indices
 	);
@@ -73,12 +74,12 @@ private:
 
 	void			_createVertexBuffer(
 		Device& device,
-		VkCommandPool command_pool,
+		CommandPool& command_pool,
 		const std::vector<Vertex>& vertices
 	);
 	void			_createIndexBuffer(
 		Device& device,
-		VkCommandPool command_pool,
+		CommandPool& command_pool,
 		const std::vector<uint32_t>& indices
 	);
 
