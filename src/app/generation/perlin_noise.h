@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:13:52 by etran             #+#    #+#             */
-/*   Updated: 2023/07/04 21:54:06 by etran            ###   ########.fr       */
+/*   Updated: 2023/07/04 23:10:15 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,7 @@
 # include <optional> // std::optional
 
 # include "vector.h"
+# include "vertex.h"
 
 namespace vox {
 
@@ -75,12 +76,15 @@ public:
 	 * generated from a perlin noise map.
 	*/
 	struct PerlinMesh {
-		Vect3					origin;
-		std::vector<Vect3>		vertices;
-		std::vector<uint32_t>	indices;
-		std::vector<Vect3>		normals;
-		std::vector<Vect2>		uvs;
-		std::vector<int32_t>	texture_indices;
+		Vect3						origin;
+		std::vector<scop::Vertex>	vertices;
+		std::vector<uint32_t>		indices;
+
+		// std::vector<Vect3>		vertices;
+		// std::vector<uint32_t>	indices;
+		// std::vector<Vect3>		normals;
+		// std::vector<Vect2>		uvs;
+		// std::vector<int32_t>	texture_indices;
 	};
 
 	/* ========================================================================= */

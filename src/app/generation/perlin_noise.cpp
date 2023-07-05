@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/23 10:26:08 by etran             #+#    #+#             */
-/*   Updated: 2023/07/04 22:25:03 by etran            ###   ########.fr       */
+/*   Updated: 2023/07/05 22:12:54 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -106,25 +106,18 @@ PerlinNoise::PerlinMesh	PerlinNoise::toMesh() const {
 	auto	addFace =
 		[&mesh]
 		(const Cube::Face& face) -> void {
-			static const Vect2	uvs[4] = {
-				{0.0f, 1.0f},
-				{1.0f, 1.0f},
-				{1.0f, 0.0f},
-				{0.0f, 0.0f}
-			};
-
-			scop::Vect3	normal = face.normal();
 			for (std::size_t i = 0; i < 4; ++i) {
-				mesh.vertices.emplace_back(face.vertices[i]);
-				mesh.uvs.emplace_back(uvs[i]);
-				mesh.normals.emplace_back(normal);
-				if (face.side == FaceType::FACE_TOP) {
-					mesh.texture_indices.emplace_back(0);
-				} else if (face.side == FaceType::FACE_BOTTOM) {
-					mesh.texture_indices.emplace_back(2);
-				} else {
-					mesh.texture_indices.emplace_back(1);
-				}
+				uint8_t	face_index = 
+					face.side == FaceType::FACE_TOP ? 0 : (
+					face.side == FaceType::FACE_BOTTOM ? 1 : 2
+				);
+				scop::Vertex	vertex(
+					face.vertices[i],
+					static_cast<uint8_t>(face.side),
+					i,
+					face_index
+				);
+				mesh.vertices.emplace_back(vertex);
 			}
 		};
 

@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:17:01 by etran             #+#    #+#             */
-/*   Updated: 2023/07/04 22:24:50 by etran            ###   ########.fr       */
+/*   Updated: 2023/07/05 22:21:32 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,7 @@
 # include <vulkan/vulkan.h>
 
 // Std
-# include <array>
+# include <vector>
 
 # include "vector.h"
 
@@ -27,14 +27,28 @@ struct Vertex {
 	/*                               CLASS MEMBERS                               */
 	/* ========================================================================= */
 
-	scop::Vect3		pos;
-	scop::Vect2		uv;
-	scop::Vect3		normal;
-	int32_t			texture_id;
+	// scop::Vect3		pos;
+	// scop::Vect2		uv;
+	// scop::Vect3		normal;
+	// int32_t			texture_id;
+
+	uint32_t	pos;	// Vertex position
+	uint32_t	n_uv_f;	// Normal, UV and Face index
 
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
+
+	Vertex(
+		scop::Vect3 pos,
+		uint8_t normal,
+		uint8_t uv,
+		uint8_t index
+	):	pos(
+			static_cast<uint32_t>(pos.x) |
+			(static_cast<uint32_t>(pos.y) << 8) |
+			(static_cast<uint32_t>(pos.z) << 16)),
+		n_uv_f(normal | (uv << 8) | (index << 16)) {}
 
 	Vertex() = default;
 	Vertex(Vertex&&) = default;
@@ -61,32 +75,24 @@ struct Vertex {
 	/**
 	 * Expliciting to vulkan the vertex struct format.
 	*/
-	static std::array<VkVertexInputAttributeDescription, 4>	getAttributeDescriptions() {
-		std::array<VkVertexInputAttributeDescription, 4>	attribute_descriptions{};
+	static std::vector<VkVertexInputAttributeDescription>	getAttributeDescriptions() {
+		std::vector<VkVertexInputAttributeDescription>	attribute_descriptions;
+		attribute_descriptions.reserve(2);
+
+		VkVertexInputAttributeDescription	attribute{};
+		attribute.binding = 0;
 
 		// `pos` attribute
-		attribute_descriptions[0].binding = 0;
-		attribute_descriptions[0].location = 0;
-		attribute_descriptions[0].format = VK_FORMAT_R32G32B32_SFLOAT;
-		attribute_descriptions[0].offset = offsetof(Vertex, pos);
+		attribute.location = 0;
+		attribute.format = VK_FORMAT_R32_SINT;
+		attribute.offset = offsetof(Vertex, pos);
+		attribute_descriptions.emplace_back(attribute);
 
-		// `uv` attribute
-		attribute_descriptions[1].binding = 0;
-		attribute_descriptions[1].location = 1;
-		attribute_descriptions[1].format = VK_FORMAT_R32G32_SFLOAT;
-		attribute_descriptions[1].offset = offsetof(Vertex, uv);
-
-		// `normal` attribute
-		attribute_descriptions[2].binding = 0;
-		attribute_descriptions[2].location = 2;
-		attribute_descriptions[2].format = VK_FORMAT_R32G32B32_SFLOAT;
-		attribute_descriptions[2].offset = offsetof(Vertex, normal);
-
-		// `texture_id` attribute
-		attribute_descriptions[3].binding = 0;
-		attribute_descriptions[3].location = 3;
-		attribute_descriptions[3].format = VK_FORMAT_R32_SINT;
-		attribute_descriptions[3].offset = offsetof(Vertex, texture_id);
+		// `normal_index`, `uv_index` and `face_index` attribute
+		attribute.location = 1;
+		attribute.format = VK_FORMAT_R32_SINT;
+		attribute.offset = offsetof(Vertex, n_uv_f);
+		attribute_descriptions.emplace_back(attribute);
 
 		return attribute_descriptions;
 	}
@@ -94,9 +100,7 @@ struct Vertex {
 	bool	operator==(const Vertex& rhs) const {
 		return
 			pos == rhs.pos &&
-			uv == rhs.uv &&
-			normal == rhs.normal &&
-			texture_id == rhs.texture_id;
+			n_uv_f == rhs.n_uv_f;
 	}
 }; // struct Vertex
 
@@ -106,9 +110,7 @@ template<>
 struct std::hash<scop::Vertex> {
 	std::size_t	operator()(const scop::Vertex& vertex) const {
 		return
-			(std::hash<scop::Vect3>()(vertex.pos)) ^
-			(std::hash<scop::Vect2>()(vertex.uv)) ^
-			(std::hash<scop::Vect3>()(vertex.normal)) ^
-			(std::hash<float>()(vertex.texture_id));
+			(std::hash<uint32_t>()(vertex.pos)) ^
+			(std::hash<uint32_t>()(vertex.n_uv_f));
 	}
 };

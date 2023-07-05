@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:16:25 by etran             #+#    #+#             */
-/*   Updated: 2023/06/04 17:16:28 by etran            ###   ########.fr       */
+/*   Updated: 2023/07/05 22:10:14 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -73,7 +73,11 @@ inline Vect3	computeBarycenter(const std::vector<Vertex>& vertices) noexcept {
 	Vect3	barycenter{};
 
 	for (const Vertex& vertex : vertices) {
-		barycenter += vertex.pos;
+		barycenter += scop::Vect3(
+			vertex.pos & 0xFF,
+			vertex.pos >> 8 & 0xFF,
+			vertex.pos >> 16 & 0xFF
+		);
 	}
 	if (vertices.size() > 0) {
 		barycenter /= static_cast<float>(vertices.size());

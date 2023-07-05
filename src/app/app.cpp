@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/28 11:12:12 by eli               #+#    #+#             */
-/*   Updated: 2023/07/04 22:19:56 by etran            ###   ########.fr       */
+/*   Updated: 2023/07/04 23:11:19 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -177,17 +177,18 @@ void	App::loadTerrain() {
 	});
 
 	vox::PerlinNoise::PerlinMesh	mesh = noise.toMesh();
-	_vertices.reserve(mesh.vertices.size());
-	for (std::size_t i = 0; i < mesh.vertices.size(); ++i) {
-		scop::Vertex	vertex{};
+	// _vertices.reserve(mesh.vertices.size());
+	// for (std::size_t i = 0; i < mesh.vertices.size(); ++i) {
+	// 	scop::Vertex	vertex{};
 
-		vertex.pos = mesh.vertices[i];
-		vertex.uv = mesh.uvs[i];
-		vertex.normal = mesh.normals[i];
-		vertex.texture_id = mesh.texture_indices[i];
+	// 	vertex.pos = mesh.vertices[i];
+	// 	vertex.uv = mesh.uvs[i];
+	// 	vertex.normal = mesh.normals[i];
+	// 	vertex.texture_id = mesh.texture_indices[i];
 
-		_vertices.emplace_back(vertex);
-	}
+	// 	_vertices.emplace_back(vertex);
+	// }
+	_vertices = std::move(mesh.vertices);
 	_indices = std::move(mesh.indices);
 	LOG("Terrain loaded.");
 
@@ -228,57 +229,57 @@ void	App::loadTerrain() {
 	LOG("Textures loaded.");
 }
 
-void	App::loadModel(const std::string& path) {
-	LOG("Loading model...");
+// void	App::loadModel(const std::string& path) {
+// 	LOG("Loading model...");
 
-	scop::obj::ObjParser	parser;
-	scop::obj::Model	model = parser.parseFile(path.c_str());
+// 	scop::obj::ObjParser	parser;
+// 	scop::obj::Model	model = parser.parseFile(path.c_str());
 
-	std::unordered_map<scop::Vertex, uint32_t>	unique_vertices{};
+// 	std::unordered_map<scop::Vertex, uint32_t>	unique_vertices{};
 
-	const auto&	model_vertices = model.getVertexCoords();
-	const auto& model_textures = model.getTextureCoords();
-	const auto& model_normals = model.getNormalCoords();
-	const auto& model_triangles = model.getTriangles();
+// 	const auto&	model_vertices = model.getVertexCoords();
+// 	const auto& model_textures = model.getTextureCoords();
+// 	const auto& model_normals = model.getNormalCoords();
+// 	const auto& model_triangles = model.getTriangles();
 
-	// Retrieve unique vertices:
-	for (const auto& triangle: model_triangles) {
-		for (const auto& index: triangle.indices) {
-			scop::Vertex	vertex{};
+// 	// Retrieve unique vertices:
+// 	for (const auto& triangle: model_triangles) {
+// 		for (const auto& index: triangle.indices) {
+// 			scop::Vertex	vertex{};
 
-			vertex.pos = model_vertices[index.vertex];
-			vertex.uv = {
-				model_textures[index.texture].x,
-				1.0f - model_textures[index.texture].y
-			};
-			vertex.normal = model_normals[index.normal];
-			// math::generateVibrantColor(
-			// 	vertex.color.x,
-			// 	vertex.color.y,
-			// 	vertex.color.z
-			// );
+// 			vertex.pos = model_vertices[index.vertex];
+// 			vertex.uv = {
+// 				model_textures[index.texture].x,
+// 				1.0f - model_textures[index.texture].y
+// 			};
+// 			vertex.normal = model_normals[index.normal];
+// 			// math::generateVibrantColor(
+// 			// 	vertex.color.x,
+// 			// 	vertex.color.y,
+// 			// 	vertex.color.z
+// 			// );
 
-			if (unique_vertices.count(vertex) == 0) {
-				unique_vertices[vertex] = static_cast<uint32_t>(_vertices.size());
-				_vertices.emplace_back(vertex);
-			}
-			_indices.emplace_back(unique_vertices[vertex]);
-		}
-	}
+// 			if (unique_vertices.count(vertex) == 0) {
+// 				unique_vertices[vertex] = static_cast<uint32_t>(_vertices.size());
+// 				_vertices.emplace_back(vertex);
+// 			}
+// 			_indices.emplace_back(unique_vertices[vertex]);
+// 		}
+// 	}
 
-	// Center model
-	scop::Vect3	barycenter = utils::computeBarycenter(_vertices);
-	for (auto& vertex: _vertices) {
-		vertex.pos -= barycenter;
-	}
+// 	// Center model
+// 	scop::Vect3	barycenter = utils::computeBarycenter(_vertices);
+// 	for (auto& vertex: _vertices) {
+// 		vertex.pos -= barycenter;
+// 	}
 
-	// Pass ownership of texture image from model to app
-	//TODO
-	// _textures.emplace_back(
-	// 	std::move(*model.getMaterial().ambient_texture)
-	// );
-	// model.getMaterial().ambient_texture.release();
-}
+// 	// Pass ownership of texture image from model to app
+// 	//TODO
+// 	// _textures.emplace_back(
+// 	// 	std::move(*model.getMaterial().ambient_texture)
+// 	// );
+// 	// model.getMaterial().ambient_texture.release();
+// }
 
 void	App::loadLight(const scop::mtl::Material& mat) {
 	_light = scop::UniformBufferObject::Light{
