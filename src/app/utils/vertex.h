@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:17:01 by etran             #+#    #+#             */
-/*   Updated: 2023/07/05 22:21:32 by etran            ###   ########.fr       */
+/*   Updated: 2023/07/06 12:10:15 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,8 +17,17 @@
 
 // Std
 # include <vector>
+# include <cmath>
 
 # include "vector.h"
+# include "chunk.hpp"
+
+/**
+ * @brief Converts a float to a 8 bit integer.
+*/
+static int32_t convert(float x, uint8_t shift = 0) {
+	return x * (1 << shift);
+}
 
 namespace scop {
 
@@ -32,8 +41,8 @@ struct Vertex {
 	// scop::Vect3		normal;
 	// int32_t			texture_id;
 
-	uint32_t	pos;	// Vertex position
-	uint32_t	n_uv_f;	// Normal, UV and Face index
+	int32_t	pos{};		// Vertex position
+	int32_t	n_uv_f{};	// Normal, UV and Face index
 
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
@@ -44,11 +53,8 @@ struct Vertex {
 		uint8_t normal,
 		uint8_t uv,
 		uint8_t index
-	):	pos(
-			static_cast<uint32_t>(pos.x) |
-			(static_cast<uint32_t>(pos.y) << 8) |
-			(static_cast<uint32_t>(pos.z) << 16)),
-		n_uv_f(normal | (uv << 8) | (index << 16)) {}
+	):	pos(convert(pos.x) | convert(pos.y, 8) | convert(pos.z, 16)),
+		n_uv_f(convert(normal) | convert(uv, 8) | convert(index, 16)) {}
 
 	Vertex() = default;
 	Vertex(Vertex&&) = default;
@@ -97,11 +103,17 @@ struct Vertex {
 		return attribute_descriptions;
 	}
 
+	int32_t	convertPos(const Vect3& pos) {
+		// Converts pos to int32_t with chunk address.
+		float x = 
+	}
+
 	bool	operator==(const Vertex& rhs) const {
 		return
 			pos == rhs.pos &&
 			n_uv_f == rhs.n_uv_f;
 	}
+
 }; // struct Vertex
 
 } // namespace scop
