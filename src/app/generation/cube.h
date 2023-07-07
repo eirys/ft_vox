@@ -6,13 +6,14 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:19:11 by etran             #+#    #+#             */
-/*   Updated: 2023/07/04 23:10:24 by etran            ###   ########.fr       */
+/*   Updated: 2023/07/07 16:54:13 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
 # include "vector.h"
+# include "chunk.hpp"
 
 namespace vox {
 
@@ -29,7 +30,7 @@ enum MaterialType {
 	MATERIAL_SNOW
 };
 
-enum FaceType {
+enum FaceType: uint8_t {
 	FACE_LEFT,
 	FACE_RIGHT,
 	FACE_FRONT,
@@ -68,7 +69,7 @@ struct Cube {
 	/*                               CONST MEMBERS                               */
 	/* ========================================================================= */
 
-	static constexpr const float	size = 1.0f;
+	static constexpr const float	size = BLOCK_SIZE;
 
 	/* ========================================================================= */
 	/*                                  METHODS                                  */

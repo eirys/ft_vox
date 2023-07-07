@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:17:01 by etran             #+#    #+#             */
-/*   Updated: 2023/07/07 12:25:33 by etran            ###   ########.fr       */
+/*   Updated: 2023/07/07 16:55:37 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,24 +22,12 @@
 # include "vector.h"
 # include "chunk.hpp"
 
-/**
- * @brief Converts a float to a 8 bit integer.
-*/
-static int32_t convert(float x, uint8_t shift = 0) {
-	return x * (1 << shift);
-}
-
 namespace scop {
 
 struct Vertex {
 	/* ========================================================================= */
 	/*                               CLASS MEMBERS                               */
 	/* ========================================================================= */
-
-	// scop::Vect3		pos;
-	// scop::Vect2		uv;
-	// scop::Vect3		normal;
-	// int32_t			texture_id;
 
 	int32_t	pos{};		// Vertex position
 	int32_t	n_uv_f{};	// Normal, UV and Face index
@@ -53,8 +41,12 @@ struct Vertex {
 		uint8_t normal,
 		uint8_t uv,
 		uint8_t index
-	):	pos(convertPos(pos)),
-		n_uv_f(convert(normal) | convert(uv, 8) | convert(index, 16)) {}
+	):	pos(vox::toChunkPos(pos.x, pos.y, pos.z)),
+		n_uv_f(
+			vox::convert(normal) |
+			vox::convert(uv, 8) |
+			vox::convert(index, 16)
+		) {}
 
 	Vertex() = default;
 	Vertex(Vertex&&) = default;
@@ -103,26 +95,23 @@ struct Vertex {
 		return attribute_descriptions;
 	}
 
-	int32_t	convertPos(const Vect3& pos) {
-		// Converts pos to int32_t.
-		float	x = pos.x > 0 ? pos.x : -pos.x;
-		float	z = pos.z > 0 ? pos.z : -pos.z;
+	// int32_t	convertPos(const Vect3& pos) const noexcept {
+	// 	float	x = pos.x > 0 ? pos.x : CHUNK_SIZE - pos.x;
+	// 	float	z = pos.z > 0 ? pos.z : CHUNK_SIZE - pos.z;
 
-		// Chunk address
-		int8_t w =
-			((int)z / CHUNK_SIZE) * DEFAULT_RENDER_DISTANCE +
-			(int)x / CHUNK_SIZE;
+	// 	int16_t chunk_address =
+	// 		((int)z / CHUNK_SIZE) * DEFAULT_RENDER_DISTANCE +
+	// 		(int)x / CHUNK_SIZE;
 
-		// Calculat chunk address too.
-		x = (int)x % CHUNK_SIZE;
-		z = (int)z % CHUNK_SIZE;
+	// 	x = (int)x % CHUNK_SIZE;
+	// 	z = (int)z % CHUNK_SIZE;
 
-		return
-			convert(x) |
-			convert(pos.y, 8) |
-			convert(z, 16) |
-			convert(w, 24);
-	}
+	// 	return
+	// 		convert(x) |
+	// 		convert(pos.y, 8) |
+	// 		convert(z, 16) |
+	// 		convert(chunk_address, 24);
+	// }
 
 	bool	operator==(const Vertex& rhs) const {
 		return

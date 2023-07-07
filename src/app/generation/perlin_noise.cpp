@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/23 10:26:08 by etran             #+#    #+#             */
-/*   Updated: 2023/07/07 12:33:17 by etran            ###   ########.fr       */
+/*   Updated: 2023/07/07 14:48:22 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -113,7 +113,7 @@ PerlinNoise::PerlinMesh	PerlinNoise::toMesh() const {
 				);
 				scop::Vertex	vertex(
 					face.vertices[i],
-					static_cast<uint8_t>(face.side),
+					face.side,
 					i,
 					face_index
 				);
@@ -141,7 +141,7 @@ PerlinNoise::PerlinMesh	PerlinNoise::toMesh() const {
 		};
 
 	// TODO: Use a better algorithm
-	// TODO store cube map
+	// TODO store map
 
 	for (std::size_t row = 0; row < height; ++row) {
 		for (std::size_t col = 0; col < width; ++col) {

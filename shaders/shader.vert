@@ -35,7 +35,7 @@ void	main() {
 		int(float(in_position) / 0x100) & 0xFF,
 		int(float(in_position) / 0x10000) & 0xFF
 	);
-	int chunk_address = int(float(in_position) / 0x1000000) & 0xFF;
+	int chunk_address = int(float(in_position) / 0x1000000) & 0xFFFF;
 	int chunk_x = chunk_address % 16;
 	int chunk_z = (chunk_address - chunk_x) / 16;
 
