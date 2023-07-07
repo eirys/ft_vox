@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/23 10:26:08 by etran             #+#    #+#             */
-/*   Updated: 2023/07/05 22:12:54 by etran            ###   ########.fr       */
+/*   Updated: 2023/07/07 12:33:17 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -95,7 +95,7 @@ PerlinNoise::PerlinMesh	PerlinNoise::toMesh() const {
 		[this]
 		(std::size_t x, std::size_t y) -> float {
 			// TODO: Make this configurable
-			static const constexpr float	shift = -30.0f;
+			static const constexpr float	shift = 0;
 			static const constexpr float	scale = 20;
 
 			return std::floor(

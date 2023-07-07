@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:17:01 by etran             #+#    #+#             */
-/*   Updated: 2023/07/06 12:10:15 by etran            ###   ########.fr       */
+/*   Updated: 2023/07/07 12:25:33 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,7 +53,7 @@ struct Vertex {
 		uint8_t normal,
 		uint8_t uv,
 		uint8_t index
-	):	pos(convert(pos.x) | convert(pos.y, 8) | convert(pos.z, 16)),
+	):	pos(convertPos(pos)),
 		n_uv_f(convert(normal) | convert(uv, 8) | convert(index, 16)) {}
 
 	Vertex() = default;
@@ -104,8 +104,24 @@ struct Vertex {
 	}
 
 	int32_t	convertPos(const Vect3& pos) {
-		// Converts pos to int32_t with chunk address.
-		float x = 
+		// Converts pos to int32_t.
+		float	x = pos.x > 0 ? pos.x : -pos.x;
+		float	z = pos.z > 0 ? pos.z : -pos.z;
+
+		// Chunk address
+		int8_t w =
+			((int)z / CHUNK_SIZE) * DEFAULT_RENDER_DISTANCE +
+			(int)x / CHUNK_SIZE;
+
+		// Calculat chunk address too.
+		x = (int)x % CHUNK_SIZE;
+		z = (int)z % CHUNK_SIZE;
+
+		return
+			convert(x) |
+			convert(pos.y, 8) |
+			convert(z, 16) |
+			convert(w, 24);
 	}
 
 	bool	operator==(const Vertex& rhs) const {

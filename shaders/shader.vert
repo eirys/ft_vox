@@ -29,12 +29,22 @@ const vec2 uvs[4] = {
 };
 
 void	main() {
-	// Extract vec3 position from float
-	vec4 position = vec4(
+	// Extract vec3 chunk position from float
+	vec3 local_pos = vec3(
 		in_position & 0xFF,
 		int(float(in_position) / 0x100) & 0xFF,
-		int(float(in_position) / 0x10000) & 0xFF,
-		1.0f
+		int(float(in_position) / 0x10000) & 0xFF
+	);
+	int chunk_address = int(float(in_position) / 0x1000000) & 0xFF;
+	int chunk_x = chunk_address % 16;
+	int chunk_z = (chunk_address - chunk_x) / 16;
+
+	// Build to pos with w (chunk address)
+	vec4 position = vec4(
+		(chunk_x * 16) + local_pos.x,
+		local_pos.y,
+		(chunk_z * 16) + local_pos.z,
+		1.0
 	);
 
 	// Extract the normal, uv and texture id from the nuvf
