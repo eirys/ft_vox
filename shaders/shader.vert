@@ -29,20 +29,22 @@ const vec2 uvs[4] = {
 };
 
 void	main() {
-	// Extract vec3 chunk position from float
+	// Extract local position
 	vec3 local_pos = vec3(
-		in_position & 0xFF,
-		int(float(in_position) / 0x100) & 0xFF,
-		int(float(in_position) / 0x10000) & 0xFF
+		in_position & 0xF,
+		(in_position >> 4) & 0xF,
+		(in_position >> 8) & 0xF
 	);
-	int chunk_address = int(float(in_position) / 0x1000000) & 0xFFFF;
-	int chunk_x = chunk_address % 16;
-	int chunk_z = (chunk_address - chunk_x) / 16;
 
-	// Build to pos with w (chunk address)
+	// Extract chunk address
+	int chunk_x = (in_position >> 16) & 0xF;
+	int chunk_z = (in_position >> 24) & 0xF;
+	int chunk_y = (in_position >> 28) & 0xF;
+
+	// Build to pos with chunk address
 	vec4 position = vec4(
 		(chunk_x * 16) + local_pos.x,
-		local_pos.y,
+		(chunk_y * 16) + local_pos.y,
 		(chunk_z * 16) + local_pos.z,
 		1.0
 	);

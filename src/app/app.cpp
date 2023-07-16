@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/28 11:12:12 by eli               #+#    #+#             */
-/*   Updated: 2023/07/07 15:10:57 by etran            ###   ########.fr       */
+/*   Updated: 2023/07/16 11:02:00 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -177,17 +177,6 @@ void	App::loadTerrain() {
 	});
 
 	vox::PerlinNoise::PerlinMesh	mesh = noise.toMesh();
-	// _vertices.reserve(mesh.vertices.size());
-	// for (std::size_t i = 0; i < mesh.vertices.size(); ++i) {
-	// 	scop::Vertex	vertex{};
-
-	// 	vertex.pos = mesh.vertices[i];
-	// 	vertex.uv = mesh.uvs[i];
-	// 	vertex.normal = mesh.normals[i];
-	// 	vertex.texture_id = mesh.texture_indices[i];
-
-	// 	_vertices.emplace_back(vertex);
-	// }
 	_vertices = std::move(mesh.vertices);
 	_indices = std::move(mesh.indices);
 	LOG("Terrain loaded.");

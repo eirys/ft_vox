@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:17:01 by etran             #+#    #+#             */
-/*   Updated: 2023/07/07 16:55:37 by etran            ###   ########.fr       */
+/*   Updated: 2023/07/16 11:01:41 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,7 @@
 # include <cmath>
 
 # include "vector.h"
-# include "chunk.hpp"
+# include "chunk.h"
 
 namespace scop {
 
@@ -94,24 +94,6 @@ struct Vertex {
 
 		return attribute_descriptions;
 	}
-
-	// int32_t	convertPos(const Vect3& pos) const noexcept {
-	// 	float	x = pos.x > 0 ? pos.x : CHUNK_SIZE - pos.x;
-	// 	float	z = pos.z > 0 ? pos.z : CHUNK_SIZE - pos.z;
-
-	// 	int16_t chunk_address =
-	// 		((int)z / CHUNK_SIZE) * DEFAULT_RENDER_DISTANCE +
-	// 		(int)x / CHUNK_SIZE;
-
-	// 	x = (int)x % CHUNK_SIZE;
-	// 	z = (int)z % CHUNK_SIZE;
-
-	// 	return
-	// 		convert(x) |
-	// 		convert(pos.y, 8) |
-	// 		convert(z, 16) |
-	// 		convert(chunk_address, 24);
-	// }
 
 	bool	operator==(const Vertex& rhs) const {
 		return

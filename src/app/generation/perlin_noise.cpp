@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/23 10:26:08 by etran             #+#    #+#             */
-/*   Updated: 2023/07/07 14:48:22 by etran            ###   ########.fr       */
+/*   Updated: 2023/07/16 11:00:27 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -81,8 +81,6 @@ std::vector<uint32_t>	PerlinNoise::toPixels() const {
  * @brief Converts the noise map to a cube world.
  *
  * @todo Put in class.
- * @todo Generate blocks instead of a mesh.
- * @todo Normals and texture coordinates.
 */
 PerlinNoise::PerlinMesh	PerlinNoise::toMesh() const {
 	PerlinMesh		mesh;
@@ -156,9 +154,9 @@ PerlinNoise::PerlinMesh	PerlinNoise::toMesh() const {
 			const float	perlin = noiseAt(col, row);
 
 			const Cube	cube{{
-				col - half_width,
+				static_cast<float>(col),
 				perlin,
-				row - half_height
+				static_cast<float>(row)
 			}};
 
 			// Add the top face
@@ -209,9 +207,9 @@ PerlinNoise::PerlinMesh	PerlinNoise::toMesh() const {
 	// Set mesh origin
 	// Perlin noise at the center of the mesh:
 	mesh.origin = {
-		0.5f,
+		half_width,
 		noiseAt(half_height, half_width) + Cube::size,
-		0.5f
+		half_height
 	};
 	return mesh;
 }
