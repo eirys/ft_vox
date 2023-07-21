@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/12 15:00:15 by eli               #+#    #+#             */
-/*   Updated: 2023/06/08 20:31:21 by etran            ###   ########.fr       */
+/*   Updated: 2023/07/21 21:12:02 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,7 +55,7 @@ Image	PpmLoader::load() {
 
 /**
  * Parses the body of a file.
- * 
+ *
  * Expected format:
  * [comment]
  * {Format}[ws/comment]
@@ -81,7 +81,7 @@ void	PpmLoader::parseHeader() {
 }
 
 /**
- * Parses the image body.
+ * @brief Parses the image body.
 */
 PpmLoader::Pixels	PpmLoader::parseBody() {
 	// Reads a character.
@@ -89,7 +89,7 @@ PpmLoader::Pixels	PpmLoader::parseBody() {
 		if (cursor >= base::data.size()) {
 			throw PpmParseError("unexpected end of file");
 		}
-		return static_cast<uint8_t>(base::data[cursor++]);
+		return base::data[cursor++];
 	};
 
 	// Reads a number.
@@ -140,7 +140,7 @@ PpmLoader::Pixels	PpmLoader::parseBody() {
 
 /**
  * Expect P3 or P6.
- * 
+ *
  * Expected format:
  * {"P3" | "P6"}
 */
@@ -243,7 +243,7 @@ void	PpmLoader::ignoreChunk() noexcept {
 
 /**
  * Builds a pixel from RGB values.
- * 
+ *
  * @note	- Alpha is set to 255.
  * @note	- RGB values are reversed (ABGR).
 */

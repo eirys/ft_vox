@@ -6,29 +6,16 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:19:11 by etran             #+#    #+#             */
-/*   Updated: 2023/07/07 16:54:13 by etran            ###   ########.fr       */
+/*   Updated: 2023/07/21 20:48:08 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
 # include "vector.h"
-# include "chunk.hpp"
+# include "chunk.h"
 
 namespace vox {
-
-enum MaterialType {
-	MATERIAL_GRASS,
-	MATERIAL_DIRT,
-	MATERIAL_STONE,
-	MATERIAL_WOOD,
-	MATERIAL_LEAVES,
-	MATERIAL_SAND,
-	MATERIAL_WATER,
-	MATERIAL_LAVA,
-	MATERIAL_ICE,
-	MATERIAL_SNOW
-};
 
 enum FaceType: uint8_t {
 	FACE_LEFT,
@@ -44,6 +31,7 @@ enum FaceType: uint8_t {
  *
  * @note Its position is represented by the bottom left corner of its lower face.
  *
+ * @details The cube is generated from its position.
  *   h_____g    Frame of reference:
  * e/|___f/|    y z
  * | d---|-c    |/
@@ -75,12 +63,14 @@ struct Cube {
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
 
+	Cube(const scop::Vect3& pos);
+
 	Cube() = default;
 	Cube(Cube&&) = default;
 	Cube(const Cube&) = default;
 	Cube& operator=(Cube&&) = default;
 	Cube& operator=(const Cube&) = default;
-	~Cube() = default;
+	virtual ~Cube() = default;
 
 	/* VERTICES ================================================================ */
 
@@ -110,8 +100,7 @@ struct Cube {
 	/* ========================================================================= */
 
 	scop::Vect3			pos;
-	MaterialType		material = MaterialType::MATERIAL_GRASS;
 
-}; // class Cube
+}; // struct Cube
 
 } // namespace vox

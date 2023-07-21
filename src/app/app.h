@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:17:06 by etran             #+#    #+#             */
-/*   Updated: 2023/07/04 10:30:46 by etran            ###   ########.fr       */
+/*   Updated: 2023/07/16 11:03:37 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,7 +50,7 @@ enum ObjectDirection {
 };
 
 /**
- * @brief Main class of the program.
+ * @brief Handler for input and game logic.
 */
 class App {
 public:

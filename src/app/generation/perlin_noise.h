@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:13:52 by etran             #+#    #+#             */
-/*   Updated: 2023/07/04 23:10:15 by etran            ###   ########.fr       */
+/*   Updated: 2023/07/16 11:28:40 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -79,12 +79,6 @@ public:
 		Vect3						origin;
 		std::vector<scop::Vertex>	vertices;
 		std::vector<uint32_t>		indices;
-
-		// std::vector<Vect3>		vertices;
-		// std::vector<uint32_t>	indices;
-		// std::vector<Vect3>		normals;
-		// std::vector<Vect2>		uvs;
-		// std::vector<int32_t>	texture_indices;
 	};
 
 	/* ========================================================================= */
@@ -128,18 +122,18 @@ private:
 	/*                               CLASS MEMBERS                               */
 	/* ========================================================================= */
 
-	const uint32_t				seed;
-	const std::size_t			width;
-	const std::size_t			height;
-	const std::size_t			depth;
-	const std::size_t			layers;
-	const float					frequency;
-	const float					frequency_mult;
-	const float					amplitude_mult;
-	std::mt19937				generator;
+	const uint32_t				_seed;
+	const std::size_t			_width;
+	const std::size_t			_height;
+	const std::size_t			_depth;
+	const std::size_t			_layers;
+	const float					_frequency;
+	const float					_frequency_mult;
+	const float					_amplitude_mult;
+	std::mt19937				_generator;
 
-	std::vector<std::size_t>	permutation_table;
-	std::vector<float>			noise_map;
+	std::vector<std::size_t>	_permutation_table;
+	std::vector<float>			_noise_map;
 
 	/* ========================================================================= */
 	/*                                  METHODS                                  */

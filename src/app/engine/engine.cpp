@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/02 16:09:44 by etran             #+#    #+#             */
-/*   Updated: 2023/07/04 10:01:38 by etran            ###   ########.fr       */
+/*   Updated: 2023/07/21 21:05:37 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -249,12 +249,9 @@ void	Engine::_createInstance() {
 }
 
 void	Engine::_createGraphicsPipeline() {
-	std::vector<char>	vert_shader = scop::utils::readFile(VERT_SHADER_BIN);
-	std::vector<char>	frag_shader = scop::utils::readFile(FRAG_SHADER_BIN);
-
 	// Create shader modules to be used for shader stages
-	VkShaderModule		vert_shader_module = _createShaderModule(vert_shader);
-	VkShaderModule		frag_shader_module = _createShaderModule(frag_shader);
+	VkShaderModule		vert_shader_module = _createShaderModule(VERT_SHADER_BIN);
+	VkShaderModule		frag_shader_module = _createShaderModule(FRAG_SHADER_BIN);
 
 	VkPipelineShaderStageCreateInfo	vert_info{};
 	vert_info.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -498,18 +495,18 @@ std::vector<const char*>	Engine::_getRequiredExtensions() {
 }
 
 /**
- * Create a shader module, from a GLSL shader file, that will be used in the _pipeline
+ * @brief Create a shader module from a shader binary.
 */
-VkShaderModule	Engine::_createShaderModule(const std::vector<char>& code) {
-	// Create a shader module from code
-	VkShaderModuleCreateInfo	create_info{};
+VkShaderModule	Engine::_createShaderModule(const std::string& path) {
+	const std::vector<uint8_t>	code = scop::utils::readFile(path);
+	VkShaderModuleCreateInfo	shader_info{};
 
-	create_info.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-	create_info.codeSize = code.size();
-	create_info.pCode = reinterpret_cast<const uint32_t*>(code.data());
+	shader_info.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+	shader_info.codeSize = code.size();
+	shader_info.pCode = reinterpret_cast<const uint32_t*>(code.data());
 
 	VkShaderModule	shader_module;
-	if (vkCreateShaderModule(_device.getLogicalDevice(), &create_info, nullptr, &shader_module) != VK_SUCCESS) {
+	if (vkCreateShaderModule(_device.getLogicalDevice(), &shader_info, nullptr, &shader_module) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create shader module");
 	}
 	return shader_module;
@@ -626,80 +623,6 @@ void	Engine::_recordDrawingCommand(
 		throw std::runtime_error("failed to record command buffer");
 	}
 }
-
-/* ========================================================================== */
-/*                                    OTHER                                   */
-/* ========================================================================== */
-
-// VkCommandBuffer	beginSingleTimeCommands(
-// 	VkDevice _device,
-// 	VkCommandPool command_pool
-// ) {
-// 	// Allocate temporary command buffer for memory transfer
-// 	VkCommandBufferAllocateInfo	alloc{};
-// 	alloc.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-// 	alloc.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-// 	alloc.commandPool = command_pool;
-// 	alloc.commandBufferCount = 1;
-
-// 	VkCommandBuffer	buffer;
-// 	vkAllocateCommandBuffers(_device, &alloc, &buffer);
-
-// 	VkCommandBufferBeginInfo	begin_info{};
-// 	begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-// 	begin_info.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-
-// 	vkBeginCommandBuffer(buffer, &begin_info);
-
-// 	return buffer;
-// }
-
-// void	endSingleTimeCommands(
-// 	VkDevice _device,
-// 	VkQueue queue,
-// 	VkCommandPool command_pool,
-// 	VkCommandBuffer buffer,
-// 	bool reset
-// ) {
-// 	// Submit to graphics queue to execute transfer
-// 	vkEndCommandBuffer(buffer);
-
-// 	VkSubmitInfo	submit_info{};
-// 	submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-// 	submit_info.commandBufferCount = 1;
-// 	submit_info.pCommandBuffers = &buffer;
-
-// 	// Create fence to wait for transfer to complete before deallocating
-// 	VkFence				fence;
-// 	VkFenceCreateInfo	fence_info{};
-// 	fence_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-
-// 	if (vkCreateFence(_device, &fence_info, nullptr, &fence) != VK_SUCCESS) {
-// 		throw std::runtime_error("failed to create fence for buffer flush");
-// 	}
-// 	vkQueueSubmit(queue, 1, &submit_info, fence);
-// 	vkWaitForFences(_device, 1, &fence, VK_TRUE, UINT64_MAX);
-// 	vkDestroyFence(_device, fence, nullptr);
-
-// 	if (reset) {
-// 		// Deallocate temporary command buffer
-// 		vkFreeCommandBuffers(
-// 			_device,
-// 			command_pool,
-// 			1, &buffer
-// 		);
-// 	} else {
-// 		// Reset command buffer
-// 		vkResetCommandBuffer(buffer, 0);
-
-// 		VkCommandBufferBeginInfo	begin_info{};
-// 		begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-// 		// After submission, the buffer will be reset and recorded again
-// 		begin_info.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-
-// 		vkBeginCommandBuffer(buffer, &begin_info);
-// 	}
-// }
 
 } // namespace graphics
 } // namespace scop

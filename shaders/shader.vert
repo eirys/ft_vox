@@ -13,12 +13,12 @@ layout(binding = 0) uniform Camera {
 } camera_ubo;
 
 const vec3 normals[6] = {
-	{0.0f, 0.0f, 1.0f}, // front
-	{0.0f, 0.0f, -1.0f}, // back
-	{1.0f, 0.0f, 0.0f}, // right
-	{-1.0f, 0.0f, 0.0f}, // left
-	{0.0f, 1.0f, 0.0f}, // top
-	{0.0f, -1.0f, 0.0f} // bottom
+	{0.0f, 0.0f, 1.0f},		// front
+	{0.0f, 0.0f, -1.0f},	// back
+	{1.0f, 0.0f, 0.0f},		// right
+	{-1.0f, 0.0f, 0.0f},	// left
+	{0.0f, 1.0f, 0.0f},		// top
+	{0.0f, -1.0f, 0.0f}		// bottom
 };
 
 const vec2 uvs[4] = {
@@ -28,34 +28,30 @@ const vec2 uvs[4] = {
 	{0.0f, 0.0f}
 };
 
+// Build position from input
+vec4	extractPosition(int in_pos) {
+	vec3 position = vec3(
+		in_pos			& 0xF,	// bits 0 to 4
+		(in_pos >> 4) 	& 0xFF, // bits 4 to 12
+		(in_pos >> 12)	& 0xF	// bits 12 to 16
+	);
+
+	vec3 chunk = 16 * vec3(
+		(in_pos >> 16) & 0xFF,	// bits 16 to 24
+		0,						// null
+		(in_pos >> 24) & 0xFF	// bits 24 to 32
+	);
+
+	return vec4(chunk + position, 1.0);
+}
+
 void	main() {
-	// Extract local position
-	vec3 local_pos = vec3(
-		in_position & 0xF,
-		(in_position >> 4) & 0xF,
-		(in_position >> 8) & 0xF
-	);
-
-	// Extract chunk address
-	int chunk_x = (in_position >> 16) & 0xF;
-	int chunk_z = (in_position >> 24) & 0xF;
-	int chunk_y = (in_position >> 28) & 0xF;
-
-	// Build to pos with chunk address
-	vec4 position = vec4(
-		(chunk_x * 16) + local_pos.x,
-		(chunk_y * 16) + local_pos.y,
-		(chunk_z * 16) + local_pos.z,
-		1.0
-	);
-
 	// Extract the normal, uv and texture id from the nuvf
 	out_normal = normals[in_nuvf & 0xFF];
 	out_uv = uvs[int(float(in_nuvf) / 0x100) & 0xFF];
 	out_face = int(float(in_nuvf) / 0x10000) & 0xFF;
-
 	gl_Position =
 		camera_ubo.proj
 		* camera_ubo.view
-		* position;
+		* extractPosition(in_position);
 }

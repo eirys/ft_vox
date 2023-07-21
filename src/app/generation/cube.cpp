@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:50:12 by etran             #+#    #+#             */
-/*   Updated: 2023/07/07 14:45:29 by etran            ###   ########.fr       */
+/*   Updated: 2023/07/21 20:48:30 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -63,6 +63,8 @@ scop::Vect3	Cube::Face::normal() const noexcept {
 /*                                   PUBLIC                                   */
 /* ========================================================================== */
 
+Cube::Cube(const scop::Vect3& pos): pos(pos) {}
+
 /* VERTICES ================================================================= */
 
 // Vertice a
@@ -118,7 +120,7 @@ Vect3	Cube::center() const noexcept {
 
 /**
  * @details Here is the mapping of the texture coordinates:
- * 
+ *
  * x: 0    0.25  0.5   0.75   1
  *                               y:
  *                h ___ g        0
@@ -128,7 +130,7 @@ Vect3	Cube::center() const noexcept {
  *    c ___ d ___ a ___ b ___ c  0.5
  *                |  B  |
  *                d ___ c        0.75
- * 
+ *
  * { Empty line }                1
 */
 

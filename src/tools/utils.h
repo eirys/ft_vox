@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:16:25 by etran             #+#    #+#             */
-/*   Updated: 2023/07/05 22:10:14 by etran            ###   ########.fr       */
+/*   Updated: 2023/07/21 21:06:36 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,7 +48,7 @@ const bool	big_endian = []() -> bool {
 /**
  * Read binary file and return in vector of char format.
 */
-inline std::vector<char>	readFile(const std::string& filename) {
+inline std::vector<uint8_t>	readFile(const std::string& filename) {
 	// Read file as binary file, at the end of the file
 	std::ifstream	file(filename, std::ios::ate | std::ios::binary);
 
@@ -57,16 +57,16 @@ inline std::vector<char>	readFile(const std::string& filename) {
 	}
 
 	std::size_t			file_size = static_cast<std::size_t>(file.tellg());
-	std::vector<char>	buffer(file_size);
+	std::vector<uint8_t>	buffer(file_size);
 	file.seekg(0);
-	file.read(buffer.data(), file_size);
+	file.read(reinterpret_cast<char*>(buffer.data()), file_size);
 	file.close();
 	return buffer;
 }
 
 /**
  * @brief Computes the barycenter of a list of vertices.
- * 
+ *
  * @param vertices The list of vertices.
 */
 inline Vect3	computeBarycenter(const std::vector<Vertex>& vertices) noexcept {

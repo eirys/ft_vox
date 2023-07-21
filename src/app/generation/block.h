@@ -1,57 +1,74 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   world_generator.h                                  :+:      :+:    :+:   */
+/*   block.h                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/06/04 22:54:18 by etran             #+#    #+#             */
-/*   Updated: 2023/07/16 15:26:12 by etran            ###   ########.fr       */
+/*   Created: 2023/07/17 20:48:34 by etran             #+#    #+#             */
+/*   Updated: 2023/07/17 21:49:06 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
-# include "perlin_noise.h"
+# include "cube.h"
 
 namespace vox {
 
 /**
- * @brief Generates a world using perlin noise.
- * Handles the generation of the world's chunks.
+ * @brief Materials (up to 256)
 */
-class WorldGenerator {
+enum MaterialType: uint8_t {
+	MATERIAL_GRASS,
+	MATERIAL_DIRT,
+	MATERIAL_STONE,
+	MATERIAL_WOOD,
+	MATERIAL_LEAVES,
+	MATERIAL_SAND,
+	MATERIAL_WATER,
+	MATERIAL_LAVA,
+	MATERIAL_ICE,
+	MATERIAL_SNOW
+};
+
+/**
+ * @brief Holds data about a block: position and material.
+*/
+class Block {
 public:
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
 
-	WorldGenerator();
-	~WorldGenerator();
+	Block(Cube& cube, MaterialType material);
 
-	WorldGenerator(WorldGenerator&& src) = delete;
-	WorldGenerator(const WorldGenerator& src) = delete;
-	WorldGenerator &operator=(WorldGenerator&& rhs) = delete;
-	WorldGenerator &operator=(const WorldGenerator& rhs) = delete;
+	Block(const Block& src) = default;
+	Block(Block&& src) = default;
+	Block&operator=(const Block& rhs) = default;
+	Block&operator=(Block&& rhs) = default;
+	virtual ~Block() = default;
 
-	/* ========================================================================= */
+	Block() = delete;
 
 private:
-	/* ========================================================================= */
-	/*                               CONST MEMBERS                               */
-	/* ========================================================================= */
-
-	static constexpr const std::size_t	seed = 42;
-	static constexpr const std::size_t	chunk_size = 16;
-	static constexpr const std::size_t	render_distance = 16;
-
 	/* ========================================================================= */
 	/*                               CLASS MEMBERS                               */
 	/* ========================================================================= */
 
-	PerlinNoise		_noise;
-	std::size_t		_offset = 0; // Updated as the player moves.
+	uint8_t			_x;
+	uint8_t			_y;
+	uint8_t			_z;
+	MaterialType	_material;
 
-}; // class WorldGenerator
+}; // class Block
+
+class Dirt: public Block {
+public:
+	/* ========================================================================= */
+	/*                                  METHODS                                  */
+	/* ========================================================================= */
+
+}; // class Dirt
 
 } // namespace vox
