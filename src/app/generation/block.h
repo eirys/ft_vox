@@ -6,15 +6,14 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/17 20:48:34 by etran             #+#    #+#             */
-/*   Updated: 2023/07/17 21:49:06 by etran            ###   ########.fr       */
+/*   Updated: 2023/07/23 14:00:46 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
-# include "cube.h"
-
 namespace vox {
+struct Cube;
 
 /**
  * @brief Materials (up to 256)
@@ -34,6 +33,8 @@ enum MaterialType: uint8_t {
 
 /**
  * @brief Holds data about a block: position and material.
+ *
+ * @note The position is local to the chunk.
 */
 class Block {
 public:
@@ -41,12 +42,12 @@ public:
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
 
-	Block(Cube& cube, MaterialType material);
+	Block(const Cube& cube, MaterialType material);
 
-	Block(const Block& src) = default;
 	Block(Block&& src) = default;
-	Block&operator=(const Block& rhs) = default;
-	Block&operator=(Block&& rhs) = default;
+	Block(const Block& src) = default;
+	Block& operator=(Block&& rhs) = default;
+	Block& operator=(const Block& rhs) = default;
 	virtual ~Block() = default;
 
 	Block() = delete;

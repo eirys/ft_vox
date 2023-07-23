@@ -31,14 +31,14 @@ const vec2 uvs[4] = {
 // Build position from input
 vec4	extractPosition(int in_pos) {
 	vec3 position = vec3(
-		in_pos			& 0xF,	// bits 0 to 4
-		(in_pos >> 4) 	& 0xFF, // bits 4 to 12
-		(in_pos >> 12)	& 0xF	// bits 12 to 16
+		in_pos & 0xF,			// bits 0 to 4
+		(in_pos >> 4) & 0xF,	// bits 4 to 8
+		(in_pos >> 8) & 0xF		// bits 8 to 12
 	);
 
 	vec3 chunk = 16 * vec3(
-		(in_pos >> 16) & 0xFF,	// bits 16 to 24
-		0,						// null
+		(in_pos >> 12) & 0xFF,	// bits 12 to 20
+		(in_pos >> 20) & 0xF,	// bits 20 to 24
 		(in_pos >> 24) & 0xFF	// bits 24 to 32
 	);
 
