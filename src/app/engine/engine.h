@@ -125,32 +125,13 @@ private:
 
 	bool							_checkValidationLayerSupport();
 	std::vector<const char*>		_getRequiredExtensions();
-	VkShaderModule					_createShaderModule(
-		const std::vector<char>& code
-	);
+	VkShaderModule					_createShaderModule(const std::string& path);
 	void							_recordDrawingCommand(
 		std::size_t indices_size,
 		uint32_t image_index
 	);
 
 }; // class Engine
-
-/* ========================================================================== */
-/*                                    UTILS                                   */
-/* ========================================================================== */
-
-// VkCommandBuffer	beginSingleTimeCommands(
-// 	VkDevice device,
-// 	VkCommandPool command_pool
-// );
-
-// void	endSingleTimeCommands(
-// 	VkDevice device,
-// 	VkQueue queue,
-// 	VkCommandPool command_pool,
-// 	VkCommandBuffer command_buffer,
-// 	bool reset = true
-// );
 
 } // namespace graphics
 } // namespace scop

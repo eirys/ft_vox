@@ -11,7 +11,7 @@
 /* ************************************************************************** */
 
 #include "perlin_noise.h"
-#include "math.h"
+#include "scop_math.h"
 #include "vector.h"
 #include "cube.h"
 
@@ -153,11 +153,11 @@ PerlinNoise::PerlinMesh	PerlinNoise::toMesh() const {
 			// Evaluate the current cube
 			const float	perlin = noiseAt(col, row);
 
-			const Cube	cube{{
+			const Cube	cube({
 				static_cast<float>(col),
 				perlin,
 				static_cast<float>(row)
-			}};
+			});
 
 			// Add the top face
 			if (row != height - 1 && col != width - 1)

@@ -12,7 +12,7 @@
 
 #pragma once
 
-# include "math.h"
+# include "scop_math.h"
 # include "vector.h"
 
 namespace vox {

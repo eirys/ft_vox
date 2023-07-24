@@ -63,6 +63,8 @@ scop::Vect3	Cube::Face::normal() const noexcept {
 /*                                   PUBLIC                                   */
 /* ========================================================================== */
 
+Cube::Cube(const scop::Vect3& pos): pos(pos) {}
+
 /* VERTICES ================================================================= */
 
 // Vertice a

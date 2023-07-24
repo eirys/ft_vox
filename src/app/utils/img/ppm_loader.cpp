@@ -89,7 +89,7 @@ PpmLoader::Pixels	PpmLoader::parseBody() {
 		if (cursor >= base::data.size()) {
 			throw PpmParseError("unexpected end of file");
 		}
-		return static_cast<uint8_t>(base::data[cursor++]);
+		return base::data[++cursor];
 	};
 
 	// Reads a number.
@@ -116,7 +116,11 @@ PpmLoader::Pixels	PpmLoader::parseBody() {
 	ParseNumberFn	parseChannelFn(format == Format::P6 ? readExcept : readNb);
 	PpmLoader::Pixels	pixels(base::width * base::height * sizeof(uint32_t));
 	std::size_t	row = 0;
-
+	LOG(
+		"Cursos is " << cursor
+		<< ", Current value: " << (unsigned char)base::data[cursor]
+		<< ", Next value: " << (unsigned char)base::data[cursor+1]
+	);
 	while (row < base::height) {
 		uint8_t	r, g, b;
 
@@ -162,7 +166,7 @@ PpmLoader::Format	PpmLoader::expectFormat() {
 
 /**
  * Returns number.
-*/
+*/	
 uint32_t	PpmLoader::expectNumber() {
 	if (cursor >= base::data.size()) {
 		throw PpmParseError("missing value");

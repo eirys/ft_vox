@@ -76,7 +76,7 @@ protected:
 
 	const std::string	path;		// File path
 	ImageType			type;		// File extension
-	std::vector<char>	data;		// Contains file entire content
+	std::vector<uint8_t>	data;		// Contains file entire content
 	std::size_t			width;
 	std::size_t			height;
 

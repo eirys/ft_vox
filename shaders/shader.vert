@@ -37,8 +37,8 @@ void	main() {
 	);
 
 	// Extract chunk address
-	int chunk_x = (in_position >> 16) & 0xF;
-	int chunk_z = (in_position >> 24) & 0xF;
+	int chunk_x = (in_position >> 12) & 0xFF;
+	int chunk_z = (in_position >> 20) & 0xFF;
 	int chunk_y = (in_position >> 28) & 0xF;
 
 	// Build to pos with chunk address

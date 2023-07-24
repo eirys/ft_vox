@@ -48,7 +48,7 @@ const bool	big_endian = []() -> bool {
 /**
  * Read binary file and return in vector of char format.
 */
-inline std::vector<char>	readFile(const std::string& filename) {
+inline std::vector<uint8_t>	readFile(const std::string& filename) {
 	// Read file as binary file, at the end of the file
 	std::ifstream	file(filename, std::ios::ate | std::ios::binary);
 
@@ -57,9 +57,9 @@ inline std::vector<char>	readFile(const std::string& filename) {
 	}
 
 	std::size_t			file_size = static_cast<std::size_t>(file.tellg());
-	std::vector<char>	buffer(file_size);
+	std::vector<uint8_t>	buffer(file_size);
 	file.seekg(0);
-	file.read(buffer.data(), file_size);
+	file.read((char*)buffer.data(), file_size);
 	file.close();
 	return buffer;
 }

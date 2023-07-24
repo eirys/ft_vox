@@ -14,7 +14,7 @@
 #include "model.h"
 #include "obj_parser.h"
 #include "ppm_loader.h"
-#include "math.h"
+#include "scop_math.h"
 #include "mtl_parser.h"
 #include "perlin_noise.h"
 

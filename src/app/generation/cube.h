@@ -13,7 +13,7 @@
 #pragma once
 
 # include "vector.h"
-# include "chunk.hpp"
+# include "chunk.h"
 
 namespace vox {
 
@@ -75,11 +75,13 @@ struct Cube {
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
 
+	Cube(const scop::Vect3& pos);
+
 	Cube() = default;
-	Cube(Cube&&) = default;
-	Cube(const Cube&) = default;
-	Cube& operator=(Cube&&) = default;
-	Cube& operator=(const Cube&) = default;
+	Cube(Cube&& x) = default;
+	Cube(const Cube& x) = default;
+	Cube& operator=(Cube&& x) = default;
+	Cube& operator=(const Cube& x) = default;
 	~Cube() = default;
 
 	/* VERTICES ================================================================ */

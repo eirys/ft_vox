@@ -26,7 +26,7 @@
 
 # define RENDER_WIDTH		RENDER_DISTANCE * CHUNK_SIZE	// 256
 # define RENDER_DEPTH		RENDER_DISTANCE * CHUNK_SIZE	// 256
-s
+
 namespace vox {
 
 /**
@@ -50,7 +50,7 @@ inline int32_t	toChunkPos(float x, float y, float z) noexcept {
 	int32_t chunk_address =
 		(int32_t)x / CHUNK_SIZE |
 		((int32_t)z / CHUNK_SIZE) << 8 |
-		((int32_t)y / CHUNK_SIZE) << 12;
+		((int32_t)y / CHUNK_SIZE) << 16;
 
 	x = (int32_t)x % CHUNK_SIZE;
 	y = (int32_t)y % CHUNK_SIZE;
@@ -60,7 +60,7 @@ inline int32_t	toChunkPos(float x, float y, float z) noexcept {
 		static_cast<int32_t>(x) |
 		static_cast<int32_t>(y) << 4 |
 		static_cast<int32_t>(z) << 8 |
-		chunk_address << 16;
+		chunk_address << 12;
 }
 
 } // namespace vox
