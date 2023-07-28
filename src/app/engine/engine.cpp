@@ -44,7 +44,7 @@ void	Engine::init(
 	_render_pass.init(_device, _swap_chain);
 	_swap_chain.initFrameBuffers(_device, _render_pass);
 	_descriptor_set.initLayout(_device);
-	_createGraphicsPipeline();
+	_createGraphicsPipelines();
 	_command_pool.init(_device);
 	_texture_sampler.init(_device, _command_pool, images);
 	_input_buffer.init(_device, _command_pool, vertices, indices);
@@ -59,7 +59,8 @@ void	Engine::destroy() {
 	_texture_sampler.destroy(_device);
 
 	// Remove graphics _pipeline
-	vkDestroyPipeline(_device.getLogicalDevice(), _pipeline, nullptr);
+	vkDestroyPipeline(_device.getLogicalDevice(), _pipelines.scene, nullptr);
+	//vkDestroyPipeline(_device.getLogicalDevice(), _pipelines.shadows, nullptr);
 	vkDestroyPipelineLayout(
 		_device.getLogicalDevice(),
 		_pipeline_layout,
@@ -248,7 +249,12 @@ void	Engine::_createInstance() {
 		throw std::runtime_error("failed to create _vk_instance");
 }
 
-void	Engine::_createGraphicsPipeline() {
+void	Engine::_createGraphicsPipelines() {
+	_createScenePipeline();
+	//_createShadowPipeline();
+}
+
+void	Engine::_createScenePipeline() {
 	// Create shader modules to be used for shader stages
 	VkShaderModule		vert_shader_module = _createShaderModule(VERT_SHADER_BIN);
 	VkShaderModule		frag_shader_module = _createShaderModule(FRAG_SHADER_BIN);
@@ -377,12 +383,6 @@ void	Engine::_createGraphicsPipeline() {
 	);
 	dynamic_state.pDynamicStates = dynamic_states.data();
 
-	// Push constants setup
-	// VkPushConstantRange	push_constant_range{};
-	// push_constant_range.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-	// push_constant_range.offset = 0;
-	// push_constant_range.size = sizeof(PushConstantData);
-
 	// Pipeline layout setups
 	VkPipelineLayoutCreateInfo	pipeline_layout_info{};
 	VkDescriptorSetLayout descriptor_layout = _descriptor_set.getLayout();
@@ -415,7 +415,7 @@ void	Engine::_createGraphicsPipeline() {
 	pipeline_info.basePipelineHandle = VK_NULL_HANDLE;
 	pipeline_info.basePipelineIndex = -1;
 
-	if (vkCreateGraphicsPipelines(_device.getLogicalDevice(), VK_NULL_HANDLE, 1, &pipeline_info, nullptr, &_pipeline) != VK_SUCCESS) {
+	if (vkCreateGraphicsPipelines(_device.getLogicalDevice(), VK_NULL_HANDLE, 1, &pipeline_info, nullptr, &_pipelines.scene) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create graphics _pipeline");
 	}
 
@@ -429,6 +429,10 @@ void	Engine::_createGraphicsPipeline() {
 		vert_shader_module,
 		nullptr
 	);
+}
+
+void	Engine::_createShadowPipeline() {
+
 }
 
 /**
@@ -557,7 +561,7 @@ void	Engine::_recordDrawingCommand(
 	vkCmdBindPipeline(
 		_main_command_buffer.getBuffer(),
 		VK_PIPELINE_BIND_POINT_GRAPHICS,
-		_pipeline
+		_pipelines.scene
 	);
 
 	// Set viewport and scissors
@@ -596,6 +600,7 @@ void	Engine::_recordDrawingCommand(
 		0,
 		VK_INDEX_TYPE_UINT32
 	);
+
 	// Bind descriptor sets
 	VkDescriptorSet	descriptor_set = _descriptor_set.getSet();
 	vkCmdBindDescriptorSets(

@@ -111,7 +111,11 @@ private:
 	VkFence							_in_flight_fences;
 
 	VkPipelineLayout				_pipeline_layout;
-	VkPipeline						_pipeline;
+	struct {
+		VkPipeline					scene;
+		VkPipeline					shadows;
+	}								_pipelines;
+	//VkPipeline						_pipeline;
 
 	std::size_t						_nb_indices;
 
@@ -120,9 +124,11 @@ private:
 	/* ========================================================================= */
 
 	void							_createInstance();
-	void							_createGraphicsPipeline();
+	void							_createGraphicsPipelines();
 	void							_createSyncObjects();
 
+	void							_createScenePipeline();
+	void							_createShadowPipeline();
 	bool							_checkValidationLayerSupport();
 	std::vector<const char*>		_getRequiredExtensions();
 	VkShaderModule					_createShaderModule(const std::string& path);

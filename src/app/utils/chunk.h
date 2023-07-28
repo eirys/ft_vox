@@ -43,14 +43,14 @@ inline int32_t convert(float x, uint8_t shift = 0) noexcept {
  * @note x, y and z are local to the chunk.
  * 
  * @note The chunk address is composed of the x, y and z chunk coordinates:
- * @note x_chunk (8 bits) | z_chunk (8 bits) | y_chunk (4 bits)
+ * @note x_chunk (8 bits) | y_chunk (4 bits) | z_chunk (8 bits)
 */
 inline int32_t	toChunkPos(float x, float y, float z) noexcept {
 	// TODO: Add render distance in ubo
 	int32_t chunk_address =
 		(int32_t)x / CHUNK_SIZE |
-		((int32_t)z / CHUNK_SIZE) << 8 |
-		((int32_t)y / CHUNK_SIZE) << 16;
+		((int32_t)y / CHUNK_SIZE) << 8 |
+		((int32_t)z / CHUNK_SIZE) << 12;
 
 	x = (int32_t)x % CHUNK_SIZE;
 	y = (int32_t)y % CHUNK_SIZE;

@@ -55,6 +55,7 @@ public:
 	/* ========================================================================= */
 
 	alignas(__ALIGNMENT_BUFF) Camera		camera;
+	alignas(__ALIGNMENT_BUFF) Camera		projector;
 	alignas(__ALIGNMENT_BUFF) Light			light;
 
 };

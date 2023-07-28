@@ -3,4 +3,5 @@ obj
 shaders/*.spv
 a.out
 ft_vox
-Optimization_sheet.odt
+x64/
+ft_vox.vcxproj

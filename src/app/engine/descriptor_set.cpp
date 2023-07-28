@@ -13,7 +13,8 @@
 #include "descriptor_set.h"
 #include "engine.h"
 
-#include <array> // std::array
+#include <vector>
+#include <array>
 #include <stdexcept> // std::runtime_error
 #include <chrono> // std::chrono
 #include <optional> // std::optional
@@ -29,31 +30,39 @@ namespace graphics {
  * @brief Descriptor set layout for uniform buffer and combined image sampler.
 */
 void	DescriptorSet::initLayout(Device& device) {
-	// Uniform buffer layout: used during vertex shading
+	// Camera UBO layout
 	VkDescriptorSetLayoutBinding	camera_binding{};
 	camera_binding.binding = 0;
 	camera_binding.descriptorCount = 1;
 	camera_binding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 	camera_binding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
 
-	// Sampler descriptor layout: used during fragment shading
+	// Sampler layout
 	VkDescriptorSetLayoutBinding	sampler_binding{};
 	sampler_binding.binding = 1;
 	sampler_binding.descriptorCount = 1;
 	sampler_binding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 	sampler_binding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 
-	// Light layout
+	// Light UBO layout
 	VkDescriptorSetLayoutBinding	light_binding{};
 	light_binding.binding = 2;
 	light_binding.descriptorCount = 1;
 	light_binding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 	light_binding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 
-	std::array<VkDescriptorSetLayoutBinding, 3>	bindings = {
+	// Projector UBO layout
+	VkDescriptorSetLayoutBinding	projector_binding{};
+	projector_binding.binding = 3;
+	projector_binding.descriptorCount = 1;
+	projector_binding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	projector_binding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+
+	std::vector<VkDescriptorSetLayoutBinding>	bindings = {
 		camera_binding,
 		sampler_binding,
-		light_binding
+		light_binding,
+		projector_binding
 	};
 
 	VkDescriptorSetLayoutCreateInfo	layout_info{};
@@ -129,13 +138,12 @@ VkDescriptorSet	DescriptorSet::getSet() const noexcept {
  * @brief Handler for descriptor sets allocation.
 */
 void	DescriptorSet::_createDescriptorPool(Device& device, uint32_t count) {
-	std::array<VkDescriptorPoolSize, 3>	pool_sizes{};
+	std::array<VkDescriptorPoolSize, 2>	pool_sizes;
+
 	pool_sizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	pool_sizes[0].descriptorCount = count;
+	pool_sizes[0].descriptorCount = count * 3;
 	pool_sizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 	pool_sizes[1].descriptorCount = count;
-	pool_sizes[2].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	pool_sizes[2].descriptorCount = count;
 
 	VkDescriptorPoolCreateInfo	pool_info{};
 	pool_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
@@ -153,7 +161,7 @@ void	DescriptorSet::_createDescriptorSets(
 	TextureSampler& texture_sampler,
 	uint32_t count
 ) {
-	VkDescriptorSetAllocateInfo			alloc_info{};
+	VkDescriptorSetAllocateInfo	alloc_info{};
 	alloc_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
 	alloc_info.descriptorPool = _pool;
 	alloc_info.descriptorSetCount = count;
@@ -181,8 +189,15 @@ void	DescriptorSet::_createDescriptorSets(
 	ubo_info_light.offset = offsetof(UniformBufferObject, light);
 	ubo_info_light.range = sizeof(UniformBufferObject::Light);
 
+	// Ubo projector
+	VkDescriptorBufferInfo	ubo_info_projector{};
+	ubo_info_projector.buffer = _ubo.getBuffer();
+	ubo_info_projector.offset = offsetof(UniformBufferObject, projector);
+	ubo_info_projector.range = sizeof(UniformBufferObject::Camera);
+
 	// Allow buffer udpate using descriptor write
-	std::array<VkWriteDescriptorSet, 3>	writes{};
+	std::vector<VkWriteDescriptorSet>	writes(4);
+
 	// Camera UBO
 	writes[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 	writes[0].dstSet = _set;
@@ -215,6 +230,17 @@ void	DescriptorSet::_createDescriptorSets(
 	writes[2].pBufferInfo = &ubo_info_light;
 	writes[2].pImageInfo = nullptr;
 	writes[2].pTexelBufferView = nullptr;
+
+	// Projector UBO
+	writes[3].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+	writes[3].dstSet = _set;
+	writes[3].dstBinding = 3;
+	writes[3].dstArrayElement = 0;
+	writes[3].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	writes[3].descriptorCount = 1;
+	writes[3].pBufferInfo = &ubo_info_projector;
+	writes[3].pImageInfo = nullptr;
+	writes[3].pTexelBufferView = nullptr;
 
 	vkUpdateDescriptorSets(
 		device.getLogicalDevice(),
@@ -249,6 +275,14 @@ void	DescriptorSet::_initUniformBuffer(
 ) noexcept {
 	UniformBufferObject	ubo{};
 	ubo.light = light;
+
+	ubo.projector.proj = scop::perspective(45, 1, 1, 1000);
+	ubo.projector.view = scop::lookAt(
+		scop::Vect3(80, 20, 80),
+		scop::Vect3(80, 0, 80),
+		scop::normalize(scop::Vect3(1, 1, 0.0)));
+	ubo.projector.proj[5] *= -1;
+
 	_ubo.copyFrom(&ubo, sizeof(UniformBufferObject));
 }
 

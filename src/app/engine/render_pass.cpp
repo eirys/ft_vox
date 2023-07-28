@@ -55,11 +55,11 @@ void	RenderPass::init(Device& device, SwapChain& swap_chain) {
 	depth_attachment.format = swap_chain.findDepthFormat(device);
 	depth_attachment.samples = device.getMsaaSamples();
 	depth_attachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-	depth_attachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+	depth_attachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
 	depth_attachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 	depth_attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
 	depth_attachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-	depth_attachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
+	depth_attachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
 	// Create single subpass of render pass
 	VkAttachmentReference	color_attachment_ref{};
@@ -94,10 +94,10 @@ void	RenderPass::init(Device& device, SwapChain& swap_chain) {
 	dependency.srcStageMask =
 		VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT |
 		VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+	dependency.srcAccessMask = 0;
 	dependency.dstStageMask =
 		VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT |
 		VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
-	dependency.srcAccessMask = 0;
 	dependency.dstAccessMask =
 		VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT |
 		VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;

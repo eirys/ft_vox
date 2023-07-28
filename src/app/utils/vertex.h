@@ -43,9 +43,12 @@ struct Vertex {
 		uint8_t index
 	):	pos(vox::toChunkPos(pos.x, pos.y, pos.z)),
 		n_uv_f(
-			vox::convert(normal) |
-			vox::convert(uv, 8) |
-			vox::convert(index, 16)
+			normal |
+			uv << 8 |
+			index << 16
+			//vox::convert(normal) |
+			//vox::convert(uv, 8) |
+			//vox::convert(index, 16)
 		) {}
 
 	Vertex() = default;

@@ -333,6 +333,21 @@ float	Mat2::det() const {
  * @param mat:		matrix to rotate
  * @param angle:	angle in radians
  * @param axis:		axis of rotation
+ * 
+ * @details Result:
+ * [[u.x * u.x * (1 - c) + c,			row 0
+ *	 u.x * u.y * (1 - c) - u.z * s,
+ *	 u.x * u.z * (1 - c) + u.y * s,
+ *	 0],
+ *  [u.y * u.x * (1 - c) + u.z * s,		row 1
+ *	 u.y * u.y * (1 - c) + c,
+ *	 u.y * u.z * (1 - c) - u.x * s,
+ *	 0],
+ *  [u.z * u.x * (1 - c) - u.y * s,		row 2
+ *	 u.z * u.y * (1 - c) + u.x * s,
+ *	 u.z * u.z * (1 - c) + c,
+ *	 0],
+ *	[0, 0, 0, 1]]						row 3
 */
 Mat4	rotate(const Mat4& mat, float angle, const Vect3& axis) noexcept {
 	const float	c = std::cos(angle);
@@ -341,27 +356,18 @@ Mat4	rotate(const Mat4& mat, float angle, const Vect3& axis) noexcept {
 
 	return Mat4{
 		// Row 1
-		// u.x * u.x * (1 - c) + c,
 		static_cast<float>(std::fma(u.x, std::fma(u.x, 1 - c, 0), c)),
-		// u.x * u.y * (1 - c) - u.z * s,
 		static_cast<float>(std::fma(u.x, std::fma(u.y, 1 - c, 0), std::fma(-u.z, s, 0))),
-		// u.x * u.z * (1 - c) + u.y * s,
 		static_cast<float>(std::fma(u.x, std::fma(u.z, 1 - c, 0), std::fma(u.y, s, 0))),
 		0,
 		// Row 2
-		// u.y * u.x * (1 - c) + u.z * s,
 		static_cast<float>(std::fma(u.y, std::fma(u.x, 1 - c, 0), std::fma(u.z, s, 0))),
-		// u.y * u.y * (1 - c) + c,
 		static_cast<float>(std::fma(u.y, std::fma(u.y, 1 - c, 0), c)),
-		// u.y * u.z * (1 - c) - u.x * s,
 		static_cast<float>(std::fma(u.y, std::fma(u.z, 1 - c, 0), std::fma(-u.x, s, 0))),
 		0,
 		// Row 3
-		// u.z * u.x * (1 - c) - u.y * s,
 		static_cast<float>(std::fma(u.z, std::fma(u.x, 1 - c, 0), std::fma(-u.y, s, 0))),
-		// u.z * u.y * (1 - c) + u.x * s,
 		static_cast<float>(std::fma(u.z, std::fma(u.y, 1 - c, 0), std::fma(u.x, s, 0))),
-		// u.z * u.z * (1 - c) + c,
 		static_cast<float>(std::fma(u.z, std::fma(u.z, 1 - c, 0), c)),
 		0,
 		// Row 4
@@ -419,7 +425,7 @@ Mat4	lookAtDir(const Vect3& eye, const Vect3& dir, const Vect3& up) noexcept {
 }
 
 /**
- * @brief Produces orthographic projection matrix
+ * @brief Produces perspective projection matrix
  *
  * @param fov			field of view in radians
  * @param aspect_ratio	aspect ratio of the screen

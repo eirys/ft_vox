@@ -49,6 +49,8 @@ static void	keyCallback(
 	(void)scancode;
 	(void)mods;
 
+	static bool	mouse_disabled = true;
+
 	Window* win = reinterpret_cast<Window*>(
 		glfwGetWindowUserPointer(window)
 	);
@@ -69,6 +71,13 @@ static void	keyCallback(
 			return win->getApp()->toggleMove(ObjectDirection::MOVE_DOWN);
 		} else if (key == GLFW_KEY_R) {
 			return win->getApp()->resetGame();
+		} else if (key == GLFW_KEY_TAB) {
+			if (mouse_disabled) {
+				glfwSetInputMode(win->getWindow(), GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+			} else {
+				glfwSetInputMode(win->getWindow(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+			}
+			mouse_disabled = !mouse_disabled;
 		}
 	} else if (action == GLFW_RELEASE) {
 		if (key == GLFW_KEY_W) {

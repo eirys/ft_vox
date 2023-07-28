@@ -187,8 +187,8 @@ void	App::loadTerrain() {
 	LOG("Loading textures...");
 	const std::vector<std::string>	paths {
 		SCOP_TEXTURE_PATH "grass_top.ppm",
-		SCOP_TEXTURE_PATH "grass_side.ppm",
-		SCOP_TEXTURE_PATH "dirt.ppm"
+		//SCOP_TEXTURE_PATH "grass_side.ppm",
+		//SCOP_TEXTURE_PATH "dirt.ppm"
 	};
 
 	if (paths.size() > TEXTURE_SAMPLER_COUNT) {

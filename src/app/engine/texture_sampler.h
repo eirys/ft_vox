@@ -38,10 +38,9 @@ public:
 	/*                                  TYPEDEFS                                 */
 	/* ========================================================================= */
 
-	typedef	std::array<scop::Image, 6>	CubeMap;
-	typedef	std::vector<scop::Image>	TextureArray;
-
-	typedef	scop::Image					Texture;
+	typedef	scop::Image				Texture;
+	typedef	std::vector<Texture>	TextureArray;
+	typedef	std::array<Texture, 6>	CubeMap;
 
 	/* ========================================================================= */
 	/*                                  METHODS                                  */

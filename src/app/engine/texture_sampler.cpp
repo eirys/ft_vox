@@ -77,10 +77,10 @@ void	TextureSampler::_createTextureImages(
 	// Size of a side
 	const uint32_t	side_size = static_cast<uint32_t>(images[0].getWidth());
 
-	// Size of a layer (an image). A layer is a face of the cube map.
+	// Size of a layer (an image).
 	const VkDeviceSize	layer_size = side_size * side_size * sizeof(uint32_t);
 
-	// Size of the VKImage, including all layers
+	// Size of the VkImage, including all layers
 	const VkDeviceSize	image_size = layer_size * _texture_count;
 
 	// Evaluate mip levels count for each image
@@ -183,11 +183,14 @@ void	TextureSampler::_createTextureImages(
 void	TextureSampler::_createTextureImageView(
 	Device& device
 ) {
+	VkImageViewType view_type =
+		_texture_count > 1 ? VK_IMAGE_VIEW_TYPE_2D_ARRAY : VK_IMAGE_VIEW_TYPE_2D;
+
 	_texture_buffer.initView(
 		device,
 		VK_FORMAT_R8G8B8A8_SRGB,
 		VK_IMAGE_ASPECT_COLOR_BIT,
-		VK_IMAGE_VIEW_TYPE_2D_ARRAY,
+		view_type,
 		_mip_levels,
 		_layer_count * _texture_count
 	);
@@ -199,19 +202,19 @@ void	TextureSampler::_createTextureImageView(
 void	TextureSampler::_createTextureSampler(
 	Device& device
 ) {
-	// VkPhysicalDeviceProperties	properties{};
-	// vkGetPhysicalDeviceProperties(device.getPhysicalDevice(), &properties);
+	 VkPhysicalDeviceProperties	properties{};
+	 vkGetPhysicalDeviceProperties(device.getPhysicalDevice(), &properties);
 
 	VkSamplerCreateInfo	sampler_info{};
 	sampler_info.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
 	sampler_info.magFilter = VK_FILTER_NEAREST;
 	sampler_info.minFilter = VK_FILTER_NEAREST;
-	sampler_info.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-	sampler_info.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-	sampler_info.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-	sampler_info.anisotropyEnable = VK_FALSE;//VK_TRUE;
-	sampler_info.maxAnisotropy = 0.0;// properties.limits.maxSamplerAnisotropy;
-	sampler_info.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK;
+	sampler_info.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER;
+	sampler_info.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER;
+	sampler_info.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER;
+	sampler_info.anisotropyEnable = VK_TRUE;
+	sampler_info.maxAnisotropy = properties.limits.maxSamplerAnisotropy;
+	sampler_info.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
 	sampler_info.unnormalizedCoordinates = VK_FALSE;
 	sampler_info.compareEnable = VK_FALSE;
 	sampler_info.compareOp = VK_COMPARE_OP_NEVER;
