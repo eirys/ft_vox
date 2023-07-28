@@ -37,6 +37,25 @@ static void	framebufferResizeCallback(
 }
 
 /**
+ * @brief Handle those keys only when focus on window.
+*/
+static void	handleKeyPressOnMouseUntoggled(int key, App* app) {
+	if (key == GLFW_KEY_W) {
+		return app->toggleMove(ObjectDirection::MOVE_FORWARD);
+	} else if (key == GLFW_KEY_S) {
+		return app->toggleMove(ObjectDirection::MOVE_BACKWARD);
+	} else if (key == GLFW_KEY_A) {
+		return app->toggleMove(ObjectDirection::MOVE_LEFT);
+	} else if (key == GLFW_KEY_D) {
+		return app->toggleMove(ObjectDirection::MOVE_RIGHT);
+	} else if (key == GLFW_KEY_SPACE) {
+		return app->toggleMove(ObjectDirection::MOVE_UP);
+	} else if (key == GLFW_KEY_LEFT_CONTROL) {
+		return app->toggleMove(ObjectDirection::MOVE_DOWN);
+	}
+}
+
+/**
  * @brief Function callback for key press.
 */
 static void	keyCallback(
@@ -49,35 +68,19 @@ static void	keyCallback(
 	(void)scancode;
 	(void)mods;
 
-	static bool	mouse_disabled = true;
-
 	Window* win = reinterpret_cast<Window*>(
 		glfwGetWindowUserPointer(window)
 	);
+
 	if (action == GLFW_PRESS) {
 		if (key == GLFW_KEY_ESCAPE) {
 			return glfwSetWindowShouldClose(window, GLFW_TRUE);
-		} else if (key == GLFW_KEY_W) {
-			return win->getApp()->toggleMove(ObjectDirection::MOVE_FORWARD);
-		} else if (key == GLFW_KEY_S) {
-			return win->getApp()->toggleMove(ObjectDirection::MOVE_BACKWARD);
-		} else if (key == GLFW_KEY_A) {
-			return win->getApp()->toggleMove(ObjectDirection::MOVE_LEFT);
-		} else if (key == GLFW_KEY_D) {
-			return win->getApp()->toggleMove(ObjectDirection::MOVE_RIGHT);
-		} else if (key == GLFW_KEY_SPACE) {
-			return win->getApp()->toggleMove(ObjectDirection::MOVE_UP);
-		} else if (key == GLFW_KEY_LEFT_CONTROL) {
-			return win->getApp()->toggleMove(ObjectDirection::MOVE_DOWN);
+		} else if (key == GLFW_KEY_TAB) {
+			return win->toggleMouse();
 		} else if (key == GLFW_KEY_R) {
 			return win->getApp()->resetGame();
-		} else if (key == GLFW_KEY_TAB) {
-			if (mouse_disabled) {
-				glfwSetInputMode(win->getWindow(), GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-			} else {
-				glfwSetInputMode(win->getWindow(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-			}
-			mouse_disabled = !mouse_disabled;
+		} else if (!win->mouseActive()) {
+			return handleKeyPressOnMouseUntoggled(key, win->getApp());
 		}
 	} else if (action == GLFW_RELEASE) {
 		if (key == GLFW_KEY_W) {
@@ -110,8 +113,12 @@ static void cursorPositionCallback(
 	Window* win = reinterpret_cast<Window*>(
 		glfwGetWindowUserPointer(window)
 	);
-	win->getApp()->updateCameraDir(xpos - last_x, last_y - ypos);
 
+	if (win->mouseActive()) {
+		return;
+	}
+
+	win->getApp()->updateCameraDir(xpos - last_x, last_y - ypos);
 	last_x = xpos;
 	last_y = ypos;
 }
@@ -212,10 +219,23 @@ void	Window::toggleFrameBufferResized(bool is_resized) noexcept {
 	_frame_buffer_resized = is_resized;
 }
 
+void	Window::toggleMouse() noexcept {
+	_mouse_active = !_mouse_active;
+	if (_mouse_active) {
+		glfwSetInputMode(_window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+	} else {
+		glfwSetInputMode(_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	}
+}
+
 /* ========================================================================== */
 
 void	Window::retrieveSize(int& width, int& height) const {
 	glfwGetFramebufferSize(_window, &width, &height);
+}
+
+bool	Window::mouseActive() const noexcept {
+	return _mouse_active;
 }
 
 GLFWwindow*	Window::getWindow() noexcept {

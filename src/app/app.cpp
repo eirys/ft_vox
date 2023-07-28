@@ -44,11 +44,11 @@ static ObjectDirection	opposite(ObjectDirection dir) noexcept {
 /* ========================================================================== */
 
 App::App() {
-	loadTerrain();
+	_loadTerrain();
 	resetGame();
 	scop::mtl::Material material;
 	material.ambient_color = {0.2,0.2,0.2};
-	loadLight(material);
+	_loadLight(material);
 	_window.init(this);
 	_engine.init(_window, _textures, _light, _vertices, _indices);
 }
@@ -63,7 +63,7 @@ void	App::run() {
 	_timer.start();
 	while (_window.alive()) {
 		_window.poll();
-		updateGame();
+		_updateGame();
 		_engine.render(_window, _game.getPlayer(), _timer);
 		_timer.check();
 	}
@@ -152,13 +152,11 @@ void	App::updateCameraDir(float x, float y) noexcept {
 /**
  * @brief Updates state of the game.
 */
-void	App::updateGame() {
+void	App::_updateGame() {
 	_game.setCameraPos(_movement);
 }
 
-/* INIT FUNCTIONS =========================================================== */
-
-void	App::loadTerrain() {
+void	App::_loadTerrain() {
 	LOG("Loading terrain...");
 	const constexpr std::size_t	chunk_size = 16;
 	const constexpr std::size_t	render_distance_xy = 10;
@@ -218,7 +216,7 @@ void	App::loadTerrain() {
 	LOG("Textures loaded.");
 }
 
-// void	App::loadModel(const std::string& path) {
+// void	App::_loadModel(const std::string& path) {
 // 	LOG("Loading model...");
 
 // 	scop::obj::ObjParser	parser;
@@ -270,7 +268,7 @@ void	App::loadTerrain() {
 // 	// model.getMaterial().ambient_texture.release();
 // }
 
-void	App::loadLight(const scop::mtl::Material& mat) {
+void	App::_loadLight(const scop::mtl::Material& mat) {
 	_light = scop::UniformBufferObject::Light{
 		.ambient_color = mat.ambient_color,
 		.light_vector = scop::normalize(scop::Vect3(0.1f, 1.0f, 0.3f)),

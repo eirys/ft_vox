@@ -14,7 +14,7 @@
 
 # include "character.h"
 
-# define VOX_PLAYER_SPEED		0.1f
+# define VOX_PLAYER_SPEED		0.05f
 # define VOX_DEFAULT_EYE_DIR	scop::Vect3(0.0f, 0.0f, 1.0f)
 
 # define VOX_DEFAULT_POS_X		1.0f

@@ -276,11 +276,13 @@ void	DescriptorSet::_initUniformBuffer(
 	UniformBufferObject	ubo{};
 	ubo.light = light;
 
-	ubo.projector.proj = scop::perspective(45, 1, 1, 1000);
+	ubo.projector.proj = 
+		scop::orthographic(1, 20, 1, 20, 1, 1000);
+		//scop::perspective(45, 1, 1, 1000);
 	ubo.projector.view = scop::lookAt(
 		scop::Vect3(80, 20, 80),
 		scop::Vect3(80, 0, 80),
-		scop::normalize(scop::Vect3(1, 1, 0.0)));
+		scop::normalize(scop::Vect3(1, 0.02, 0.0)));
 	ubo.projector.proj[5] *= -1;
 
 	_ubo.copyFrom(&ubo, sizeof(UniformBufferObject));

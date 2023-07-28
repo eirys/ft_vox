@@ -107,10 +107,10 @@ private:
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
 
-	void						loadModel(const std::string& path);
-	void						loadTerrain();
-	void						loadLight(const scop::mtl::Material& mat);
-	void						updateGame();
+	//void						_loadModel(const std::string& path);
+	void						_loadTerrain();
+	void						_loadLight(const scop::mtl::Material& mat);
+	void						_updateGame();
 
 }; // class App
 

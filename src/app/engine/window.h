@@ -64,10 +64,12 @@ public:
 	bool							alive() const;
 	bool							resized() const noexcept;
 	void							toggleFrameBufferResized(bool resized) noexcept;
+	void							toggleMouse() noexcept;
 
 	/* ========================================================================= */
 
 	void							retrieveSize(int& width, int& height) const;
+	bool							mouseActive() const noexcept;
 	GLFWwindow*						getWindow() noexcept;
 	GLFWwindow const*				getWindow() const noexcept;
 	App*							getApp() noexcept;
@@ -81,6 +83,7 @@ private:
 	GLFWwindow*						_window = nullptr;
 	App*							_app = nullptr;
 	bool							_frame_buffer_resized = false;
+	bool							_mouse_active = false;
 
 }; // class Window
 

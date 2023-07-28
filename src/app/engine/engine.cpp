@@ -136,7 +136,6 @@ void	Engine::render(
 	vkResetFences(_device.getLogicalDevice(), 1, &_in_flight_fences);
 
 	// Record buffer
-	_main_command_buffer.reset();
 	_recordDrawingCommand(_nb_indices, image_index);
 
 	_descriptor_set.updateUniformBuffer(
@@ -148,7 +147,7 @@ void	Engine::render(
 	VkSemaphore				wait_semaphore[] = {
 		_image_available_semaphores
 	};
-	VkSemaphore				signal_semaphores[] = {
+	VkSemaphore				signal_semaphore[] = {
 		_render_finished_semaphores
 	};
 	VkPipelineStageFlags	wait_stages[] = {
@@ -162,7 +161,7 @@ void	Engine::render(
 	submit_info.commandBufferCount = 1;
 	submit_info.pCommandBuffers = reinterpret_cast<VkCommandBuffer*>(&_main_command_buffer);
 	submit_info.signalSemaphoreCount = 1;
-	submit_info.pSignalSemaphores = signal_semaphores;
+	submit_info.pSignalSemaphores = signal_semaphore;
 
 	// Submit command buffer to be processed by graphics queue
 	if (vkQueueSubmit(_device.getGraphicsQueue(), 1, &submit_info, _in_flight_fences) != VK_SUCCESS) {
@@ -174,7 +173,7 @@ void	Engine::render(
 	VkPresentInfoKHR	present_info{};
 	present_info.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
 	present_info.waitSemaphoreCount = 1;
-	present_info.pWaitSemaphores = signal_semaphores;
+	present_info.pWaitSemaphores = signal_semaphore;
 	present_info.swapchainCount = 1;
 	present_info.pSwapchains = swap_chains;
 	present_info.pImageIndices = &image_index;
@@ -524,14 +523,8 @@ void	Engine::_recordDrawingCommand(
 	std::size_t indices_size,
 	uint32_t image_index
 ) {
-	VkCommandBufferBeginInfo	begin_info{};
-	begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-	begin_info.flags = 0;
-	begin_info.pInheritanceInfo = nullptr;
-
-	if (vkBeginCommandBuffer(_main_command_buffer.getBuffer(), &begin_info) != VK_SUCCESS) {
-		throw std::runtime_error("failed to begin recording command buffer");
-	}
+	_main_command_buffer.reset();
+	_main_command_buffer.begin(0);
 
 	// Define what corresponds to 'clear color'
 	std::array<VkClearValue, 2>	clear_values{};
@@ -624,10 +617,7 @@ void	Engine::_recordDrawingCommand(
 
 	// Stop the render target work
 	vkCmdEndRenderPass(_main_command_buffer.getBuffer());
-
-	if (vkEndCommandBuffer(_main_command_buffer.getBuffer()) != VK_SUCCESS) {
-		throw std::runtime_error("failed to record command buffer");
-	}
+	_main_command_buffer.end(_device, false);
 }
 
 } // namespace graphics

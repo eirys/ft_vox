@@ -113,7 +113,7 @@ private:
 	VkPipelineLayout				_pipeline_layout;
 	struct {
 		VkPipeline					scene;
-		VkPipeline					shadows;
+		//VkPipeline					shadows;
 	}								_pipelines;
 	//VkPipeline						_pipeline;
 

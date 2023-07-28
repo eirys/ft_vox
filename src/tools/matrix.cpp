@@ -231,99 +231,6 @@ Mat4	Mat4::transpose() const {
 }
 
 /* ========================================================================== */
-/*                                 MATRIX 3X3                                 */
-/* ========================================================================== */
-
-Mat3::Mat3() {
-	memset(mat, 0, 9 * sizeof(float));
-}
-
-/* ACCESSORS ================================================================ */
-
-float&	Mat3::operator[](std::size_t index) {
-	if (index >= 9) {
-		throw std::out_of_range("Mat3 index out of range");
-	}
-	return mat[index];
-}
-
-const float&	Mat3::operator[](std::size_t index) const {
-	if (index >= 9) {
-		throw std::out_of_range("Mat3 index out of range");
-	}
-	return mat[index];
-}
-
-/* ========================================================================== */
-
-Mat2	Mat3::minor(std::size_t row, std::size_t column) const {
-	Mat2	submatrix{};
-	std::size_t	x = 0;
-	std::size_t	y = 0;
-
-	for (std::size_t line = 0; line < 3; ++line) {
-		if (line != row) {
-			for (std::size_t col = 0; col < 3; ++col) {
-				if (col != column) {
-					submatrix[2 * y + x] = mat[2 * line + col];
-					++x;
-				}
-			}
-			++y;
-		}
-		x = 0;
-	}
-	return submatrix;
-}
-
-float	Mat3::det() const {
-	float	sum{};
-
-	for (std::size_t j = 0; j < 3; ++j) {
-		sum = std::fma(
-			std::pow(-1.0f, j),
-			std::fma(
-				minor(0, j).det(),
-				mat[j],
-				0.0f
-			),
-			sum
-		);
-	}
-	return sum;
-}
-
-/* ========================================================================== */
-/*                                 MATRIX 2X2                                 */
-/* ========================================================================== */
-
-Mat2::Mat2() {
-	memset(mat, 0, 4 * sizeof(float));
-}
-
-/* ACCESSORS ================================================================ */
-
-float& Mat2::operator[](std::size_t index) {
-	if (index >= 4) {
-		throw std::out_of_range("Mat2 index out of range");
-	}
-	return mat[index];
-}
-
-const float& Mat2::operator[](std::size_t index) const {
-	if (index >= 4) {
-		throw std::out_of_range("Mat2 index out of range");
-	}
-	return mat[index];
-}
-
-/* ========================================================================== */
-
-float	Mat2::det() const {
-	return std::fma(mat[0], mat[3], -std::fma(mat[1], mat[2], 0.0f));
-}
-
-/* ========================================================================== */
 /*                                    OTHER                                   */
 /* ========================================================================== */
 
@@ -448,6 +355,31 @@ Mat4	perspective(float fov, float aspect_ratio, float near, float far) noexcept 
 	};
 }
 
+Mat4	orthographic(
+	float bot, 
+	float top, 
+	float left, 
+	float right, 
+	float near, 
+	float far
+) noexcept {
+	const float width = right - left;
+	const float height = top - bot;
+	const float	range = far - near;
+	return Mat4{
+		// Row 1
+		2 / width, 0, 0, 0,
+		// Row 2
+		0, 2 / height, 0, 0,
+		// Row 3
+		0, 0, -2 / range, 0,
+		// Row 4
+		width / (right + left), 
+		height / (top + bot),
+		range / (far + near),
+		1
+	};
+}
 /**
  * @brief Scales the matrix by the given vector
  *
@@ -511,6 +443,99 @@ Mat4	inverse(const Mat4& mat) {
 	// Calculate the adjugate matrix.
 	Mat4	adjugate = mat.adjugate();
 	return adjugate * (1 / determinant);
+}
+
+/* ========================================================================== */
+/*                                 MATRIX 3X3                                 */
+/* ========================================================================== */
+
+Mat3::Mat3() {
+	memset(mat, 0, 9 * sizeof(float));
+}
+
+/* ACCESSORS ================================================================ */
+
+float&	Mat3::operator[](std::size_t index) {
+	if (index >= 9) {
+		throw std::out_of_range("Mat3 index out of range");
+	}
+	return mat[index];
+}
+
+const float&	Mat3::operator[](std::size_t index) const {
+	if (index >= 9) {
+		throw std::out_of_range("Mat3 index out of range");
+	}
+	return mat[index];
+}
+
+/* ========================================================================== */
+
+Mat2	Mat3::minor(std::size_t row, std::size_t column) const {
+	Mat2	submatrix{};
+	std::size_t	x = 0;
+	std::size_t	y = 0;
+
+	for (std::size_t line = 0; line < 3; ++line) {
+		if (line != row) {
+			for (std::size_t col = 0; col < 3; ++col) {
+				if (col != column) {
+					submatrix[2 * y + x] = mat[2 * line + col];
+					++x;
+				}
+			}
+			++y;
+		}
+		x = 0;
+	}
+	return submatrix;
+}
+
+float	Mat3::det() const {
+	float	sum{};
+
+	for (std::size_t j = 0; j < 3; ++j) {
+		sum = std::fma(
+			std::pow(-1.0f, j),
+			std::fma(
+				minor(0, j).det(),
+				mat[j],
+				0.0f
+			),
+			sum
+		);
+	}
+	return sum;
+}
+
+/* ========================================================================== */
+/*                                 MATRIX 2X2                                 */
+/* ========================================================================== */
+
+Mat2::Mat2() {
+	memset(mat, 0, 4 * sizeof(float));
+}
+
+/* ACCESSORS ================================================================ */
+
+float& Mat2::operator[](std::size_t index) {
+	if (index >= 4) {
+		throw std::out_of_range("Mat2 index out of range");
+	}
+	return mat[index];
+}
+
+const float& Mat2::operator[](std::size_t index) const {
+	if (index >= 4) {
+		throw std::out_of_range("Mat2 index out of range");
+	}
+	return mat[index];
+}
+
+/* ========================================================================== */
+
+float	Mat2::det() const {
+	return std::fma(mat[0], mat[3], -std::fma(mat[1], mat[2], 0.0f));
 }
 
 } // namespace scop

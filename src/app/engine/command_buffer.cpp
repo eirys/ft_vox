@@ -103,29 +103,31 @@ void	CommandBuffer::restart(
  * 
  * @note A fence is created to wait for the transfer to complete.
 */
-void	CommandBuffer::end(Device& device) {
+void	CommandBuffer::end(Device& device, bool await) {
 	if (vkEndCommandBuffer(_buffer) != VK_SUCCESS) {
 		throw std::runtime_error("failed to record command buffer");
 	}
 
-	// Create fence to wait for transfer to complete before deallocating
-	VkFence				fence;
-	VkFenceCreateInfo	fence_info{};
-	fence_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-	if (vkCreateFence(device.getLogicalDevice(), &fence_info, nullptr, &fence) != VK_SUCCESS) {
-		throw std::runtime_error("failed to create fence for command buffer");
-	}
+	if (await) {
+		// Create fence to wait for transfer to complete before deallocating
+		VkFence				fence;
+		VkFenceCreateInfo	fence_info{};
+		fence_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+		if (vkCreateFence(device.getLogicalDevice(), &fence_info, nullptr, &fence) != VK_SUCCESS) {
+			throw std::runtime_error("failed to create fence for command buffer");
+		}
 
-	VkSubmitInfo	submit_info{};
-	submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-	submit_info.commandBufferCount = 1;
-	submit_info.pCommandBuffers = &_buffer;
-	if (vkQueueSubmit(device.getGraphicsQueue(), 1, &submit_info, fence) != VK_SUCCESS) {
-		throw std::runtime_error("failed to submit command buffer to queue");
-	}
+		VkSubmitInfo	submit_info{};
+		submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+		submit_info.commandBufferCount = 1;
+		submit_info.pCommandBuffers = &_buffer;
+		if (vkQueueSubmit(device.getGraphicsQueue(), 1, &submit_info, fence) != VK_SUCCESS) {
+			throw std::runtime_error("failed to submit command buffer to queue");
+		}
 
-	vkWaitForFences(device.getLogicalDevice(), 1, &fence, VK_TRUE, UINT64_MAX);
-	vkDestroyFence(device.getLogicalDevice(), fence, nullptr);
+		vkWaitForFences(device.getLogicalDevice(), 1, &fence, VK_TRUE, UINT64_MAX);
+		vkDestroyFence(device.getLogicalDevice(), fence, nullptr);
+	}
 }
 
 /* ========================================================================== */

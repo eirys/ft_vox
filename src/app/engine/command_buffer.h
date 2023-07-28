@@ -62,7 +62,7 @@ public:
 			VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT
 	);
 	void				reset();
-	void				end(Device& device);
+	void				end(Device& device, bool await = true);
 
 	/* ========================================================================= */
 
