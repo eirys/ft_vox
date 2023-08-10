@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   texture_handler.h                                  :+:      :+:    :+:   */
+/*   scene_texture_handler.h                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/06/04 17:14:56 by etran             #+#    #+#             */
-/*   Updated: 2023/08/10 22:28:51 by etran            ###   ########.fr       */
+/*   Created: 2023/08/10 22:17:58 by etran             #+#    #+#             */
+/*   Updated: 2023/08/10 22:35:07 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,59 +16,54 @@
 # ifndef GLFW_INCLUDE_VULKAN
 #  define GLFW_INCLUDE_VULKAN
 # endif
-# include <GLFW/glfw3.h>
 
-// Std
-# include <vector> // std::vector
-# include <array> // std::array
-
-# include "image_buffer.h"
-
-namespace scop {
-class Image;
-} // namespace scop
+# include "texture_handler.h"
+# include "../texture_handler.h"
 
 namespace scop::graphics {
 
-class Device;
-class CommandPool;
-
-class TextureHandler {
+class SceneTextureHandler final: public TextureHandler {
 public:
 	/* ========================================================================= */
 	/*                                  TYPEDEFS                                 */
 	/* ========================================================================= */
 
-	typedef	::scop::Image				Texture;
-	typedef	std::vector<Texture>	TextureArray;
-	typedef	std::array<Texture, 6>	CubeMap;
+	using super = TextureHandler;
+	using super::Texture;
+	using super::TextureArray;
 
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
 
-	virtual ~TextureHandler() = default;
+	SceneTextureHandler() = default;
+	~SceneTextureHandler() = default;
+
+	SceneTextureHandler(SceneTextureHandler&& other) = delete;
+	SceneTextureHandler(const SceneTextureHandler& other) = delete;
+	SceneTextureHandler& operator=(SceneTextureHandler&& other) = delete;
+	SceneTextureHandler& operator=(const SceneTextureHandler& other) = delete;
 
 	/* ========================================================================= */
 
-	virtual void			init(
+	using super::destroy;
+	void					init(
 		Device& device,
 		CommandPool& command_pool,
-		const std::vector<Texture>& images) = 0;
-	virtual void			destroy(Device& device) = 0;
+		const std::vector<Texture>& images) override;
 
 	/* ========================================================================= */
 
 	VkSampler				getTextureSampler() const noexcept;
 	const ImageBuffer&		getTextureBuffer() const noexcept;
 
-protected:
+private:
 	/* ========================================================================= */
 	/*                               CLASS MEMBERS                               */
 	/* ========================================================================= */
 
 	uint32_t				_texture_count;
-	const uint32_t			_layer_count;
+	const uint32_t			_layer_count = 1;
 	uint32_t				_mip_levels;
 
 	ImageBuffer				_texture_buffer;
@@ -78,22 +73,13 @@ protected:
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
 
-	TextureHandler() = default;
-
-	TextureHandler(TextureHandler&& other) = delete;
-	TextureHandler(const TextureHandler& other) = delete;
-	TextureHandler& operator=(TextureHandler&& other) = delete;
-	TextureHandler& operator=(const TextureHandler& other) = delete;
-
-	/* ========================================================================= */
-
-	virtual void			_createTextureImages(
+	void					_createTextureImages(
 		Device& device,
 		CommandPool& command_pool,
-		const std::vector<Texture>& images) = 0;
-	virtual void			_createTextureImageView(Device& device) = 0;
-	virtual void			_createTextureSampler(Device& device) = 0;
+		const std::vector<Texture>& images) override;
+	void					_createTextureImageView(Device& device) override;
+	void					_createTextureSampler(Device& device) override;
 
-}; // class TextureHandler
+}; // class SceneTextureHandler
 
 } // namespace scop::graphics

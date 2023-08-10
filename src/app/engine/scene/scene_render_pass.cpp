@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/06 17:44:57 by etran             #+#    #+#             */
-/*   Updated: 2023/08/10 22:13:56 by etran            ###   ########.fr       */
+/*   Updated: 2023/08/10 22:32:08 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,8 +20,8 @@
 namespace scop::graphics {
 
 void	SceneRenderPass::init(Device& device, SwapChain& swap_chain) {
-	RenderPass::_width = swap_chain.getExtent().width;
-	RenderPass::_height = swap_chain.getExtent().height;
+	super::_width = swap_chain.getExtent().width;
+	super::_height = swap_chain.getExtent().height;
 
 	// Color attachment
 	VkAttachmentDescription	color_attachment{};

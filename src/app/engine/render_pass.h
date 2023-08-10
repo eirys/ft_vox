@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:14:50 by etran             #+#    #+#             */
-/*   Updated: 2023/08/10 22:13:01 by etran            ###   ########.fr       */
+/*   Updated: 2023/08/10 22:26:29 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,6 +31,15 @@ public:
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
 
+	virtual	~RenderPass() = default;
+
+	/* ========================================================================= */
+
+	virtual void	init(Device& device, SwapChain& swap_chain) = 0;
+	void			destroy(Device& device);
+
+	/* ========================================================================= */
+
 	VkRenderPass	getRenderPass() const noexcept;
 
 protected:
@@ -39,17 +48,11 @@ protected:
 	/* ========================================================================= */
 
 	RenderPass() = default;
-	virtual	~RenderPass() = default;
 
 	RenderPass(RenderPass&& other) = delete;
 	RenderPass(const RenderPass& other) = delete;
 	RenderPass& operator=(RenderPass&& other) = delete;
 	RenderPass& operator=(const RenderPass& other) = delete;
-
-	/* ========================================================================= */
-
-	virtual void	init(Device& device, SwapChain& swap_chain) = 0;
-	void			destroy(Device& device);
 
 	/* ========================================================================= */
 	/*                               CLASS MEMBERS                               */

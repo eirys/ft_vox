@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/05 13:32:01 by etran             #+#    #+#             */
-/*   Updated: 2023/08/10 22:13:59 by etran            ###   ########.fr       */
+/*   Updated: 2023/08/10 22:34:35 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,6 +23,12 @@ class SwapChain;
 class SceneRenderPass final: public RenderPass {
 public:
 	/* ========================================================================= */
+	/*                                  TYPEDEFS                                 */
+	/* ========================================================================= */
+
+	using super = RenderPass;
+
+	/* ========================================================================= */
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
 
@@ -38,8 +44,8 @@ public:
 
 	void			init(Device& device, SwapChain& swap_chain) override;
 
-	using RenderPass::destroy;
-	using RenderPass::getRenderPass;
+	using super::destroy;
+	using super::getRenderPass;
 
 private:
 	/* ========================================================================= */

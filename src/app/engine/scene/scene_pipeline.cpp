@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/06 20:50:48 by etran             #+#    #+#             */
-/*   Updated: 2023/08/10 22:07:54 by etran            ###   ########.fr       */
+/*   Updated: 2023/08/10 22:31:52 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -88,7 +88,7 @@ void	ScenePipeline::_createPipeline(
 	info.pDepthStencilState->depthCompareOp = VK_COMPARE_OP_LESS;
 	info.renderPass = _render_pass.getRenderPass();
 
-	if (vkCreateGraphicsPipelines(_device.getLogicalDevice(), VK_NULL_HANDLE, 1, &info, nullptr, &Pipeline::_pipeline) != VK_SUCCESS) {
+	if (vkCreateGraphicsPipelines(_device.getLogicalDevice(), VK_NULL_HANDLE, 1, &info, nullptr, &super::_pipeline) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create graphics _pipeline");
 	}
 

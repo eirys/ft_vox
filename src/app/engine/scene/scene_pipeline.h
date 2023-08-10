@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/06 17:31:39 by etran             #+#    #+#             */
-/*   Updated: 2023/08/10 22:10:48 by etran            ###   ########.fr       */
+/*   Updated: 2023/08/10 22:34:41 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,6 +28,7 @@ public:
 	/*                                  TYPEDEFS                                 */
 	/* ========================================================================= */
 
+	using super = Pipeline;
 	using SceneRenderPassPtr = std::shared_ptr<SceneRenderPass>;
 
 	/* ========================================================================= */
@@ -54,7 +55,7 @@ public:
 
 	/* ========================================================================= */
 
-	using Pipeline::getPipeline;
+	using super::getPipeline;
 
 	RenderPassPtr	getRenderPass() const noexcept override;
 
@@ -69,7 +70,7 @@ private:
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
 
-	using Pipeline::_createShaderModule;
+	using super::_createShaderModule;
 
 	void					_createPipeline(
 		Device& device,
