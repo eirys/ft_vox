@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/16 12:47:19 by etran             #+#    #+#             */
-/*   Updated: 2023/07/04 09:42:49 by etran            ###   ########.fr       */
+/*   Updated: 2023/08/10 22:11:21 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,8 +14,7 @@
 #include "engine.h"
 #include "device.h"
 
-namespace scop {
-namespace graphics {
+namespace scop::graphics {
 
 /* ========================================================================== */
 /*                                   PUBLIC                                   */
@@ -49,5 +48,4 @@ CommandPool::operator VkCommandPool() const noexcept {
 	return _pool;
 }
 
-} // namespace graphics
-} // namespace scop
+} // namespace scop::graphics

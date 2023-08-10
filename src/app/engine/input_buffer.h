@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:15:01 by etran             #+#    #+#             */
-/*   Updated: 2023/07/04 09:49:00 by etran            ###   ########.fr       */
+/*   Updated: 2023/08/10 22:13:08 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,8 +26,9 @@
 
 namespace scop {
 struct Vertex;
+} // namespace scop
 
-namespace graphics {
+namespace scop::graphics {
 class Device;
 class CommandPool;
 
@@ -85,5 +86,4 @@ private:
 
 }; // class InputBuffer
 
-} // namespace graphics
-} // namespace scop
+} // namespace scop::graphics

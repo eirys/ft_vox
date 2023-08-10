@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/02 16:27:11 by etran             #+#    #+#             */
-/*   Updated: 2023/07/03 10:10:19 by etran            ###   ########.fr       */
+/*   Updated: 2023/08/10 22:14:49 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,12 +22,11 @@
 // Std
 # include <vector> // std::vector
 
-# include "image_buffer.h"
-
 namespace scop {
 class Window;
+} // namespace scop
 
-namespace graphics {
+namespace scop::graphics {
 class Device;
 class RenderPass;
 
@@ -53,19 +52,16 @@ public:
 
 	void								init(
 		Device& device,
-		scop::Window& window
+		::scop::Window& window
 	);
-
 	void								initFrameBuffers(
 		Device& device,
 		RenderPass& render_pass
 	);
-
 	void								destroy(Device& device);
-
 	void								update(
 		Device& device,
-		scop::Window& window,
+		::scop::Window& window,
 		RenderPass& render_pass
 	);
 
@@ -78,7 +74,6 @@ public:
 	VkSwapchainKHR						getSwapChain() const noexcept;
 	VkFormat							getImageFormat() const noexcept;
 	VkExtent2D							getExtent() const noexcept;
-	const std::vector<VkFramebuffer>&	getFrameBuffers() const noexcept;
 
 private:
 	/* ========================================================================= */
@@ -89,18 +84,11 @@ private:
 	VkFormat							_image_format;
 	VkExtent2D							_extent;
 
-	std::vector<VkImage>				_images;
-	std::vector<VkImageView>			_image_views;
-	std::vector<VkFramebuffer>			_frame_buffers;
-
-	ImageBuffer							_color_image;
-	ImageBuffer							_depth_image;
-
 	/* ========================================================================= */
 
 	void								_createSwapChain(
 		Device& device,
-		scop::Window& window
+		::scop::Window& window
 	);
 	void								_createResources(Device& device);
 	void								_createImages(
@@ -115,10 +103,9 @@ private:
 	) const noexcept;
 	VkExtent2D							_chooseSwapExtent(
 		VkSurfaceCapabilitiesKHR capabilities,
-		scop::Window& window
+		::scop::Window& window
 	) const;
 
 }; // class SwapChain
 
-} // namespace graphics
-} // namespace scop
+} // namespace scop::graphics

@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:14:35 by etran             #+#    #+#             */
-/*   Updated: 2023/07/04 09:31:34 by etran            ###   ########.fr       */
+/*   Updated: 2023/08/10 22:14:49 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,21 +26,19 @@
 # include "debug_module.h"
 # include "device.h"
 # include "swap_chain.h"
-# include "render_pass.h"
-# include "texture_sampler.h"
+# include "scene_render_pass.h"
+# include "texture_handler.h"
 # include "descriptor_set.h"
 # include "command_pool.h"
 # include "input_buffer.h"
 # include "player.h"
 # include "command_buffer.h"
 
-# define FRAG_SHADER_BIN "shaders/frag.spv"
-# define VERT_SHADER_BIN "shaders/vert.spv"
-
 namespace scop {
 class Timer;
+} // namespace scop
 
-namespace graphics {
+namespace scop::graphics {
 
 class Engine {
 public:
@@ -71,18 +69,18 @@ public:
 
 	/* ========================================================================= */
 
-	void							init(
-		scop::Window& window,
-		const std::vector<TextureSampler::Texture>& images,
+	void						init(
+		::scop::Window& window,
+		const std::vector<TextureHandler::Texture>& images,
 		const UniformBufferObject::Light& light,
 		const std::vector<Vertex>& vertices,
 		const std::vector<uint32_t>& indices
 	);
-	void							destroy();
+	void						destroy();
 
-	void							idle();
-	void							render(
-		scop::Window& window,
+	void						idle();
+	void						render(
+		::scop::Window& window,
 		const vox::Player& player,
 		Timer& timer
 	);
@@ -92,53 +90,55 @@ private:
 	/*                               CLASS MEMBERS                               */
 	/* ========================================================================= */
 
-	VkInstance						_vk_instance;
-	DebugModule						_debug_module;
+	VkInstance					_vk_instance;
+	DebugModule					_debug_module;
 
-	Device							_device;
+	Device						_device;
+	SwapChain					_swap_chain;
+	SceneRenderPass				_render_pass;
+	TextureHandler				_texture_sampler;
+	DescriptorSet				_descriptor_set;
+	CommandPool					_command_pool;
+	InputBuffer					_input_buffer;
 
-	SwapChain						_swap_chain;
-	RenderPass						_render_pass;
-	TextureSampler					_texture_sampler;
-	DescriptorSet					_descriptor_set;
-	CommandPool						_command_pool;
-	InputBuffer						_input_buffer;
+	CommandBuffer				_main_command_buffer;
 
-	CommandBuffer					_main_command_buffer;
+	VkSemaphore					_image_available_semaphores;
+	VkSemaphore					_render_finished_semaphores;
+	VkFence						_in_flight_fences;
 
-	VkSemaphore						_image_available_semaphores;
-	VkSemaphore						_render_finished_semaphores;
-	VkFence							_in_flight_fences;
-
-	VkPipelineLayout				_pipeline_layout;
+	VkPipelineLayout			_pipeline_layout;
 	struct {
-		VkPipeline					scene;
-		//VkPipeline					shadows;
-	}								_pipelines;
-	//VkPipeline						_pipeline;
+		VkPipeline				scene;
+		//VkPipeline				shadows;
+	}							_pipelines;
+	//VkPipeline					_pipeline;
 
-	std::size_t						_nb_indices;
+	std::size_t					_nb_indices;
 
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
 
-	void							_createInstance();
-	void							_createGraphicsPipelines();
-	void							_createSyncObjects();
+	void						_createInstance();
+	void						_createGraphicsPipelines();
+	void						_createSyncObjects();
 
-	void							_createScenePipeline();
-	void							_createShadowPipeline();
-	bool							_checkValidationLayerSupport();
-	std::vector<const char*>		_getRequiredExtensions();
-	VkShaderModule					_createShaderModule(const std::string& path);
-	void							_recordDrawingCommand(
+	void						_createGraphicsPipelineLayout();
+	void						_createScenePipeline(
+		VkGraphicsPipelineCreateInfo& info
+	);
+	void						_createShadowPipeline(
+		VkGraphicsPipelineCreateInfo& info
+	);
+	bool						_checkValidationLayerSupport();
+	std::vector<const char*>	_getRequiredExtensions();
+	VkShaderModule				_createShaderModule(const std::string& path);
+	void						_recordDrawingCommand(
 		std::size_t indices_size,
 		uint32_t image_index
 	);
 
 }; // class Engine
 
-} // namespace graphics
-} // namespace scop
-
+} // namespace scop::graphics

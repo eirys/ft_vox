@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/16 13:03:48 by etran             #+#    #+#             */
-/*   Updated: 2023/07/04 09:54:05 by etran            ###   ########.fr       */
+/*   Updated: 2023/08/10 22:12:15 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,8 +20,7 @@
 
 #include <cstring> // memcpy
 
-namespace scop {
-namespace graphics {
+namespace scop::graphics {
 
 /* ========================================================================== */
 /*                                   PUBLIC                                   */
@@ -161,5 +160,4 @@ void	InputBuffer::_createIndexBuffer(
 	staging_buffer.destroy(device.getLogicalDevice());
 }
 
-} // namespace graphics
-} // namespace scop
+} // namespace scop::graphics

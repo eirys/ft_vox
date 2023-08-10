@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/06 12:28:42 by eli               #+#    #+#             */
-/*   Updated: 2023/07/03 10:14:24 by etran            ###   ########.fr       */
+/*   Updated: 2023/08/10 22:06:33 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -254,4 +254,4 @@ App const*	Window::getApp() const noexcept {
 	return _app;
 }
 
-} // namespace scop
+} // namespace scop::graphics

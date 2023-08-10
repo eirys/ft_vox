@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/02 19:40:11 by etran             #+#    #+#             */
-/*   Updated: 2023/07/03 11:06:47 by etran            ###   ########.fr       */
+/*   Updated: 2023/08/10 22:14:49 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,8 +19,7 @@
 #include <stdexcept> // std::runtime_error
 #include <array> // std::array
 
-namespace scop {
-namespace graphics {
+namespace scop::graphics {
 
 /* ========================================================================== */
 /*                                   PUBLIC                                   */
@@ -28,7 +27,7 @@ namespace graphics {
 
 void	SwapChain::init(
 	Device& device,
-	scop::Window& window
+	::scop::Window& window
 ) {
 	_createSwapChain(device, window);
 	_createResources(device);
@@ -90,7 +89,7 @@ void	SwapChain::destroy(Device& device) {
 
 void	SwapChain::update(
 	Device& device,
-	scop::Window& window,
+	::scop::Window& window,
 	RenderPass& render_pass
 ) {
 	window.pause();
@@ -139,7 +138,7 @@ const std::vector<VkFramebuffer>&	SwapChain::getFrameBuffers() const noexcept {
 
 void	SwapChain::_createSwapChain(
 	Device& device,
-	scop::Window& window
+	::scop::Window& window
 ) {
 	Device::SwapChainSupportDetails	swap_chain_support =
 		device.querySwapChainSupport();
@@ -328,7 +327,7 @@ VkPresentModeKHR	SwapChain::_chooseSwapPresentMode(
 */
 VkExtent2D	SwapChain::_chooseSwapExtent(
 	VkSurfaceCapabilitiesKHR capabilities,
-	scop::Window& window
+	::scop::Window& window
 ) const {
 	// Pick swap extent (~ resolution of the window, in px)
 	if (capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max()) {
@@ -356,5 +355,4 @@ VkExtent2D	SwapChain::_chooseSwapExtent(
 	}
 }
 
-} // namespace graphics
-} // namespace scop
+} // namespace scop::graphics

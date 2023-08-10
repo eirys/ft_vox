@@ -6,7 +6,7 @@
 #    By: etran <etran@student.42.fr>                +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/04/06 03:40:09 by eli               #+#    #+#              #
-#    Updated: 2023/07/16 08:49:10 by etran            ###   ########.fr        #
+#    Updated: 2023/08/10 22:01:02 by etran            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -26,6 +26,7 @@ SHD_DIR		:=	shaders
 TOOLS_DIR	:=	tools
 APP_DIR		:=	app
 ENG_DIR		:=	$(APP_DIR)/engine
+SCENE_DIR	:=	$(ENG_DIR)/scene
 UTILS_DIR	:=	$(APP_DIR)/utils
 GAME_DIR	:=	$(APP_DIR)/gameplay
 GEN_DIR		:=	$(APP_DIR)/generation
@@ -38,6 +39,7 @@ SUBDIRS		:=	$(APP_DIR) \
 				$(GAME_DIR) \
 				$(CHAR_DIR) \
 				$(ENG_DIR) \
+				$(SCENE_DIR) \
 				$(MODEL_DIR) \
 				$(UTILS_DIR) \
 				$(GEN_DIR) \
@@ -62,11 +64,14 @@ SRC_FILES	:=	$(TOOLS_DIR)/matrix.cpp \
 				$(ENG_DIR)/window.cpp \
 				$(ENG_DIR)/debug_module.cpp \
 				$(ENG_DIR)/device.cpp \
+				$(ENG_DIR)/pipeline.cpp \
 				$(ENG_DIR)/swap_chain.cpp \
 				$(ENG_DIR)/render_pass.cpp \
+				$(SCENE_DIR)/scene_render_pass.cpp \
+				$(SCENE_DIR)/scene_pipeline.cpp \
 				$(ENG_DIR)/descriptor_set.cpp \
 				$(ENG_DIR)/command_pool.cpp \
-				$(ENG_DIR)/texture_sampler.cpp \
+				$(ENG_DIR)/texture_handler.cpp \
 				$(ENG_DIR)/input_buffer.cpp \
 				$(ENG_DIR)/engine.cpp \
 				$(ENG_DIR)/buffer.cpp \
@@ -80,8 +85,8 @@ OBJ			:=	$(addprefix $(OBJ_DIR)/,$(SRC_FILES:.cpp=.o))
 DEP			:=	$(addprefix $(OBJ_DIR)/,$(SRC_FILES:.cpp=.d))
 
 # shaders
-SHD_FILES	:=	vert \
-				frag
+SHD_FILES	:=	scene_vert.glsl \
+				scene_frag.glsl
 
 SHD			:=	$(addprefix $(SHD_DIR)/,$(SHD_FILES))
 SHD_BIN		:=	$(addsuffix .spv,$(SHD))
@@ -130,7 +135,7 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
 	@echo "Compiling file $<..."
 	@$(CXX) $(CFLAGS) -c $< -o $@
 
-$(SHD_DIR)/%.spv: $(SHD_DIR)/shader.%
+$(SHD_DIR)/%.spv: $(SHD_DIR)/%.glsl
 	@echo "Compiling shader $<..."
 	@$(GLSLC) $< -o $@
 

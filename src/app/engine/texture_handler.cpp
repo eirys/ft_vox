@@ -1,16 +1,16 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   texture_sampler.cpp                                :+:      :+:    :+:   */
+/*   texture_handler.cpp                                :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/15 20:25:44 by etran             #+#    #+#             */
-/*   Updated: 2023/07/04 09:54:59 by etran            ###   ########.fr       */
+/*   Updated: 2023/08/10 22:07:16 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "texture_sampler.h"
+#include "texture_handler.h"
 #include "engine.h"
 #include "image_handler.h"
 #include "device.h"
@@ -24,20 +24,19 @@
 #include <stdexcept> // std::runtime_error
 #include <cstring> // memcpy
 
-namespace scop {
-namespace graphics {
+namespace scop::graphics {
 
 /* ========================================================================== */
 /*                                   PUBLIC                                   */
 /* ========================================================================== */
 
-void	TextureSampler::init(
+void	TextureHandler::init(
 	Device& device,
 	CommandPool& command_pool,
 	const std::vector<Texture>& images
 ) {
 	if (images.empty()) {
-		throw std::invalid_argument("TextureSampler: no image provided");
+		throw std::invalid_argument("TextureHandler: no image provided");
 	}
 	_texture_count = static_cast<uint32_t>(images.size());
 	_createTextureImages(device, command_pool, images);
@@ -45,18 +44,18 @@ void	TextureSampler::init(
 	_createTextureSampler(device);
 }
 
-void	TextureSampler::destroy(Device& device) {
+void	TextureHandler::destroy(Device& device) {
 	vkDestroySampler(device.getLogicalDevice(), _vk_texture_sampler, nullptr);
 	_texture_buffer.destroy(device);
 }
 
 /* ========================================================================== */
 
-VkSampler	TextureSampler::getTextureSampler() const noexcept {
+VkSampler	TextureHandler::getTextureSampler() const noexcept {
 	return _vk_texture_sampler;
 }
 
-const ImageBuffer&	TextureSampler::getTextureBuffer() const noexcept {
+const ImageBuffer&	TextureHandler::getTextureBuffer() const noexcept {
 	return _texture_buffer;
 }
 
@@ -69,7 +68,7 @@ const ImageBuffer&	TextureSampler::getTextureBuffer() const noexcept {
  * @note Assuming all images have the same size as squares.
  * @note All textures will be stored in the same VkImage, as layers.
 */
-void	TextureSampler::_createTextureImages(
+void	TextureHandler::_createTextureImages(
 	Device& device,
 	CommandPool& command_pool,
 	const std::vector<Texture>& images
@@ -180,7 +179,7 @@ void	TextureSampler::_createTextureImages(
 /**
  * @brief Create image view for texture sampler.
 */
-void	TextureSampler::_createTextureImageView(
+void	TextureHandler::_createTextureImageView(
 	Device& device
 ) {
 	VkImageViewType view_type =
@@ -199,7 +198,7 @@ void	TextureSampler::_createTextureImageView(
 /**
  * @brief Create sampler for texture sampling in shaders.
 */
-void	TextureSampler::_createTextureSampler(
+void	TextureHandler::_createTextureSampler(
 	Device& device
 ) {
 	 VkPhysicalDeviceProperties	properties{};
@@ -228,5 +227,4 @@ void	TextureSampler::_createTextureSampler(
 	}
 }
 
-} // namespace graphics
-} // namespace scop
+} // namespace scop::graphics

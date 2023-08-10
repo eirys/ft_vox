@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   descriptor_set.h                                   :+:      :+:    :+:   */
+/*   pipeline.h                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/06/04 17:14:18 by etran             #+#    #+#             */
-/*   Updated: 2023/08/10 22:12:05 by etran            ###   ########.fr       */
+/*   Created: 2023/08/05 03:12:47 by etran             #+#    #+#             */
+/*   Updated: 2023/08/10 22:12:23 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,89 +16,79 @@
 # ifndef GLFW_INCLUDE_VULKAN
 #  define GLFW_INCLUDE_VULKAN
 # endif
-
 # include <GLFW/glfw3.h>
 
 // Std
-# include <chrono> // std::chrono
-
-# include "buffer.h"
-# include "uniform_buffer_object.h"
-# include "player.h"
-
-# define TEXTURE_SAMPLER_COUNT 16
+# include <memory> // std::shared_ptr
 
 namespace scop::graphics {
 
 class Device;
-class TextureHandler;
 
-class DescriptorSet {
+class Pipeline {
 public:
+	/* ========================================================================= */
+	/*                                  TYPEDEFS                                 */
+	/* ========================================================================= */
+
+	using RenderPassPtr = std::shared_ptr<RenderPass>;
+
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
 
-	DescriptorSet() = default;
-	~DescriptorSet() = default;
-
-	DescriptorSet(DescriptorSet&& other) = delete;
-	DescriptorSet(const DescriptorSet& other) = delete;
-	DescriptorSet&	operator=(const DescriptorSet& other) = delete;
-	DescriptorSet&	operator=(DescriptorSet&& other) = delete;
+	virtual ~Pipeline() = default;
 
 	/* ========================================================================= */
 
-	void					initLayout(
-		Device& device
-	);
-	void					initSets(
+	virtual void		init(
 		Device& device,
-		TextureHandler& texture_handler,
-		const UniformBufferObject::Light& light
-	);
-	void					destroy(Device& device);
-	void					updateUniformBuffer(
-		VkExtent2D extent,
-		const vox::Player& player
-	);
+		VkGraphicsPipelineCreateInfo& layout_info) = 0;
+	virtual void		destroy(Device& device) = 0;
+	virtual void		record(
+		Device& device,
+		VkPipelineLayout layout,
+		VkCommandBuffer command_buffer) = 0;
+
 
 	/* ========================================================================= */
 
-	VkDescriptorSetLayout	getLayout() const noexcept;
-	VkDescriptorSet			getSet() const noexcept;
+	VkPipeline				getPipeline() const noexcept;
+	virtual RenderPassPtr	getRenderPass() const noexcept = 0;
 
-private:
+protected:
 	/* ========================================================================= */
 	/*                               CLASS MEMBERS                               */
 	/* ========================================================================= */
 
-	VkDescriptorSetLayout	_layout;
-	VkDescriptorPool		_pool;
-	VkDescriptorSet			_set;
+	VkPipeline			_pipeline;
 
-	Buffer					_ubo;
+	RenderPassPtr		_render_pass;
 
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
 
-	void					_createDescriptorPool(Device& device, uint32_t count);
-	void					_createDescriptorSets(
+	Pipeline() = default;
+
+	Pipeline(Pipeline&& other) = delete;
+	Pipeline(const Pipeline& other) = delete;
+	Pipeline& operator=(Pipeline&& other) = delete;
+	Pipeline& operator=(const Pipeline& other) = delete;
+
+	/* ========================================================================= */
+
+	virtual void		_createPipeline(
 		Device& device,
-		TextureHandler& texture_handler,
-		uint32_t count
-	);
-	void					_createUniformBuffers(Device& device);
-	void					_initUniformBuffer(
-		const UniformBufferObject::Light& light
-	) noexcept;
+		VkGraphicsPipelineCreateInfo& info) = 0;
+	virtual void		_populateShaderStages(
+		Device& device,
+		std::vector<VkPipelineShaderStageCreateInfo>& stages) = 0;
 
-	void					_updateCamera(
-		VkExtent2D extent,
-		const vox::Player& player
-	);
+	VkShaderModule		_createShaderModule(
+		Device& device,
+		const std::string& path);
 
-}; // class DescriptorSet
+}; // class Pipeline
 
 } // namespace scop::graphics

@@ -1,22 +1,17 @@
 #version 450
 
+// Input
 layout(location = 0) in int in_position;
 layout(location = 1) in int in_nuvf;
 
+// Output
 layout(location = 0) out vec3 out_normal;
-layout(location = 1) out vec4 out_tex;
-// layout(location = 1) out vec2 out_uv;
-// layout(location = 2) out int out_face;
+layout(location = 1) out vec3 out_uvw;
+layout(location = 2) out vec3 out_shadow;
 
-layout(binding = 0) uniform Camera {
-	mat4 view;
-	mat4 proj;
-} camera;
-
-layout(binding = 3) uniform Projector {
-	mat4 view;
-	mat4 proj;
-} projector;
+// Uniforms
+layout(binding = 0) uniform Camera { mat4 vp; } camera;
+layout(binding = 1) uniform Projector { mat4 vp; } projector;
 
 const vec3 normals[6] = {
 	{  0.0f,  0.0f,  1.0f },	// front
@@ -32,20 +27,13 @@ const vec2 uvs[4] = {
 	{ 1.0f, 0.0f },
 	{ 0.0f, 0.0f }
 };
-const mat4	bias_matrix = {
-	{ 0.5,   0,   0, 0.5 },
-	{   0, 0.5,   0, 0.5 },
-	{   0,   0, 0.5, 0.5 },
-	{   0,   0,   0,   1 }};
 
-// Extract local position
 vec4	extractPos(int in_position) {
 	vec3 position = vec3(
 		in_position & 0xF,
 		(in_position >> 4) & 0xF,
 		(in_position >> 8) & 0xF);
 
-	// Extract chunk address
 	vec3 chunk = 16 * vec3(
 		(in_position >> 12) & 0xFF,
 		(in_position >> 20) & 0xF,
@@ -58,14 +46,9 @@ void	main() {
 	vec4 position = extractPos(in_position);
 
 	out_normal = normals[in_nuvf & 0xFF];
-	out_tex =
-		bias_matrix
-		* projector.proj
-		* projector.view
-		* position;
-
-	gl_Position =
-		camera.proj
-		* camera.view
-		* position;
+	out_uvw = float3(
+		uvs[(in_nuvf >> 8) & 0xFF],	// uv
+		(in_nuvf >> 16) & 0xFF);	// face
+	out_shadow = (projector.vp * position).xyz;
+	gl_Position = camera.vp * position;
 }

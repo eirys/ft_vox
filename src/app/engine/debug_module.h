@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:14:08 by etran             #+#    #+#             */
-/*   Updated: 2023/07/03 11:49:39 by etran            ###   ########.fr       */
+/*   Updated: 2023/08/10 22:12:00 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,8 +18,7 @@
 
 # include <GLFW/glfw3.h>
 
-namespace scop {
-namespace graphics {
+namespace scop::graphics {
 
 class DebugModule {
 public:
@@ -36,7 +35,7 @@ public:
 	DebugModule& operator=(const DebugModule& other) = delete;
 
 	/* ========================================================================= */
-	
+
 	void							init(VkInstance vk_instance);
 	void							destroy(VkInstance vk_instance);
 	void							populate(
@@ -76,5 +75,4 @@ VKAPI_ATTR	VkBool32 VKAPI_CALL	debugCallback(
 	void* p_user_data
 );
 
-} // namespace graphics
-} // namespace scop
+} // namespace scop::graphics

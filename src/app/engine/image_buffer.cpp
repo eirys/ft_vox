@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/29 09:57:49 by etran             #+#    #+#             */
-/*   Updated: 2023/07/03 22:06:09 by etran            ###   ########.fr       */
+/*   Updated: 2023/08/10 22:09:32 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,8 +17,7 @@
 #include <stdexcept> // std::runtime_error
 #include <functional> // std::function
 
-namespace scop {
-namespace graphics {
+namespace scop::graphics {
 
 /* ========================================================================== */
 /*                                   PUBLIC                                   */
@@ -85,7 +84,7 @@ void ImageBuffer::initImage(
 
 /**
  * @brief Create associated image view.
- * 
+ *
  * @param device Engine device.
  * @param image_format Format of the image.
  * @param aspect_flags Aspect flags for the image.
@@ -352,5 +351,5 @@ VkImageView	ImageBuffer::getView() const noexcept {
 	return _view;
 }
 
-} // namespace graphics
+
 } // namespace vox

@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   texture_sampler.h                                  :+:      :+:    :+:   */
+/*   texture_handler.h                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:14:56 by etran             #+#    #+#             */
-/*   Updated: 2023/07/04 09:28:02 by etran            ###   ########.fr       */
+/*   Updated: 2023/08/10 22:12:50 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,6 @@
 # ifndef GLFW_INCLUDE_VULKAN
 #  define GLFW_INCLUDE_VULKAN
 # endif
-
 # include <GLFW/glfw3.h>
 
 // Std
@@ -27,12 +26,14 @@
 
 namespace scop {
 class Image;
+} // namespace scop
 
-namespace graphics {
+namespace scop::graphics {
+
 class Device;
 class CommandPool;
 
-class TextureSampler {
+class TextureHandler {
 public:
 	/* ========================================================================= */
 	/*                                  TYPEDEFS                                 */
@@ -46,58 +47,50 @@ public:
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
 
-	TextureSampler() = default;
-	~TextureSampler() = default;
+	TextureHandler() = default;
+	~TextureHandler() = default;
 
-	TextureSampler(TextureSampler&& other) = delete;
-	TextureSampler(const TextureSampler& other) = delete;
-	TextureSampler& operator=(TextureSampler&& other) = delete;
-	TextureSampler& operator=(const TextureSampler& other) = delete;
+	TextureHandler(TextureHandler&& other) = delete;
+	TextureHandler(const TextureHandler& other) = delete;
+	TextureHandler& operator=(TextureHandler&& other) = delete;
+	TextureHandler& operator=(const TextureHandler& other) = delete;
 
 	/* ========================================================================= */
 
-	void							init(
+	virtual void			init(
 		Device& device,
 		CommandPool& command_pool,
-		const std::vector<Texture>& images
-	);
-	void							destroy(Device& device);
+		const std::vector<Texture>& images) = 0;
+	virtual void			destroy(Device& device) = 0;
 
 	/* ========================================================================= */
 
-	VkSampler						getTextureSampler() const noexcept;
-	const ImageBuffer&				getTextureBuffer() const noexcept;
+	VkSampler				getTextureSampler() const noexcept;
+	const ImageBuffer&		getTextureBuffer() const noexcept;
 
-private:
+protected:
 	/* ========================================================================= */
 	/*                               CLASS MEMBERS                               */
 	/* ========================================================================= */
 
-	uint32_t						_texture_count;
-	const uint32_t					_layer_count = 1; // 6 for cube map
-	uint32_t						_mip_levels;
+	uint32_t				_texture_count;
+	const uint32_t			_layer_count = 1; // 6 for cube map
+	uint32_t				_mip_levels;
 
-	ImageBuffer						_texture_buffer;
-	VkSampler						_vk_texture_sampler;
+	ImageBuffer				_texture_buffer;
+	VkSampler				_vk_texture_sampler;
 
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
 
-	void							_createTextureImages(
+	virtual void			_createTextureImages(
 		Device& device,
 		CommandPool& command_pool,
-		const std::vector<Texture>& images
-	);
-	void							_createTextureImageView(
-		Device& device
-	);
-	void							_createTextureSampler(
-		Device& device
-	);
+		const std::vector<Texture>& images) = 0;
+	virtual void			_createTextureImageView(Device& device) = 0;
+	virtual void			_createTextureSampler(Device& device) = 0;
 
-}; // class TextureSampler
+}; // class TextureHandler
 
-} // namespace graphics
-} // namespace scop
-
+} // namespace scop::graphics

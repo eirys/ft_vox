@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/04 08:39:55 by etran             #+#    #+#             */
-/*   Updated: 2023/07/04 09:46:17 by etran            ###   ########.fr       */
+/*   Updated: 2023/08/10 22:11:16 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,8 +16,7 @@
 
 #include <stdexcept> // std::runtime_error
 
-namespace scop {
-namespace graphics {
+namespace scop::graphics {
 
 /* ========================================================================== */
 /*                                   PUBLIC                                   */
@@ -60,7 +59,7 @@ void	CommandBuffer::destroy(
 
 /**
  * @brief Starts recording the command buffer.
- * 
+ *
  * @param flags Command buffer usage flags.
  * Defaults to VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT.
 */
@@ -85,7 +84,7 @@ void	CommandBuffer::reset() {
 
 /**
  * @brief Restart the command buffer.
- * 
+ *
  * @param flags Command buffer usage flags.
  * Defaults to VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT.
 */
@@ -100,7 +99,7 @@ void	CommandBuffer::restart(
 
 /**
  * @brief Ends recording the command buffer.
- * 
+ *
  * @note A fence is created to wait for the transfer to complete.
 */
 void	CommandBuffer::end(Device& device, bool await) {
@@ -140,5 +139,4 @@ CommandBuffer::operator VkCommandBuffer() const noexcept {
 	return _buffer;
 }
 
-} // namespace graphics
-} // namespace scop
+} // namespace scop::graphics

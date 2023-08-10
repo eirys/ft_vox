@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/02 16:09:44 by etran             #+#    #+#             */
-/*   Updated: 2023/07/04 10:01:38 by etran            ###   ########.fr       */
+/*   Updated: 2023/08/10 22:14:49 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,8 +18,7 @@
 
 #include <cstring> // std::strcmp
 
-namespace scop {
-namespace graphics {
+namespace scop::graphics {
 
 const std::vector<const char*>	Engine::validation_layers = {
 	"VK_LAYER_KHRONOS_validation"
@@ -30,8 +29,8 @@ const std::vector<const char*>	Engine::validation_layers = {
 /* ========================================================================== */
 
 void	Engine::init(
-	scop::Window& window,
-	const std::vector<TextureSampler::Texture>& images,
+	::scop::Window& window,
+	const std::vector<TextureHandler::Texture>& images,
 	const UniformBufferObject::Light& light,
 	const std::vector<Vertex>& vertices,
 	const std::vector<uint32_t>& indices
@@ -44,6 +43,7 @@ void	Engine::init(
 	_render_pass.init(_device, _swap_chain);
 	_swap_chain.initFrameBuffers(_device, _render_pass);
 	_descriptor_set.initLayout(_device);
+	_createGraphicsPipelineLayout();
 	_createGraphicsPipelines();
 	_command_pool.init(_device);
 	_texture_sampler.init(_device, _command_pool, images);
@@ -102,7 +102,7 @@ void	Engine::idle() {
 }
 
 void	Engine::render(
-	scop::Window& window,
+	::scop::Window& window,
 	const vox::Player& player,
 	Timer& timer
 ) {
@@ -248,62 +248,36 @@ void	Engine::_createInstance() {
 		throw std::runtime_error("failed to create _vk_instance");
 }
 
+/**
+ * @brief Create generic pipeline createinfo
+*/
 void	Engine::_createGraphicsPipelines() {
-	_createScenePipeline();
-	//_createShadowPipeline();
-}
-
-void	Engine::_createScenePipeline() {
-	// Create shader modules to be used for shader stages
-	VkShaderModule		vert_shader_module = _createShaderModule(VERT_SHADER_BIN);
-	VkShaderModule		frag_shader_module = _createShaderModule(FRAG_SHADER_BIN);
-
-	VkPipelineShaderStageCreateInfo	vert_info{};
-	vert_info.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-	vert_info.stage = VK_SHADER_STAGE_VERTEX_BIT;
-	vert_info.module = vert_shader_module;
-	vert_info.pName = "main";
-
-	VkPipelineShaderStageCreateInfo	frag_info{};
-	frag_info.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-	frag_info.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
-	frag_info.module = frag_shader_module;
-	frag_info.pName = "main";
-
-	VkPipelineShaderStageCreateInfo	shader_stages[] = {
-		vert_info,
-		frag_info
-	};
-
-	// Vertex data input handler
+	/* INPUT FORMAT ============================================================ */
 	VkPipelineVertexInputStateCreateInfo	vert_input{};
 	auto	binding_description = scop::Vertex::getBindingDescription();
-	auto	attribute_descriptions = scop::Vertex::getAttributeDescriptions();
 
 	vert_input.sType =
 		VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
 	vert_input.vertexBindingDescriptionCount = 1;
-	vert_input.vertexAttributeDescriptionCount = static_cast<uint32_t>(
-		attribute_descriptions.size()
-	);
 	vert_input.pVertexBindingDescriptions = &binding_description;
-	vert_input.pVertexAttributeDescriptions = attribute_descriptions.data();
+	// vert_input.vertexAttributeDescriptionCount
+	// vert_input.pVertexAttributeDescriptions
 
-	// Vertex input assembly descriptor: regular triangles here
+	/* INPUT ASSEMBLY ========================================================== */
 	VkPipelineInputAssemblyStateCreateInfo	input_assembly{};
 	input_assembly.sType =
 		VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
 	input_assembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
 	input_assembly.primitiveRestartEnable = VK_FALSE;
 
-	// Viewport state
+	/* VIEWPORT ================================================================ */
 	VkPipelineViewportStateCreateInfo	viewport_state{};
 	viewport_state.sType =
 		VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
 	viewport_state.viewportCount = 1;
 	viewport_state.scissorCount = 1;
 
-	// Rasterizer setup
+	/* RASTERIZER ============================================================== */
 	VkPipelineRasterizationStateCreateInfo	rasterizer{};
 	rasterizer.sType =
 		VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
@@ -311,65 +285,50 @@ void	Engine::_createScenePipeline() {
 	rasterizer.rasterizerDiscardEnable = VK_FALSE;
 	rasterizer.polygonMode = VK_POLYGON_MODE_FILL;
 	rasterizer.lineWidth = 1.0f;
-	rasterizer.cullMode = VK_CULL_MODE_BACK_BIT;
 	rasterizer.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
 	rasterizer.depthBiasEnable = VK_FALSE;
 	rasterizer.depthBiasConstantFactor = 0.0f;
 	rasterizer.depthBiasClamp = 0.0f;
 	rasterizer.depthBiasSlopeFactor = 0.0f;
+	// rasterizer.cullMode
 
-	// Multisampling
+	/* MULTISAMPLING =========================================================== */
 	VkPipelineMultisampleStateCreateInfo	multisampling{};
 	multisampling.sType =
 		VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
 	multisampling.sampleShadingEnable = VK_FALSE;
-	multisampling.rasterizationSamples = _device.getMsaaSamples();
 	multisampling.minSampleShading = 1.0f;
 	multisampling.pSampleMask = nullptr;
 	multisampling.alphaToCoverageEnable = VK_FALSE;
 	multisampling.alphaToOneEnable = VK_FALSE;
 
-	// Color blending for a single framebuffer setup
-	VkPipelineColorBlendAttachmentState	color_blend_attachment{};
-	color_blend_attachment.colorWriteMask =
-		VK_COLOR_COMPONENT_R_BIT |
-		VK_COLOR_COMPONENT_G_BIT |
-		VK_COLOR_COMPONENT_B_BIT |
-		VK_COLOR_COMPONENT_A_BIT;
-	color_blend_attachment.blendEnable = VK_FALSE;
-	color_blend_attachment.srcColorBlendFactor = VK_BLEND_FACTOR_ONE;
-	color_blend_attachment.dstColorBlendFactor = VK_BLEND_FACTOR_ZERO;
-	color_blend_attachment.colorBlendOp = VK_BLEND_OP_ADD;
-	color_blend_attachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
-	color_blend_attachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
-	color_blend_attachment.alphaBlendOp = VK_BLEND_OP_ADD;
-
+	/* COLOR BLENDING ========================================================== */
 	VkPipelineColorBlendStateCreateInfo	color_blending{};
 	color_blending.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
 	color_blending.logicOpEnable = VK_FALSE;
 	color_blending.logicOp = VK_LOGIC_OP_COPY;
-	color_blending.attachmentCount = 1;
-	color_blending.pAttachments = &color_blend_attachment;
 	color_blending.blendConstants[0] = 0.0f;
 	color_blending.blendConstants[1] = 0.0f;
 	color_blending.blendConstants[2] = 0.0f;
 	color_blending.blendConstants[3] = 0.0f;
+	// color_blending.attachmentCount
+	// color_blending.pAttachments
 
-	// Define depth stencil used for depth buffer
+	/* DEPTH STENCIL =========================================================== */
 	VkPipelineDepthStencilStateCreateInfo	depth_stencil{};
 	depth_stencil.sType =
 		VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
 	depth_stencil.depthTestEnable = VK_TRUE;			// fragment depth compared to depth buffer enabled
 	depth_stencil.depthWriteEnable = VK_TRUE;			// if test passed, new depth saved in buffer enabled
-	depth_stencil.depthCompareOp = VK_COMPARE_OP_LESS;	// depth low = object closer
 	depth_stencil.depthBoundsTestEnable = VK_FALSE;		// unused. specifies min/max depth bounds
 	depth_stencil.minDepthBounds = 0.0f;
 	depth_stencil.maxDepthBounds = 1.0f;
 	depth_stencil.stencilTestEnable = VK_FALSE;			// unused. typically used for reflection, shadow...
 	depth_stencil.front = {};
 	depth_stencil.back = {};
+	// depth_stencil.depthCompareOp
 
-	// Enable dynamic states
+	/* DYNAMIC STATE =========================================================== */
 	std::vector<VkDynamicState>	dynamic_states = {
 		VK_DYNAMIC_STATE_VIEWPORT,
 		VK_DYNAMIC_STATE_SCISSOR
@@ -382,6 +341,29 @@ void	Engine::_createScenePipeline() {
 	);
 	dynamic_state.pDynamicStates = dynamic_states.data();
 
+	VkGraphicsPipelineCreateInfo	pipeline_info{};
+	pipeline_info.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+	pipeline_info.pVertexInputState = &vert_input;
+	pipeline_info.pInputAssemblyState = &input_assembly;
+	pipeline_info.pViewportState = &viewport_state;
+	pipeline_info.pRasterizationState = &rasterizer;
+	pipeline_info.pMultisampleState = &multisampling;
+	pipeline_info.pDepthStencilState = &depth_stencil;
+	pipeline_info.pColorBlendState = &color_blending;
+	pipeline_info.pDynamicState = &dynamic_state;
+	pipeline_info.layout = _pipeline_layout;
+	pipeline_info.subpass = 0;
+	pipeline_info.basePipelineHandle = VK_NULL_HANDLE;
+	pipeline_info.basePipelineIndex = -1;
+
+	_createScenePipeline(pipeline_info);
+	// _pipelines.scene.init(device, pipeline_info);
+
+	depth_stencil.depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL;	// depth low = object closer
+	//_createShadowPipeline(pipeline_info);
+}
+
+void	Engine::_createGraphicsPipelineLayout() {
 	// Pipeline layout setups
 	VkPipelineLayoutCreateInfo	pipeline_layout_info{};
 	VkDescriptorSetLayout descriptor_layout = _descriptor_set.getLayout();
@@ -394,40 +376,9 @@ void	Engine::_createScenePipeline() {
 	if (vkCreatePipelineLayout(_device.getLogicalDevice(), &pipeline_layout_info, nullptr, &_pipeline_layout) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create _pipeline layout");
 	}
+}
 
-	// Graphics _pipeline
-	VkGraphicsPipelineCreateInfo	pipeline_info{};
-	pipeline_info.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-	pipeline_info.stageCount = 2;
-	pipeline_info.pStages = shader_stages;
-	pipeline_info.pVertexInputState = &vert_input;
-	pipeline_info.pInputAssemblyState = &input_assembly;
-	pipeline_info.pViewportState = &viewport_state;
-	pipeline_info.pRasterizationState = &rasterizer;
-	pipeline_info.pMultisampleState = &multisampling;
-	pipeline_info.pDepthStencilState = &depth_stencil;
-	pipeline_info.pColorBlendState = &color_blending;
-	pipeline_info.pDynamicState = &dynamic_state;
-	pipeline_info.layout = _pipeline_layout;
-	pipeline_info.renderPass = _render_pass.getRenderPass();
-	pipeline_info.subpass = 0;
-	pipeline_info.basePipelineHandle = VK_NULL_HANDLE;
-	pipeline_info.basePipelineIndex = -1;
-
-	if (vkCreateGraphicsPipelines(_device.getLogicalDevice(), VK_NULL_HANDLE, 1, &pipeline_info, nullptr, &_pipelines.scene) != VK_SUCCESS) {
-		throw std::runtime_error("failed to create graphics _pipeline");
-	}
-
-	vkDestroyShaderModule(
-		_device.getLogicalDevice(),
-		frag_shader_module,
-		nullptr
-	);
-	vkDestroyShaderModule(
-		_device.getLogicalDevice(),
-		vert_shader_module,
-		nullptr
-	);
+void	Engine::_createScenePipeline(VkGraphicsPipelineCreateInfo& info) {
 }
 
 void	Engine::_createShadowPipeline() {
@@ -495,25 +446,6 @@ std::vector<const char*>	Engine::_getRequiredExtensions() {
 		extensions.emplace_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
 	}
 	return extensions;
-}
-
-/**
- * @brief Create a shader module, from a HLSL shader file, that will be used in the pipeline
-*/
-VkShaderModule	Engine::_createShaderModule(const std::string& path) {
-	// Create a shader module from code
-	std::vector<uint8_t>		code = scop::utils::readFile(path);
-	VkShaderModuleCreateInfo	shader_info{};
-
-	shader_info.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-	shader_info.codeSize = code.size();
-	shader_info.pCode = reinterpret_cast<const uint32_t*>(code.data());
-
-	VkShaderModule	shader_module;
-	if (vkCreateShaderModule(_device.getLogicalDevice(), &shader_info, nullptr, &shader_module) != VK_SUCCESS) {
-		throw std::runtime_error("failed to create shader module");
-	}
-	return shader_module;
 }
 
 /**
@@ -620,5 +552,4 @@ void	Engine::_recordDrawingCommand(
 	_main_command_buffer.end(_device, false);
 }
 
-} // namespace graphics
-} // namespace scop
+} // namespace scop::graphics

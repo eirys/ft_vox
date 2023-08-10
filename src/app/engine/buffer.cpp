@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/23 06:44:38 by etran             #+#    #+#             */
-/*   Updated: 2023/07/04 09:42:03 by etran            ###   ########.fr       */
+/*   Updated: 2023/08/10 22:11:08 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,8 +15,7 @@
 #include <stdexcept> // std::runtime_error
 #include <cstring> // memcpy
 
-namespace scop {
-namespace graphics {
+namespace scop::graphics {
 
 /* ========================================================================== */
 /*                                   PUBLIC                                   */
@@ -155,5 +154,4 @@ void	Buffer::unmap(VkDevice device) noexcept {
 	vkUnmapMemory(device, _memory);
 }
 
-} // namespace graphics
-} // namespace scop
+} // namespace scop::graphics

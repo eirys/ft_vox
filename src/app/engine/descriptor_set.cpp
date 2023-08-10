@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/15 20:56:05 by etran             #+#    #+#             */
-/*   Updated: 2023/07/04 10:11:12 by etran            ###   ########.fr       */
+/*   Updated: 2023/08/10 22:08:18 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,8 +19,7 @@
 #include <chrono> // std::chrono
 #include <optional> // std::optional
 
-namespace scop {
-namespace graphics {
+namespace scop::graphics {
 
 /* ========================================================================== */
 /*                                   PUBLIC                                   */
@@ -77,7 +76,7 @@ void	DescriptorSet::initLayout(Device& device) {
 
 void	DescriptorSet::initSets(
 	Device& device,
-	TextureSampler& texture_sampler,
+	TextureHandler& texture_handler,
 	const UniformBufferObject::Light& light
 ) {
 	uint32_t	count = static_cast<uint32_t>(
@@ -87,7 +86,7 @@ void	DescriptorSet::initSets(
 	_createDescriptorPool(device, count);
 	_createDescriptorSets(
 		device,
-		texture_sampler,
+		texture_handler,
 		count
 	);
 
@@ -158,7 +157,7 @@ void	DescriptorSet::_createDescriptorPool(Device& device, uint32_t count) {
 
 void	DescriptorSet::_createDescriptorSets(
 	Device& device,
-	TextureSampler& texture_sampler,
+	TextureHandler& texture_handler,
 	uint32_t count
 ) {
 	VkDescriptorSetAllocateInfo	alloc_info{};
@@ -180,8 +179,8 @@ void	DescriptorSet::_createDescriptorSets(
 	// Texture sampler
 	VkDescriptorImageInfo	image_info{};
 	image_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-	image_info.imageView = texture_sampler.getTextureBuffer().getView();
-	image_info.sampler = texture_sampler.getTextureSampler();
+	image_info.imageView = texture_handler.getTextureBuffer().getView();
+	image_info.sampler = texture_handler.getTextureSampler();
 
 	// Ubo light
 	VkDescriptorBufferInfo	ubo_info_light{};
@@ -276,7 +275,7 @@ void	DescriptorSet::_initUniformBuffer(
 	UniformBufferObject	ubo{};
 	ubo.light = light;
 
-	ubo.projector.proj = 
+	ubo.projector.proj =
 		scop::orthographic(1, 20, 1, 20, 1, 1000);
 		//scop::perspective(45, 1, 1, 1000);
 	ubo.projector.view = scop::lookAt(
@@ -322,5 +321,4 @@ void	DescriptorSet::_updateCamera(
 	);
 }
 
-} // namespace graphics
-} // namespace scop
+} // namespace scop::graphics

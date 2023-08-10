@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:14:01 by etran             #+#    #+#             */
-/*   Updated: 2023/07/04 09:42:54 by etran            ###   ########.fr       */
+/*   Updated: 2023/08/10 22:13:32 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,11 +16,10 @@
 # ifndef GLFW_INCLUDE_VULKAN
 #  define GLFW_INCLUDE_VULKAN
 # endif
-
 # include <GLFW/glfw3.h>
 
-namespace scop {
-namespace graphics {
+namespace scop::graphics {
+
 class Device;
 
 /**
@@ -59,6 +58,4 @@ private:
 
 }; // class CommandPool
 
-} // namespace graphics
-} // namespace scop
-
+} // namespace scop::graphics

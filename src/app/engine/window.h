@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:15:08 by etran             #+#    #+#             */
-/*   Updated: 2023/07/03 10:12:32 by etran            ###   ########.fr       */
+/*   Updated: 2023/08/10 22:10:42 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,7 @@
 # include <chrono>
 
 namespace scop {
+
 class App;
 
 /**
@@ -87,4 +88,4 @@ private:
 
 }; // class Window
 
-} // namespace scop
+} // namespace scop::graphics

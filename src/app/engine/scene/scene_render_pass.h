@@ -1,65 +1,54 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   render_pass.h                                      :+:      :+:    :+:   */
+/*   scene_render_pass.h                                :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/06/04 17:14:50 by etran             #+#    #+#             */
-/*   Updated: 2023/08/10 22:13:01 by etran            ###   ########.fr       */
+/*   Created: 2023/08/05 13:32:01 by etran             #+#    #+#             */
+/*   Updated: 2023/08/10 22:13:59 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
-// Graphics
-# ifndef GLFW_INCLUDE_VULKAN
-#  define GLFW_INCLUDE_VULKAN
-# endif
-
-# include <GLFW/glfw3.h>
+# include "render_pass.h"
+# include "image_buffer.h"
 
 namespace scop::graphics {
 
 class Device;
-class Pipeline;
 class SwapChain;
 
-class RenderPass {
+class SceneRenderPass final: public RenderPass {
 public:
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
 
-	VkRenderPass	getRenderPass() const noexcept;
+	SceneRenderPass() = default;
+	~SceneRenderPass() = default;
 
-protected:
-	/* ========================================================================= */
-	/*                                  METHODS                                  */
-	/* ========================================================================= */
-
-	RenderPass() = default;
-	virtual	~RenderPass() = default;
-
-	RenderPass(RenderPass&& other) = delete;
-	RenderPass(const RenderPass& other) = delete;
-	RenderPass& operator=(RenderPass&& other) = delete;
-	RenderPass& operator=(const RenderPass& other) = delete;
+	SceneRenderPass(SceneRenderPass&& other) = delete;
+	SceneRenderPass(const SceneRenderPass& other) = delete;
+	SceneRenderPass& operator=(SceneRenderPass&& other) = delete;
+	SceneRenderPass& operator=(const SceneRenderPass& other) = delete;
 
 	/* ========================================================================= */
 
-	virtual void	init(Device& device, SwapChain& swap_chain) = 0;
-	void			destroy(Device& device);
+	void			init(Device& device, SwapChain& swap_chain) override;
 
+	using RenderPass::destroy;
+	using RenderPass::getRenderPass;
+
+private:
 	/* ========================================================================= */
 	/*                               CLASS MEMBERS                               */
 	/* ========================================================================= */
 
-	uint32_t		_width;
-	uint32_t		_height;
+	ImageBuffer		_color_image;
+	ImageBuffer		_depth_image;
 
-	VkRenderPass	_render_pass;
-
-}; // class RenderPass
+}; // class SceneRenderPass
 
 } // namespace scop::graphics

@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/04 08:34:43 by etran             #+#    #+#             */
-/*   Updated: 2023/07/04 09:42:25 by etran            ###   ########.fr       */
+/*   Updated: 2023/08/10 22:11:19 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,8 +19,7 @@
 
 # include <GLFW/glfw3.h>
 
-namespace scop {
-namespace graphics {
+namespace scop::graphics {
 class Device;
 class CommandPool;
 
@@ -78,5 +77,4 @@ private:
 
 }; // class CommandBuffer
 
-} // namespace graphics
-} // namespace scop
+} // namespace scop::graphics
