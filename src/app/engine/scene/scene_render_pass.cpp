@@ -19,14 +19,47 @@
 
 namespace scop::graphics {
 
-void	SceneRenderPass::init(Device& device, SwapChain& swap_chain) {
-	super::_width = swap_chain.getExtent().width;
-	super::_height = swap_chain.getExtent().height;
+/* ========================================================================== */
+/*                                   PUBLIC                                   */
+/* ========================================================================== */
+
+void	SceneRenderPass::init(
+	Device& device,
+	const RenderPass::RenderPassInfo& rp_info,
+	const RenderPass::ResourcesInfo& res_info
+) {
+	_createRenderPass(device, rp_info);
+	_createResources(device, res_info);
+}
+
+void	SceneRenderPass::destroy(Device& device) {
+	_destroyResources(device);
+	super::destroy(device);
+}
+
+void	SceneRenderPass::updateResources(
+	Device& device,
+	const ResourcesInfo& res_info
+) {
+	_destroyResources(device);
+	_createResources(device, res_info);
+}
+
+/* ========================================================================== */
+/*                                   PRIVATE                                  */
+/* ========================================================================== */
+
+void	SceneRenderPass::_createRenderPass(
+	Device& device,
+	const RenderPass::RenderPassInfo& rp_info
+) {
+	super::_width = rp_info.width;
+	super::_height = rp_info.height;
 
 	// Color attachment
 	VkAttachmentDescription	color_attachment{};
-	color_attachment.format = swap_chain.getImageFormat();
-	color_attachment.samples = device.getMsaaSamples();
+	color_attachment.format = rp_info.color_format;
+	color_attachment.samples = rp_info.color_samples;
 	color_attachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
 	color_attachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
 	color_attachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
@@ -36,7 +69,7 @@ void	SceneRenderPass::init(Device& device, SwapChain& swap_chain) {
 
 	// Color attachment resolve
 	VkAttachmentDescription	color_attachment_resolve{};
-	color_attachment_resolve.format = swap_chain.getImageFormat();
+	color_attachment_resolve.format = rp_info.color_format;
 	color_attachment_resolve.samples = VK_SAMPLE_COUNT_1_BIT;
 	color_attachment_resolve.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 	color_attachment_resolve.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
@@ -47,8 +80,8 @@ void	SceneRenderPass::init(Device& device, SwapChain& swap_chain) {
 
 	// Depth attachment
 	VkAttachmentDescription	depth_attachment{};
-	depth_attachment.format = swap_chain.findDepthFormat(device);
-	depth_attachment.samples = device.getMsaaSamples();
+	depth_attachment.format = rp_info.depth_format;
+	depth_attachment.samples = rp_info.depth_samples;
 	depth_attachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
 	depth_attachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
 	depth_attachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
@@ -104,9 +137,47 @@ void	SceneRenderPass::init(Device& device, SwapChain& swap_chain) {
 	create_info.dependencyCount = 1;
 	create_info.pDependencies = &dependency;
 
-	if (vkCreateRenderPass(device.getLogicalDevice(), &create_info, nullptr, &_render_pass) != VK_SUCCESS) {
+	if (vkCreateRenderPass(device.getLogicalDevice(), &create_info, nullptr, &(super::_render_pass)) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create render pass");
 	}
+}
+
+void	SceneRenderPass::_createResources(
+	Device& device,
+	const ResourcesInfo& res_info
+) {
+	// Color image
+	_color_image.initImage(
+		device,
+		res_info.width,
+		res_info.height,
+		res_info.color_format,
+		VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT |
+		VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
+		device.getMsaaSamples());
+	_color_image.initView(
+		device,
+		res_info.color_format,
+		VK_IMAGE_ASPECT_COLOR_BIT);
+
+	// Depth stencil image
+	// VkFormat	depth_format = swapchain.findDepthFormat(device);
+	_depth_image.initImage(
+		device,
+		res_info.width,
+		res_info.height,
+		res_info.depth_format,
+		VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
+		device.getMsaaSamples());
+	_depth_image.initView(
+		device,
+		res_info.depth_format,
+		VK_IMAGE_ASPECT_DEPTH_BIT);
+}
+
+void	SceneRenderPass::_destroyResources(Device& device) {
+	_color_image.destroy(device);
+	_depth_image.destroy(device);
 }
 
 } // namespace scop::graphics

@@ -32,19 +32,19 @@ namespace scop::graphics {
 class Device;
 class CommandPool;
 
-class InputBuffer {
+class InputHandler {
 public:
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
 
-	InputBuffer() = default;
-	~InputBuffer() = default;
+	InputHandler() = default;
+	~InputHandler() = default;
 
-	InputBuffer(InputBuffer&& x) = delete;
-	InputBuffer(const InputBuffer& x) = delete;
-	InputBuffer&	operator=(const InputBuffer& x) = delete;
-	InputBuffer&	operator=(InputBuffer&& x) = delete;
+	InputHandler(InputHandler&& x) = delete;
+	InputHandler(const InputHandler& x) = delete;
+	InputHandler&	operator=(const InputHandler& x) = delete;
+	InputHandler&	operator=(InputHandler&& x) = delete;
 
 	/* ========================================================================= */
 
@@ -84,6 +84,6 @@ private:
 		const std::vector<uint32_t>& indices
 	);
 
-}; // class InputBuffer
+}; // class InputHandler
 
 } // namespace scop::graphics

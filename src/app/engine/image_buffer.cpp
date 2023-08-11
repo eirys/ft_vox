@@ -225,6 +225,8 @@ void	ImageBuffer::copyFrom(
 /**
  * @brief Generate mipmaps for the image.
  *
+ * @note Assumes that the image has the proper layout to begin with.
+ *
  * @param command_buffer Command buffer to send the copy command.
  * @param device Device used to create the image.
  * @param image_width Width of the VkImage.

@@ -39,7 +39,7 @@ public:
 	/*                                  TYPEDEFS                                 */
 	/* ========================================================================= */
 
-	typedef	::scop::Image				Texture;
+	typedef	::scop::Image			Texture;
 	typedef	std::vector<Texture>	TextureArray;
 	typedef	std::array<Texture, 6>	CubeMap;
 
@@ -55,7 +55,7 @@ public:
 		Device& device,
 		CommandPool& command_pool,
 		const std::vector<Texture>& images) = 0;
-	virtual void			destroy(Device& device) = 0;
+	void					destroy(Device& device);
 
 	/* ========================================================================= */
 
@@ -68,11 +68,11 @@ protected:
 	/* ========================================================================= */
 
 	uint32_t				_texture_count;
-	const uint32_t			_layer_count;
+	uint32_t				_layer_count;
 	uint32_t				_mip_levels;
 
 	ImageBuffer				_texture_buffer;
-	VkSampler				_vk_texture_sampler;
+	VkSampler				_texture_sampler;
 
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
@@ -93,6 +93,7 @@ protected:
 		const std::vector<Texture>& images) = 0;
 	virtual void			_createTextureImageView(Device& device) = 0;
 	virtual void			_createTextureSampler(Device& device) = 0;
+	uint32_t				_getMipLevelCount(uint32_t image_width) const;
 
 }; // class TextureHandler
 

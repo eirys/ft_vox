@@ -11,6 +11,14 @@
 /* ************************************************************************** */
 
 #include "scene_texture_handler.h"
+#include "device.h"
+#include "image_handler.h"
+#include "command_buffer.h"
+#include "buffer.h"
+
+#include <stdexcept> // std::invalid_argument
+#include <algorithm> // std::max
+#include <stdexcept> // std::runtime_error
 
 namespace scop::graphics {
 
@@ -26,7 +34,8 @@ void	SceneTextureHandler::init(
 	if (images.empty()) {
 		throw std::invalid_argument("TextureHandler: no image provided");
 	}
-	_texture_count = static_cast<uint32_t>(images.size());
+	super::_texture_count = static_cast<uint32_t>(images.size());
+	super::_layer_count = 1;
 	_createTextureImages(device, command_pool, images);
 	_createTextureImageView(device);
 	_createTextureSampler(device);
@@ -46,19 +55,13 @@ void	SceneTextureHandler::_createTextureImages(
 	CommandPool& command_pool,
 	const std::vector<Texture>& images
 ) {
-	// Size of a side
-	const uint32_t	side_size = static_cast<uint32_t>(images[0].getWidth());
+	const uint32_t	image_width = static_cast<uint32_t>(images[0].getWidth());
+	// A layer is an image.
+	const VkDeviceSize	layer_size = image_width * image_width * sizeof(uint32_t);
+	// Size of the VkImage, including all layers.
+	const VkDeviceSize	image_size = layer_size * super::_texture_count;
 
-	// Size of a layer (an image).
-	const VkDeviceSize	layer_size = side_size * side_size * sizeof(uint32_t);
-
-	// Size of the VkImage, including all layers
-	const VkDeviceSize	image_size = layer_size * _texture_count;
-
-	// Evaluate mip levels count for each image
-	_mip_levels = 1 + static_cast<uint32_t>(
-		std::floor(std::log2(side_size))
-	);
+	_mip_levels = super::_getMipLevelCount(image_width);
 
 	// Create staging buffer to copy images data to
 	scop::graphics::Buffer	staging_buffer;
@@ -67,35 +70,32 @@ void	SceneTextureHandler::_createTextureImages(
 		image_size,
 		VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
 		VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
-		VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
-	);
+		VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 
 	// Copy every face of every image data to staging buffer
 	staging_buffer.map(device.getLogicalDevice());
-	for (uint32_t i = 0; i < _texture_count; ++i) {
+	for (uint32_t i = 0; i < super::_texture_count; ++i) {
 		staging_buffer.copyFrom(
 			images[i].getPixels(),
 			static_cast<std::size_t>(layer_size),
-			static_cast<std::size_t>(layer_size) * i
-		);
+			static_cast<std::size_t>(layer_size) * i);
 	}
 	staging_buffer.unmap(device.getLogicalDevice());
 
 	// Create texture image to be filled
-	_texture_buffer.initImage(
+	super::_texture_buffer.initImage(
 		device,
-		side_size,
-		side_size,
+		image_width,
+		image_width,
 		VK_FORMAT_R8G8B8A8_SRGB,
 		VK_IMAGE_USAGE_TRANSFER_SRC_BIT |	// For mipmaps generation
 		VK_IMAGE_USAGE_TRANSFER_DST_BIT |	// For copy command
 		VK_IMAGE_USAGE_SAMPLED_BIT,			// For shader access
 		VK_SAMPLE_COUNT_1_BIT,
 		_mip_levels,
-		_texture_count,
+		super::_texture_count,
 		0,
-		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
-	);
+		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
 	// Setup copy command buffer
 	CommandBuffer	command_buffer;
@@ -108,9 +108,9 @@ void	SceneTextureHandler::_createTextureImages(
 	transfer_barrier.baseMipLevel = 0;
 	transfer_barrier.baseArrayLayer = 0;
 	transfer_barrier.levelCount = _mip_levels;
-	transfer_barrier.layerCount = _texture_count;
+	transfer_barrier.layerCount = super::_texture_count;
 
-	_texture_buffer.setLayout(
+	super::_texture_buffer.setLayout(
 		command_buffer,
 		VK_IMAGE_LAYOUT_UNDEFINED,
 		VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
@@ -118,30 +118,27 @@ void	SceneTextureHandler::_createTextureImages(
 		VK_ACCESS_TRANSFER_WRITE_BIT,
 		VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
 		VK_PIPELINE_STAGE_TRANSFER_BIT,
-		transfer_barrier
-	);
+		transfer_barrier);
 
 	// Send copy command
-	_texture_buffer.copyFrom(
+	super::_texture_buffer.copyFrom(
 		command_buffer,
 		staging_buffer.getBuffer(),
-		side_size,
-		side_size,
-		_texture_count,
-		_layer_count,
-		static_cast<uint32_t>(layer_size)
-	);
+		image_width,
+		image_width,
+		super::_texture_count,
+		super::_layer_count,
+		static_cast<uint32_t>(layer_size));
 
 	// Dynamically generate mipmaps
-	_texture_buffer.generateMipmap(
+	super::_texture_buffer.generateMipmap(
 		command_buffer,
 		device,
-		side_size,
-		side_size,
+		image_width,
+		image_width,
 		VK_FORMAT_R8G8B8A8_SRGB,
 		_mip_levels,
-		_layer_count * _texture_count
-	);
+		super::_layer_count * super::_texture_count);
 
 	// Submit commands
 	command_buffer.end(device);
@@ -150,22 +147,18 @@ void	SceneTextureHandler::_createTextureImages(
 }
 
 /**
- * @brief Create image view for texture sampler.
+ * @brief Create image view for sampler.
 */
 void	SceneTextureHandler::_createTextureImageView(
 	Device& device
 ) {
-	VkImageViewType view_type =
-		_texture_count > 1 ? VK_IMAGE_VIEW_TYPE_2D_ARRAY : VK_IMAGE_VIEW_TYPE_2D;
-
-	_texture_buffer.initView(
+	super::_texture_buffer.initView(
 		device,
 		VK_FORMAT_R8G8B8A8_SRGB,
 		VK_IMAGE_ASPECT_COLOR_BIT,
-		view_type,
+		VK_IMAGE_VIEW_TYPE_2D_ARRAY,
 		_mip_levels,
-		_layer_count * _texture_count
-	);
+		super::_layer_count * super::_texture_count);
 }
 
 /**
@@ -195,7 +188,7 @@ void	SceneTextureHandler::_createTextureSampler(
 	sampler_info.minLod = 0.0f;
 	sampler_info.maxLod = static_cast<float>(_mip_levels);
 
-	if (vkCreateSampler(device.getLogicalDevice(), &sampler_info, nullptr, &_vk_texture_sampler) != VK_SUCCESS) {
+	if (vkCreateSampler(device.getLogicalDevice(), &sampler_info, nullptr, &(super::_texture_sampler)) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create texture sampler");
 	}
 }

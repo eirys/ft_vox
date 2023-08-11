@@ -22,6 +22,8 @@
 
 namespace scop::graphics {
 
+class CommandBuffer;
+
 class SceneTextureHandler final: public TextureHandler {
 public:
 	/* ========================================================================= */
@@ -29,6 +31,7 @@ public:
 	/* ========================================================================= */
 
 	using super = TextureHandler;
+
 	using super::Texture;
 	using super::TextureArray;
 
@@ -47,6 +50,7 @@ public:
 	/* ========================================================================= */
 
 	using super::destroy;
+
 	void					init(
 		Device& device,
 		CommandPool& command_pool,
@@ -54,21 +58,10 @@ public:
 
 	/* ========================================================================= */
 
-	VkSampler				getTextureSampler() const noexcept;
-	const ImageBuffer&		getTextureBuffer() const noexcept;
+	using super::getTextureSampler;
+	using super::getTextureBuffer;
 
 private:
-	/* ========================================================================= */
-	/*                               CLASS MEMBERS                               */
-	/* ========================================================================= */
-
-	uint32_t				_texture_count;
-	const uint32_t			_layer_count = 1;
-	uint32_t				_mip_levels;
-
-	ImageBuffer				_texture_buffer;
-	VkSampler				_vk_texture_sampler;
-
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
 	/* ========================================================================= */

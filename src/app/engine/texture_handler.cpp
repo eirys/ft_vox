@@ -11,18 +11,9 @@
 /* ************************************************************************** */
 
 #include "texture_handler.h"
-#include "engine.h"
-#include "image_handler.h"
 #include "device.h"
-#include "utils.h"
-#include "buffer.h"
-#include "command_pool.h"
-#include "command_buffer.h"
 
 #include <cmath> // std::floor
-#include <algorithm> // std::max
-#include <stdexcept> // std::runtime_error
-#include <cstring> // memcpy
 
 namespace scop::graphics {
 
@@ -31,18 +22,26 @@ namespace scop::graphics {
 /* ========================================================================== */
 
 void	TextureHandler::destroy(Device& device) {
-	vkDestroySampler(device.getLogicalDevice(), _vk_texture_sampler, nullptr);
+	vkDestroySampler(device.getLogicalDevice(), _texture_sampler, nullptr);
 	_texture_buffer.destroy(device);
 }
 
 /* ========================================================================== */
 
 VkSampler	TextureHandler::getTextureSampler() const noexcept {
-	return _vk_texture_sampler;
+	return _texture_sampler;
 }
 
 const ImageBuffer&	TextureHandler::getTextureBuffer() const noexcept {
 	return _texture_buffer;
+}
+
+/* ========================================================================== */
+/*                                  PROTECTED                                 */
+/* ========================================================================== */
+
+uint32_t	TextureHandler::_getMipLevelCount(uint32_t image_width) const {
+	return 1 + static_cast<uint32_t>(std::floor(std::log2(image_width)));
 }
 
 } // namespace scop::graphics

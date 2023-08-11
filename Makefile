@@ -67,16 +67,16 @@ SRC_FILES	:=	$(TOOLS_DIR)/matrix.cpp \
 				$(ENG_DIR)/pipeline.cpp \
 				$(ENG_DIR)/swap_chain.cpp \
 				$(ENG_DIR)/render_pass.cpp \
-				$(SCENE_DIR)/scene_render_pass.cpp \
-				$(SCENE_DIR)/scene_pipeline.cpp \
 				$(ENG_DIR)/descriptor_set.cpp \
 				$(ENG_DIR)/command_pool.cpp \
 				$(ENG_DIR)/texture_handler.cpp \
-				$(ENG_DIR)/input_buffer.cpp \
+				$(ENG_DIR)/input_handler.cpp \
 				$(ENG_DIR)/engine.cpp \
 				$(ENG_DIR)/buffer.cpp \
 				$(ENG_DIR)/command_buffer.cpp \
 				$(ENG_DIR)/image_buffer.cpp \
+				$(SCENE_DIR)/scene_render_pass.cpp \
+				$(SCENE_DIR)/scene_pipeline.cpp \
 				$(APP_DIR)/app.cpp \
 				main.cpp
 

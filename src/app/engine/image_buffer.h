@@ -29,7 +29,7 @@ class Device;
 /**
  * @brief Wrapper class for VkImage, VkDeviceMemory and VkImageView
 */
-class ImageBuffer {
+class ImageBuffer final {
 public:
 	/* ========================================================================= */
 	/*                                  METHODS                                  */

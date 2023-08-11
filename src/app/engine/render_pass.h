@@ -28,6 +28,26 @@ class SwapChain;
 class RenderPass {
 public:
 	/* ========================================================================= */
+	/*                                HELPER CLASS                               */
+	/* ========================================================================= */
+
+	struct RenderPassInfo {
+		uint32_t width;
+		uint32_t height;
+		VkFormat color_format;
+		VkSampleCountFlagBits color_samples;
+		VkFormat depth_format;
+		VkSampleCountFlagBits depth_samples;
+	};
+
+	struct ResourcesInfo {
+		uint32_t width;
+		uint32_t height;
+		VkFormat color_format;
+		VkFormat depth_format;
+	};
+
+	/* ========================================================================= */
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
 
@@ -35,14 +55,29 @@ public:
 
 	/* ========================================================================= */
 
-	virtual void	init(Device& device, SwapChain& swap_chain) = 0;
-	void			destroy(Device& device);
+	virtual void	init(
+		Device& device,
+		const RenderPassInfo& rp_info,
+		const ResourcesInfo& res_info) = 0;
+	virtual void	destroy(Device& device);
+	virtual void	updateResources(
+		Device& device,
+		const ResourcesInfo& res_info) = 0;
 
 	/* ========================================================================= */
 
 	VkRenderPass	getRenderPass() const noexcept;
 
 protected:
+	/* ========================================================================= */
+	/*                               CLASS MEMBERS                               */
+	/* ========================================================================= */
+
+	uint32_t		_width;
+	uint32_t		_height;
+
+	VkRenderPass	_render_pass;
+
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
@@ -55,13 +90,14 @@ protected:
 	RenderPass& operator=(const RenderPass& other) = delete;
 
 	/* ========================================================================= */
-	/*                               CLASS MEMBERS                               */
-	/* ========================================================================= */
 
-	uint32_t		_width;
-	uint32_t		_height;
-
-	VkRenderPass	_render_pass;
+	virtual void	_createRenderPass(
+		Device& device,
+		const RenderPassInfo& create_info) = 0;
+	virtual void	_createResources(
+		Device& device,
+		const ResourcesInfo& res_info) = 0;
+	virtual void	_destroyResources(Device& device) = 0;
 
 }; // class RenderPass
 

@@ -27,11 +27,12 @@ class Window;
 } // namespace scop
 
 namespace scop::graphics {
+
 class Device;
 class RenderPass;
 
 /**
- * @brief Wrapper class for swap chain images
+ * @brief Wrapper class for swap chain.
 */
 class SwapChain {
 public:
@@ -74,6 +75,8 @@ public:
 	VkSwapchainKHR						getSwapChain() const noexcept;
 	VkFormat							getImageFormat() const noexcept;
 	VkExtent2D							getExtent() const noexcept;
+	const std::vector<VkImage>&			getImages() const noexcept;
+	const std::vector<VkImageView>&		getImageViews() const noexcept;
 
 private:
 	/* ========================================================================= */
@@ -84,13 +87,15 @@ private:
 	VkFormat							_image_format;
 	VkExtent2D							_extent;
 
+	std::vector<VkImage>				_images;
+	std::vector<VkImageView>			_image_views;
+
 	/* ========================================================================= */
 
 	void								_createSwapChain(
 		Device& device,
 		::scop::Window& window
 	);
-	void								_createResources(Device& device);
 	void								_createImages(
 		Device& device,
 		uint32_t& image_count

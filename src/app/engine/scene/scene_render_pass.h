@@ -42,9 +42,17 @@ public:
 
 	/* ========================================================================= */
 
-	void			init(Device& device, SwapChain& swap_chain) override;
+	void		init(
+		Device& device,
+		const super::RenderPassInfo& rp_info,
+		const super::ResourcesInfo& res_info) override;
+	void		destroy(Device& device) override;
+	void		updateResources(
+		Device& device,
+		const ResourcesInfo& res_info) override;
 
-	using super::destroy;
+	/* ========================================================================= */
+
 	using super::getRenderPass;
 
 private:
@@ -52,8 +60,20 @@ private:
 	/*                               CLASS MEMBERS                               */
 	/* ========================================================================= */
 
-	ImageBuffer		_color_image;
-	ImageBuffer		_depth_image;
+	ImageBuffer	_color_image;
+	ImageBuffer	_depth_image;
+
+	/* ========================================================================= */
+	/*                                  METHODS                                  */
+	/* ========================================================================= */
+
+	void		_createRenderPass(
+		Device& device,
+		const super::RenderPassInfo& create_info) override;
+	void		_createResources(
+		Device& device,
+		const ResourcesInfo& res_info) override;
+	void		_destroyResources(Device& device) override;
 
 }; // class SceneRenderPass
 

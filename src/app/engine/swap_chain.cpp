@@ -30,51 +30,10 @@ void	SwapChain::init(
 	::scop::Window& window
 ) {
 	_createSwapChain(device, window);
-	_createResources(device);
 }
 
-/**
- * @brief Create frame buffers wrapping each swap chain image view.
-*/
-void	SwapChain::initFrameBuffers(
-	Device& device,
-	RenderPass& render_pass
-) {
-	_frame_buffers.resize(_image_views.size());
-	for (std::size_t i = 0; i < _image_views.size(); ++i) {
-		std::array<VkImageView, 3>	attachments = {
-			_color_image.getView(),
-			_depth_image.getView(),
-			_image_views[i]
-		};
-
-		// Create frame buffer from image view, associate with a render pass
-		VkFramebufferCreateInfo	create_info{};
-		create_info.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-		create_info.renderPass = render_pass.getRenderPass();
-		create_info.attachmentCount = static_cast<uint32_t>(attachments.size());
-		create_info.pAttachments = attachments.data();
-		create_info.width = _extent.width;
-		create_info.height = _extent.height;
-		create_info.layers = 1;
-
-		if (vkCreateFramebuffer(device.getLogicalDevice(), &create_info, nullptr, &_frame_buffers[i]) != VK_SUCCESS) {
-			throw std::runtime_error("failed to create frame buffer");
-		}
-	}
-}
 
 void	SwapChain::destroy(Device& device) {
-	_color_image.destroy(device);
-	_depth_image.destroy(device);
-
-	for (std::size_t i = 0; i < _frame_buffers.size(); ++i) {
-		vkDestroyFramebuffer(
-			device.getLogicalDevice(),
-			_frame_buffers[i],
-			nullptr
-		);
-	}
 	for (std::size_t i = 0; i < _image_views.size(); ++i) {
 		vkDestroyImageView(
 			device.getLogicalDevice(),
@@ -97,7 +56,8 @@ void	SwapChain::update(
 
 	destroy(device);
 	init(device, window);
-	initFrameBuffers(device, render_pass);
+	// recreate resources and fb
+	// initFrameBuffers(device, render_pass);
 }
 /* ========================================================================== */
 
@@ -128,8 +88,12 @@ VkExtent2D	SwapChain::getExtent() const noexcept {
 	return _extent;
 }
 
-const std::vector<VkFramebuffer>&	SwapChain::getFrameBuffers() const noexcept {
-	return _frame_buffers;
+const std::vector<VkImage>&	SwapChain::getImages() const noexcept {
+	return _images;
+}
+
+const std::vector<VkImageView>&	SwapChain::getImageViews() const noexcept {
+	return _image_views;
 }
 
 /* ========================================================================== */
@@ -145,22 +109,19 @@ void	SwapChain::_createSwapChain(
 
 	// Setup options for functionning swap chain
 	VkSurfaceFormatKHR	surface_format = _chooseSwapSurfaceFormat(
-		swap_chain_support.formats
-	);
+		swap_chain_support.formats);
 	VkPresentModeKHR	present_mode = _chooseSwapPresentMode(
-		swap_chain_support.present_modes
-	);
+		swap_chain_support.present_modes);
 	VkExtent2D			swap_extent = _chooseSwapExtent(
 		swap_chain_support.capabilities,
-		window
-	);
+		window);
 
 	// Nb of images in the swap chain
 	uint32_t	image_count =
 		swap_chain_support.capabilities.minImageCount + 1;
 
-	if (swap_chain_support.capabilities.maxImageCount > 0
-	&& image_count > swap_chain_support.capabilities.maxImageCount) {
+	if (swap_chain_support.capabilities.maxImageCount > 0 &&
+		image_count > swap_chain_support.capabilities.maxImageCount) {
 		// Avoid value exceeding max
 		image_count = swap_chain_support.capabilities.maxImageCount;
 	}
@@ -211,40 +172,6 @@ void	SwapChain::_createSwapChain(
 	_image_format = surface_format.format;
 	_extent = swap_extent;
 	_createImages(device, image_count);
-}
-
-void	SwapChain::_createResources(Device& device) {
-	// Color image
-	_color_image.initImage(
-		device,
-		_extent.width,
-		_extent.height,
-		_image_format,
-		VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT |
-		VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
-		device.getMsaaSamples()
-	);
-	_color_image.initView(
-		device,
-		_image_format,
-		VK_IMAGE_ASPECT_COLOR_BIT
-	);
-
-	// Depth stencil image
-	VkFormat	depth_format = findDepthFormat(device);
-	_depth_image.initImage(
-		device,
-		_extent.width,
-		_extent.height,
-		depth_format,
-		VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
-		device.getMsaaSamples()
-	);
-	_depth_image.initView(
-		device,
-		depth_format,
-		VK_IMAGE_ASPECT_DEPTH_BIT
-	);
 }
 
 /**

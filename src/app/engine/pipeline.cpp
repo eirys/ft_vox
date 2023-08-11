@@ -12,8 +12,9 @@
 
 #include "pipeline.h"
 #include "device.h"
+#include "utils.h"
 
-#include <vector> // std::vector
+#include <stdexcept> // std::runtime_error
 
 namespace scop::graphics {
 
@@ -21,8 +22,23 @@ namespace scop::graphics {
 /*                                   PUBLIC                                   */
 /* ========================================================================== */
 
+void	Pipeline::destroy(Device& device) {
+	_render_pass->destroy(device);
+	_texture_handler->destroy(device);
+}
+
+/* ========================================================================== */
+
 VkPipeline	Pipeline::getPipeline() const noexcept {
 	return _pipeline;
+}
+
+Pipeline::RenderPassPtr	Pipeline::getRenderPass() const noexcept {
+	return _render_pass;
+}
+
+Pipeline::TextureHandlerPtr	Pipeline::getTextureHandler() const noexcept {
+	return _texture_handler;
 }
 
 /* ========================================================================== */
@@ -36,7 +52,7 @@ VkShaderModule	Pipeline::_createShaderModule(
 	Device& device,
 	const std::string& path) {
 	// Read compiled shader binary file
-	std::vector<uint8_t>		code = scop::utils::readFile(path);
+	std::vector<uint8_t>		code = ::scop::utils::readFile(path);
 	VkShaderModuleCreateInfo	shader_info{};
 
 	shader_info.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;

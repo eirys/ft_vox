@@ -18,8 +18,8 @@ namespace scop::graphics {
 /*                                   PUBLIC                                   */
 /* ========================================================================== */
 
-/* ========================================================================== */
-/*                                   PRIVATE                                  */
-/* ========================================================================== */
+const std::vector<VkFramebuffer>&	Target::getFrameBuffers() const noexcept {
+	return _frame_buffers;
+}
 
 } // namespace scop::graphics

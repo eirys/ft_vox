@@ -40,14 +40,14 @@ void	Engine::init(
 	_debug_module.init(_vk_instance);
 	_device.init(window, _vk_instance);
 	_swap_chain.init(_device, window);
-	_render_pass.init(_device, _swap_chain);
-	_swap_chain.initFrameBuffers(_device, _render_pass);
+	// _render_pass.init(_device, _swap_chain);
+	// _swap_chain.initFrameBuffers(_device, _render_pass);
 	_descriptor_set.initLayout(_device);
 	_createGraphicsPipelineLayout();
-	_createGraphicsPipelines();
+	_createGraphicsPipelines(images);
 	_command_pool.init(_device);
-	_texture_sampler.init(_device, _command_pool, images);
-	_input_buffer.init(_device, _command_pool, vertices, indices);
+	// _texture_sampler.init(_device, _command_pool, images);
+	_input_handler.init(_device, _command_pool, vertices, indices);
 	_descriptor_set.initSets(_device, _texture_sampler, light);
 	_main_command_buffer.init(_device, _command_pool, max_frames_in_flight);
 	_createSyncObjects();
@@ -56,7 +56,7 @@ void	Engine::init(
 void	Engine::destroy() {
 	_swap_chain.destroy(_device);
 	_render_pass.destroy(_device);
-	_texture_sampler.destroy(_device);
+	// _texture_sampler.destroy(_device);
 
 	// Remove graphics _pipeline
 	vkDestroyPipeline(_device.getLogicalDevice(), _pipelines.scene, nullptr);
@@ -64,28 +64,24 @@ void	Engine::destroy() {
 	vkDestroyPipelineLayout(
 		_device.getLogicalDevice(),
 		_pipeline_layout,
-		nullptr
-	);
+		nullptr);
 
 	_descriptor_set.destroy(_device);
-	_input_buffer.destroy(_device);
+	_input_handler.destroy(_device);
 
 	// Remove sync objects
 	vkDestroySemaphore(
 		_device.getLogicalDevice(),
 		_image_available_semaphores,
-		nullptr
-	);
+		nullptr);
 	vkDestroySemaphore(
 		_device.getLogicalDevice(),
 		_render_finished_semaphores,
-		nullptr
-	);
+		nullptr);
 	vkDestroyFence(
 		_device.getLogicalDevice(),
 		_in_flight_fences,
-		nullptr
-	);
+		nullptr);
 
 	_command_pool.destroy(_device);
 	_device.destroy(_vk_instance);
@@ -251,7 +247,9 @@ void	Engine::_createInstance() {
 /**
  * @brief Create generic pipeline createinfo
 */
-void	Engine::_createGraphicsPipelines() {
+void	Engine::_createGraphicsPipelines(
+	const std::vector<Texture>& scene_textures
+) {
 	/* INPUT FORMAT ============================================================ */
 	VkPipelineVertexInputStateCreateInfo	vert_input{};
 	auto	binding_description = scop::Vertex::getBindingDescription();
@@ -260,8 +258,6 @@ void	Engine::_createGraphicsPipelines() {
 		VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
 	vert_input.vertexBindingDescriptionCount = 1;
 	vert_input.pVertexBindingDescriptions = &binding_description;
-	// vert_input.vertexAttributeDescriptionCount
-	// vert_input.pVertexAttributeDescriptions
 
 	/* INPUT ASSEMBLY ========================================================== */
 	VkPipelineInputAssemblyStateCreateInfo	input_assembly{};
@@ -278,19 +274,19 @@ void	Engine::_createGraphicsPipelines() {
 	viewport_state.scissorCount = 1;
 
 	/* RASTERIZER ============================================================== */
-	VkPipelineRasterizationStateCreateInfo	rasterizer{};
-	rasterizer.sType =
+	VkPipelineRasterizationStateCreateInfo	rasterizing{};
+	rasterizing.sType =
 		VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
-	rasterizer.depthClampEnable = VK_FALSE;
-	rasterizer.rasterizerDiscardEnable = VK_FALSE;
-	rasterizer.polygonMode = VK_POLYGON_MODE_FILL;
-	rasterizer.lineWidth = 1.0f;
-	rasterizer.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
-	rasterizer.depthBiasEnable = VK_FALSE;
-	rasterizer.depthBiasConstantFactor = 0.0f;
-	rasterizer.depthBiasClamp = 0.0f;
-	rasterizer.depthBiasSlopeFactor = 0.0f;
-	// rasterizer.cullMode
+	rasterizing.depthClampEnable = VK_FALSE;
+	rasterizing.rasterizerDiscardEnable = VK_FALSE;
+	rasterizing.polygonMode = VK_POLYGON_MODE_FILL;
+	rasterizing.lineWidth = 1.0f;
+	rasterizing.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
+	rasterizing.depthBiasEnable = VK_FALSE;
+	rasterizing.depthBiasConstantFactor = 0.0f;
+	rasterizing.depthBiasClamp = 0.0f;
+	rasterizing.depthBiasSlopeFactor = 0.0f;
+	// rasterizing.cullMode
 
 	/* MULTISAMPLING =========================================================== */
 	VkPipelineMultisampleStateCreateInfo	multisampling{};
@@ -311,8 +307,21 @@ void	Engine::_createGraphicsPipelines() {
 	color_blending.blendConstants[1] = 0.0f;
 	color_blending.blendConstants[2] = 0.0f;
 	color_blending.blendConstants[3] = 0.0f;
-	// color_blending.attachmentCount
-	// color_blending.pAttachments
+
+	/* COLOR BLENDING ========================================================== */
+	VkPipelineColorBlendAttachmentState	color_blend_attachment{};
+	color_blend_attachment.colorWriteMask =
+		VK_COLOR_COMPONENT_R_BIT |
+		VK_COLOR_COMPONENT_G_BIT |
+		VK_COLOR_COMPONENT_B_BIT |
+		VK_COLOR_COMPONENT_A_BIT;
+	color_blend_attachment.blendEnable = VK_FALSE;
+	color_blend_attachment.srcColorBlendFactor = VK_BLEND_FACTOR_ONE;
+	color_blend_attachment.dstColorBlendFactor = VK_BLEND_FACTOR_ZERO;
+	color_blend_attachment.colorBlendOp = VK_BLEND_OP_ADD;
+	color_blend_attachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
+	color_blend_attachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
+	color_blend_attachment.alphaBlendOp = VK_BLEND_OP_ADD;
 
 	/* DEPTH STENCIL =========================================================== */
 	VkPipelineDepthStencilStateCreateInfo	depth_stencil{};
@@ -346,7 +355,7 @@ void	Engine::_createGraphicsPipelines() {
 	pipeline_info.pVertexInputState = &vert_input;
 	pipeline_info.pInputAssemblyState = &input_assembly;
 	pipeline_info.pViewportState = &viewport_state;
-	pipeline_info.pRasterizationState = &rasterizer;
+	pipeline_info.pRasterizationState = &rasterizing;
 	pipeline_info.pMultisampleState = &multisampling;
 	pipeline_info.pDepthStencilState = &depth_stencil;
 	pipeline_info.pColorBlendState = &color_blending;
@@ -356,11 +365,44 @@ void	Engine::_createGraphicsPipelines() {
 	pipeline_info.basePipelineHandle = VK_NULL_HANDLE;
 	pipeline_info.basePipelineIndex = -1;
 
-	_createScenePipeline(pipeline_info);
-	// _pipelines.scene.init(device, pipeline_info);
+	auto	attribute_descriptions = ::scop::Vertex::getSceneAttributeDescriptions();
+	vert_input.vertexAttributeDescriptionCount =
+		static_cast<uint32_t>(attribute_descriptions.size());
+	vert_input.pVertexAttributeDescriptions = attribute_descriptions.data();
+	color_blending.attachmentCount = 1;
+	color_blending.pAttachments = &color_blend_attachment;
+	rasterizing.cullMode = VK_CULL_MODE_BACK_BIT;
+	multisampling.rasterizationSamples = _device.getMsaaSamples();
+	depth_stencil.depthCompareOp = VK_COMPARE_OP_LESS;
 
-	depth_stencil.depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL;	// depth low = object closer
-	//_createShadowPipeline(pipeline_info);
+	RenderPass::RenderPassInfo	rp_info {
+		.width = _swap_chain.getExtent().width,
+		.height = _swap_chain.getExtent().height,
+		.color_format = _swap_chain.getImageFormat(),
+		.color_samples = _device.getMsaaSamples(),
+		.depth_format = _swap_chain.findDepthFormat(),
+		.depth_samples = VK_SAMPLE_COUNT_1_BIT
+	};
+
+	_pipelines.scene->init(
+		_device,
+		_command_pool,
+		rp_info,
+		scene_textures,
+		pipeline_info);
+
+	attribute_descriptions = ::scop::Vertex::getShadowAttributeDescriptions();
+	vert_input.vertexAttributeDescriptionCount =
+		static_cast<uint32_t>(attribute_descriptions.size());
+	vert_input.pVertexAttributeDescriptions = attribute_descriptions.data();
+	color_blending.attachmentCount = 0;
+	color_blending.pAttachments = nullptr;
+	rasterizing.cullMode = VK_CULL_MODE_NONE;
+	multisampling.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
+	depth_stencil.depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
+	// pipeline_info.renderPass = _pipelines::shadow.getRenderPass()->getRenderPass();
+
+	// _pipelines.shadow.init(device, pipeline_info);
 }
 
 void	Engine::_createGraphicsPipelineLayout() {
@@ -376,13 +418,6 @@ void	Engine::_createGraphicsPipelineLayout() {
 	if (vkCreatePipelineLayout(_device.getLogicalDevice(), &pipeline_layout_info, nullptr, &_pipeline_layout) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create _pipeline layout");
 	}
-}
-
-void	Engine::_createScenePipeline(VkGraphicsPipelineCreateInfo& info) {
-}
-
-void	Engine::_createShadowPipeline() {
-
 }
 
 /**
@@ -469,7 +504,7 @@ void	Engine::_recordDrawingCommand(
 	render_pass_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
 	render_pass_info.renderPass = _render_pass.getRenderPass();
 	render_pass_info.framebuffer =
-		_swap_chain.getFrameBuffers()[image_index];
+		_target.getFrameBuffers()[image_index];
 	render_pass_info.renderArea.offset = { 0, 0 };
 	render_pass_info.renderArea.extent = _swap_chain.getExtent();
 	render_pass_info.clearValueCount = static_cast<uint32_t>(
@@ -510,7 +545,7 @@ void	Engine::_recordDrawingCommand(
 
 	// Bind vertex buffer && index buffer
 	VkBuffer		vertex_buffers[] = {
-		_input_buffer.getVertexBuffer().getBuffer()
+		_input_handler.getVertexBuffer().getBuffer()
 	};
 	VkDeviceSize	offsets[] = { 0 };
 	vkCmdBindVertexBuffers(
@@ -521,7 +556,7 @@ void	Engine::_recordDrawingCommand(
 	);
 	vkCmdBindIndexBuffer(
 		_main_command_buffer.getBuffer(),
-		_input_buffer.getIndexBuffer().getBuffer(),
+		_input_handler.getIndexBuffer().getBuffer(),
 		0,
 		VK_INDEX_TYPE_UINT32
 	);

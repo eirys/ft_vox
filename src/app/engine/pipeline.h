@@ -18,12 +18,22 @@
 # endif
 # include <GLFW/glfw3.h>
 
+# include "render_pass.h"
+# include "texture_handler.h"
+# include "target.h"
+
 // Std
 # include <memory> // std::shared_ptr
+# include <string> // std::string
+
+namespace scop {
+class Image;
+}
 
 namespace scop::graphics {
 
 class Device;
+class InputHandler;
 
 class Pipeline {
 public:
@@ -32,6 +42,9 @@ public:
 	/* ========================================================================= */
 
 	using RenderPassPtr = std::shared_ptr<RenderPass>;
+	using TextureHandlerPtr = std::shared_ptr<TextureHandler>;
+	using TargetPtr = std::shared_ptr<Target>;
+	using Texture = ::scop::Image;
 
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
@@ -43,18 +56,23 @@ public:
 
 	virtual void		init(
 		Device& device,
+		CommandPool& pool,
+		const RenderPass::RenderPassInfo& rp_info,
+		const std::vector<Texture>& textures,
 		VkGraphicsPipelineCreateInfo& layout_info) = 0;
-	virtual void		destroy(Device& device) = 0;
+	void				destroy(Device& device);
 	virtual void		record(
 		Device& device,
 		VkPipelineLayout layout,
-		VkCommandBuffer command_buffer) = 0;
+		VkCommandBuffer command_buffer,
+		InputHandler& input) = 0;
 
 
 	/* ========================================================================= */
 
-	VkPipeline				getPipeline() const noexcept;
-	virtual RenderPassPtr	getRenderPass() const noexcept = 0;
+	VkPipeline			getPipeline() const noexcept;
+	RenderPassPtr		getRenderPass() const noexcept;
+	TextureHandlerPtr	getTextureHandler() const noexcept;
 
 protected:
 	/* ========================================================================= */
@@ -64,6 +82,8 @@ protected:
 	VkPipeline			_pipeline;
 
 	RenderPassPtr		_render_pass;
+	TextureHandlerPtr	_texture_handler;
+	TargetPtr			_target;
 
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
@@ -78,12 +98,18 @@ protected:
 
 	/* ========================================================================= */
 
+	virtual void		_createRenderPass(
+		Device& device,
+		const RenderPass::RenderPassInfo& rp_info) = 0;
+	virtual void		_createTextureHandler(
+		Device& device,
+		CommandPool& pool,
+		const std::vector<Texture>& textures) = 0;
 	virtual void		_createPipeline(
 		Device& device,
 		VkGraphicsPipelineCreateInfo& info) = 0;
-	virtual void		_populateShaderStages(
-		Device& device,
-		std::vector<VkPipelineShaderStageCreateInfo>& stages) = 0;
+
+	/* UTILS =================================================================== */
 
 	VkShaderModule		_createShaderModule(
 		Device& device,

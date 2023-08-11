@@ -26,7 +26,7 @@ class CommandPool;
 /**
  * @brief Wrapper class for VkCommandBuffer.
 */
-class CommandBuffer {
+class CommandBuffer final {
 public:
 	/* ========================================================================= */
 	/*                                  METHODS                                  */

@@ -11,6 +11,7 @@
 /* ************************************************************************** */
 
 #include "render_pass.h"
+#include "device.h"
 
 namespace scop::graphics {
 
@@ -21,6 +22,8 @@ namespace scop::graphics {
 void	RenderPass::destroy(Device& device) {
 	vkDestroyRenderPass(device.getLogicalDevice(), _render_pass, nullptr);
 }
+
+/* ========================================================================== */
 
 VkRenderPass	RenderPass::getRenderPass() const noexcept {
 	return _render_pass;

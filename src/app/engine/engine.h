@@ -27,12 +27,14 @@
 # include "device.h"
 # include "swap_chain.h"
 # include "scene_render_pass.h"
-# include "texture_handler.h"
 # include "descriptor_set.h"
 # include "command_pool.h"
-# include "input_buffer.h"
+# include "input_handler.h"
 # include "player.h"
 # include "command_buffer.h"
+
+# include "texture_handler.h"
+# include "pipeline.h"
 
 namespace scop {
 class Timer;
@@ -42,6 +44,13 @@ namespace scop::graphics {
 
 class Engine {
 public:
+	/* ========================================================================= */
+	/*                                  TYPEDEFS                                 */
+	/* ========================================================================= */
+
+	using Texture = TextureHandler::Texture;
+	using PipelinePtr = std::shared_ptr<Pipeline>;
+
 	/* ========================================================================= */
 	/*                               CONST MEMBERS                               */
 	/* ========================================================================= */
@@ -96,10 +105,9 @@ private:
 	Device						_device;
 	SwapChain					_swap_chain;
 	SceneRenderPass				_render_pass;
-	TextureHandler				_texture_sampler;
 	DescriptorSet				_descriptor_set;
 	CommandPool					_command_pool;
-	InputBuffer					_input_buffer;
+	InputHandler				_input_handler;
 
 	CommandBuffer				_main_command_buffer;
 
@@ -109,10 +117,9 @@ private:
 
 	VkPipelineLayout			_pipeline_layout;
 	struct {
-		VkPipeline				scene;
-		//VkPipeline				shadows;
+		PipelinePtr				scene;
+		PipelinePtr				shadows;
 	}							_pipelines;
-	//VkPipeline					_pipeline;
 
 	std::size_t					_nb_indices;
 
@@ -121,19 +128,14 @@ private:
 	/* ========================================================================= */
 
 	void						_createInstance();
-	void						_createGraphicsPipelines();
+	void						_createGraphicsPipelines(
+		const std::vector<Texture>& scene_textures
+	);
+	void						_createGraphicsPipelineLayout();
 	void						_createSyncObjects();
 
-	void						_createGraphicsPipelineLayout();
-	void						_createScenePipeline(
-		VkGraphicsPipelineCreateInfo& info
-	);
-	void						_createShadowPipeline(
-		VkGraphicsPipelineCreateInfo& info
-	);
 	bool						_checkValidationLayerSupport();
 	std::vector<const char*>	_getRequiredExtensions();
-	VkShaderModule				_createShaderModule(const std::string& path);
 	void						_recordDrawingCommand(
 		std::size_t indices_size,
 		uint32_t image_index

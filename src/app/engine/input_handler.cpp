@@ -26,7 +26,7 @@ namespace scop::graphics {
 /*                                   PUBLIC                                   */
 /* ========================================================================== */
 
-void	InputBuffer::init(
+void	InputHandler::init(
 	Device& device,
 	CommandPool& command_pool,
 	const std::vector<Vertex>& vertices,
@@ -36,18 +36,18 @@ void	InputBuffer::init(
 	_createIndexBuffer(device, command_pool, indices);
 }
 
-void	InputBuffer::destroy(Device& device) {
+void	InputHandler::destroy(Device& device) {
 	_index_buffer.destroy(device.getLogicalDevice());
 	_vertex_buffer.destroy(device.getLogicalDevice());
 }
 
 /* ========================================================================== */
 
-const Buffer&	InputBuffer::getVertexBuffer() const noexcept {
+const Buffer&	InputHandler::getVertexBuffer() const noexcept {
 	return _vertex_buffer;
 }
 
-const Buffer&	InputBuffer::getIndexBuffer() const noexcept {
+const Buffer&	InputHandler::getIndexBuffer() const noexcept {
 	return _index_buffer;
 }
 
@@ -59,38 +59,35 @@ const Buffer&	InputBuffer::getIndexBuffer() const noexcept {
  * @brief Create the vertex buffer that'll be used to store
  * the vertices of the triangle.
 */
-void	InputBuffer::_createVertexBuffer(
+void	InputHandler::_createVertexBuffer(
 	Device& device,
 	CommandPool& command_pool,
 	const std::vector<Vertex>& vertices
 ) {
 	const VkDeviceSize	buffer_size = sizeof(Vertex) * vertices.size();
 
-	// Create staging buffer to upload from cpu to
+	// Create staging buffer to upload to from cpu
 	scop::graphics::Buffer	staging_buffer;
 	staging_buffer.init(
 		device,
 		buffer_size,
 		VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-		VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
-	);
+		VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 
 	// Fill staging buffer
 	staging_buffer.map(device.getLogicalDevice());
 	staging_buffer.copyFrom(
 		vertices.data(),
-		static_cast<std::size_t>(buffer_size)
-	);
+		static_cast<std::size_t>(buffer_size));
 	staging_buffer.unmap(device.getLogicalDevice());
 
-	// Create vertex buffer that'll interact with gpu
+	// Create vertex buffer
 	_vertex_buffer.init(
 		device,
 		buffer_size,
 		VK_BUFFER_USAGE_TRANSFER_DST_BIT |
 		VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
-		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
-	);
+		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
 	// Transfer data from staging buffer to vertex buffer
 	CommandBuffer	command_buffer;
@@ -99,8 +96,7 @@ void	InputBuffer::_createVertexBuffer(
 	_vertex_buffer.copyBuffer(
 		command_buffer,
 		staging_buffer,
-		buffer_size
-	);
+		buffer_size);
 	command_buffer.end(device);
 	command_buffer.destroy(device, command_pool);
 
@@ -111,7 +107,7 @@ void	InputBuffer::_createVertexBuffer(
 /**
  * @brief Create index buffer (pointers into the vertex buffer)
  */
-void	InputBuffer::_createIndexBuffer(
+void	InputHandler::_createIndexBuffer(
 	Device& device,
 	CommandPool& command_pool,
 	const std::vector<uint32_t>& indices
@@ -124,15 +120,13 @@ void	InputBuffer::_createIndexBuffer(
 		buffer_size,
 		VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
 		VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
-		VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
-	);
+		VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 
 	// Fill staging buffer with indices
 	staging_buffer.map(device.getLogicalDevice(), buffer_size);
 	staging_buffer.copyFrom(
 		indices.data(),
-		static_cast<std::size_t>(buffer_size)
-	);
+		static_cast<std::size_t>(buffer_size));
 	staging_buffer.unmap(device.getLogicalDevice());
 
 	// Create index buffer
@@ -141,8 +135,7 @@ void	InputBuffer::_createIndexBuffer(
 		buffer_size,
 		VK_BUFFER_USAGE_TRANSFER_DST_BIT |
 		VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
-		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
-	);
+		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
 	// Transfer data from staging buffer to index buffer
 	CommandBuffer	command_buffer;
@@ -151,8 +144,7 @@ void	InputBuffer::_createIndexBuffer(
 	_index_buffer.copyBuffer(
 		command_buffer,
 		staging_buffer,
-		buffer_size
-	);
+		buffer_size);
 	command_buffer.end(device);
 	command_buffer.destroy(device, command_pool);
 

@@ -22,38 +22,68 @@
 
 # include "image_buffer.h"
 
+namespace scop {
+class Window;
+}
+
 namespace scop::graphics {
 
+/**
+ * @brief Wrapper class for target framebuffers.
+*/
 class Target {
 public:
+	/* ========================================================================= */
+	/*                                HELPER CLASS                               */
+	/* ========================================================================= */
+
+	struct TargetInfo {
+		using AttachmentVector = std::vector<VkImageView>;
+
+		// per fb attachment vector
+		VkRenderPass					render_pass;
+		std::vector<AttachmentVector>	fb_attachments;
+		uint32_t						width;
+		uint32_t						height;
+	};
+
+	/* ========================================================================= */
+	/*                                  METHODS                                  */
+	/* ========================================================================= */
+
+	virtual ~Target() = default;
+
+	/* ========================================================================= */
+
+	virtual void				init(
+		Device& device,
+		const TargetInfo& info) = 0;
+	virtual void				destroy(Device& device) = 0;
+	virtual void				update(
+		Device& device,
+		const TargetInfo& info) = 0;
+
+	/* ========================================================================= */
+
+	const std::vector<VkFramebuffer>&	getFrameBuffers() const noexcept;
+
+protected:
+	/* ========================================================================= */
+	/*                               CLASS MEMBERS                               */
+	/* ========================================================================= */
+
+	std::vector<VkFramebuffer>	_frame_buffers;
+
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
 
 	Target() = default;
-	~Target() = default;
 
 	Target(Target&& other) = delete;
 	Target(const Target& other) = delete;
-	Target& operator=(Target&& other) = default;
+	Target& operator=(Target&& other) = delete;
 	Target& operator=(const Target& other) = delete;
-
-	/* ========================================================================= */
-
-	void						init(
-		Device& device,
-		::scop::Window& window
-	);
-	void						destroy(Device& device);
-
-private:
-	/* ========================================================================= */
-	/*                               CLASS MEMBERS                               */
-	/* ========================================================================= */
-
-	std::vector<VkImage>		_images;
-	std::vector<VkImageView>	_image_views;
-	std::vector<VkFramebuffer>	_frame_buffers;
 
 }; // class Target
 

@@ -36,7 +36,7 @@ public:
 		alignas(__ALIGNMENT_VEC3) scop::Vect3	ambient_color;
 		alignas(__ALIGNMENT_VEC3) scop::Vect3	light_vector;
 		alignas(__ALIGNMENT_VEC3) scop::Vect3	light_color;
-		alignas(__ALIGNMENT_SCAL) float			light_intensity;
+		alignas(__ALIGNMENT_SCAL) float			light_intensity; // TODO Remove. Can be set in color
 	};
 
 	/* ========================================================================= */

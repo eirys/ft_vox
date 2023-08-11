@@ -16,7 +16,6 @@
 # include <memory> // std::shared_ptr
 
 # include "pipeline.h"
-# include "scene_render_pass.h"
 
 namespace scop::graphics {
 
@@ -29,7 +28,7 @@ public:
 	/* ========================================================================= */
 
 	using super = Pipeline;
-	using SceneRenderPassPtr = std::shared_ptr<SceneRenderPass>;
+	using Texture = super::Texture;
 
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
@@ -45,39 +44,41 @@ public:
 
 	/* ========================================================================= */
 
+	using super::destroy;
+
 	void	init(
 		Device& device,
+		CommandPool& pool,
+		const RenderPass::RenderPassInfo& rp_info,
+		const std::vector<Texture>& textures,
 		VkGraphicsPipelineCreateInfo& info) override;
-	void	destroy(Device& device) override;
 	void	record(
 		Device& device,
-		VkCommandBuffer command_buffer) override;
+		VkPipelineLayout layout,
+		VkCommandBuffer command_buffer,
+		InputHandler& input) override;
 
 	/* ========================================================================= */
 
 	using super::getPipeline;
-
-	RenderPassPtr	getRenderPass() const noexcept override;
+	using super::getRenderPass;
+	using super::getTextureHandler;
 
 private:
-	/* ========================================================================= */
-	/*                               CLASS MEMBERS                               */
-	/* ========================================================================= */
-
-	SceneRenderPassPtr		_render_pass;
-
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
 
-	using super::_createShaderModule;
-
-	void					_createPipeline(
+	void	_createRenderPass(
+		Device& device,
+		const RenderPass::RenderPassInfo& rp_info) override;
+	void	_createTextureHandler(
+		Device& device,
+		CommandPool& pool,
+		const std::vector<Texture>& textures) override;
+	void	_createPipeline(
 		Device& device,
 		VkGraphicsPipelineCreateInfo& info) override;
-	void					_populateShaderStages(
-		Device& device,
-		std::vector<VkPipelineShaderStageCreateInfo>& stages) override;
 
 }; // class ScenePipeline
 
