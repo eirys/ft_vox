@@ -383,11 +383,18 @@ void	Engine::_createGraphicsPipelines(
 		.depth_format = _swap_chain.findDepthFormat(),
 		.depth_samples = VK_SAMPLE_COUNT_1_BIT
 	};
+	RenderPass::ResourcesInfo	res_info {
+		.width = _swap_chain.getExtent().width,
+		.height = _swap_chain.getExtent().height,
+		.color_format = _swap_chain.getImageFormat(),
+		.depth_format = _swap_chain.findDepthFormat()
+	};
 
 	_pipelines.scene->init(
 		_device,
 		_command_pool,
 		rp_info,
+		res_info,
 		scene_textures,
 		pipeline_info);
 
@@ -504,7 +511,7 @@ void	Engine::_recordDrawingCommand(
 	render_pass_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
 	render_pass_info.renderPass = _render_pass.getRenderPass();
 	render_pass_info.framebuffer =
-		_target.getFrameBuffers()[image_index];
+		_pipelines.scene->getTarget()->getFrameBuffers()[image_index];
 	render_pass_info.renderArea.offset = { 0, 0 };
 	render_pass_info.renderArea.extent = _swap_chain.getExtent();
 	render_pass_info.clearValueCount = static_cast<uint32_t>(
@@ -521,7 +528,7 @@ void	Engine::_recordDrawingCommand(
 	vkCmdBindPipeline(
 		_main_command_buffer.getBuffer(),
 		VK_PIPELINE_BIND_POINT_GRAPHICS,
-		_pipelines.scene
+		_pipelines.scene->getPipeline()
 	);
 
 	// Set viewport and scissors

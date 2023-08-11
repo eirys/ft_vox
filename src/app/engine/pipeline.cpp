@@ -41,6 +41,9 @@ Pipeline::TextureHandlerPtr	Pipeline::getTextureHandler() const noexcept {
 	return _texture_handler;
 }
 
+Pipeline::TargetPtr	Pipeline::getTarget() const noexcept {
+	return _target;
+}
 /* ========================================================================== */
 /*                                  PROTECTED                                 */
 /* ========================================================================== */

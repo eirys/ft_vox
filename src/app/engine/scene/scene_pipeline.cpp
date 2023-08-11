@@ -29,10 +29,11 @@ void	ScenePipeline::init(
 	Device& device,
 	CommandPool& pool,
 	const RenderPass::RenderPassInfo& rp_info,
+	const RenderPass::ResourcesInfo& res_info,
 	const std::vector<Texture>& textures,
 	VkGraphicsPipelineCreateInfo& info
 ) {
-	_createRenderPass(device, rp_info);
+	_createRenderPass(device, rp_info, res_info);
 	_createTextureHandler(device, pool, textures);
 	_createPipeline(device, info);
 }
@@ -96,10 +97,11 @@ void	ScenePipeline::_createPipeline(
 
 void	ScenePipeline::_createRenderPass(
 	Device& device,
-	const RenderPass::RenderPassInfo& rp_info
+	const RenderPass::RenderPassInfo& rp_info,
+	const RenderPass::ResourcesInfo& res_info
 ) {
 	super::_render_pass.reset(new SceneRenderPass);
-	super::_render_pass->init(device, rp_info);
+	super::_render_pass->init(device, rp_info, res_info);
 }
 
 void	ScenePipeline::_createTextureHandler(

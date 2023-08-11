@@ -58,6 +58,7 @@ public:
 		Device& device,
 		CommandPool& pool,
 		const RenderPass::RenderPassInfo& rp_info,
+		const RenderPass::ResourcesInfo& res_info,
 		const std::vector<Texture>& textures,
 		VkGraphicsPipelineCreateInfo& layout_info) = 0;
 	void				destroy(Device& device);
@@ -73,6 +74,7 @@ public:
 	VkPipeline			getPipeline() const noexcept;
 	RenderPassPtr		getRenderPass() const noexcept;
 	TextureHandlerPtr	getTextureHandler() const noexcept;
+	TargetPtr			getTarget() const noexcept;
 
 protected:
 	/* ========================================================================= */
@@ -100,7 +102,8 @@ protected:
 
 	virtual void		_createRenderPass(
 		Device& device,
-		const RenderPass::RenderPassInfo& rp_info) = 0;
+		const RenderPass::RenderPassInfo& rp_info,
+		const RenderPass::ResourcesInfo& res_info) = 0;
 	virtual void		_createTextureHandler(
 		Device& device,
 		CommandPool& pool,

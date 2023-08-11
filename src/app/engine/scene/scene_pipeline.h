@@ -50,6 +50,7 @@ public:
 		Device& device,
 		CommandPool& pool,
 		const RenderPass::RenderPassInfo& rp_info,
+		const RenderPass::ResourcesInfo& res_info,
 		const std::vector<Texture>& textures,
 		VkGraphicsPipelineCreateInfo& info) override;
 	void	record(
@@ -63,6 +64,7 @@ public:
 	using super::getPipeline;
 	using super::getRenderPass;
 	using super::getTextureHandler;
+	using super::getTarget;
 
 private:
 	/* ========================================================================= */
@@ -71,7 +73,8 @@ private:
 
 	void	_createRenderPass(
 		Device& device,
-		const RenderPass::RenderPassInfo& rp_info) override;
+		const RenderPass::RenderPassInfo& rp_info,
+		const RenderPass::ResourcesInfo& res_info) override;
 	void	_createTextureHandler(
 		Device& device,
 		CommandPool& pool,
