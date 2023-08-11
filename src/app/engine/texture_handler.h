@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:14:56 by etran             #+#    #+#             */
-/*   Updated: 2023/08/10 22:28:51 by etran            ###   ########.fr       */
+/*   Updated: 2023/08/11 23:58:13 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,7 +53,6 @@ public:
 
 	virtual void			init(
 		Device& device,
-		CommandPool& command_pool,
 		const std::vector<Texture>& images) = 0;
 	void					destroy(Device& device);
 
@@ -89,7 +88,6 @@ protected:
 
 	virtual void			_createTextureImages(
 		Device& device,
-		CommandPool& command_pool,
 		const std::vector<Texture>& images) = 0;
 	virtual void			_createTextureImageView(Device& device) = 0;
 	virtual void			_createTextureSampler(Device& device) = 0;

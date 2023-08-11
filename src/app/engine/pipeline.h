@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/05 03:12:47 by etran             #+#    #+#             */
-/*   Updated: 2023/08/10 22:12:23 by etran            ###   ########.fr       */
+/*   Updated: 2023/08/12 00:50:02 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,9 +56,9 @@ public:
 
 	virtual void		init(
 		Device& device,
-		CommandPool& pool,
 		const RenderPass::RenderPassInfo& rp_info,
 		const RenderPass::ResourcesInfo& res_info,
+		Target::TargetInfo& tar_info,
 		const std::vector<Texture>& textures,
 		VkGraphicsPipelineCreateInfo& layout_info) = 0;
 	void				destroy(Device& device);
@@ -75,6 +75,7 @@ public:
 	RenderPassPtr		getRenderPass() const noexcept;
 	TextureHandlerPtr	getTextureHandler() const noexcept;
 	TargetPtr			getTarget() const noexcept;
+	VkDescriptorSet		getDescriptors() const noexcept;
 
 protected:
 	/* ========================================================================= */
@@ -86,6 +87,8 @@ protected:
 	RenderPassPtr		_render_pass;
 	TextureHandlerPtr	_texture_handler;
 	TargetPtr			_target;
+
+	VkDescriptorSet		_descriptors;
 
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
@@ -104,9 +107,11 @@ protected:
 		Device& device,
 		const RenderPass::RenderPassInfo& rp_info,
 		const RenderPass::ResourcesInfo& res_info) = 0;
+	virtual void		_createTarget(
+		Device& device,
+		Target::TargetInfo& info) = 0;
 	virtual void		_createTextureHandler(
 		Device& device,
-		CommandPool& pool,
 		const std::vector<Texture>& textures) = 0;
 	virtual void		_createPipeline(
 		Device& device,

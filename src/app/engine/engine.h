@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:14:35 by etran             #+#    #+#             */
-/*   Updated: 2023/08/10 22:14:49 by etran            ###   ########.fr       */
+/*   Updated: 2023/08/12 00:53:14 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,7 +27,7 @@
 # include "device.h"
 # include "swap_chain.h"
 # include "scene_render_pass.h"
-# include "descriptor_set.h"
+# include "descriptor_pool.h"
 # include "command_pool.h"
 # include "input_handler.h"
 # include "player.h"
@@ -83,16 +83,14 @@ public:
 		const std::vector<TextureHandler::Texture>& images,
 		const UniformBufferObject::Light& light,
 		const std::vector<Vertex>& vertices,
-		const std::vector<uint32_t>& indices
-	);
+		const std::vector<uint32_t>& indices);
 	void						destroy();
 
 	void						idle();
 	void						render(
 		::scop::Window& window,
 		const vox::Player& player,
-		Timer& timer
-	);
+		Timer& timer);
 
 private:
 	/* ========================================================================= */
@@ -105,7 +103,7 @@ private:
 	Device						_device;
 	SwapChain					_swap_chain;
 	SceneRenderPass				_render_pass;
-	DescriptorSet				_descriptor_set;
+	DescriptorPool				_descriptor_pool;
 	CommandPool					_command_pool;
 	InputHandler				_input_handler;
 
@@ -129,17 +127,16 @@ private:
 
 	void						_createInstance();
 	void						_createGraphicsPipelines(
-		const std::vector<Texture>& scene_textures
-	);
+		const std::vector<Texture>& scene_textures);
 	void						_createGraphicsPipelineLayout();
 	void						_createSyncObjects();
+	void						_updatePresentation(::scop::Window& window);
 
 	bool						_checkValidationLayerSupport();
 	std::vector<const char*>	_getRequiredExtensions();
 	void						_recordDrawingCommand(
 		std::size_t indices_size,
-		uint32_t image_index
-	);
+		uint32_t image_index);
 
 }; // class Engine
 

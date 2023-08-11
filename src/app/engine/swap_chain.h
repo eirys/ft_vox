@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/02 16:27:11 by etran             #+#    #+#             */
-/*   Updated: 2023/08/10 22:14:49 by etran            ###   ########.fr       */
+/*   Updated: 2023/08/11 23:14:00 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,18 +53,11 @@ public:
 
 	void								init(
 		Device& device,
-		::scop::Window& window
-	);
-	void								initFrameBuffers(
-		Device& device,
-		RenderPass& render_pass
-	);
+		::scop::Window& window);
 	void								destroy(Device& device);
 	void								update(
 		Device& device,
-		::scop::Window& window,
-		RenderPass& render_pass
-	);
+		::scop::Window& window);
 
 	/* ========================================================================= */
 
@@ -75,6 +68,7 @@ public:
 	VkSwapchainKHR						getSwapChain() const noexcept;
 	VkFormat							getImageFormat() const noexcept;
 	VkExtent2D							getExtent() const noexcept;
+
 	const std::vector<VkImage>&			getImages() const noexcept;
 	const std::vector<VkImageView>&		getImageViews() const noexcept;
 
@@ -94,22 +88,18 @@ private:
 
 	void								_createSwapChain(
 		Device& device,
-		::scop::Window& window
-	);
+		::scop::Window& window);
 	void								_createImages(
 		Device& device,
-		uint32_t& image_count
-	);
+		uint32_t& image_count);
+
 	VkSurfaceFormatKHR					_chooseSwapSurfaceFormat(
-		const std::vector<VkSurfaceFormatKHR>& available_formats
-	) const noexcept;
+		const std::vector<VkSurfaceFormatKHR>& available_formats) const noexcept;
 	VkPresentModeKHR					_chooseSwapPresentMode(
-		const std::vector<VkPresentModeKHR>& available_present_modes
-	) const noexcept;
+		const std::vector<VkPresentModeKHR>& available_present_modes) const noexcept;
 	VkExtent2D							_chooseSwapExtent(
 		VkSurfaceCapabilitiesKHR capabilities,
-		::scop::Window& window
-	) const;
+		::scop::Window& window) const;
 
 }; // class SwapChain
 

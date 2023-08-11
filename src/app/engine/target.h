@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/05 03:21:25 by etran             #+#    #+#             */
-/*   Updated: 2023/08/10 22:14:49 by etran            ###   ########.fr       */
+/*   Updated: 2023/08/11 22:54:27 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,7 @@
 # include <GLFW/glfw3.h>
 
 # include <vector> // std::vector
+# include <memory>
 
 # include "image_buffer.h"
 
@@ -27,6 +28,9 @@ class Window;
 }
 
 namespace scop::graphics {
+
+class Device;
+class RenderPass;
 
 /**
  * @brief Wrapper class for target framebuffers.
@@ -37,14 +41,14 @@ public:
 	/*                                HELPER CLASS                               */
 	/* ========================================================================= */
 
+	/**
+	 * @brief Target creation info.
+	*/
 	struct TargetInfo {
-		using AttachmentVector = std::vector<VkImageView>;
-
-		// per fb attachment vector
-		VkRenderPass					render_pass;
-		std::vector<AttachmentVector>	fb_attachments;
+		std::vector<VkImageView>		swap_views;
 		uint32_t						width;
 		uint32_t						height;
+		std::shared_ptr<RenderPass>		render_pass;
 	};
 
 	/* ========================================================================= */
@@ -55,11 +59,11 @@ public:
 
 	/* ========================================================================= */
 
-	virtual void				init(
+	virtual void		init(
 		Device& device,
 		const TargetInfo& info) = 0;
-	virtual void				destroy(Device& device) = 0;
-	virtual void				update(
+	void				destroy(Device& device);
+	virtual void		update(
 		Device& device,
 		const TargetInfo& info) = 0;
 

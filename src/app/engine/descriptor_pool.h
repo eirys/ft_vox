@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   descriptor_set.h                                   :+:      :+:    :+:   */
+/*   descriptor_pool.h                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:14:18 by etran             #+#    #+#             */
-/*   Updated: 2023/08/10 22:12:05 by etran            ###   ########.fr       */
+/*   Updated: 2023/08/12 00:55:33 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,36 +26,32 @@
 # include "uniform_buffer_object.h"
 # include "player.h"
 
-# define TEXTURE_SAMPLER_COUNT 16
-
 namespace scop::graphics {
 
 class Device;
 class TextureHandler;
 
-class DescriptorSet {
+class DescriptorPool {
 public:
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
 
-	DescriptorSet() = default;
-	~DescriptorSet() = default;
+	DescriptorPool() = default;
+	~DescriptorPool() = default;
 
-	DescriptorSet(DescriptorSet&& other) = delete;
-	DescriptorSet(const DescriptorSet& other) = delete;
-	DescriptorSet&	operator=(const DescriptorSet& other) = delete;
-	DescriptorSet&	operator=(DescriptorSet&& other) = delete;
+	DescriptorPool(DescriptorPool&& other) = delete;
+	DescriptorPool(const DescriptorPool& other) = delete;
+	DescriptorPool&	operator=(const DescriptorPool& other) = delete;
+	DescriptorPool&	operator=(DescriptorPool&& other) = delete;
 
 	/* ========================================================================= */
 
-	void					initLayout(
-		Device& device
-	);
+	void					initLayout(Device& device);
 	void					initSets(
 		Device& device,
 		TextureHandler& texture_handler,
-		const UniformBufferObject::Light& light
+		const ::scop::UniformBufferObject::Light& light
 	);
 	void					destroy(Device& device);
 	void					updateUniformBuffer(
@@ -83,12 +79,10 @@ private:
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
 
-	void					_createDescriptorPool(Device& device, uint32_t count);
+	void					_createDescriptorPool(Device& device);
 	void					_createDescriptorSets(
 		Device& device,
-		TextureHandler& texture_handler,
-		uint32_t count
-	);
+		TextureHandler& texture_handler);
 	void					_createUniformBuffers(Device& device);
 	void					_initUniformBuffer(
 		const UniformBufferObject::Light& light
@@ -99,6 +93,6 @@ private:
 		const vox::Player& player
 	);
 
-}; // class DescriptorSet
+}; // class DescriptorPool
 
 } // namespace scop::graphics

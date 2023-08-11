@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/06 20:50:48 by etran             #+#    #+#             */
-/*   Updated: 2023/08/10 22:31:52 by etran            ###   ########.fr       */
+/*   Updated: 2023/08/12 00:47:31 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,7 @@
 
 #include "scene_texture_handler.h"
 #include "scene_render_pass.h"
+#include "scene_target.h"
 
 #include <stdexcept> // std::runtime_error
 
@@ -27,15 +28,16 @@ namespace scop::graphics {
 
 void	ScenePipeline::init(
 	Device& device,
-	CommandPool& pool,
 	const RenderPass::RenderPassInfo& rp_info,
 	const RenderPass::ResourcesInfo& res_info,
+	Target::TargetInfo& tar_info,
 	const std::vector<Texture>& textures,
 	VkGraphicsPipelineCreateInfo& info
 ) {
 	_createRenderPass(device, rp_info, res_info);
-	_createTextureHandler(device, pool, textures);
 	_createPipeline(device, info);
+	_createTarget(device, tar_info);
+	_createTextureHandler(device, textures);
 }
 
 void	ScenePipeline::record(
@@ -104,13 +106,21 @@ void	ScenePipeline::_createRenderPass(
 	super::_render_pass->init(device, rp_info, res_info);
 }
 
+void	ScenePipeline::_createTarget(
+	Device& device,
+	Target::TargetInfo& tar_info
+) {
+	super::_target.reset(new SceneTarget);
+	tar_info.render_pass = super::_render_pass;
+	super::_target->init(device, tar_info);
+}
+
 void	ScenePipeline::_createTextureHandler(
 	Device& device,
-	CommandPool& pool,
 	const std::vector<Texture>& textures
 ) {
 	super::_texture_handler.reset(new SceneTextureHandler);
-	super::_texture_handler->init(device, pool, textures);
+	super::_texture_handler->init(device, textures);
 }
 
 } // namespace scop::graphics

@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/06 17:59:15 by etran             #+#    #+#             */
-/*   Updated: 2023/08/10 22:12:20 by etran            ###   ########.fr       */
+/*   Updated: 2023/08/11 23:11:47 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,6 +25,7 @@ namespace scop::graphics {
 void	Pipeline::destroy(Device& device) {
 	_render_pass->destroy(device);
 	_texture_handler->destroy(device);
+	_target->destroy(device);
 }
 
 /* ========================================================================== */

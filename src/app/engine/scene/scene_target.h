@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/11 16:21:56 by etran             #+#    #+#             */
-/*   Updated: 2023/08/11 16:21:56 by etran            ###   ########.fr       */
+/*   Updated: 2023/08/11 21:55:19 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,10 +38,14 @@ public:
 
 	/* ========================================================================= */
 
+	using super::destroy;
+
 	void				init(
 		Device& device,
-		const TargetInfo& info) override;
-	void				destroy(Device& device) override;
+		const super::TargetInfo& info) override;
+	void				update(
+		Device& device,
+		const super::TargetInfo& info) override;
 
 	/* ========================================================================= */
 

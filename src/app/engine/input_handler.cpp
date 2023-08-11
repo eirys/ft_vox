@@ -1,17 +1,16 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   input_buffer.cpp                                   :+:      :+:    :+:   */
+/*   input_handler.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/16 13:03:48 by etran             #+#    #+#             */
-/*   Updated: 2023/08/10 22:12:15 by etran            ###   ########.fr       */
+/*   Updated: 2023/08/11 21:33:02 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "input_buffer.h"
-// #include "engine.h"
+#include "input_handler.h"
 #include "device.h"
 #include "vertex.h"
 #include "vector.h"

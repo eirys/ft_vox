@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/10 22:17:58 by etran             #+#    #+#             */
-/*   Updated: 2023/08/10 22:35:07 by etran            ###   ########.fr       */
+/*   Updated: 2023/08/11 23:58:05 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,7 +53,6 @@ public:
 
 	void					init(
 		Device& device,
-		CommandPool& command_pool,
 		const std::vector<Texture>& images) override;
 
 	/* ========================================================================= */
@@ -68,7 +67,6 @@ private:
 
 	void					_createTextureImages(
 		Device& device,
-		CommandPool& command_pool,
 		const std::vector<Texture>& images) override;
 	void					_createTextureImageView(Device& device) override;
 	void					_createTextureSampler(Device& device) override;

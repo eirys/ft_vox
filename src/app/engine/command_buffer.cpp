@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/04 08:39:55 by etran             #+#    #+#             */
-/*   Updated: 2023/08/10 22:11:16 by etran            ###   ########.fr       */
+/*   Updated: 2023/08/12 00:26:09 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,16 +24,17 @@ namespace scop::graphics {
 
 /**
  * @brief Initialize the command buffer.
+ * @todo Change _buffer to std::vector<VkCommandBuffer>.
 */
 void	CommandBuffer::init(
 	Device& device,
-	CommandPool& pool,
+	VkCommandPool pool,
 	uint32_t count
 ) {
 	VkCommandBufferAllocateInfo	alloc{};
 	alloc.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
 	alloc.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-	alloc.commandPool = pool.getPool();
+	alloc.commandPool = pool;
 	alloc.commandBufferCount = count;
 
 	if (vkAllocateCommandBuffers(device.getLogicalDevice(), &alloc, &_buffer) != VK_SUCCESS) {
@@ -46,13 +47,12 @@ void	CommandBuffer::init(
 */
 void	CommandBuffer::destroy(
 	Device& device,
-	CommandPool& pool
+	VkCommandPool pool
 ) {
 	vkFreeCommandBuffers(
 		device.getLogicalDevice(),
-		pool.getPool(),
-		1, &_buffer
-	);
+		pool,
+		1, &_buffer);
 }
 
 /* ========================================================================== */

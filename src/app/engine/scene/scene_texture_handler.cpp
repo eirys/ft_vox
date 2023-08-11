@@ -6,13 +6,14 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/10 22:32:26 by etran             #+#    #+#             */
-/*   Updated: 2023/08/10 22:33:58 by etran            ###   ########.fr       */
+/*   Updated: 2023/08/11 23:58:27 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "scene_texture_handler.h"
 #include "device.h"
 #include "image_handler.h"
+#include "command_pool.h"
 #include "command_buffer.h"
 #include "buffer.h"
 
@@ -28,7 +29,6 @@ namespace scop::graphics {
 
 void	SceneTextureHandler::init(
 	Device& device,
-	CommandPool& command_pool,
 	const std::vector<Texture>& images
 ) {
 	if (images.empty()) {
@@ -36,7 +36,7 @@ void	SceneTextureHandler::init(
 	}
 	super::_texture_count = static_cast<uint32_t>(images.size());
 	super::_layer_count = 1;
-	_createTextureImages(device, command_pool, images);
+	_createTextureImages(device, images);
 	_createTextureImageView(device);
 	_createTextureSampler(device);
 }
@@ -52,7 +52,6 @@ void	SceneTextureHandler::init(
 */
 void	SceneTextureHandler::_createTextureImages(
 	Device& device,
-	CommandPool& command_pool,
 	const std::vector<Texture>& images
 ) {
 	const uint32_t	image_width = static_cast<uint32_t>(images[0].getWidth());
@@ -98,8 +97,7 @@ void	SceneTextureHandler::_createTextureImages(
 		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
 	// Setup copy command buffer
-	CommandBuffer	command_buffer;
-	command_buffer.init(device, command_pool);
+	CommandBuffer	command_buffer = CommandPool::createBuffer(device);
 	command_buffer.begin();
 
 	// Transition to transfer destination layout
@@ -142,7 +140,7 @@ void	SceneTextureHandler::_createTextureImages(
 
 	// Submit commands
 	command_buffer.end(device);
-	command_buffer.destroy(device, command_pool);
+	CommandPool::destroyBuffer(device, command_buffer);
 	staging_buffer.destroy(device.getLogicalDevice());
 }
 

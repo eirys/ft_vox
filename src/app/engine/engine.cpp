@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/02 16:09:44 by etran             #+#    #+#             */
-/*   Updated: 2023/08/10 22:14:49 by etran            ###   ########.fr       */
+/*   Updated: 2023/08/12 00:53:41 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,13 +42,13 @@ void	Engine::init(
 	_swap_chain.init(_device, window);
 	// _render_pass.init(_device, _swap_chain);
 	// _swap_chain.initFrameBuffers(_device, _render_pass);
-	_descriptor_set.initLayout(_device);
+	_descriptor_pool.initLayout(_device);
+	_command_pool.init(_device);
 	_createGraphicsPipelineLayout();
 	_createGraphicsPipelines(images);
-	_command_pool.init(_device);
 	// _texture_sampler.init(_device, _command_pool, images);
 	_input_handler.init(_device, _command_pool, vertices, indices);
-	_descriptor_set.initSets(_device, _texture_sampler, light);
+	_descriptor_pool.initSets(_device, _texture_sampler, light);
 	_main_command_buffer.init(_device, _command_pool, max_frames_in_flight);
 	_createSyncObjects();
 }
@@ -59,14 +59,15 @@ void	Engine::destroy() {
 	// _texture_sampler.destroy(_device);
 
 	// Remove graphics _pipeline
-	vkDestroyPipeline(_device.getLogicalDevice(), _pipelines.scene, nullptr);
-	//vkDestroyPipeline(_device.getLogicalDevice(), _pipelines.shadows, nullptr);
+	_pipelines.scene->destroy(_device);
+	// _pipelines.shadows->destroy(_device);
+
 	vkDestroyPipelineLayout(
 		_device.getLogicalDevice(),
 		_pipeline_layout,
 		nullptr);
 
-	_descriptor_set.destroy(_device);
+	_descriptor_pool.destroy(_device);
 	_input_handler.destroy(_device);
 
 	// Remove sync objects
@@ -118,11 +119,9 @@ void	Engine::render(
 		UINT64_MAX,
 		_image_available_semaphores,
 		VK_NULL_HANDLE,
-		&image_index
-	);
+		&image_index);
 	if (result == VK_ERROR_OUT_OF_DATE_KHR) {
-		// Swap chain incompatible for rendering
-		_swap_chain.update(_device, window, _render_pass);
+		_updatePresentation(window);
 		return;
 	} else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
 		throw std::runtime_error("failed to acquire swap chain image");
@@ -134,7 +133,7 @@ void	Engine::render(
 	// Record buffer
 	_recordDrawingCommand(_nb_indices, image_index);
 
-	_descriptor_set.updateUniformBuffer(
+	_descriptor_pool.updateUniformBuffer(
 		_swap_chain.getExtent(),
 		player
 	);
@@ -185,7 +184,7 @@ void	Engine::render(
 		window.resized()
 	) {
 		window.toggleFrameBufferResized(false);
-		_swap_chain.update(_device, window, _render_pass);
+		_updatePresentation(window);
 	} else if (result != VK_SUCCESS) {
 		throw std::runtime_error("failed to present swapchain image");
 	}
@@ -380,21 +379,23 @@ void	Engine::_createGraphicsPipelines(
 		.height = _swap_chain.getExtent().height,
 		.color_format = _swap_chain.getImageFormat(),
 		.color_samples = _device.getMsaaSamples(),
-		.depth_format = _swap_chain.findDepthFormat(),
-		.depth_samples = VK_SAMPLE_COUNT_1_BIT
-	};
+		.depth_format = _swap_chain.findDepthFormat(_device),
+		.depth_samples = VK_SAMPLE_COUNT_1_BIT };
 	RenderPass::ResourcesInfo	res_info {
 		.width = _swap_chain.getExtent().width,
 		.height = _swap_chain.getExtent().height,
 		.color_format = _swap_chain.getImageFormat(),
-		.depth_format = _swap_chain.findDepthFormat()
-	};
+		.depth_format = _swap_chain.findDepthFormat(_device) };
+	Target::TargetInfo	tar_info {
+		.swap_views = _swap_chain.getImageViews(),
+		.width = _swap_chain.getExtent().width,
+		.height = _swap_chain.getExtent().height };
 
 	_pipelines.scene->init(
 		_device,
-		_command_pool,
 		rp_info,
 		res_info,
+		tar_info,
 		scene_textures,
 		pipeline_info);
 
@@ -415,7 +416,7 @@ void	Engine::_createGraphicsPipelines(
 void	Engine::_createGraphicsPipelineLayout() {
 	// Pipeline layout setups
 	VkPipelineLayoutCreateInfo	pipeline_layout_info{};
-	VkDescriptorSetLayout descriptor_layout = _descriptor_set.getLayout();
+	VkDescriptorSetLayout descriptor_layout = _descriptor_pool.getLayout();
 	pipeline_layout_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
 	pipeline_layout_info.setLayoutCount = 1;
 	pipeline_layout_info.pSetLayouts = &descriptor_layout;
@@ -490,6 +491,26 @@ std::vector<const char*>	Engine::_getRequiredExtensions() {
 	return extensions;
 }
 
+/**
+ * @brief Update presentation objects to match window size.
+*/
+void	Engine::_updatePresentation(::scop::Window& window) {
+	_swap_chain.update(_device, window);
+
+	RenderPass::ResourcesInfo	res_info {
+		.width = _swap_chain.getExtent().width,
+		.height = _swap_chain.getExtent().height,
+		.color_format = _swap_chain.getImageFormat(),
+		.depth_format = _swap_chain.findDepthFormat(_device) };
+	Target::TargetInfo	tar_info {
+		.swap_views = _swap_chain.getImageViews(),
+		.width = _swap_chain.getExtent().width,
+		.height = _swap_chain.getExtent().height };
+	_pipelines.scene->getRenderPass()->updateResources(_device, res_info);
+	_pipelines.scene->getTarget()->update(_device, tar_info);
+}
+
+// TODO Pass to pipeline::record
 /**
  *  Write commands to command buffer to be subimtted to queue.
  */
@@ -569,7 +590,7 @@ void	Engine::_recordDrawingCommand(
 	);
 
 	// Bind descriptor sets
-	VkDescriptorSet	descriptor_set = _descriptor_set.getSet();
+	VkDescriptorSet	descriptor_set = _descriptor_pool.getSet();
 	vkCmdBindDescriptorSets(
 		_main_command_buffer.getBuffer(),
 		VK_PIPELINE_BIND_POINT_GRAPHICS,

@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/06 17:31:39 by etran             #+#    #+#             */
-/*   Updated: 2023/08/10 22:34:41 by etran            ###   ########.fr       */
+/*   Updated: 2023/08/11 23:59:31 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,9 +48,9 @@ public:
 
 	void	init(
 		Device& device,
-		CommandPool& pool,
 		const RenderPass::RenderPassInfo& rp_info,
 		const RenderPass::ResourcesInfo& res_info,
+		Target::TargetInfo& tar_info,
 		const std::vector<Texture>& textures,
 		VkGraphicsPipelineCreateInfo& info) override;
 	void	record(
@@ -75,9 +75,11 @@ private:
 		Device& device,
 		const RenderPass::RenderPassInfo& rp_info,
 		const RenderPass::ResourcesInfo& res_info) override;
+	void	_createTarget(
+		Device& device,
+		Target::TargetInfo& info) override;
 	void	_createTextureHandler(
 		Device& device,
-		CommandPool& pool,
 		const std::vector<Texture>& textures) override;
 	void	_createPipeline(
 		Device& device,

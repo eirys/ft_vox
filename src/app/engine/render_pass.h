@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:14:50 by etran             #+#    #+#             */
-/*   Updated: 2023/08/10 22:26:29 by etran            ###   ########.fr       */
+/*   Updated: 2023/08/11 22:53:55 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,6 +31,9 @@ public:
 	/*                                HELPER CLASS                               */
 	/* ========================================================================= */
 
+	/**
+	 * @brief Render pass creation info.
+	*/
 	struct RenderPassInfo {
 		uint32_t width;
 		uint32_t height;
@@ -40,6 +43,9 @@ public:
 		VkSampleCountFlagBits depth_samples;
 	};
 
+	/**
+	 * @brief Render pass resources creation info.
+	*/
 	struct ResourcesInfo {
 		uint32_t width;
 		uint32_t height;

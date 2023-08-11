@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/05 13:32:01 by etran             #+#    #+#             */
-/*   Updated: 2023/08/10 22:34:35 by etran            ###   ########.fr       */
+/*   Updated: 2023/08/11 22:49:38 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,6 +54,11 @@ public:
 	/* ========================================================================= */
 
 	using super::getRenderPass;
+
+	const ImageBuffer&	getColorResource() const noexcept;
+	ImageBuffer&		getColorResource() noexcept;
+	const ImageBuffer&	getDepthResource() const noexcept;
+	ImageBuffer&		getDepthResource() noexcept;
 
 private:
 	/* ========================================================================= */

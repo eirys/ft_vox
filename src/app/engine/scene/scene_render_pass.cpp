@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/06 17:44:57 by etran             #+#    #+#             */
-/*   Updated: 2023/08/10 22:32:08 by etran            ###   ########.fr       */
+/*   Updated: 2023/08/11 22:50:18 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,6 +43,24 @@ void	SceneRenderPass::updateResources(
 ) {
 	_destroyResources(device);
 	_createResources(device, res_info);
+}
+
+/* ========================================================================== */
+
+ImageBuffer&	SceneRenderPass::getColorResource() noexcept {
+	return _color_image;
+}
+
+const ImageBuffer&	SceneRenderPass::getColorResource() const noexcept {
+	return _color_image;
+}
+
+ImageBuffer&	SceneRenderPass::getDepthResource() noexcept {
+	return _depth_image;
+}
+
+const ImageBuffer&	SceneRenderPass::getDepthResource() const noexcept {
+	return _depth_image;
 }
 
 /* ========================================================================== */

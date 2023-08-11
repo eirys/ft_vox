@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/02 19:40:11 by etran             #+#    #+#             */
-/*   Updated: 2023/08/10 22:14:49 by etran            ###   ########.fr       */
+/*   Updated: 2023/08/11 23:09:42 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,24 +32,20 @@ void	SwapChain::init(
 	_createSwapChain(device, window);
 }
 
-
 void	SwapChain::destroy(Device& device) {
 	for (std::size_t i = 0; i < _image_views.size(); ++i) {
 		vkDestroyImageView(
 			device.getLogicalDevice(),
 			_image_views[i],
-			nullptr
-		);
+			nullptr);
 	}
-
 	// Remove swap chain handler
 	vkDestroySwapchainKHR(device.getLogicalDevice(), _swap_chain, nullptr);
 }
 
 void	SwapChain::update(
 	Device& device,
-	::scop::Window& window,
-	RenderPass& render_pass
+	::scop::Window& window
 ) {
 	window.pause();
 	device.idle();
@@ -59,6 +55,7 @@ void	SwapChain::update(
 	// recreate resources and fb
 	// initFrameBuffers(device, render_pass);
 }
+
 /* ========================================================================== */
 
 /**
@@ -213,7 +210,7 @@ void	SwapChain::_createImages(Device& device, uint32_t& image_count) {
 		};
 
 	for (std::size_t i = 0; i < image_count; ++i) {
-		_image_views[i] = createImageViewFunc(_images[i]);
+		_image_views.emplace_back(createImageViewFunc(_images[i]));
 	}
 }
 

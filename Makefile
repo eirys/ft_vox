@@ -6,7 +6,7 @@
 #    By: etran <etran@student.42.fr>                +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/04/06 03:40:09 by eli               #+#    #+#              #
-#    Updated: 2023/08/10 22:01:02 by etran            ###   ########.fr        #
+#    Updated: 2023/08/12 00:52:08 by etran            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -67,7 +67,7 @@ SRC_FILES	:=	$(TOOLS_DIR)/matrix.cpp \
 				$(ENG_DIR)/pipeline.cpp \
 				$(ENG_DIR)/swap_chain.cpp \
 				$(ENG_DIR)/render_pass.cpp \
-				$(ENG_DIR)/descriptor_set.cpp \
+				$(ENG_DIR)/descriptor_pool.cpp \
 				$(ENG_DIR)/command_pool.cpp \
 				$(ENG_DIR)/texture_handler.cpp \
 				$(ENG_DIR)/input_handler.cpp \
@@ -77,6 +77,7 @@ SRC_FILES	:=	$(TOOLS_DIR)/matrix.cpp \
 				$(ENG_DIR)/image_buffer.cpp \
 				$(SCENE_DIR)/scene_render_pass.cpp \
 				$(SCENE_DIR)/scene_pipeline.cpp \
+				$(SCENE_DIR)/scene_target.cpp \
 				$(APP_DIR)/app.cpp \
 				main.cpp
 
