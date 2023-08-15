@@ -6,13 +6,18 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/02 16:09:44 by etran             #+#    #+#             */
-/*   Updated: 2023/08/12 00:53:41 by etran            ###   ########.fr       */
+/*   Updated: 2023/08/15 21:40:01 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "engine.h"
 #include "window.h"
+#include "uniform_buffer_object.h"
+#include "descriptor_set.h"
+
+#include "game_state.h"
 #include "player.h"
+
 #include "timer.h"
 #include "utils.h"
 
@@ -31,7 +36,7 @@ const std::vector<const char*>	Engine::validation_layers = {
 void	Engine::init(
 	::scop::Window& window,
 	const std::vector<TextureHandler::Texture>& images,
-	const UniformBufferObject::Light& light,
+	const ::vox::GameState& game,
 	const std::vector<Vertex>& vertices,
 	const std::vector<uint32_t>& indices
 ) {
@@ -42,20 +47,20 @@ void	Engine::init(
 	_swap_chain.init(_device, window);
 	// _render_pass.init(_device, _swap_chain);
 	// _swap_chain.initFrameBuffers(_device, _render_pass);
-	_descriptor_pool.initLayout(_device);
 	_command_pool.init(_device);
 	_createGraphicsPipelineLayout();
 	_createGraphicsPipelines(images);
+	_createDescriptors(game);
 	// _texture_sampler.init(_device, _command_pool, images);
 	_input_handler.init(_device, _command_pool, vertices, indices);
-	_descriptor_pool.initSets(_device, _texture_sampler, light);
+	// _descriptor_pool.initSets(_device, _texture_sampler, light);
 	_main_command_buffer.init(_device, _command_pool, max_frames_in_flight);
 	_createSyncObjects();
 }
 
 void	Engine::destroy() {
 	_swap_chain.destroy(_device);
-	_render_pass.destroy(_device);
+	// _render_pass.destroy(_device);
 	// _texture_sampler.destroy(_device);
 
 	// Remove graphics _pipeline
@@ -100,7 +105,7 @@ void	Engine::idle() {
 
 void	Engine::render(
 	::scop::Window& window,
-	const vox::Player& player,
+	const vox::GameState& game,
 	Timer& timer
 ) {
 	// Wait fence available, lock it
@@ -131,12 +136,20 @@ void	Engine::render(
 	vkResetFences(_device.getLogicalDevice(), 1, &_in_flight_fences);
 
 	// Record buffer
-	_recordDrawingCommand(_nb_indices, image_index);
-
-	_descriptor_pool.updateUniformBuffer(
-		_swap_chain.getExtent(),
-		player
+	_pipelines.scene->draw(
+		_device,
+		_pipeline_layout,
+		_main_command_buffer,
+		_input_handler,
+		image_index
 	);
+	// _recordDrawingCommand(_nb_indices, image_index);
+
+	// _descriptor_pool.updateUniformBuffer(
+	// 	_swap_chain.getExtent(),
+	// 	player
+	// );
+	_pipelines.scene->update(_updateUbo(game));
 
 	// Set synchronization objects
 	VkSemaphore				wait_semaphore[] = {
@@ -416,10 +429,9 @@ void	Engine::_createGraphicsPipelines(
 void	Engine::_createGraphicsPipelineLayout() {
 	// Pipeline layout setups
 	VkPipelineLayoutCreateInfo	pipeline_layout_info{};
-	VkDescriptorSetLayout descriptor_layout = _descriptor_pool.getLayout();
 	pipeline_layout_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-	pipeline_layout_info.setLayoutCount = 1;
-	pipeline_layout_info.pSetLayouts = &descriptor_layout;
+	pipeline_layout_info.setLayoutCount = _descriptor_pool.getLayouts().size();
+	pipeline_layout_info.pSetLayouts = _descriptor_pool.getLayouts().data();
 	pipeline_layout_info.pushConstantRangeCount = 0;
 	pipeline_layout_info.pPushConstantRanges = nullptr;
 
@@ -444,6 +456,68 @@ void	Engine::_createSyncObjects() {
 		vkCreateFence(_device.getLogicalDevice(), &fence_info, nullptr, &_in_flight_fences) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create semaphore");
 	}
+}
+
+/* ========================================================================== */
+
+/**
+ * @brief Update presentation objects to match window size.
+*/
+void	Engine::_updatePresentation(::scop::Window& window) {
+	_swap_chain.update(_device, window);
+
+	RenderPass::ResourcesInfo	res_info {
+		.width = _swap_chain.getExtent().width,
+		.height = _swap_chain.getExtent().height,
+		.color_format = _swap_chain.getImageFormat(),
+		.depth_format = _swap_chain.findDepthFormat(_device) };
+	Target::TargetInfo	tar_info {
+		.swap_views = _swap_chain.getImageViews(),
+		.width = _swap_chain.getExtent().width,
+		.height = _swap_chain.getExtent().height };
+
+	_pipelines.scene->getRenderPass()->updateResources(_device, res_info);
+	_pipelines.scene->getTarget()->update(_device, tar_info);
+}
+
+void	Engine::_createDescriptors(const ::vox::GameState& game) {
+	::scop::UniformBufferObject	ubo = _updateUbo(game);
+
+	_pipelines.scene->getDescriptor()->update(ubo);
+	_pipelines.shadows->getDescriptor()->update(ubo);
+
+	std::vector<DescriptorPool::DescriptorSetPtr> sets = {
+		_pipelines.scene->getDescriptor(),
+		_pipelines.shadows->getDescriptor() };
+
+	_descriptor_pool.init(_device, sets);
+}
+
+::scop::UniformBufferObject	Engine::_updateUbo(
+	const ::vox::GameState& game
+) const noexcept {
+	::scop::UniformBufferObject	ubo{};
+
+	float ratio =
+		_swap_chain.getExtent().width /
+		static_cast<float>(_swap_chain.getExtent().height);
+	::scop::Mat4	view = ::scop::lookAtDir(
+		game.getPlayer().getPosition(),
+		game.getPlayer().getEyeDir(),
+		::scop::Vect3(0.0f, 1.0f, 0.0f));
+	::scop::Mat4	projection = ::scop::perspective(
+		::scop::math::radians(70.0f),
+		ratio,
+		0.1f,
+		1000.0f);
+	ubo.camera.vp = projection * view;
+	ubo.light = {
+		.ambient_color = ::scop::Vect3(0.2f, 0.2f, 0.2f),
+		.light_vector = ::scop::normalize(::scop::Vect3(0.1f, 1.0f, 0.3f)),
+		.light_color = ::scop::Vect3(1.0f, 1.0f, 0.8f),
+		.light_intensity = 0.4f };
+
+	return ubo;
 }
 
 /* ========================================================================== */
@@ -491,128 +565,109 @@ std::vector<const char*>	Engine::_getRequiredExtensions() {
 	return extensions;
 }
 
-/**
- * @brief Update presentation objects to match window size.
-*/
-void	Engine::_updatePresentation(::scop::Window& window) {
-	_swap_chain.update(_device, window);
+// // TODO Pass to pipeline::record
+// /**
+//  *  Write commands to command buffer to be subimtted to queue.
+//  */
+// void	Engine::_recordDrawingCommand(
+// 	std::size_t indices_size,
+// 	uint32_t image_index
+// ) {
+// 	_main_command_buffer.reset();
+// 	_main_command_buffer.begin(0);
 
-	RenderPass::ResourcesInfo	res_info {
-		.width = _swap_chain.getExtent().width,
-		.height = _swap_chain.getExtent().height,
-		.color_format = _swap_chain.getImageFormat(),
-		.depth_format = _swap_chain.findDepthFormat(_device) };
-	Target::TargetInfo	tar_info {
-		.swap_views = _swap_chain.getImageViews(),
-		.width = _swap_chain.getExtent().width,
-		.height = _swap_chain.getExtent().height };
-	_pipelines.scene->getRenderPass()->updateResources(_device, res_info);
-	_pipelines.scene->getTarget()->update(_device, tar_info);
-}
+// 	// Define what corresponds to 'clear color'
+// 	std::array<VkClearValue, 2>	clear_values{};
+// 	clear_values[0].color = {{ 0.0f, 0.0f, 0.0f, 1.0f }};
+// 	clear_values[1].depthStencil = { 1.0f, 0 };
 
-// TODO Pass to pipeline::record
-/**
- *  Write commands to command buffer to be subimtted to queue.
- */
-void	Engine::_recordDrawingCommand(
-	std::size_t indices_size,
-	uint32_t image_index
-) {
-	_main_command_buffer.reset();
-	_main_command_buffer.begin(0);
+// 	// Spectify to render pass how to handle the command buffer,
+// 	// and which framebuffer to render to
+// 	VkRenderPassBeginInfo	render_pass_info{};
+// 	render_pass_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+// 	render_pass_info.renderPass = _render_pass.getRenderPass();
+// 	render_pass_info.framebuffer =
+// 		_pipelines.scene->getTarget()->getFrameBuffers()[image_index];
+// 	render_pass_info.renderArea.offset = { 0, 0 };
+// 	render_pass_info.renderArea.extent = _swap_chain.getExtent();
+// 	render_pass_info.clearValueCount = static_cast<uint32_t>(
+// 		clear_values.size()
+// 	);
+// 	render_pass_info.pClearValues = clear_values.data();
 
-	// Define what corresponds to 'clear color'
-	std::array<VkClearValue, 2>	clear_values{};
-	clear_values[0].color = {{ 0.0f, 0.0f, 0.0f, 1.0f }};
-	clear_values[1].depthStencil = { 1.0f, 0 };
+// 	// Begin rp and bind _pipeline
+// 	vkCmdBeginRenderPass(
+// 		_main_command_buffer.getBuffer(),
+// 		&render_pass_info,
+// 		VK_SUBPASS_CONTENTS_INLINE
+// 	);
+// 	vkCmdBindPipeline(
+// 		_main_command_buffer.getBuffer(),
+// 		VK_PIPELINE_BIND_POINT_GRAPHICS,
+// 		_pipelines.scene->getPipeline()
+// 	);
 
-	// Spectify to render pass how to handle the command buffer,
-	// and which framebuffer to render to
-	VkRenderPassBeginInfo	render_pass_info{};
-	render_pass_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-	render_pass_info.renderPass = _render_pass.getRenderPass();
-	render_pass_info.framebuffer =
-		_pipelines.scene->getTarget()->getFrameBuffers()[image_index];
-	render_pass_info.renderArea.offset = { 0, 0 };
-	render_pass_info.renderArea.extent = _swap_chain.getExtent();
-	render_pass_info.clearValueCount = static_cast<uint32_t>(
-		clear_values.size()
-	);
-	render_pass_info.pClearValues = clear_values.data();
+// 	// Set viewport and scissors
+// 	VkViewport	viewport{};
+// 	viewport.x = 0.0f;
+// 	viewport.y = 0.0f;
+// 	viewport.width = static_cast<float>(
+// 		_swap_chain.getExtent().width
+// 	);
+// 	viewport.height = static_cast<float>(
+// 		_swap_chain.getExtent().height
+// 	);
+// 	viewport.minDepth = 0.0f;
+// 	viewport.maxDepth = 1.0f;
+// 	vkCmdSetViewport(_main_command_buffer.getBuffer(), 0, 1, &viewport);
 
-	// Begin rp and bind _pipeline
-	vkCmdBeginRenderPass(
-		_main_command_buffer.getBuffer(),
-		&render_pass_info,
-		VK_SUBPASS_CONTENTS_INLINE
-	);
-	vkCmdBindPipeline(
-		_main_command_buffer.getBuffer(),
-		VK_PIPELINE_BIND_POINT_GRAPHICS,
-		_pipelines.scene->getPipeline()
-	);
+// 	VkRect2D	scissor{};
+// 	scissor.offset = { 0, 0 };
+// 	scissor.extent = _swap_chain.getExtent();
+// 	vkCmdSetScissor(_main_command_buffer.getBuffer(), 0, 1, &scissor);
 
-	// Set viewport and scissors
-	VkViewport	viewport{};
-	viewport.x = 0.0f;
-	viewport.y = 0.0f;
-	viewport.width = static_cast<float>(
-		_swap_chain.getExtent().width
-	);
-	viewport.height = static_cast<float>(
-		_swap_chain.getExtent().height
-	);
-	viewport.minDepth = 0.0f;
-	viewport.maxDepth = 1.0f;
-	vkCmdSetViewport(_main_command_buffer.getBuffer(), 0, 1, &viewport);
+// 	// Bind vertex buffer && index buffer
+// 	VkBuffer		vertex_buffers[] = {
+// 		_input_handler.getVertexBuffer().getBuffer()
+// 	};
+// 	VkDeviceSize	offsets[] = { 0 };
+// 	vkCmdBindVertexBuffers(
+// 		_main_command_buffer.getBuffer(),
+// 		0,
+// 		1, vertex_buffers,
+// 		offsets
+// 	);
+// 	vkCmdBindIndexBuffer(
+// 		_main_command_buffer.getBuffer(),
+// 		_input_handler.getIndexBuffer().getBuffer(),
+// 		0,
+// 		VK_INDEX_TYPE_UINT32
+// 	);
 
-	VkRect2D	scissor{};
-	scissor.offset = { 0, 0 };
-	scissor.extent = _swap_chain.getExtent();
-	vkCmdSetScissor(_main_command_buffer.getBuffer(), 0, 1, &scissor);
+// 	// Bind descriptor sets
+// 	VkDescriptorSet	descriptor_set ;//= _descriptor_pool.getSet();
+// 	vkCmdBindDescriptorSets(
+// 		_main_command_buffer.getBuffer(),
+// 		VK_PIPELINE_BIND_POINT_GRAPHICS,
+// 		_pipeline_layout,
+// 		0,
+// 		1, &descriptor_set,
+// 		0, nullptr
+// 	);
 
-	// Bind vertex buffer && index buffer
-	VkBuffer		vertex_buffers[] = {
-		_input_handler.getVertexBuffer().getBuffer()
-	};
-	VkDeviceSize	offsets[] = { 0 };
-	vkCmdBindVertexBuffers(
-		_main_command_buffer.getBuffer(),
-		0,
-		1, vertex_buffers,
-		offsets
-	);
-	vkCmdBindIndexBuffer(
-		_main_command_buffer.getBuffer(),
-		_input_handler.getIndexBuffer().getBuffer(),
-		0,
-		VK_INDEX_TYPE_UINT32
-	);
+// 	// Issue draw command
+// 	vkCmdDrawIndexed(
+// 		_main_command_buffer.getBuffer(),
+// 		static_cast<uint32_t>(indices_size),
+// 		1,
+// 		0,
+// 		0,
+// 		0
+// 	);
 
-	// Bind descriptor sets
-	VkDescriptorSet	descriptor_set = _descriptor_pool.getSet();
-	vkCmdBindDescriptorSets(
-		_main_command_buffer.getBuffer(),
-		VK_PIPELINE_BIND_POINT_GRAPHICS,
-		_pipeline_layout,
-		0,
-		1, &descriptor_set,
-		0, nullptr
-	);
-
-	// Issue draw command
-	vkCmdDrawIndexed(
-		_main_command_buffer.getBuffer(),
-		static_cast<uint32_t>(indices_size),
-		1,
-		0,
-		0,
-		0
-	);
-
-	// Stop the render target work
-	vkCmdEndRenderPass(_main_command_buffer.getBuffer());
-	_main_command_buffer.end(_device, false);
-}
+// 	// Stop the render target work
+// 	vkCmdEndRenderPass(_main_command_buffer.getBuffer());
+// 	_main_command_buffer.end(_device, false);
+// }
 
 } // namespace scop::graphics

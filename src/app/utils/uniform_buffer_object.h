@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:17:15 by etran             #+#    #+#             */
-/*   Updated: 2023/07/03 11:52:26 by etran            ###   ########.fr       */
+/*   Updated: 2023/08/12 15:10:45 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,8 +28,7 @@ public:
 	/* ========================================================================= */
 
 	struct Camera {
-		alignas(__ALIGNMENT_MAT4) scop::Mat4	view;
-		alignas(__ALIGNMENT_MAT4) scop::Mat4	proj;
+		alignas(__ALIGNMENT_MAT4) scop::Mat4	vp;
 	};
 
 	struct Light {
@@ -38,6 +37,8 @@ public:
 		alignas(__ALIGNMENT_VEC3) scop::Vect3	light_color;
 		alignas(__ALIGNMENT_SCAL) float			light_intensity; // TODO Remove. Can be set in color
 	};
+
+	using Projector = Camera;
 
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
@@ -55,7 +56,7 @@ public:
 	/* ========================================================================= */
 
 	alignas(__ALIGNMENT_BUFF) Camera		camera;
-	alignas(__ALIGNMENT_BUFF) Camera		projector;
+	alignas(__ALIGNMENT_BUFF) Projector		projector;
 	alignas(__ALIGNMENT_BUFF) Light			light;
 
 };

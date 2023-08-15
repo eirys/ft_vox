@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/05 09:49:39 by etran             #+#    #+#             */
-/*   Updated: 2023/07/04 10:24:47 by etran            ###   ########.fr       */
+/*   Updated: 2023/08/12 23:04:55 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,20 +16,20 @@
 
 namespace vox {
 
-class Gameplay {
+class GameState {
 public:
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
 
-	Gameplay();
+	GameState();
 
-	~Gameplay() = default;
+	~GameState() = default;
 
-	Gameplay(Gameplay&& other) = delete;
-	Gameplay(const Gameplay& other) = delete;
-	Gameplay&	operator=(Gameplay&& other) = delete;
-	Gameplay&	operator=(const Gameplay& other) = delete;
+	GameState(GameState&& other) = delete;
+	GameState(const GameState& other) = delete;
+	GameState&	operator=(GameState&& other) = delete;
+	GameState&	operator=(const GameState& other) = delete;
 
 	/* ========================================================================= */
 
@@ -51,6 +51,6 @@ private:
 	scop::Vect3		_world_origin = {0.0f, 0.0f, 0.0f};
 	Player			_player;
 
-}; // class Gameplay
+}; // class GameState
 
 } // namespace vox

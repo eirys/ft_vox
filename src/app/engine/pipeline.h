@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/05 03:12:47 by etran             #+#    #+#             */
-/*   Updated: 2023/08/12 00:50:02 by etran            ###   ########.fr       */
+/*   Updated: 2023/08/15 19:27:16 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,12 +28,15 @@
 
 namespace scop {
 class Image;
+struct UniformBufferObject;
 }
 
 namespace scop::graphics {
 
 class Device;
 class InputHandler;
+class DescriptorSet;
+class CommandBuffer;
 
 class Pipeline {
 public:
@@ -44,6 +47,8 @@ public:
 	using RenderPassPtr = std::shared_ptr<RenderPass>;
 	using TextureHandlerPtr = std::shared_ptr<TextureHandler>;
 	using TargetPtr = std::shared_ptr<Target>;
+	using DescriptorSetPtr = std::shared_ptr<DescriptorSet>;
+
 	using Texture = ::scop::Image;
 
 	/* ========================================================================= */
@@ -62,12 +67,14 @@ public:
 		const std::vector<Texture>& textures,
 		VkGraphicsPipelineCreateInfo& layout_info) = 0;
 	void				destroy(Device& device);
-	virtual void		record(
+	virtual void		draw(
 		Device& device,
 		VkPipelineLayout layout,
-		VkCommandBuffer command_buffer,
-		InputHandler& input) = 0;
-
+		CommandBuffer& command_buffer,
+		InputHandler& input,
+		int32_t image_index) = 0;
+	virtual void		update(
+		const ::scop::UniformBufferObject& ubo) noexcept = 0;
 
 	/* ========================================================================= */
 
@@ -75,7 +82,7 @@ public:
 	RenderPassPtr		getRenderPass() const noexcept;
 	TextureHandlerPtr	getTextureHandler() const noexcept;
 	TargetPtr			getTarget() const noexcept;
-	VkDescriptorSet		getDescriptors() const noexcept;
+	DescriptorSetPtr	getDescriptor() const noexcept;
 
 protected:
 	/* ========================================================================= */
@@ -85,20 +92,19 @@ protected:
 	VkPipeline			_pipeline;
 
 	RenderPassPtr		_render_pass;
-	TextureHandlerPtr	_texture_handler;
+	TextureHandlerPtr	_texture;
 	TargetPtr			_target;
-
-	VkDescriptorSet		_descriptors;
+	DescriptorSetPtr	_descriptor;
 
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
 
 	Pipeline() = default;
+	Pipeline(Pipeline&& other) = default;
+	Pipeline& operator=(Pipeline&& other) = default;
 
-	Pipeline(Pipeline&& other) = delete;
 	Pipeline(const Pipeline& other) = delete;
-	Pipeline& operator=(Pipeline&& other) = delete;
 	Pipeline& operator=(const Pipeline& other) = delete;
 
 	/* ========================================================================= */

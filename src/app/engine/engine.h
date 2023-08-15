@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:14:35 by etran             #+#    #+#             */
-/*   Updated: 2023/08/12 00:53:14 by etran            ###   ########.fr       */
+/*   Updated: 2023/08/15 19:34:30 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,9 +36,13 @@
 # include "texture_handler.h"
 # include "pipeline.h"
 
+namespace vox {
+class GameState;
+}
+
 namespace scop {
 class Timer;
-} // namespace scop
+}
 
 namespace scop::graphics {
 
@@ -81,7 +85,7 @@ public:
 	void						init(
 		::scop::Window& window,
 		const std::vector<TextureHandler::Texture>& images,
-		const UniformBufferObject::Light& light,
+		const ::vox::GameState& game,
 		const std::vector<Vertex>& vertices,
 		const std::vector<uint32_t>& indices);
 	void						destroy();
@@ -89,7 +93,7 @@ public:
 	void						idle();
 	void						render(
 		::scop::Window& window,
-		const vox::Player& player,
+		const vox::GameState& game,
 		Timer& timer);
 
 private:
@@ -130,6 +134,11 @@ private:
 		const std::vector<Texture>& scene_textures);
 	void						_createGraphicsPipelineLayout();
 	void						_createSyncObjects();
+	void						_createDescriptors(
+		const ::vox::GameState& game);
+
+	::scop::UniformBufferObject	_updateUbo(
+		const ::vox::GameState& game) const noexcept;
 	void						_updatePresentation(::scop::Window& window);
 
 	bool						_checkValidationLayerSupport();

@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:14:56 by etran             #+#    #+#             */
-/*   Updated: 2023/08/11 23:58:13 by etran            ###   ########.fr       */
+/*   Updated: 2023/08/12 23:38:18 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,6 +23,8 @@
 # include <array> // std::array
 
 # include "image_buffer.h"
+
+# define TEXTURE_SAMPLER_COUNT 16
 
 namespace scop {
 class Image;

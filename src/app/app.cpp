@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/28 11:12:12 by eli               #+#    #+#             */
-/*   Updated: 2023/07/16 11:02:00 by etran            ###   ########.fr       */
+/*   Updated: 2023/08/12 23:38:58 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,11 +46,11 @@ static ObjectDirection	opposite(ObjectDirection dir) noexcept {
 App::App() {
 	_loadTerrain();
 	resetGame();
-	scop::mtl::Material material;
-	material.ambient_color = {0.2,0.2,0.2};
-	_loadLight(material);
+	// scop::mtl::Material material;
+	// material.ambient_color = {0.2,0.2,0.2};
+	// _loadLight(material);
 	_window.init(this);
-	_engine.init(_window, _textures, _light, _vertices, _indices);
+	_engine.init(_window, _textures, _game, _vertices, _indices);
 }
 
 App::~App() {
@@ -268,13 +268,13 @@ void	App::_loadTerrain() {
 // 	// model.getMaterial().ambient_texture.release();
 // }
 
-void	App::_loadLight(const scop::mtl::Material& mat) {
-	_light = scop::UniformBufferObject::Light{
-		.ambient_color = mat.ambient_color,
-		.light_vector = scop::normalize(scop::Vect3(0.1f, 1.0f, 0.3f)),
-		.light_color = scop::Vect3(1.0f, 1.0f, 0.8f),
-		.light_intensity = 0.4f
-	};
-}
+// void	App::_loadLight(const scop::mtl::Material& mat) {
+// 	_light = scop::UniformBufferObject::Light{
+// 		.ambient_color = mat.ambient_color,
+// 		.light_vector = scop::normalize(scop::Vect3(0.1f, 1.0f, 0.3f)),
+// 		.light_color = scop::Vect3(1.0f, 1.0f, 0.8f),
+// 		.light_intensity = 0.4f
+// 	};
+// }
 
 } // namespace scop

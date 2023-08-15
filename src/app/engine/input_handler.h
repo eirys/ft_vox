@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   input_buffer.h                                     :+:      :+:    :+:   */
+/*   input_handler.h                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:15:01 by etran             #+#    #+#             */
-/*   Updated: 2023/08/10 22:13:08 by etran            ###   ########.fr       */
+/*   Updated: 2023/08/15 19:25:26 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,11 +40,11 @@ public:
 
 	InputHandler() = default;
 	~InputHandler() = default;
+	InputHandler(InputHandler&& x) = default;
+	InputHandler&	operator=(InputHandler&& x) = default;
 
-	InputHandler(InputHandler&& x) = delete;
 	InputHandler(const InputHandler& x) = delete;
 	InputHandler&	operator=(const InputHandler& x) = delete;
-	InputHandler&	operator=(InputHandler&& x) = delete;
 
 	/* ========================================================================= */
 
@@ -58,6 +58,7 @@ public:
 
 	/* ========================================================================= */
 
+	uint32_t		getIndicesCount() const noexcept;
 	const Buffer&	getVertexBuffer() const noexcept;
 	const Buffer&	getIndexBuffer() const noexcept;
 
@@ -66,6 +67,7 @@ private:
 	/*                               CLASS MEMBERS                               */
 	/* ========================================================================= */
 
+	uint32_t		_indices_count;
 	Buffer			_vertex_buffer;
 	Buffer			_index_buffer;
 

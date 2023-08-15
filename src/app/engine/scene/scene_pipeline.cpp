@@ -6,13 +6,17 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/06 20:50:48 by etran             #+#    #+#             */
-/*   Updated: 2023/08/12 00:47:31 by etran            ###   ########.fr       */
+/*   Updated: 2023/08/15 19:43:01 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "scene_pipeline.h"
 #include "device.h"
 #include "input_handler.h"
+#include "uniform_buffer_object.h"
+#include "command_buffer.h"
+
+#include "descriptor_set.h"
 
 #include "scene_texture_handler.h"
 #include "scene_render_pass.h"
@@ -38,15 +42,106 @@ void	ScenePipeline::init(
 	_createPipeline(device, info);
 	_createTarget(device, tar_info);
 	_createTextureHandler(device, textures);
+	_createDescriptor(device);
 }
 
-void	ScenePipeline::record(
+/**
+ * @brief Record the drawing command of the pass.
+*/
+void	ScenePipeline::draw(
 	Device& device,
 	VkPipelineLayout layout,
-	VkCommandBuffer command_buffer,
-	InputHandler& input
+	CommandBuffer& command_buffer,
+	InputHandler& input,
+	int32_t image_index
 ) {
+	command_buffer.reset();
+	command_buffer.begin(0);
 
+	// Define what corresponds to 'clear color'
+	std::array<VkClearValue, 2>	clear_values{};
+	clear_values[0].color = {{ 0.0f, 0.0f, 0.0f, 1.0f }};
+	clear_values[1].depthStencil = { 1.0f, 0 };
+
+	// Spectify to render pass how to handle the command buffer,
+	// and which framebuffer to render to
+	VkRenderPassBeginInfo	render_pass_info{};
+	render_pass_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+	render_pass_info.renderPass = _render_pass->getRenderPass();
+	render_pass_info.framebuffer = _target->getFrameBuffers()[image_index];
+	render_pass_info.renderArea.offset = { 0, 0 };
+	render_pass_info.renderArea.extent = {
+		_render_pass->getWidth(),
+		_render_pass->getHeight() };
+	render_pass_info.clearValueCount =
+		static_cast<uint32_t>(clear_values.size());
+	render_pass_info.pClearValues = clear_values.data();
+
+	// Begin rp and bind _pipeline
+	vkCmdBeginRenderPass(
+		command_buffer.getBuffer(),
+		&render_pass_info,
+		VK_SUBPASS_CONTENTS_INLINE);
+	vkCmdBindPipeline(
+		command_buffer.getBuffer(),
+		VK_PIPELINE_BIND_POINT_GRAPHICS,
+		super::_pipeline);
+
+	// Set viewport and scissors
+	VkViewport	viewport{};
+	viewport.x = 0.0f;
+	viewport.y = 0.0f;
+	viewport.width = static_cast<float>(_render_pass->getWidth());
+	viewport.height = static_cast<float>(_render_pass->getHeight());
+	viewport.minDepth = 0.0f;
+	viewport.maxDepth = 1.0f;
+	vkCmdSetViewport(command_buffer.getBuffer(), 0, 1, &viewport);
+
+	VkRect2D	scissor{};
+	scissor.offset = { 0, 0 };
+	scissor.extent = { _render_pass->getWidth(), _render_pass->getHeight() };
+	vkCmdSetScissor(command_buffer.getBuffer(), 0, 1, &scissor);
+
+	// Bind vertex buffer && index buffer
+	VkBuffer		vertex_buffers[] = { input.getVertexBuffer().getBuffer() };
+	VkDeviceSize	offsets[] = { 0 };
+	vkCmdBindVertexBuffers(
+		command_buffer.getBuffer(),
+		0,
+		1, vertex_buffers,
+		offsets);
+	vkCmdBindIndexBuffer(
+		command_buffer.getBuffer(),
+		input.getIndexBuffer().getBuffer(),
+		0,
+		VK_INDEX_TYPE_UINT32);
+
+	// Bind descriptor sets
+	VkDescriptorSet	descriptor_set ;//= _descriptor_pool.getSet();
+	vkCmdBindDescriptorSets(
+		command_buffer.getBuffer(),
+		VK_PIPELINE_BIND_POINT_GRAPHICS,
+		layout,
+		0,
+		1, &descriptor_set,
+		0, nullptr);
+
+	// Issue draw command
+	vkCmdDrawIndexed(
+		command_buffer.getBuffer(),
+		static_cast<uint32_t>(input.getIndicesCount()),
+		1, 0, 0, 0);
+
+	// Stop the render target work
+	vkCmdEndRenderPass(command_buffer.getBuffer());
+	command_buffer.end(device, false);
+}
+
+/**
+ * @brief Update the adequate descriptors with the new ubo.
+*/
+void	ScenePipeline::update(const ::scop::UniformBufferObject& ubo) noexcept {
+	_descriptor->update(ubo);
 }
 
 /* ========================================================================== */
@@ -119,8 +214,15 @@ void	ScenePipeline::_createTextureHandler(
 	Device& device,
 	const std::vector<Texture>& textures
 ) {
-	super::_texture_handler.reset(new SceneTextureHandler);
-	super::_texture_handler->init(device, textures);
+	super::_texture.reset(new SceneTextureHandler);
+	super::_texture->init(device, textures);
+}
+
+void	ScenePipeline::_createDescriptor(Device& device) {
+	::scop::UniformBufferObject	ubo{};
+
+
+	super::_descriptor->init(device, *super::_texture, ubo);
 }
 
 } // namespace scop::graphics

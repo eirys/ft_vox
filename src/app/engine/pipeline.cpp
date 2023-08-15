@@ -6,13 +6,14 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/06 17:59:15 by etran             #+#    #+#             */
-/*   Updated: 2023/08/11 23:11:47 by etran            ###   ########.fr       */
+/*   Updated: 2023/08/15 21:42:04 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "pipeline.h"
 #include "device.h"
 #include "utils.h"
+#include "descriptor_set.h"
 
 #include <stdexcept> // std::runtime_error
 
@@ -24,8 +25,10 @@ namespace scop::graphics {
 
 void	Pipeline::destroy(Device& device) {
 	_render_pass->destroy(device);
-	_texture_handler->destroy(device);
 	_target->destroy(device);
+	_texture->destroy(device);
+	_descriptor->destroy(device);
+	vkDestroyPipeline(device.getLogicalDevice(), _pipeline, nullptr);
 }
 
 /* ========================================================================== */
@@ -39,12 +42,17 @@ Pipeline::RenderPassPtr	Pipeline::getRenderPass() const noexcept {
 }
 
 Pipeline::TextureHandlerPtr	Pipeline::getTextureHandler() const noexcept {
-	return _texture_handler;
+	return _texture;
 }
 
 Pipeline::TargetPtr	Pipeline::getTarget() const noexcept {
 	return _target;
 }
+
+Pipeline::DescriptorSetPtr	Pipeline::getDescriptor() const noexcept {
+	return _descriptor;
+}
+
 /* ========================================================================== */
 /*                                  PROTECTED                                 */
 /* ========================================================================== */

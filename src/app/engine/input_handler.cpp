@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/16 13:03:48 by etran             #+#    #+#             */
-/*   Updated: 2023/08/11 21:33:02 by etran            ###   ########.fr       */
+/*   Updated: 2023/08/15 19:25:57 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,6 +31,7 @@ void	InputHandler::init(
 	const std::vector<Vertex>& vertices,
 	const std::vector<uint32_t>& indices
 ) {
+	_indices_count = indices.size();
 	_createVertexBuffer(device, command_pool, vertices);
 	_createIndexBuffer(device, command_pool, indices);
 }
@@ -41,6 +42,10 @@ void	InputHandler::destroy(Device& device) {
 }
 
 /* ========================================================================== */
+
+uint32_t	InputHandler::getIndicesCount() const noexcept {
+	return _indices_count;
+}
 
 const Buffer&	InputHandler::getVertexBuffer() const noexcept {
 	return _vertex_buffer;

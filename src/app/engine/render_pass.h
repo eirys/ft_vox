@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:14:50 by etran             #+#    #+#             */
-/*   Updated: 2023/08/11 22:53:55 by etran            ###   ########.fr       */
+/*   Updated: 2023/08/15 19:18:36 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,7 +28,7 @@ class SwapChain;
 class RenderPass {
 public:
 	/* ========================================================================= */
-	/*                                HELPER CLASS                               */
+	/*                               HELPER OBJECTS                              */
 	/* ========================================================================= */
 
 	/**
@@ -73,6 +73,8 @@ public:
 	/* ========================================================================= */
 
 	VkRenderPass	getRenderPass() const noexcept;
+	uint32_t		getWidth() const noexcept;
+	uint32_t		getHeight() const noexcept;
 
 protected:
 	/* ========================================================================= */
@@ -89,10 +91,10 @@ protected:
 	/* ========================================================================= */
 
 	RenderPass() = default;
+	RenderPass(RenderPass&& other) = default;
+	RenderPass& operator=(RenderPass&& other) = default;
 
-	RenderPass(RenderPass&& other) = delete;
 	RenderPass(const RenderPass& other) = delete;
-	RenderPass& operator=(RenderPass&& other) = delete;
 	RenderPass& operator=(const RenderPass& other) = delete;
 
 	/* ========================================================================= */

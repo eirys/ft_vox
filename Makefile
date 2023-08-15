@@ -6,7 +6,7 @@
 #    By: etran <etran@student.42.fr>                +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/04/06 03:40:09 by eli               #+#    #+#              #
-#    Updated: 2023/08/12 00:52:08 by etran            ###   ########.fr        #
+#    Updated: 2023/08/12 23:05:31 by etran            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -58,7 +58,7 @@ SRC_FILES	:=	$(TOOLS_DIR)/matrix.cpp \
 				$(GEN_DIR)/cube.cpp \
 				$(IMG_DIR)/ppm_loader.cpp \
 				$(IMG_DIR)/image_handler.cpp \
-				$(GAME_DIR)/gameplay.cpp \
+				$(GAME_DIR)/game_state.cpp \
 				$(CHAR_DIR)/character.cpp \
 				$(CHAR_DIR)/player.cpp \
 				$(ENG_DIR)/window.cpp \
@@ -68,6 +68,7 @@ SRC_FILES	:=	$(TOOLS_DIR)/matrix.cpp \
 				$(ENG_DIR)/swap_chain.cpp \
 				$(ENG_DIR)/render_pass.cpp \
 				$(ENG_DIR)/descriptor_pool.cpp \
+				$(ENG_DIR)/descriptor_set.cpp \
 				$(ENG_DIR)/command_pool.cpp \
 				$(ENG_DIR)/texture_handler.cpp \
 				$(ENG_DIR)/input_handler.cpp \

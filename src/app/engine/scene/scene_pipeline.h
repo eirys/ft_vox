@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/06 17:31:39 by etran             #+#    #+#             */
-/*   Updated: 2023/08/11 23:59:31 by etran            ###   ########.fr       */
+/*   Updated: 2023/08/15 19:21:52 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,11 +53,13 @@ public:
 		Target::TargetInfo& tar_info,
 		const std::vector<Texture>& textures,
 		VkGraphicsPipelineCreateInfo& info) override;
-	void	record(
+	void	draw(
 		Device& device,
 		VkPipelineLayout layout,
-		VkCommandBuffer command_buffer,
-		InputHandler& input) override;
+		CommandBuffer& command_buffer,
+		InputHandler& input,
+		int32_t image_index) override;
+	void	update(const ::scop::UniformBufferObject& ubo) noexcept override;
 
 	/* ========================================================================= */
 
@@ -65,6 +67,7 @@ public:
 	using super::getRenderPass;
 	using super::getTextureHandler;
 	using super::getTarget;
+	using super::getDescriptor;
 
 private:
 	/* ========================================================================= */
@@ -81,6 +84,8 @@ private:
 	void	_createTextureHandler(
 		Device& device,
 		const std::vector<Texture>& textures) override;
+	void	_createDescriptor(
+		Device& device);
 	void	_createPipeline(
 		Device& device,
 		VkGraphicsPipelineCreateInfo& info) override;
