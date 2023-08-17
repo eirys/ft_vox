@@ -16,7 +16,8 @@
 #include "descriptor_set.h"
 
 #include "game_state.h"
-#include "player.h"
+// #include "player.h"
+#include "shadows_pipeline.h"
 
 #include "timer.h"
 #include "utils.h"
@@ -136,13 +137,23 @@ void	Engine::render(
 	vkResetFences(_device.getLogicalDevice(), 1, &_in_flight_fences);
 
 	// Record buffer
+	_main_command_buffer.reset();
+	_main_command_buffer.begin(0);
+
+	_pipelines.shadows->draw(
+		_device,
+		_pipeline_layout,
+		_main_command_buffer,
+		_input_handler,
+		image_index );
 	_pipelines.scene->draw(
 		_device,
 		_pipeline_layout,
 		_main_command_buffer,
 		_input_handler,
-		image_index
-	);
+		image_index );
+
+	_main_command_buffer.end(_device, false);
 	// _recordDrawingCommand(_nb_indices, image_index);
 
 	// _descriptor_pool.updateUniformBuffer(
@@ -390,15 +401,10 @@ void	Engine::_createGraphicsPipelines(
 	RenderPass::RenderPassInfo	rp_info {
 		.width = _swap_chain.getExtent().width,
 		.height = _swap_chain.getExtent().height,
-		.color_format = _swap_chain.getImageFormat(),
-		.color_samples = _device.getMsaaSamples(),
 		.depth_format = _swap_chain.findDepthFormat(_device),
-		.depth_samples = VK_SAMPLE_COUNT_1_BIT };
-	RenderPass::ResourcesInfo	res_info {
-		.width = _swap_chain.getExtent().width,
-		.height = _swap_chain.getExtent().height,
+		.depth_samples = VK_SAMPLE_COUNT_1_BIT,
 		.color_format = _swap_chain.getImageFormat(),
-		.depth_format = _swap_chain.findDepthFormat(_device) };
+		.color_samples = _device.getMsaaSamples() };
 	Target::TargetInfo	tar_info {
 		.swap_views = _swap_chain.getImageViews(),
 		.width = _swap_chain.getExtent().width,
@@ -407,7 +413,6 @@ void	Engine::_createGraphicsPipelines(
 	_pipelines.scene->init(
 		_device,
 		rp_info,
-		res_info,
 		tar_info,
 		scene_textures,
 		pipeline_info);
@@ -421,9 +426,24 @@ void	Engine::_createGraphicsPipelines(
 	rasterizing.cullMode = VK_CULL_MODE_NONE;
 	multisampling.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
 	depth_stencil.depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
-	// pipeline_info.renderPass = _pipelines::shadow.getRenderPass()->getRenderPass();
 
-	// _pipelines.shadow.init(device, pipeline_info);
+	rp_info = {
+		.width = 2048,
+		.height = 2048,
+		.depth_format = VK_FORMAT_D16_UNORM,
+		.depth_samples = VK_SAMPLE_COUNT_1_BIT };
+	tar_info = {
+		.width = rp_info.width,
+		.height = rp_info.height };
+
+	_pipelines.shadows->init(
+		_device,
+		rp_info,
+		tar_info,
+		{},
+		pipeline_info);
+	std::dynamic_pointer_cast<ShadowsPipeline>(_pipelines.shadows)->setDescriptor(
+		_pipelines.scene->getDescriptor());
 }
 
 void	Engine::_createGraphicsPipelineLayout() {
@@ -466,7 +486,7 @@ void	Engine::_createSyncObjects() {
 void	Engine::_updatePresentation(::scop::Window& window) {
 	_swap_chain.update(_device, window);
 
-	RenderPass::ResourcesInfo	res_info {
+	RenderPass::RenderPassInfo	rp_info {
 		.width = _swap_chain.getExtent().width,
 		.height = _swap_chain.getExtent().height,
 		.color_format = _swap_chain.getImageFormat(),
@@ -476,7 +496,7 @@ void	Engine::_updatePresentation(::scop::Window& window) {
 		.width = _swap_chain.getExtent().width,
 		.height = _swap_chain.getExtent().height };
 
-	_pipelines.scene->getRenderPass()->updateResources(_device, res_info);
+	_pipelines.scene->getRenderPass()->updateResources(_device, rp_info);
 	_pipelines.scene->getTarget()->update(_device, tar_info);
 }
 

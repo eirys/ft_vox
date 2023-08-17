@@ -1,27 +1,25 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   scene_pipeline.cpp                                 :+:      :+:    :+:   */
+/*   shadows_pipeline.cpp                               :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/08/06 20:50:48 by etran             #+#    #+#             */
-/*   Updated: 2023/08/15 19:43:01 by etran            ###   ########.fr       */
+/*   Created: 2023/08/16 10:16:30 by etran             #+#    #+#             */
+/*   Updated: 2023/08/16 10:16:30 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "scene_pipeline.h"
+#include "shadows_pipeline.h"
 #include "device.h"
-#include "input_handler.h"
-#include "uniform_buffer_object.h"
 #include "command_buffer.h"
-
 #include "descriptor_set.h"
+#include "input_handler.h"
 
-#include "scene_texture_handler.h"
-#include "scene_render_pass.h"
-#include "scene_target.h"
+#include "shadows_target.h"
+#include "shadows_render_pass.h"
 
+#include <cassert> // assert
 #include <stdexcept> // std::runtime_error
 
 namespace scop::graphics {
@@ -30,7 +28,7 @@ namespace scop::graphics {
 /*                                   PUBLIC                                   */
 /* ========================================================================== */
 
-void	ScenePipeline::init(
+void	ShadowsPipeline::init(
 	Device& device,
 	const RenderPass::RenderPassInfo& rp_info,
 	Target::TargetInfo& tar_info,
@@ -40,29 +38,21 @@ void	ScenePipeline::init(
 	_createRenderPass(device, rp_info);
 	_createPipeline(device, info);
 	_createTarget(device, tar_info);
-	_createTextureHandler(device, textures);
-	_createDescriptor(device);
 }
 
-/**
- * @brief Record the drawing command of the pass.
-*/
-void	ScenePipeline::draw(
+void	ShadowsPipeline::draw(
 	Device& device,
 	VkPipelineLayout layout,
 	CommandBuffer& command_buffer,
 	InputHandler& input,
 	int32_t image_index
 ) {
-	std::array<VkClearValue, 2>	clear_values{};
-	clear_values[0].color = {{ 0.0f, 0.0f, 0.0f, 1.0f }};
-	clear_values[1].depthStencil = { 1.0f, 0 };
+	std::array<VkClearValue, 1>	clear_values{};
+	clear_values[0].depthStencil = { 1.0f, 0 };
 
 	VkRenderPassBeginInfo	render_pass{};
-	render_pass.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
 	render_pass.renderPass = _render_pass->getRenderPass();
-	render_pass.framebuffer = _target->getFrameBuffers()[image_index];
-	render_pass.renderArea.offset = { 0, 0 };
+	render_pass.framebuffer = _target->getFrameBuffers()[0];
 	render_pass.renderArea.extent.width = _render_pass->getWidth();
 	render_pass.renderArea.extent.height = _render_pass->getHeight();
 	render_pass.clearValueCount = static_cast<uint32_t>(clear_values.size());
@@ -71,15 +61,9 @@ void	ScenePipeline::draw(
 	vkCmdBeginRenderPass(
 		command_buffer.getBuffer(),
 		&render_pass,
-		VK_SUBPASS_CONTENTS_INLINE);
-	vkCmdBindPipeline(
-		command_buffer.getBuffer(),
-		VK_PIPELINE_BIND_POINT_GRAPHICS,
-		super::_pipeline);
+		VK_SUBPASS_CONTENTS_INLINE );
 
 	VkViewport	viewport{};
-	viewport.x = 0.0f;
-	viewport.y = 0.0f;
 	viewport.width = static_cast<float>(_render_pass->getWidth());
 	viewport.height = static_cast<float>(_render_pass->getHeight());
 	viewport.minDepth = 0.0f;
@@ -88,8 +72,24 @@ void	ScenePipeline::draw(
 
 	VkRect2D	scissor{};
 	scissor.offset = { 0, 0 };
-	scissor.extent = { _render_pass->getWidth(), _render_pass->getHeight() };
+	scissor.extent.width = _render_pass->getWidth();
+	scissor.extent.height = _render_pass->getHeight();
 	vkCmdSetScissor(command_buffer.getBuffer(), 0, 1, &scissor);
+
+	vkCmdBindPipeline(
+		command_buffer.getBuffer(),
+		VK_PIPELINE_BIND_POINT_GRAPHICS,
+		super::_pipeline );
+
+	VkDescriptorSet	descriptor_set = super::_descriptor->getSet();
+	vkCmdBindDescriptorSets(
+		command_buffer.getBuffer(),
+		VK_PIPELINE_BIND_POINT_GRAPHICS,
+		layout,
+		0,
+		1, &descriptor_set,
+		0, nullptr);
+
 
 	std::array<VkBuffer, 1>		vertex_buffers = { input.getVertexBuffer().getBuffer() };
 	std::array<VkDeviceSize, 1>	offsets = { 0 };
@@ -104,15 +104,6 @@ void	ScenePipeline::draw(
 		0,
 		VK_INDEX_TYPE_UINT32 );
 
-	VkDescriptorSet	descriptor_set = super::_descriptor->getSet();
-	vkCmdBindDescriptorSets(
-		command_buffer.getBuffer(),
-		VK_PIPELINE_BIND_POINT_GRAPHICS,
-		layout,
-		0,
-		1, &descriptor_set,
-		0, nullptr);
-
 	vkCmdDrawIndexed(
 		command_buffer.getBuffer(),
 		static_cast<uint32_t>(input.getIndicesCount()),
@@ -122,42 +113,47 @@ void	ScenePipeline::draw(
 }
 
 /**
- * @brief Update the adequate descriptors with the new ubo.
+ * @brief Shouldn't need update so far (same descriptor as scene).
 */
-void	ScenePipeline::update(const ::scop::UniformBufferObject& ubo) noexcept {
-	_descriptor->update(ubo);
+void	ShadowsPipeline::update(
+	const ::scop::UniformBufferObject& ubo
+) noexcept {}
+
+void	ShadowsPipeline::setDescriptor(
+	Pipeline::DescriptorSetPtr desc_ptr
+) noexcept {
+	assert(desc_ptr != nullptr);
+
+	super::_descriptor = desc_ptr;
 }
 
 /* ========================================================================== */
 /*                                   PRIVATE                                  */
 /* ========================================================================== */
 
-void	ScenePipeline::_createRenderPass(
+void	ShadowsPipeline::_createRenderPass(
 	Device& device,
 	const RenderPass::RenderPassInfo& rp_info
 ) {
-	super::_render_pass.reset(new SceneRenderPass);
+	super::_render_pass.reset(new ShadowsRenderPass);
 	super::_render_pass->init(device, rp_info);
 }
 
-void	ScenePipeline::_createTarget(
+void	ShadowsPipeline::_createTarget(
 	Device& device,
-	Target::TargetInfo& tar_info
+	Target::TargetInfo& info
 ) {
-	super::_target.reset(new SceneTarget);
-	tar_info.render_pass = super::_render_pass;
-	super::_target->init(device, tar_info);
+	super::_target.reset(new ShadowsTarget);
+	super::_target->init(device, info);
 }
 
-void	ScenePipeline::_createPipeline(
+void	ShadowsPipeline::_createPipeline(
 	Device& device,
 	VkGraphicsPipelineCreateInfo& info
 ) {
 	/* SHADERS ================================================================= */
 	VkShaderModule	vert_module =
-		super::_createShaderModule(device, "shaders\\scene_vert.spv");
-	VkShaderModule	frag_module =
-		super::_createShaderModule(device, "shaders\\scene_frag.spv");
+		super::_createShaderModule(device, "shaders\\shadow_vert.spv");
 
 	VkPipelineShaderStageCreateInfo	vert_info{};
 	vert_info.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -165,47 +161,18 @@ void	ScenePipeline::_createPipeline(
 	vert_info.module = vert_module;
 	vert_info.pName = "main";
 
-	VkPipelineShaderStageCreateInfo	frag_info{};
-	frag_info.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-	frag_info.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
-	frag_info.module = frag_module;
-	frag_info.pName = "main";
-
-	std::array<VkPipelineShaderStageCreateInfo, 2>	shader_stages = {
-		vert_info,
-		frag_info };
-
-	info.stageCount = static_cast<uint32_t>(shader_stages.size());
-	info.pStages = shader_stages.data();
+	info.pStages = &vert_info;
+	info.stageCount = 1;
 	info.renderPass = _render_pass->getRenderPass();
 
 	if (vkCreateGraphicsPipelines(device.getLogicalDevice(), VK_NULL_HANDLE, 1, &info, nullptr, &(super::_pipeline)) != VK_SUCCESS) {
-		throw std::runtime_error("failed to create scene graphics pipeline");
+		throw std::runtime_error("failed to create shadow graphics pipeline");
 	}
 
 	vkDestroyShaderModule(
 		device.getLogicalDevice(),
 		vert_module,
 		nullptr);
-	vkDestroyShaderModule(
-		device.getLogicalDevice(),
-		frag_module,
-		nullptr);
-}
-
-void	ScenePipeline::_createTextureHandler(
-	Device& device,
-	const std::vector<Texture>& textures
-) {
-	super::_texture.reset(new SceneTextureHandler);
-	super::_texture->init(device, textures);
-}
-
-void	ScenePipeline::_createDescriptor(Device& device) {
-	::scop::UniformBufferObject	ubo{};
-
-
-	super::_descriptor->init(device, *super::_texture, ubo);
 }
 
 } // namespace scop::graphics

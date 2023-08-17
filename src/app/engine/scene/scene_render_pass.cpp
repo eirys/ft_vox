@@ -25,11 +25,10 @@ namespace scop::graphics {
 
 void	SceneRenderPass::init(
 	Device& device,
-	const RenderPass::RenderPassInfo& rp_info,
-	const RenderPass::ResourcesInfo& res_info
+	const RenderPass::RenderPassInfo& rp_info
 ) {
 	_createRenderPass(device, rp_info);
-	_createResources(device, res_info);
+	_createResources(device, rp_info);
 }
 
 void	SceneRenderPass::destroy(Device& device) {
@@ -39,10 +38,10 @@ void	SceneRenderPass::destroy(Device& device) {
 
 void	SceneRenderPass::updateResources(
 	Device& device,
-	const ResourcesInfo& res_info
+	const RenderPass::RenderPassInfo& rp_info
 ) {
 	_destroyResources(device);
-	_createResources(device, res_info);
+	_createResources(device, rp_info);
 }
 
 /* ========================================================================== */
@@ -71,10 +70,7 @@ void	SceneRenderPass::_createRenderPass(
 	Device& device,
 	const RenderPass::RenderPassInfo& rp_info
 ) {
-	super::_width = rp_info.width;
-	super::_height = rp_info.height;
-
-	// Color attachment
+	// Attachments
 	VkAttachmentDescription	color_attachment{};
 	color_attachment.format = rp_info.color_format;
 	color_attachment.samples = rp_info.color_samples;
@@ -85,7 +81,6 @@ void	SceneRenderPass::_createRenderPass(
 	color_attachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 	color_attachment.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
-	// Color attachment resolve
 	VkAttachmentDescription	color_attachment_resolve{};
 	color_attachment_resolve.format = rp_info.color_format;
 	color_attachment_resolve.samples = VK_SAMPLE_COUNT_1_BIT;
@@ -96,7 +91,6 @@ void	SceneRenderPass::_createRenderPass(
 	color_attachment_resolve.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 	color_attachment_resolve.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 
-	// Depth attachment
 	VkAttachmentDescription	depth_attachment{};
 	depth_attachment.format = rp_info.depth_format;
 	depth_attachment.samples = rp_info.depth_samples;
@@ -114,22 +108,22 @@ void	SceneRenderPass::_createRenderPass(
 	};
 
 	// Subpass
-	VkAttachmentReference	color_attachment_ref{};
-	VkAttachmentReference	color_attachment_resolve_ref{};
-	VkAttachmentReference	depth_attachment_ref{};
-	color_attachment_ref.attachment = 0;
-	color_attachment_ref.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-	color_attachment_resolve_ref.attachment = 1;
-	color_attachment_resolve_ref.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-	depth_attachment_ref.attachment = 2;
-	depth_attachment_ref.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+	VkAttachmentReference	color_ref{};
+	VkAttachmentReference	color_resolve_ref{};
+	VkAttachmentReference	depth_ref{};
+	color_ref.attachment = 0;
+	color_ref.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+	color_resolve_ref.attachment = 1;
+	color_resolve_ref.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+	depth_ref.attachment = 2;
+	depth_ref.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
 	VkSubpassDescription	subpass{};
 	subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
 	subpass.colorAttachmentCount = 1;
-	subpass.pColorAttachments = &color_attachment_ref;
-	subpass.pDepthStencilAttachment = &depth_attachment_ref;
-	subpass.pResolveAttachments = &color_attachment_resolve_ref;
+	subpass.pColorAttachments = &color_ref;
+	subpass.pDepthStencilAttachment = &depth_ref;
+	subpass.pResolveAttachments = &color_resolve_ref;
 
 	// Dependency
 	VkSubpassDependency	dependency{};
@@ -146,50 +140,52 @@ void	SceneRenderPass::_createRenderPass(
 		VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT |
 		VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
 
-	VkRenderPassCreateInfo	create_info{};
-	create_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-	create_info.attachmentCount = static_cast<uint32_t>(attachments.size());
-	create_info.pAttachments = attachments.data();
-	create_info.subpassCount = 1;
-	create_info.pSubpasses = &subpass;
-	create_info.dependencyCount = 1;
-	create_info.pDependencies = &dependency;
+	VkRenderPassCreateInfo	render_pass{};
+	render_pass.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+	render_pass.attachmentCount = static_cast<uint32_t>(attachments.size());
+	render_pass.pAttachments = attachments.data();
+	render_pass.subpassCount = 1;
+	render_pass.pSubpasses = &subpass;
+	render_pass.dependencyCount = 1;
+	render_pass.pDependencies = &dependency;
 
-	if (vkCreateRenderPass(device.getLogicalDevice(), &create_info, nullptr, &(super::_render_pass)) != VK_SUCCESS) {
+	if (vkCreateRenderPass(device.getLogicalDevice(), &render_pass, nullptr, &(super::_render_pass)) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create render pass");
 	}
 }
 
 void	SceneRenderPass::_createResources(
 	Device& device,
-	const ResourcesInfo& res_info
+	const RenderPass::RenderPassInfo& rp_info
 ) {
+	super::_width = rp_info.width;
+	super::_height = rp_info.height;
+
 	// Color image
 	_color_image.initImage(
 		device,
-		res_info.width,
-		res_info.height,
-		res_info.color_format,
+		super::_width,
+		super::_height,
+		rp_info.color_format,
 		VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT |
 		VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
 		device.getMsaaSamples());
 	_color_image.initView(
 		device,
-		res_info.color_format,
+		rp_info.color_format,
 		VK_IMAGE_ASPECT_COLOR_BIT);
 
 	// Depth stencil image
-	// VkFormat	depth_format = swapchain.findDepthFormat(device);
 	_depth_image.initImage(
 		device,
-		res_info.width,
-		res_info.height,
-		res_info.depth_format,
+		super::_width,
+		super::_height,
+		rp_info.depth_format,
 		VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
 		device.getMsaaSamples());
 	_depth_image.initView(
 		device,
-		res_info.depth_format,
+		rp_info.depth_format,
 		VK_IMAGE_ASPECT_DEPTH_BIT);
 }
 

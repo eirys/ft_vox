@@ -1,100 +1,82 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   render_pass.h                                      :+:      :+:    :+:   */
+/*   shadows_render_pass.h                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/06/04 17:14:50 by etran             #+#    #+#             */
-/*   Updated: 2023/08/15 19:18:36 by etran            ###   ########.fr       */
+/*   Created: 2023/08/17 10:57:55 by etran             #+#    #+#             */
+/*   Updated: 2023/08/17 10:57:55 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
-// Graphics
-# ifndef GLFW_INCLUDE_VULKAN
-#  define GLFW_INCLUDE_VULKAN
-# endif
-
-# include <GLFW/glfw3.h>
+# include "render_pass.h"
+# include "image_buffer.h"
 
 namespace scop::graphics {
 
 class Device;
-class Pipeline;
 class SwapChain;
 
-class RenderPass {
+class ShadowsRenderPass final: public RenderPass {
 public:
 	/* ========================================================================= */
-	/*                               HELPER OBJECTS                              */
+	/*                                  TYPEDEFS                                 */
 	/* ========================================================================= */
 
-	/**
-	 * @brief Render pass creation info.
-	*/
-	struct RenderPassInfo {
-		uint32_t width;
-		uint32_t height;
-		VkFormat depth_format;
-		VkSampleCountFlagBits depth_samples;
-		VkFormat color_format;
-		VkSampleCountFlagBits color_samples;
-	};
+	using super = RenderPass;
 
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
 
-	virtual	~RenderPass() = default;
+	ShadowsRenderPass() = default;
+	~ShadowsRenderPass() = default;
+
+	ShadowsRenderPass(ShadowsRenderPass&& other) = delete;
+	ShadowsRenderPass(const ShadowsRenderPass& other) = delete;
+	ShadowsRenderPass& operator=(ShadowsRenderPass&& other) = delete;
+	ShadowsRenderPass& operator=(const ShadowsRenderPass& other) = delete;
 
 	/* ========================================================================= */
 
-	virtual void	init(
+	void		init(
 		Device& device,
-		const RenderPassInfo& rp_info) = 0;
-	virtual void	destroy(Device& device);
-	virtual void	updateResources(
+		const super::RenderPassInfo& rp_info) override;
+	void		destroy(Device& device) override;
+	void		updateResources(
 		Device& device,
-		const RenderPassInfo& rp_info) = 0;
+		const super::RenderPassInfo& rp_info) override;
 
 	/* ========================================================================= */
 
-	VkRenderPass	getRenderPass() const noexcept;
-	uint32_t		getWidth() const noexcept;
-	uint32_t		getHeight() const noexcept;
+	using super::getRenderPass;
+	using super::getWidth;
+	using super::getHeight;
 
-protected:
+	const ImageBuffer&	getDepthResource() const noexcept;
+	ImageBuffer&		getDepthResource() noexcept;
+
+private:
 	/* ========================================================================= */
 	/*                               CLASS MEMBERS                               */
 	/* ========================================================================= */
 
-	uint32_t		_width;
-	uint32_t		_height;
-
-	VkRenderPass	_render_pass;
+	ImageBuffer	_depth_image;
 
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
 
-	RenderPass() = default;
-	RenderPass(RenderPass&& other) = default;
-	RenderPass& operator=(RenderPass&& other) = default;
-
-	RenderPass(const RenderPass& other) = delete;
-	RenderPass& operator=(const RenderPass& other) = delete;
-
-	/* ========================================================================= */
-
-	virtual void	_createRenderPass(
+	void		_createRenderPass(
 		Device& device,
-		const RenderPassInfo& create_info) = 0;
-	virtual void	_createResources(
+		const super::RenderPassInfo& rp_info) override;
+	void		_createResources(
 		Device& device,
-		const RenderPassInfo& create_info) = 0;
+		const super::RenderPassInfo& rp_info) override;
 
-}; // class RenderPass
+}; // class ShadowsRenderPass
 
 } // namespace scop::graphics

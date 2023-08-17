@@ -1,27 +1,22 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   scene_pipeline.h                                   :+:      :+:    :+:   */
+/*   shadows_pipeline.h                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/08/06 17:31:39 by etran             #+#    #+#             */
-/*   Updated: 2023/08/15 19:21:52 by etran            ###   ########.fr       */
+/*   Created: 2023/08/16 09:24:16 by etran             #+#    #+#             */
+/*   Updated: 2023/08/16 09:24:16 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
-// Std
-# include <memory> // std::shared_ptr
-
-# include "pipeline.h"
+#include "pipeline.h"
 
 namespace scop::graphics {
 
-class Device;
-
-class ScenePipeline final: public Pipeline {
+class ShadowsPipeline final: public Pipeline {
 public:
 	/* ========================================================================= */
 	/*                                  TYPEDEFS                                 */
@@ -34,13 +29,13 @@ public:
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
 
-	ScenePipeline() = default;
-	~ScenePipeline() = default;
+	ShadowsPipeline() = default;
+	~ShadowsPipeline() = default;
 
-	ScenePipeline(ScenePipeline&& other) = delete;
-	ScenePipeline(const ScenePipeline& other) = delete;
-	ScenePipeline& operator=(ScenePipeline&& other) = delete;
-	ScenePipeline& operator=(const ScenePipeline& other) = delete;
+	ShadowsPipeline(ShadowsPipeline&& other) = delete;
+	ShadowsPipeline(const ShadowsPipeline& other) = delete;
+	ShadowsPipeline& operator=(ShadowsPipeline&& other) = delete;
+	ShadowsPipeline& operator=(const ShadowsPipeline& other) = delete;
 
 	/* ========================================================================= */
 
@@ -60,6 +55,8 @@ public:
 		int32_t image_index) override;
 	void	update(const ::scop::UniformBufferObject& ubo) noexcept override;
 
+	void	setDescriptor(super::DescriptorSetPtr desc_ptr) noexcept;
+
 	/* ========================================================================= */
 
 	using super::getPipeline;
@@ -75,7 +72,7 @@ private:
 
 	void	_createRenderPass(
 		Device& device,
-		const RenderPass::RenderPassInfo& rp_info) override;
+		const RenderPass::RenderPassInfo& rp_info);
 	void	_createTarget(
 		Device& device,
 		Target::TargetInfo& info) override;
@@ -83,12 +80,6 @@ private:
 		Device& device,
 		VkGraphicsPipelineCreateInfo& info) override;
 
-	void	_createTextureHandler(
-		Device& device,
-		const std::vector<Texture>& textures);
-	void	_createDescriptor(
-		Device& device);
-
-}; // class ScenePipeline
+}; // class ShadowsPipeline
 
 } // namespace scop::graphics

@@ -14,8 +14,8 @@
 #include "device.h"
 #include "scene_render_pass.h"
 
+#include <array> // std::array
 #include <stdexcept> // std::runtime_error
-#include <memory>
 
 namespace scop::graphics {
 
@@ -41,16 +41,16 @@ void	SceneTarget::init(
 			render_pass->getColorResource().getView(),
 			render_pass->getDepthResource().getView(),
 			image_views[i] };
-		VkFramebufferCreateInfo	create_info{};
-		create_info.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-		create_info.renderPass = render_pass->getRenderPass();
-		create_info.attachmentCount = static_cast<uint32_t>(attachments.size());
-		create_info.pAttachments = attachments.data();
-		create_info.width = tar_info.width;
-		create_info.height = tar_info.height;
-		create_info.layers = 1;
+		VkFramebufferCreateInfo	framebuffer{};
+		framebuffer.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+		framebuffer.renderPass = render_pass->getRenderPass();
+		framebuffer.attachmentCount = static_cast<uint32_t>(attachments.size());
+		framebuffer.pAttachments = attachments.data();
+		framebuffer.width = tar_info.width;
+		framebuffer.height = tar_info.height;
+		framebuffer.layers = 1;
 
-		if (vkCreateFramebuffer(device.getLogicalDevice(), &create_info, nullptr, &(super::_frame_buffers[i])) != VK_SUCCESS) {
+		if (vkCreateFramebuffer(device.getLogicalDevice(), &framebuffer, nullptr, &(super::_frame_buffers[i])) != VK_SUCCESS) {
 			throw std::runtime_error("failed to create frame buffer");
 		}
 	}

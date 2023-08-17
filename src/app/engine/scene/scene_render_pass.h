@@ -44,12 +44,11 @@ public:
 
 	void		init(
 		Device& device,
-		const super::RenderPassInfo& rp_info,
-		const super::ResourcesInfo& res_info) override;
+		const super::RenderPassInfo& rp_info) override;
 	void		destroy(Device& device) override;
 	void		updateResources(
 		Device& device,
-		const ResourcesInfo& res_info) override;
+		const super::RenderPassInfo& rp_info) override;
 
 	/* ========================================================================= */
 
@@ -79,8 +78,9 @@ private:
 		const super::RenderPassInfo& create_info) override;
 	void		_createResources(
 		Device& device,
-		const ResourcesInfo& res_info) override;
-	void		_destroyResources(Device& device) override;
+		const super::RenderPassInfo& create_info) override;
+
+	void		_destroyResources(Device& device);
 
 }; // class SceneRenderPass
 
