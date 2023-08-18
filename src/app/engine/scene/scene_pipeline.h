@@ -45,6 +45,7 @@ public:
 	/* ========================================================================= */
 
 	using super::destroy;
+	using super::setDescriptor;
 
 	void	init(
 		Device& device,
@@ -52,6 +53,7 @@ public:
 		Target::TargetInfo& tar_info,
 		const std::vector<Texture>& textures,
 		VkGraphicsPipelineCreateInfo& info) override;
+	void	setDescriptor(DescriptorSetPtr desc_ptr) noexcept override;
 	void	draw(
 		Device& device,
 		VkPipelineLayout layout,
@@ -82,12 +84,11 @@ private:
 	void	_createPipeline(
 		Device& device,
 		VkGraphicsPipelineCreateInfo& info) override;
+	void	_createDescriptor() override;
 
 	void	_createTextureHandler(
 		Device& device,
 		const std::vector<Texture>& textures);
-	void	_createDescriptor(
-		Device& device);
 
 }; // class ScenePipeline
 

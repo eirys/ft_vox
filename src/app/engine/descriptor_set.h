@@ -45,6 +45,37 @@ public:
 		std::size_t	combined_image_sampler;
 	};
 
+	struct DescriptorWrites {
+		std::vector<VkWriteDescriptorSet>		writes_data;
+		std::vector<VkDescriptorBufferInfo>		buffer_infos;
+		std::vector<VkDescriptorImageInfo>		image_infos;
+	};
+
+	struct Descriptor {
+		VkDescriptorType	type;
+		VkShaderStageFlags	stage;
+		uint32_t			binding;
+	};
+
+	struct BufferInfo: public Descriptor {
+		VkDescriptorType	type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+		VkDeviceSize		offset;
+		VkDeviceSize		range;
+	};
+
+	struct ImageInfo: public Descriptor {
+		VkDescriptorType	type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+		VkSampler			sampler;
+		VkImageView			view;
+		VkImageLayout		layout;
+	};
+
+	/* ========================================================================= */
+	/*                                  TYPEDEFS                                 */
+	/* ========================================================================= */
+
+	using DescriptorPtr = std::shared_ptr<Descriptor>;
+
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
@@ -60,16 +91,16 @@ public:
 	/* ========================================================================= */
 
 	void	init(
-		Device& device,
-		TextureHandler& texture_handler,
-		const ::scop::UniformBufferObject& ubo);
+		Device& device
+		// TextureHandler& texture_handler,
+		// const ::scop::UniformBufferObject& ubo);
+		);
 	void	destroy(Device& device);
 	void	update(const ::scop::UniformBufferObject& ubo) noexcept;
-	void	removeWrites(Device& device);
 
-	// void	update(const ::scop::UniformBufferObject::Light& ubo) noexcept;
-	// void	update(const ::scop::UniformBufferObject::Camera& camera) noexcept;
-	// void	update(const ::scop::UniformBufferObject::Projector& ubo) noexcept;
+	void	addDescriptor(const ImageInfo& image_info);
+	void	addDescriptor(const BufferInfo& buffer_info);
+	void	removeWrites(Device& device);
 
 	/* ========================================================================= */
 
@@ -87,11 +118,8 @@ private:
 	VkDescriptorSet								_set;
 	Buffer										_buffer;
 
-	struct {
-		std::vector<VkWriteDescriptorSet>		writes_data;
-		std::vector<VkDescriptorBufferInfo>		buffer_infos;
-		std::vector<VkDescriptorImageInfo>		image_infos;
-	}											_writes;
+	DescriptorWrites							_writes;
+	std::vector<DescriptorPtr>					_descriptor_infos;
 
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
@@ -100,10 +128,10 @@ private:
 	void				_createLayout(Device& device);
 	void				_createWrites(TextureHandler& texture_handler);
 	void				_createUniformBuffers(Device& device);
-	void				_initUniformBuffer(
-		const ::scop::UniformBufferObject& ubo) noexcept;
-	void				_updateUniformBuffer(
-		const ::scop::UniformBufferObject& ubo);
+	// void				_initUniformBuffer(
+		// const ::scop::UniformBufferObject& ubo) noexcept;
+	// void				_updateUniformBuffer(
+	// 	const ::scop::UniformBufferObject& ubo);
 
 }; // class DescriptorSet
 

@@ -23,14 +23,14 @@ namespace scop::graphics {
 /* ========================================================================== */
 
 void	DescriptorSet::init(
-	Device& device,
-	TextureHandler& texture_handler,
-	const ::scop::UniformBufferObject& ubo
+	Device& device
+	// TextureHandler& texture_handler,
+	// const ::scop::UniformBufferObject& ubo
 ) {
 	_createLayout(device);
 	_createUniformBuffers(device);
-	_createWrites(texture_handler);
-	_initUniformBuffer(ubo);
+	// _createWrites(texture_handler);
+	// _initUniformBuffer(ubo);
 }
 
 void	DescriptorSet::destroy(Device& device) {
@@ -40,8 +40,7 @@ void	DescriptorSet::destroy(Device& device) {
 	vkDestroyDescriptorSetLayout(
 		device.getLogicalDevice(),
 		_layout,
-		nullptr
-	);
+		nullptr);
 }
 
 /**
@@ -53,6 +52,44 @@ void	DescriptorSet::update(
 	_buffer.copyFrom(&ubo, sizeof(UniformBufferObject));
 }
 
+void	DescriptorSet::addDescriptor(const ImageInfo& image_info) {
+	_descriptor_infos.emplace_back(std::make_shared<Descriptor>(image_info));
+	// VkDescriptorImageInfo	image{};
+	// image.sampler = image_info.sampler;
+	// image.imageView = image_info.view;
+	// image.imageLayout = image_info.layout;
+	// const auto& info = _writes.image_infos.emplace_back(image);
+
+	// VkWriteDescriptorSet	write{};
+	// write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+	// write.dstSet = _set;
+	// write.dstBinding = image_info.binding;
+	// write.dstArrayElement = 0;
+	// write.descriptorCount = 1;
+	// write.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+	// write.pImageInfo = &info;
+	// _writes.writes_data.emplace_back(write);
+}
+
+void	DescriptorSet::addDescriptor(const BufferInfo& buffer_info) {
+	_descriptor_infos.emplace_back(std::make_shared<Descriptor>(buffer_info));
+	// VkDescriptorBufferInfo	buffer{};
+	// buffer.buffer = _buffer.getBuffer();
+	// buffer.offset = buffer_info.offset;
+	// buffer.range = buffer_info.range;
+	// const auto& info = _writes.buffer_infos.emplace_back(buffer_info);
+
+	// VkWriteDescriptorSet	write{};
+	// write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+	// write.dstSet = _set;
+	// write.dstBinding = buffer_info.binding;
+	// write.dstArrayElement = 0;
+	// write.descriptorCount = 1;
+	// write.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	// write.pBufferInfo = &info;
+	// _writes.writes_data.emplace_back(write);
+}
+
 /**
  * @brief	Destroys writes data after they have been used.
 */
@@ -61,7 +98,6 @@ void	DescriptorSet::removeWrites(Device& device) {
 	_writes.image_infos.clear();
 	_writes.writes_data.clear();
 }
-
 
 /* ========================================================================== */
 
@@ -75,9 +111,8 @@ VkDescriptorSet	DescriptorSet::getSet() const noexcept {
 
 DescriptorSet::DescriptorSizes	DescriptorSet::getPoolSizes() const noexcept {
 	return {
-		.uniform_buffer = 3,
-		.combined_image_sampler = 2
-	};
+		_writes.buffer_infos.size(), // 3,
+		_writes.image_infos.size() }; // 2 };
 }
 
 const std::vector<VkWriteDescriptorSet>&	DescriptorSet::getWrites() const noexcept {
@@ -89,42 +124,51 @@ const std::vector<VkWriteDescriptorSet>&	DescriptorSet::getWrites() const noexce
 /* ========================================================================== */
 
 void	DescriptorSet::_createLayout(Device& device) {
-	// Camera UBO layout
-	VkDescriptorSetLayoutBinding	camera_binding{};
-	camera_binding.binding = 0;
-	camera_binding.descriptorCount = 1;
-	camera_binding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	camera_binding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+	std::vector<VkDescriptorSetLayoutBinding>	bindings;
+	bindings.reserve(_descriptor_infos.size());
 
-	// Sampler layout
-	VkDescriptorSetLayoutBinding	sampler_binding{};
-	sampler_binding.binding = 1;
-	sampler_binding.descriptorCount = 1;
-	sampler_binding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-	sampler_binding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+	for (uint32_t i = 0; i < bindings.size(); ++i) {
+		bindings[i].binding = i;
+		bindings[i].descriptorCount = 1;
+		bindings[i].descriptorType = _descriptor_infos[i]->type;
+		bindings[i].stageFlags = _descriptor_infos[i]->stage;
+	}
 
-	// Light UBO layout
-	VkDescriptorSetLayoutBinding	light_binding{};
-	light_binding.binding = 2;
-	light_binding.descriptorCount = 1;
-	light_binding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	light_binding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+// 	// Camera UBO layout
+// 	VkDescriptorSetLayoutBinding	camera_binding{};
+// 	camera_binding.binding = 0;
+// 	camera_binding.descriptorCount = 1;
+// 	camera_binding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+// 	camera_binding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
 
-	// Projector UBO layout
-	VkDescriptorSetLayoutBinding	projector_binding{};
-	projector_binding.binding = 3;
-	projector_binding.descriptorCount = 1;
-	projector_binding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	projector_binding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+// 	// Sampler layout
+// 	VkDescriptorSetLayoutBinding	sampler_binding{};
+// 	sampler_binding.binding = 1;
+// 	sampler_binding.descriptorCount = 1;
+// 	sampler_binding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+// 	sampler_binding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+
+// 	// Light UBO layout
+// 	VkDescriptorSetLayoutBinding	light_binding{};
+// 	light_binding.binding = 2;
+// 	light_binding.descriptorCount = 1;
+// 	light_binding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+// 	light_binding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+
+// 	// Projector UBO layout
+// 	VkDescriptorSetLayoutBinding	projector_binding{};
+// 	projector_binding.binding = 3;
+// 	projector_binding.descriptorCount = 1;
+// 	projector_binding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+// 	projector_binding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
 
 
-	// TODO 5
-	std::array<VkDescriptorSetLayoutBinding, 5>	bindings = {
-		camera_binding,
-		sampler_binding,
-		light_binding,
-		projector_binding
-	};
+// 	// TODO 5
+// 	std::array<VkDescriptorSetLayoutBinding, 5>	bindings = {
+// 		camera_binding,
+// 		sampler_binding,
+// 		light_binding,
+// 		projector_binding };
 
 	VkDescriptorSetLayoutCreateInfo	layout_info{};
 	layout_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
@@ -135,14 +179,12 @@ void	DescriptorSet::_createLayout(Device& device) {
 		throw std::runtime_error("failed to create descriptor set layout");
 	}
 }
-
+/*
 void	DescriptorSet::_createWrites(
 	TextureHandler& texture_handler
 ) {
 	_writes.buffer_infos.reserve(3);
-	_writes.image_infos.reserve(1);
-	// _writes.buffer_infos.reserve(3);
-	// _writes.image_infos.reserve(2);
+	_writes.image_infos.reserve(2);
 
 	// Camera
 	_writes.buffer_infos[0].buffer = _buffer.getBuffer();
@@ -165,13 +207,12 @@ void	DescriptorSet::_createWrites(
 	_writes.image_infos[0].sampler = texture_handler.getTextureSampler();
 
 	// Shadowmap
-	// VkDescriptorImageInfo	shadowmap_info{};
-	// shadowmap_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-	// shadowmap_info.imageView = shadowmap.getTextureBuffer().getView();
-	// shadowmap_info.sampler = shadowmap.getTextureSampler();
+	VkDescriptorImageInfo	shadowmap_info{};
+	shadowmap_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+	shadowmap_info.imageView = shadowmap.getTextureBuffer().getView();
+	shadowmap_info.sampler = shadowmap.getTextureSampler();
 
-	_writes.writes_data.reserve(4);
-	// _writes.writes_data.reserve(5);
+	_writes.writes_data.reserve(5);
 
 	// Camera
 	_writes.writes_data[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
@@ -218,15 +259,15 @@ void	DescriptorSet::_createWrites(
 	_writes.writes_data[3].pTexelBufferView = nullptr;
 
 	// Shadowmap
-	// _writes[4].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-	// _writes[4].dstSet = _set;
-	// _writes[4].dstBinding = 1;
-	// _writes[4].dstArrayElement = 0;
-	// _writes[4].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-	// _writes[4].descriptorCount = 1;
-	// _writes[4].pBufferInfo = nullptr;
-	// _writes[4].pImageInfo = std::make_shared<VkDescriptorImageInfo>(shadowmap_info).get();
-	// _writes[4].pTexelBufferView = nullptr;
+	_writes.writes_data[4].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+	_writes.writes_data[4].dstSet = _set;
+	_writes.writes_data[4].dstBinding = 1;
+	_writes.writes_data[4].dstArrayElement = 0;
+	_writes.writes_data[4].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+	_writes.writes_data[4].descriptorCount = 1;
+	_writes.writes_data[4].pBufferInfo = nullptr;
+	_writes.writes_data[4].pImageInfo = std::make_shared<VkDescriptorImageInfo>(shadowmap_info).get();
+	_writes.writes_data[4].pTexelBufferView = nullptr;
 
 	// vkUpdateDescriptorSets(
 	// 	device.getLogicalDevice(),
@@ -235,12 +276,10 @@ void	DescriptorSet::_createWrites(
 	// 	0, nullptr
 	// );
 }
-
+ */
 void	DescriptorSet::_createUniformBuffers(Device& device) {
-	// Camera and texture are dynamically updated.
 	VkDeviceSize	buffer_size = sizeof(UniformBufferObject);
 
-	// Create the buffer and allocate memory
 	_buffer.init(
 		device,
 		buffer_size,
@@ -248,64 +287,16 @@ void	DescriptorSet::_createUniformBuffers(Device& device) {
 		VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
 		VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 
-	// Map it to allow CPU to write on it
 	_buffer.map(device.getLogicalDevice(), buffer_size);
 }
 
-/**
- * @brief	Initiate uniform buffer.
-*/
-void	DescriptorSet::_initUniformBuffer(
-	const ::scop::UniformBufferObject& ubo
-) noexcept {
-	// UniformBufferObject	ubo{};
-	// ubo.light = light;
-
-	// ubo.projector.proj =
-	// 	scop::orthographic(1, 20, 1, 20, 1, 1000);
-	// 	//scop::perspective(45, 1, 1, 1000);
-	// ubo.projector.view = scop::lookAt(
-	// 	scop::Vect3(80, 20, 80),
-	// 	scop::Vect3(80, 0, 80),
-	// 	scop::normalize(scop::Vect3(1, 0.02, 0.0)));
-	// ubo.projector.proj[5] *= -1;
-
-	_buffer.copyFrom(&ubo, sizeof(UniformBufferObject));
-}
-
 // /**
-//  * Update the camera part of the uniform buffer.
+//  * @brief	Initiate uniform buffer.
 // */
-// void	DescriptorSet::_updateCamera(
-// 	VkExtent2D extent,
-// 	const vox::Player& player
-// ) {
-// 	UniformBufferObject::Camera	camera{};
-
-// 	// Define camera view
-// 	camera.view = scop::lookAtDir(
-// 		player.getPosition(),
-// 		player.getEyeDir(),
-// 		scop::Vect3(0.0f, 1.0f, 0.0f)
-// 	);
-
-// 	// Define persp. projection transformation
-// 	camera.proj = scop::perspective(
-// 		scop::math::radians(70.0f),
-// 		extent.width / static_cast<float>(extent.height),
-// 		0.1f,
-// 		1000.0f
-// 	);
-// 	// Invert y axis (because y axis is inverted in Vulkan)
-// 	camera.proj[5] *= -1;
-
-// 	// Copy to uniform buffer
-// 	_buffer.copyFrom(
-// 		&camera,
-// 		sizeof(UniformBufferObject::Camera),
-// 		offsetof(UniformBufferObject, camera)
-// 	);
+// void	DescriptorSet::_initUniformBuffer(
+// 	const ::scop::UniformBufferObject& ubo
+// ) noexcept {
+// 	_buffer.copyFrom(&ubo, sizeof(UniformBufferObject));
 // }
-
 
 } // namespace scop::graphics

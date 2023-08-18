@@ -31,6 +31,12 @@ void	Pipeline::destroy(Device& device) {
 	vkDestroyPipeline(device.getLogicalDevice(), _pipeline, nullptr);
 }
 
+void	Pipeline::setDescriptor(
+	Pipeline::DescriptorSetPtr desc_ptr
+) noexcept {
+	_descriptor = desc_ptr;
+}
+
 /* ========================================================================== */
 
 VkPipeline	Pipeline::getPipeline() const noexcept {

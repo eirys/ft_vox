@@ -19,7 +19,6 @@
 #include "shadows_target.h"
 #include "shadows_render_pass.h"
 
-#include <cassert> // assert
 #include <stdexcept> // std::runtime_error
 
 namespace scop::graphics {
@@ -118,14 +117,6 @@ void	ShadowsPipeline::draw(
 void	ShadowsPipeline::update(
 	const ::scop::UniformBufferObject& ubo
 ) noexcept {}
-
-void	ShadowsPipeline::setDescriptor(
-	Pipeline::DescriptorSetPtr desc_ptr
-) noexcept {
-	assert(desc_ptr != nullptr);
-
-	super::_descriptor = desc_ptr;
-}
 
 /* ========================================================================== */
 /*                                   PRIVATE                                  */

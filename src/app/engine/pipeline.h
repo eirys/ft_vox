@@ -66,6 +66,7 @@ public:
 		const std::vector<Texture>& textures,
 		VkGraphicsPipelineCreateInfo& layout_info) = 0;
 	void				destroy(Device& device);
+	virtual void		setDescriptor(DescriptorSetPtr desc_ptr) noexcept;
 	virtual void		draw(
 		Device& device,
 		VkPipelineLayout layout,
@@ -117,6 +118,7 @@ protected:
 	virtual void		_createPipeline(
 		Device& device,
 		VkGraphicsPipelineCreateInfo& info) = 0;
+	virtual void		_createDescriptor() = 0;
 
 	/* UTILS =================================================================== */
 

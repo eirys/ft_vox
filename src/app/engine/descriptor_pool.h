@@ -51,18 +51,15 @@ public:
 
 	/* ========================================================================= */
 
-	void		init(
-		Device& device,
-		const std::vector<DescriptorSetPtr>& sets);
+	void		init(Device& device);
+	void		add(DescriptorSetPtr set);
 	void		destroy(Device& device);
-	void		add(
-		Device& device,
-		const std::vector<DescriptorSetPtr>& sets);
 
 	/* ========================================================================= */
 
 	const std::vector<VkDescriptorSetLayout>&	getLayouts() const noexcept;
 	VkDescriptorPool							getPool() const noexcept;
+	const std::vector<DescriptorSetPtr>&		getDescriptors() const noexcept;
 
 private:
 	/* ========================================================================= */
@@ -72,16 +69,15 @@ private:
 	VkDescriptorPool					_pool;
 	std::vector<VkDescriptorSetLayout>	_layouts;
 
+	std::vector<DescriptorSetPtr>		_descriptors;
+
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
 
-	void		_createDescriptorPool(
-		Device& device,
-		const std::vector<DescriptorSetPtr>& set);
-	void		_allocateSets(
-		Device& device,
-		const std::vector<DescriptorSetPtr>& set);
+	void		_createDescriptorPool(Device& device);
+	void		_allocateSets(Device& device);
+	void		_createWrites(Device& device)
 
 }; // class DescriptorPool
 

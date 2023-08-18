@@ -33,7 +33,6 @@ static const float3 normals[6] = {
     {  0.0f,  1.0f,  0.0f },	// top
     {  0.0f, -1.0f,  0.0f }};	// bottom
 
-// Uvs
 static const float2	uvs[4] = {
 	{ 0.0f, 1.0f },
 	{ 1.0f, 1.0f },
@@ -46,31 +45,27 @@ static const float4x4	bias_matrix = {
 	  0,   0, 0.5, 0.5,
 	  0,   0,   0,   1};
 
-// Extract actual vertex position from input
 float4	extractPos(int input) {
-	// Local position in chunk
 	float3	pos = float3(
 		input & 0xF,
 		(input >> 4) & 0xF,
 		(input >> 8) & 0xF);
-	
-	// Chunk position in world
+
 	float3	chunk = 16 * float3(
 		(input >> 12) & 0xFF,
 		(input >> 20) & 0xF,
 		(input >> 24) & 0xFF);
-	
+
 	return float4(
 		chunk + pos,
-		1.0
-	);
+		1.0 );
 }
 
 // MAIN FUNCTION
 Output	main(Input input) {
 	Output	output = (Output)0;
 	float4	position = extractPos(input.position);
-	
+
 	output.normal = normals[input.nuvf & 0xFF];
 	//output.uv = uvs[(input.nuvf >> 8) & 0xFF];
 	// output.face = (input.nuvf >> 16) & 0xFF;
@@ -80,6 +75,6 @@ Output	main(Input input) {
 	output.position = mul(
 		mul(camera.proj, camera.view),
 		position);
-	
+
 	return output;
 }

@@ -15,7 +15,6 @@
 #include "input_handler.h"
 #include "uniform_buffer_object.h"
 #include "command_buffer.h"
-
 #include "descriptor_set.h"
 
 #include "scene_texture_handler.h"
@@ -41,7 +40,45 @@ void	ScenePipeline::init(
 	_createPipeline(device, info);
 	_createTarget(device, tar_info);
 	_createTextureHandler(device, textures);
-	_createDescriptor(device);
+}
+
+/**
+ * @brief Plugs a descriptor and modifies its properties.
+*/
+void	ScenePipeline::setDescriptor(DescriptorSetPtr desc_ptr) {
+	using BufferInfo = DescriptorSet::BufferInfo;
+	using ImageInfo = DescriptorSet::ImageInfo;
+
+	// Camera
+	desc_ptr->addDescriptor(BufferInfo{
+		.stage = VK_SHADER_STAGE_VERTEX_BIT,
+		.binding = 0,
+		.offset = offsetof(UniformBufferObject, camera),
+		.range = sizeof(UniformBufferObject::Camera) });
+
+	// Projector
+	desc_ptr->addDescriptor(BufferInfo{
+		.stage = VK_SHADER_STAGE_VERTEX_BIT,
+		.binding = 1,
+		.offset = offsetof(UniformBufferObject, projector),
+		.range = sizeof(UniformBufferObject::Camera) });
+
+	// Light
+	desc_ptr->addDescriptor(BufferInfo{
+		.stage = VK_SHADER_STAGE_FRAGMENT_BIT,
+		.binding = 2,
+		.offset = offsetof(UniformBufferObject, light),
+		.range = sizeof(UniformBufferObject::Light) });
+
+	// Texture
+	desc_ptr->addDescriptor(ImageInfo{
+		.stage = VK_SHADER_STAGE_FRAGMENT_BIT,
+		.binding = 3,
+		.sampler = _texture->getTextureSampler(),
+		.view = _texture->getTextureBuffer().getView(),
+		.layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL });
+
+	super::setDescriptor(desc_ptr);
 }
 
 /**
@@ -125,7 +162,7 @@ void	ScenePipeline::draw(
  * @brief Update the adequate descriptors with the new ubo.
 */
 void	ScenePipeline::update(const ::scop::UniformBufferObject& ubo) noexcept {
-	_descriptor->update(ubo);
+	super::_descriptor->update(ubo);
 }
 
 /* ========================================================================== */
@@ -199,13 +236,6 @@ void	ScenePipeline::_createTextureHandler(
 ) {
 	super::_texture.reset(new SceneTextureHandler);
 	super::_texture->init(device, textures);
-}
-
-void	ScenePipeline::_createDescriptor(Device& device) {
-	::scop::UniformBufferObject	ubo{};
-
-
-	super::_descriptor->init(device, *super::_texture, ubo);
 }
 
 } // namespace scop::graphics

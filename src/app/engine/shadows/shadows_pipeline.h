@@ -40,6 +40,7 @@ public:
 	/* ========================================================================= */
 
 	using super::destroy;
+	using super::setDescriptor;
 
 	void	init(
 		Device& device,
@@ -54,8 +55,6 @@ public:
 		InputHandler& input,
 		int32_t image_index) override;
 	void	update(const ::scop::UniformBufferObject& ubo) noexcept override;
-
-	void	setDescriptor(super::DescriptorSetPtr desc_ptr) noexcept;
 
 	/* ========================================================================= */
 

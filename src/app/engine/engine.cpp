@@ -46,27 +46,21 @@ void	Engine::init(
 	_debug_module.init(_vk_instance);
 	_device.init(window, _vk_instance);
 	_swap_chain.init(_device, window);
-	// _render_pass.init(_device, _swap_chain);
-	// _swap_chain.initFrameBuffers(_device, _render_pass);
 	_command_pool.init(_device);
 	_createGraphicsPipelineLayout();
 	_createGraphicsPipelines(images);
 	_createDescriptors(game);
-	// _texture_sampler.init(_device, _command_pool, images);
 	_input_handler.init(_device, _command_pool, vertices, indices);
-	// _descriptor_pool.initSets(_device, _texture_sampler, light);
 	_main_command_buffer.init(_device, _command_pool, max_frames_in_flight);
 	_createSyncObjects();
 }
 
 void	Engine::destroy() {
 	_swap_chain.destroy(_device);
-	// _render_pass.destroy(_device);
-	// _texture_sampler.destroy(_device);
 
 	// Remove graphics _pipeline
 	_pipelines.scene->destroy(_device);
-	// _pipelines.shadows->destroy(_device);
+	_pipelines.shadows->destroy(_device);
 
 	vkDestroyPipelineLayout(
 		_device.getLogicalDevice(),
@@ -442,8 +436,6 @@ void	Engine::_createGraphicsPipelines(
 		tar_info,
 		{},
 		pipeline_info);
-	std::dynamic_pointer_cast<ShadowsPipeline>(_pipelines.shadows)->setDescriptor(
-		_pipelines.scene->getDescriptor());
 }
 
 void	Engine::_createGraphicsPipelineLayout() {
@@ -501,16 +493,17 @@ void	Engine::_updatePresentation(::scop::Window& window) {
 }
 
 void	Engine::_createDescriptors(const ::vox::GameState& game) {
+	DescriptorPool::DescriptorSetPtr	set = std::make_shared<DescriptorSet>();
+
+	_pipelines.scene->setDescriptor(set);
+	_pipelines.shadows->setDescriptor(set);
+
+	_descriptor_pool.add(set);
+	_descriptor_pool.init(_device);
+
 	::scop::UniformBufferObject	ubo = _updateUbo(game);
-
-	_pipelines.scene->getDescriptor()->update(ubo);
-	_pipelines.shadows->getDescriptor()->update(ubo);
-
-	std::vector<DescriptorPool::DescriptorSetPtr> sets = {
-		_pipelines.scene->getDescriptor(),
-		_pipelines.shadows->getDescriptor() };
-
-	_descriptor_pool.init(_device, sets);
+	_pipelines.scene->update(ubo);
+	_pipelines.shadows->update(ubo);
 }
 
 ::scop::UniformBufferObject	Engine::_updateUbo(
