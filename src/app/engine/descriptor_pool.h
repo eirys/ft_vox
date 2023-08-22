@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:14:18 by etran             #+#    #+#             */
-/*   Updated: 2023/08/14 12:35:44 by etran            ###   ########.fr       */
+/*   Updated: 2023/08/20 10:00:38 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -77,7 +77,7 @@ private:
 
 	void		_createDescriptorPool(Device& device);
 	void		_allocateSets(Device& device);
-	void		_createWrites(Device& device)
+	void		_createWrites(Device& device);
 
 }; // class DescriptorPool
 

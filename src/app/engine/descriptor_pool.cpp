@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/15 20:56:05 by etran             #+#    #+#             */
-/*   Updated: 2023/08/15 19:09:54 by etran            ###   ########.fr       */
+/*   Updated: 2023/08/22 21:42:33 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -147,7 +147,7 @@ void	DescriptorPool::_createWrites(Device& device) {
 
 	// Destroy used up writes
 	for (const auto& set: _descriptors) {
-		set->removeWrites(device);
+		set->removeWrites();
 	}
 }
 

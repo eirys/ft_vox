@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/12 12:33:52 by etran             #+#    #+#             */
-/*   Updated: 2023/08/15 20:58:54 by etran            ###   ########.fr       */
+/*   Updated: 2023/08/22 21:42:09 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -93,7 +93,7 @@ void	DescriptorSet::addDescriptor(const BufferInfo& buffer_info) {
 /**
  * @brief	Destroys writes data after they have been used.
 */
-void	DescriptorSet::removeWrites(Device& device) {
+void	DescriptorSet::removeWrites() {
 	_writes.buffer_infos.clear();
 	_writes.image_infos.clear();
 	_writes.writes_data.clear();

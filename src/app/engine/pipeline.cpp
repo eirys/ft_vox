@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/06 17:59:15 by etran             #+#    #+#             */
-/*   Updated: 2023/08/15 21:42:04 by etran            ###   ########.fr       */
+/*   Updated: 2023/08/20 10:15:58 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,13 +27,12 @@ void	Pipeline::destroy(Device& device) {
 	_render_pass->destroy(device);
 	_target->destroy(device);
 	_texture->destroy(device);
-	_descriptor->destroy(device);
 	vkDestroyPipeline(device.getLogicalDevice(), _pipeline, nullptr);
 }
 
 void	Pipeline::setDescriptor(
 	Pipeline::DescriptorSetPtr desc_ptr
-) noexcept {
+) {
 	_descriptor = desc_ptr;
 }
 

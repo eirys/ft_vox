@@ -6,7 +6,7 @@
 #    By: etran <etran@student.42.fr>                +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/04/06 03:40:09 by eli               #+#    #+#              #
-#    Updated: 2023/08/12 23:05:31 by etran            ###   ########.fr        #
+#    Updated: 2023/08/22 22:13:26 by etran            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -27,6 +27,7 @@ TOOLS_DIR	:=	tools
 APP_DIR		:=	app
 ENG_DIR		:=	$(APP_DIR)/engine
 SCENE_DIR	:=	$(ENG_DIR)/scene
+SHADOW_DIR	:=	$(ENG_DIR)/shadows
 UTILS_DIR	:=	$(APP_DIR)/utils
 GAME_DIR	:=	$(APP_DIR)/gameplay
 GEN_DIR		:=	$(APP_DIR)/generation
@@ -40,6 +41,7 @@ SUBDIRS		:=	$(APP_DIR) \
 				$(CHAR_DIR) \
 				$(ENG_DIR) \
 				$(SCENE_DIR) \
+				$(SHADOW_DIR) \
 				$(MODEL_DIR) \
 				$(UTILS_DIR) \
 				$(GEN_DIR) \
@@ -78,7 +80,11 @@ SRC_FILES	:=	$(TOOLS_DIR)/matrix.cpp \
 				$(ENG_DIR)/image_buffer.cpp \
 				$(SCENE_DIR)/scene_render_pass.cpp \
 				$(SCENE_DIR)/scene_pipeline.cpp \
+				$(SCENE_DIR)/scene_texture_handler.cpp \
 				$(SCENE_DIR)/scene_target.cpp \
+				$(SHADOW_DIR)/shadows_render_pass.cpp \
+				$(SHADOW_DIR)/shadows_pipeline.cpp \
+				$(SHADOW_DIR)/shadows_target.cpp \
 				$(APP_DIR)/app.cpp \
 				main.cpp
 
@@ -87,8 +93,8 @@ OBJ			:=	$(addprefix $(OBJ_DIR)/,$(SRC_FILES:.cpp=.o))
 DEP			:=	$(addprefix $(OBJ_DIR)/,$(SRC_FILES:.cpp=.d))
 
 # shaders
-SHD_FILES	:=	scene_vert.glsl \
-				scene_frag.glsl
+SHD_FILES	:=	vertex \
+				fragment
 
 SHD			:=	$(addprefix $(SHD_DIR)/,$(SHD_FILES))
 SHD_BIN		:=	$(addsuffix .spv,$(SHD))
@@ -139,7 +145,7 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
 
 $(SHD_DIR)/%.spv: $(SHD_DIR)/%.glsl
 	@echo "Compiling shader $<..."
-	@$(GLSLC) $< -o $@
+	@$(GLSLC) -fshader-stage=$* $< -o $@
 
 .PHONY: clean
 clean:

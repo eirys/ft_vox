@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/06 17:31:39 by etran             #+#    #+#             */
-/*   Updated: 2023/08/15 19:21:52 by etran            ###   ########.fr       */
+/*   Updated: 2023/08/22 22:12:44 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,9 +53,8 @@ public:
 		Target::TargetInfo& tar_info,
 		const std::vector<Texture>& textures,
 		VkGraphicsPipelineCreateInfo& info) override;
-	void	setDescriptor(DescriptorSetPtr desc_ptr) noexcept override;
+	void	setDescriptor(DescriptorSetPtr desc_ptr) override;
 	void	draw(
-		Device& device,
 		VkPipelineLayout layout,
 		CommandBuffer& command_buffer,
 		InputHandler& input,
@@ -84,7 +83,6 @@ private:
 	void	_createPipeline(
 		Device& device,
 		VkGraphicsPipelineCreateInfo& info) override;
-	void	_createDescriptor() override;
 
 	void	_createTextureHandler(
 		Device& device,

@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/02 16:09:44 by etran             #+#    #+#             */
-/*   Updated: 2023/08/15 21:40:01 by etran            ###   ########.fr       */
+/*   Updated: 2023/08/22 22:13:01 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,7 @@
 
 #include "game_state.h"
 // #include "player.h"
+#include "image_handler.h"
 #include "shadows_pipeline.h"
 
 #include "timer.h"
@@ -135,13 +136,11 @@ void	Engine::render(
 	_main_command_buffer.begin(0);
 
 	_pipelines.shadows->draw(
-		_device,
 		_pipeline_layout,
 		_main_command_buffer,
 		_input_handler,
 		image_index );
 	_pipelines.scene->draw(
-		_device,
 		_pipeline_layout,
 		_main_command_buffer,
 		_input_handler,
@@ -481,8 +480,8 @@ void	Engine::_updatePresentation(::scop::Window& window) {
 	RenderPass::RenderPassInfo	rp_info {
 		.width = _swap_chain.getExtent().width,
 		.height = _swap_chain.getExtent().height,
-		.color_format = _swap_chain.getImageFormat(),
-		.depth_format = _swap_chain.findDepthFormat(_device) };
+		.depth_format = _swap_chain.findDepthFormat(_device),
+		.color_format = _swap_chain.getImageFormat() };
 	Target::TargetInfo	tar_info {
 		.swap_views = _swap_chain.getImageViews(),
 		.width = _swap_chain.getExtent().width,
@@ -503,7 +502,6 @@ void	Engine::_createDescriptors(const ::vox::GameState& game) {
 
 	::scop::UniformBufferObject	ubo = _updateUbo(game);
 	_pipelines.scene->update(ubo);
-	_pipelines.shadows->update(ubo);
 }
 
 ::scop::UniformBufferObject	Engine::_updateUbo(

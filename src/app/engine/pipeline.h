@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/05 03:12:47 by etran             #+#    #+#             */
-/*   Updated: 2023/08/15 19:27:16 by etran            ###   ########.fr       */
+/*   Updated: 2023/08/22 22:12:15 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,9 +66,8 @@ public:
 		const std::vector<Texture>& textures,
 		VkGraphicsPipelineCreateInfo& layout_info) = 0;
 	void				destroy(Device& device);
-	virtual void		setDescriptor(DescriptorSetPtr desc_ptr) noexcept;
+	virtual void		setDescriptor(DescriptorSetPtr desc_ptr);
 	virtual void		draw(
-		Device& device,
 		VkPipelineLayout layout,
 		CommandBuffer& command_buffer,
 		InputHandler& input,
@@ -94,6 +93,7 @@ protected:
 	RenderPassPtr		_render_pass;
 	TextureHandlerPtr	_texture;
 	TargetPtr			_target;
+
 	DescriptorSetPtr	_descriptor;
 
 	/* ========================================================================= */
@@ -118,7 +118,6 @@ protected:
 	virtual void		_createPipeline(
 		Device& device,
 		VkGraphicsPipelineCreateInfo& info) = 0;
-	virtual void		_createDescriptor() = 0;
 
 	/* UTILS =================================================================== */
 

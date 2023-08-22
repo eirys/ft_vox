@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/16 09:24:16 by etran             #+#    #+#             */
-/*   Updated: 2023/08/16 09:24:16 by etran            ###   ########.fr       */
+/*   Updated: 2023/08/22 22:12:19 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,7 +49,6 @@ public:
 		const std::vector<Texture>& textures,
 		VkGraphicsPipelineCreateInfo& info) override;
 	void	draw(
-		Device& device,
 		VkPipelineLayout layout,
 		CommandBuffer& command_buffer,
 		InputHandler& input,
@@ -71,7 +70,7 @@ private:
 
 	void	_createRenderPass(
 		Device& device,
-		const RenderPass::RenderPassInfo& rp_info);
+		const RenderPass::RenderPassInfo& rp_info) override;
 	void	_createTarget(
 		Device& device,
 		Target::TargetInfo& info) override;

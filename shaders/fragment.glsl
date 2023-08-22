@@ -41,18 +41,18 @@ vec4 directionalLighting(
 }
 
 void main() {
-	vec4 color = texture(tex_sampler, in_uvw);
+	vec4 color = texture(tex_sampler, in_uvw.xy, in_uvw.z);
 
 	// Clamp depth value to [0, 1]
-	in_shadow.xy = in_shadow.xy * 0.5f + 0.5f;
+	vec3 shadow = vec3(in_shadow.xy * 0.5f + 0.5f, in_shadow.z);
 
 	vec4 ambient = vec4(light.ambient, 1.0f);
 	vec4 directional = directionalLighting(
-		in_shadow,
+		shadow,
 		in_normal,
 		light.vector,
 		light.color,
 		light.intensity);
 
-	out_color = color * (directional + ambient_lighting);
+	out_color = color * (directional + ambient);
 }

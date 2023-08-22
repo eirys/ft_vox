@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/16 10:16:30 by etran             #+#    #+#             */
-/*   Updated: 2023/08/16 10:16:30 by etran            ###   ########.fr       */
+/*   Updated: 2023/08/22 22:12:30 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,7 +40,6 @@ void	ShadowsPipeline::init(
 }
 
 void	ShadowsPipeline::draw(
-	Device& device,
 	VkPipelineLayout layout,
 	CommandBuffer& command_buffer,
 	InputHandler& input,

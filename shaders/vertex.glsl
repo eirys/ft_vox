@@ -46,7 +46,7 @@ void	main() {
 	vec4 position = extractPos(in_position);
 
 	out_normal = normals[in_nuvf & 0xFF];
-	out_uvw = float3(
+	out_uvw = vec3(
 		uvs[(in_nuvf >> 8) & 0xFF],	// uv
 		(in_nuvf >> 16) & 0xFF);	// face
 	out_shadow = (projector.vp * position).xyz;

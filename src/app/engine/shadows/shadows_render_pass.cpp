@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/17 10:58:14 by etran             #+#    #+#             */
-/*   Updated: 2023/08/17 10:58:14 by etran            ###   ########.fr       */
+/*   Updated: 2023/08/22 22:15:18 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,6 +44,8 @@ void	ShadowsRenderPass::updateResources(
 	const RenderPass::RenderPassInfo& rp_info
 ) {
 	assert(false);
+	(void)device;
+	(void)rp_info;
 }
 
 /* ========================================================================== */

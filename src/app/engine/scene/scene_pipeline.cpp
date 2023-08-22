@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/06 20:50:48 by etran             #+#    #+#             */
-/*   Updated: 2023/08/15 19:43:01 by etran            ###   ########.fr       */
+/*   Updated: 2023/08/22 22:12:51 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,34 +49,34 @@ void	ScenePipeline::setDescriptor(DescriptorSetPtr desc_ptr) {
 	using BufferInfo = DescriptorSet::BufferInfo;
 	using ImageInfo = DescriptorSet::ImageInfo;
 
-	// Camera
-	desc_ptr->addDescriptor(BufferInfo{
-		.stage = VK_SHADER_STAGE_VERTEX_BIT,
-		.binding = 0,
-		.offset = offsetof(UniformBufferObject, camera),
-		.range = sizeof(UniformBufferObject::Camera) });
+	BufferInfo	camera{};
+	camera.stage = VK_SHADER_STAGE_VERTEX_BIT;
+	camera.binding = 0;
+	camera.offset = offsetof(UniformBufferObject, camera);
+	camera.range = sizeof(UniformBufferObject::Camera);
+	desc_ptr->addDescriptor(camera);
 
-	// Projector
-	desc_ptr->addDescriptor(BufferInfo{
-		.stage = VK_SHADER_STAGE_VERTEX_BIT,
-		.binding = 1,
-		.offset = offsetof(UniformBufferObject, projector),
-		.range = sizeof(UniformBufferObject::Camera) });
+	BufferInfo	projector{};
+	projector.stage = VK_SHADER_STAGE_VERTEX_BIT;
+	projector.binding = 1;
+	projector.offset = offsetof(UniformBufferObject, projector);
+	projector.range = sizeof(UniformBufferObject::Camera);
+	desc_ptr->addDescriptor(projector);
 
-	// Light
-	desc_ptr->addDescriptor(BufferInfo{
-		.stage = VK_SHADER_STAGE_FRAGMENT_BIT,
-		.binding = 2,
-		.offset = offsetof(UniformBufferObject, light),
-		.range = sizeof(UniformBufferObject::Light) });
+	BufferInfo	light{};
+	light.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
+	light.binding = 2;
+	light.offset = offsetof(UniformBufferObject, light);
+	light.range = sizeof(UniformBufferObject::Light);
+	desc_ptr->addDescriptor(light);
 
-	// Texture
-	desc_ptr->addDescriptor(ImageInfo{
-		.stage = VK_SHADER_STAGE_FRAGMENT_BIT,
-		.binding = 3,
-		.sampler = _texture->getTextureSampler(),
-		.view = _texture->getTextureBuffer().getView(),
-		.layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL });
+	ImageInfo	texture{};
+	texture.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
+	texture.binding = 3;
+	texture.sampler = _texture->getTextureSampler();
+	texture.view = _texture->getTextureBuffer().getView();
+	texture.layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+	desc_ptr->addDescriptor(texture);
 
 	super::setDescriptor(desc_ptr);
 }
@@ -85,7 +85,6 @@ void	ScenePipeline::setDescriptor(DescriptorSetPtr desc_ptr) {
  * @brief Record the drawing command of the pass.
 */
 void	ScenePipeline::draw(
-	Device& device,
 	VkPipelineLayout layout,
 	CommandBuffer& command_buffer,
 	InputHandler& input,

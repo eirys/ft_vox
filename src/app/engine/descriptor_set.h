@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/12 12:08:24 by etran             #+#    #+#             */
-/*   Updated: 2023/08/15 19:07:55 by etran            ###   ########.fr       */
+/*   Updated: 2023/08/22 21:42:18 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -100,7 +100,7 @@ public:
 
 	void	addDescriptor(const ImageInfo& image_info);
 	void	addDescriptor(const BufferInfo& buffer_info);
-	void	removeWrites(Device& device);
+	void	removeWrites();
 
 	/* ========================================================================= */
 
