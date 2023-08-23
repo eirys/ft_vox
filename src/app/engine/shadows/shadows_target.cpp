@@ -31,7 +31,7 @@ void	ShadowsTarget::init(
 		std::dynamic_pointer_cast<ShadowsRenderPass>(tar_info.render_pass);
 	VkImageView view = render_pass->getDepthResource().getView();
 
-	super::_frame_buffers.resize(1);
+	super::_frame_buffers.reserve(1);
 
 	VkFramebufferCreateInfo	fb_info{};
 	fb_info.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;

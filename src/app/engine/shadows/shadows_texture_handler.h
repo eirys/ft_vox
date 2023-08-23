@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   scene_texture_handler.h                            :+:      :+:    :+:   */
+/*   shadows_texture_handler.h                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/08/10 22:17:58 by etran             #+#    #+#             */
-/*   Updated: 2023/08/11 23:58:05 by etran            ###   ########.fr       */
+/*   Created: 2023/08/23 16:49:51 by etran             #+#    #+#             */
+/*   Updated: 2023/08/23 16:49:51 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,11 +19,14 @@
 
 # include "texture_handler.h"
 
+# define SHADOWMAP_SIZE 2048
+# define DEPTH_FORMAT VK_FORMAT_D16_UNORM
+
 namespace scop::graphics {
 
 class CommandBuffer;
 
-class SceneTextureHandler final: public TextureHandler {
+class ShadowsTextureHandler final: public TextureHandler {
 public:
 	/* ========================================================================= */
 	/*                                  TYPEDEFS                                 */
@@ -37,13 +40,13 @@ public:
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
 
-	SceneTextureHandler() = default;
-	~SceneTextureHandler() = default;
+	ShadowsTextureHandler() = default;
+	~ShadowsTextureHandler() = default;
 
-	SceneTextureHandler(SceneTextureHandler&& other) = delete;
-	SceneTextureHandler(const SceneTextureHandler& other) = delete;
-	SceneTextureHandler& operator=(SceneTextureHandler&& other) = delete;
-	SceneTextureHandler& operator=(const SceneTextureHandler& other) = delete;
+	ShadowsTextureHandler(ShadowsTextureHandler&& other) = delete;
+	ShadowsTextureHandler(const ShadowsTextureHandler& other) = delete;
+	ShadowsTextureHandler& operator=(ShadowsTextureHandler&& other) = delete;
+	ShadowsTextureHandler& operator=(const ShadowsTextureHandler& other) = delete;
 
 	/* ========================================================================= */
 
@@ -69,6 +72,6 @@ private:
 	void					_createTextureImageView(Device& device) override;
 	void					_createTextureSampler(Device& device) override;
 
-}; // class SceneTextureHandler
+}; // class ShadowsTextureHandler
 
 } // namespace scop::graphics

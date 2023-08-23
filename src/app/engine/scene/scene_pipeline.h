@@ -28,13 +28,14 @@ public:
 	/* ========================================================================= */
 
 	using super = Pipeline;
-	using Texture = super::Texture;
+	using super::Texture;
+	using super::DescriptorSetPtr;
 
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
 
-	ScenePipeline() = default;
+	ScenePipeline();
 	~ScenePipeline() = default;
 
 	ScenePipeline(ScenePipeline&& other) = delete;
@@ -74,19 +75,9 @@ private:
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
 
-	void	_createRenderPass(
-		Device& device,
-		const RenderPass::RenderPassInfo& rp_info) override;
-	void	_createTarget(
-		Device& device,
-		Target::TargetInfo& info) override;
 	void	_createPipeline(
 		Device& device,
 		VkGraphicsPipelineCreateInfo& info) override;
-
-	void	_createTextureHandler(
-		Device& device,
-		const std::vector<Texture>& textures);
 
 }; // class ScenePipeline
 

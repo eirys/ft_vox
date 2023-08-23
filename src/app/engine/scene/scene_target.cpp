@@ -34,7 +34,7 @@ void	SceneTarget::init(
 	const auto& render_pass =
 		std::dynamic_pointer_cast<SceneRenderPass>(tar_info.render_pass);
 
-	super::_frame_buffers.resize(image_views.size());
+	super::_frame_buffers.reserve(image_views.size());
 
 	for (std::size_t i = 0; i < image_views.size(); ++i) {
 		std::array<VkImageView, 3>	attachments = {

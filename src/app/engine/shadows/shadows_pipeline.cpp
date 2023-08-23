@@ -18,6 +18,7 @@
 
 #include "shadows_target.h"
 #include "shadows_render_pass.h"
+#include "shadows_texture_handler.h"
 
 #include <stdexcept> // std::runtime_error
 
@@ -27,6 +28,12 @@ namespace scop::graphics {
 /*                                   PUBLIC                                   */
 /* ========================================================================== */
 
+ShadowsPipeline::ShadowsPipeline() {
+	super::_render_pass = std::make_shared<ShadowsRenderPass>();
+	super::_target = std::make_shared<ShadowsTarget>();
+	super::_texture = std::make_shared<ShadowsTextureHandler>();
+}
+
 void	ShadowsPipeline::init(
 	Device& device,
 	const RenderPass::RenderPassInfo& rp_info,
@@ -34,9 +41,26 @@ void	ShadowsPipeline::init(
 	const std::vector<Texture>& textures,
 	VkGraphicsPipelineCreateInfo& info
 ) {
-	_createRenderPass(device, rp_info);
+	super::_render_pass->init(device, rp_info);
 	_createPipeline(device, info);
-	_createTarget(device, tar_info);
+	tar_info.render_pass = super::_render_pass;
+	super::_target->init(device, tar_info);
+	super::_texture->init(device, textures);
+}
+
+void	ShadowsPipeline::setDescriptor(DescriptorSetPtr desc_ptr) {
+	using ImageInfo = DescriptorSet::ImageInfo;
+	using UniformBufferObject = ::scop::UniformBufferObject;
+
+	ImageInfo	texture{};
+	texture.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
+	texture.binding = 4;
+	texture.sampler = _texture->getTextureSampler();
+	texture.view = _texture->getTextureBuffer().getView();
+	texture.layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+	desc_ptr->addDescriptor(texture);
+
+	super::setDescriptor(desc_ptr);
 }
 
 void	ShadowsPipeline::draw(
@@ -120,22 +144,6 @@ void	ShadowsPipeline::update(
 /* ========================================================================== */
 /*                                   PRIVATE                                  */
 /* ========================================================================== */
-
-void	ShadowsPipeline::_createRenderPass(
-	Device& device,
-	const RenderPass::RenderPassInfo& rp_info
-) {
-	super::_render_pass.reset(new ShadowsRenderPass);
-	super::_render_pass->init(device, rp_info);
-}
-
-void	ShadowsPipeline::_createTarget(
-	Device& device,
-	Target::TargetInfo& info
-) {
-	super::_target.reset(new ShadowsTarget);
-	super::_target->init(device, info);
-}
 
 void	ShadowsPipeline::_createPipeline(
 	Device& device,

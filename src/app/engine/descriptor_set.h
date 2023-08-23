@@ -45,12 +45,6 @@ public:
 		std::size_t	combined_image_sampler;
 	};
 
-	struct DescriptorWrites {
-		std::vector<VkWriteDescriptorSet>		writes_data;
-		std::vector<VkDescriptorBufferInfo>		buffer_infos;
-		std::vector<VkDescriptorImageInfo>		image_infos;
-	};
-
 	struct Descriptor {
 		VkDescriptorType	type;
 		VkShaderStageFlags	stage;
@@ -90,48 +84,38 @@ public:
 
 	/* ========================================================================= */
 
-	void	init(
-		Device& device
-		// TextureHandler& texture_handler,
-		// const ::scop::UniformBufferObject& ubo);
-		);
+	void	init(Device& device);
 	void	destroy(Device& device);
 	void	update(const ::scop::UniformBufferObject& ubo) noexcept;
 
 	void	addDescriptor(const ImageInfo& image_info);
 	void	addDescriptor(const BufferInfo& buffer_info);
-	void	removeWrites();
 
 	/* ========================================================================= */
 
-	VkDescriptorSetLayout						getLayout() const noexcept;
-	VkDescriptorSet								getSet() const noexcept;
-	DescriptorSizes								getPoolSizes() const noexcept;
-	const std::vector<VkWriteDescriptorSet>&	getWrites() const noexcept;
+	VkDescriptorSetLayout				getLayout() const noexcept;
+	VkDescriptorSet						getSet() const noexcept;
+	DescriptorSizes						getPoolSizes() const noexcept;
+	std::vector<VkWriteDescriptorSet>&&	getWrites() const noexcept;
 
 private:
 	/* ========================================================================= */
 	/*                               CLASS MEMBERS                               */
 	/* ========================================================================= */
 
-	VkDescriptorSetLayout						_layout;
-	VkDescriptorSet								_set;
-	Buffer										_buffer;
+	VkDescriptorSetLayout				_layout;
+	VkDescriptorSet						_set;
+	Buffer								_buffer;
 
-	DescriptorWrites							_writes;
-	std::vector<DescriptorPtr>					_descriptor_infos;
+	DescriptorSizes						_writes_sizes;
+	std::vector<DescriptorPtr>			_descriptor_infos;
 
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
 
-	void				_createLayout(Device& device);
-	void				_createWrites(TextureHandler& texture_handler);
-	void				_createUniformBuffers(Device& device);
-	// void				_initUniformBuffer(
-		// const ::scop::UniformBufferObject& ubo) noexcept;
-	// void				_updateUniformBuffer(
-	// 	const ::scop::UniformBufferObject& ubo);
+	void								_createLayout(Device& device);
+	void								_createUniformBuffers(Device& device);
 
 }; // class DescriptorSet
 

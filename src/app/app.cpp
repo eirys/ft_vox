@@ -64,7 +64,7 @@ void	App::run() {
 	while (_window.alive()) {
 		_window.poll();
 		_updateGame();
-		_engine.render(_window, _game.getPlayer(), _timer);
+		_engine.render(_window, _game, _timer);
 		_timer.check();
 	}
 	_engine.idle();

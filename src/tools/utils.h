@@ -20,7 +20,7 @@
 # include <iostream>
 # include <cstring>
 
-# define __NL '\n'
+# define __NL std::endl
 
 # ifdef __DEBUG
 #  define LOG(X) std::cerr << X << __NL
@@ -66,7 +66,7 @@ inline std::vector<uint8_t>	readFile(const std::string& filename) {
 
 /**
  * @brief Computes the barycenter of a list of vertices.
- * 
+ *
  * @param vertices The list of vertices.
 */
 inline Vect3	computeBarycenter(const std::vector<Vertex>& vertices) noexcept {

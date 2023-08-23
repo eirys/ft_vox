@@ -134,8 +134,9 @@ void	DescriptorPool::_createWrites(Device& device) {
 
 	// Reconstructs descriptor writes array from sets
 	for (const auto& set: _descriptors) {
-		for (const auto& set_write: set->getWrites()) {
-			writes.emplace_back(set_write);
+		for (auto write: set->getWrites()) {
+			//TODO
+			writes.emplace_back(write);
 		}
 	}
 
@@ -144,11 +145,6 @@ void	DescriptorPool::_createWrites(Device& device) {
 		static_cast<uint32_t>(writes.size()),
 		writes.data(),
 		0, nullptr);
-
-	// Destroy used up writes
-	for (const auto& set: _descriptors) {
-		set->removeWrites();
-	}
 }
 
 } // namespace scop::graphics

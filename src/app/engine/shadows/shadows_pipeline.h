@@ -23,13 +23,14 @@ public:
 	/* ========================================================================= */
 
 	using super = Pipeline;
-	using Texture = super::Texture;
+	using super::Texture;
+	using super::DescriptorSetPtr;
 
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
 
-	ShadowsPipeline() = default;
+	ShadowsPipeline();
 	~ShadowsPipeline() = default;
 
 	ShadowsPipeline(ShadowsPipeline&& other) = delete;
@@ -40,7 +41,6 @@ public:
 	/* ========================================================================= */
 
 	using super::destroy;
-	using super::setDescriptor;
 
 	void	init(
 		Device& device,
@@ -48,6 +48,7 @@ public:
 		Target::TargetInfo& tar_info,
 		const std::vector<Texture>& textures,
 		VkGraphicsPipelineCreateInfo& info) override;
+	void	setDescriptor(DescriptorSetPtr desc_ptr);
 	void	draw(
 		VkPipelineLayout layout,
 		CommandBuffer& command_buffer,
@@ -68,12 +69,6 @@ private:
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
 
-	void	_createRenderPass(
-		Device& device,
-		const RenderPass::RenderPassInfo& rp_info) override;
-	void	_createTarget(
-		Device& device,
-		Target::TargetInfo& info) override;
 	void	_createPipeline(
 		Device& device,
 		VkGraphicsPipelineCreateInfo& info) override;

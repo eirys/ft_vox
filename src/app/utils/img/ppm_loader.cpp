@@ -55,7 +55,7 @@ Image	PpmLoader::load() {
 
 /**
  * Parses the body of a file.
- * 
+ *
  * Expected format:
  * [comment]
  * {Format}[ws/comment]
@@ -116,11 +116,6 @@ PpmLoader::Pixels	PpmLoader::parseBody() {
 	ParseNumberFn	parseChannelFn(format == Format::P6 ? readExcept : readNb);
 	PpmLoader::Pixels	pixels(base::width * base::height * sizeof(uint32_t));
 	std::size_t	row = 0;
-	LOG(
-		"Cursos is " << cursor
-		<< ", Current value: " << (unsigned char)base::data[cursor]
-		<< ", Next value: " << (unsigned char)base::data[cursor+1]
-	);
 	while (row < base::height) {
 		uint8_t	r, g, b;
 
@@ -144,7 +139,7 @@ PpmLoader::Pixels	PpmLoader::parseBody() {
 
 /**
  * Expect P3 or P6.
- * 
+ *
  * Expected format:
  * {"P3" | "P6"}
 */
@@ -166,7 +161,7 @@ PpmLoader::Format	PpmLoader::expectFormat() {
 
 /**
  * Returns number.
-*/	
+*/
 uint32_t	PpmLoader::expectNumber() {
 	if (cursor >= base::data.size()) {
 		throw PpmParseError("missing value");
@@ -247,7 +242,7 @@ void	PpmLoader::ignoreChunk() noexcept {
 
 /**
  * Builds a pixel from RGB values.
- * 
+ *
  * @note	- Alpha is set to 255.
  * @note	- RGB values are reversed (ABGR).
 */

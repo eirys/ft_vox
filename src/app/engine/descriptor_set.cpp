@@ -16,6 +16,8 @@
 #include "uniform_buffer_object.h"
 #include "descriptor_pool.h"
 
+#include "utils.h"
+
 namespace scop::graphics {
 
 /* ========================================================================== */
@@ -90,15 +92,6 @@ void	DescriptorSet::addDescriptor(const BufferInfo& buffer_info) {
 	// _writes.writes_data.emplace_back(write);
 }
 
-/**
- * @brief	Destroys writes data after they have been used.
-*/
-void	DescriptorSet::removeWrites() {
-	_writes.buffer_infos.clear();
-	_writes.image_infos.clear();
-	_writes.writes_data.clear();
-}
-
 /* ========================================================================== */
 
 VkDescriptorSetLayout	DescriptorSet::getLayout() const noexcept {
@@ -110,13 +103,14 @@ VkDescriptorSet	DescriptorSet::getSet() const noexcept {
 }
 
 DescriptorSet::DescriptorSizes	DescriptorSet::getPoolSizes() const noexcept {
-	return {
-		_writes.buffer_infos.size(), // 3,
-		_writes.image_infos.size() }; // 2 };
+	return _writes_sizes;
 }
 
-const std::vector<VkWriteDescriptorSet>&	DescriptorSet::getWrites() const noexcept {
-	return _writes.writes_data;
+std::vector<VkWriteDescriptorSet>&&	DescriptorSet::getWrites() const noexcept {
+	std::vector<VkWriteDescriptorSet>	writes;
+	// TODO reconstruct
+
+	return std::move(writes);
 }
 
 /* ========================================================================== */
@@ -178,7 +172,9 @@ void	DescriptorSet::_createLayout(Device& device) {
 	if (vkCreateDescriptorSetLayout(device.getLogicalDevice(), &layout_info, nullptr, &_layout) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create descriptor set layout");
 	}
+	LOG("Created layouts");
 }
+
 /*
 void	DescriptorSet::_createWrites(
 	TextureHandler& texture_handler

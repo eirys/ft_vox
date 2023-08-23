@@ -29,6 +29,12 @@ namespace scop::graphics {
 /*                                   PUBLIC                                   */
 /* ========================================================================== */
 
+ScenePipeline::ScenePipeline() {
+	super::_render_pass = std::make_shared<SceneRenderPass>();
+	super::_target = std::make_shared<SceneTarget>();
+	super::_texture = std::make_shared<SceneTextureHandler>();
+}
+
 void	ScenePipeline::init(
 	Device& device,
 	const RenderPass::RenderPassInfo& rp_info,
@@ -36,10 +42,11 @@ void	ScenePipeline::init(
 	const std::vector<Texture>& textures,
 	VkGraphicsPipelineCreateInfo& info
 ) {
-	_createRenderPass(device, rp_info);
+	super::_render_pass->init(device, rp_info);
 	_createPipeline(device, info);
-	_createTarget(device, tar_info);
-	_createTextureHandler(device, textures);
+	tar_info.render_pass = super::_render_pass;
+	super::_target->init(device, tar_info);
+	super::_texture->init(device, textures);
 }
 
 /**
@@ -48,6 +55,7 @@ void	ScenePipeline::init(
 void	ScenePipeline::setDescriptor(DescriptorSetPtr desc_ptr) {
 	using BufferInfo = DescriptorSet::BufferInfo;
 	using ImageInfo = DescriptorSet::ImageInfo;
+	using UniformBufferObject = ::scop::UniformBufferObject;
 
 	BufferInfo	camera{};
 	camera.stage = VK_SHADER_STAGE_VERTEX_BIT;
@@ -168,23 +176,6 @@ void	ScenePipeline::update(const ::scop::UniformBufferObject& ubo) noexcept {
 /*                                   PRIVATE                                  */
 /* ========================================================================== */
 
-void	ScenePipeline::_createRenderPass(
-	Device& device,
-	const RenderPass::RenderPassInfo& rp_info
-) {
-	super::_render_pass.reset(new SceneRenderPass);
-	super::_render_pass->init(device, rp_info);
-}
-
-void	ScenePipeline::_createTarget(
-	Device& device,
-	Target::TargetInfo& tar_info
-) {
-	super::_target.reset(new SceneTarget);
-	tar_info.render_pass = super::_render_pass;
-	super::_target->init(device, tar_info);
-}
-
 void	ScenePipeline::_createPipeline(
 	Device& device,
 	VkGraphicsPipelineCreateInfo& info
@@ -227,14 +218,6 @@ void	ScenePipeline::_createPipeline(
 		device.getLogicalDevice(),
 		frag_module,
 		nullptr);
-}
-
-void	ScenePipeline::_createTextureHandler(
-	Device& device,
-	const std::vector<Texture>& textures
-) {
-	super::_texture.reset(new SceneTextureHandler);
-	super::_texture->init(device, textures);
 }
 
 } // namespace scop::graphics

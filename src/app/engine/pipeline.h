@@ -88,7 +88,7 @@ protected:
 	/*                               CLASS MEMBERS                               */
 	/* ========================================================================= */
 
-	VkPipeline			_pipeline;
+	VkPipeline			_pipeline = VK_NULL_HANDLE;
 
 	RenderPassPtr		_render_pass;
 	TextureHandlerPtr	_texture;
@@ -109,12 +109,6 @@ protected:
 
 	/* ========================================================================= */
 
-	virtual void		_createRenderPass(
-		Device& device,
-		const RenderPass::RenderPassInfo& rp_info) = 0;
-	virtual void		_createTarget(
-		Device& device,
-		Target::TargetInfo& info) = 0;
 	virtual void		_createPipeline(
 		Device& device,
 		VkGraphicsPipelineCreateInfo& info) = 0;

@@ -16,9 +16,10 @@
 #include "descriptor_set.h"
 
 #include "game_state.h"
-// #include "player.h"
 #include "image_handler.h"
+#include "scene_pipeline.h"
 #include "shadows_pipeline.h"
+#include "shadows_texture_handler.h"
 
 #include "timer.h"
 #include "utils.h"
@@ -42,15 +43,18 @@ void	Engine::init(
 	const std::vector<Vertex>& vertices,
 	const std::vector<uint32_t>& indices
 ) {
+	_pipelines.scene = std::make_shared<ScenePipeline>();
+	_pipelines.shadows = std::make_shared<ShadowsPipeline>();
+
 	_nb_indices = indices.size();
 	_createInstance();
 	_debug_module.init(_vk_instance);
 	_device.init(window, _vk_instance);
 	_swap_chain.init(_device, window);
 	_command_pool.init(_device);
+	_createDescriptors(game);
 	_createGraphicsPipelineLayout();
 	_createGraphicsPipelines(images);
-	_createDescriptors(game);
 	_input_handler.init(_device, _command_pool, vertices, indices);
 	_main_command_buffer.init(_device, _command_pool, max_frames_in_flight);
 	_createSyncObjects();
@@ -147,12 +151,7 @@ void	Engine::render(
 		image_index );
 
 	_main_command_buffer.end(_device, false);
-	// _recordDrawingCommand(_nb_indices, image_index);
 
-	// _descriptor_pool.updateUniformBuffer(
-	// 	_swap_chain.getExtent(),
-	// 	player
-	// );
 	_pipelines.scene->update(_updateUbo(game));
 
 	// Set synchronization objects
@@ -366,6 +365,7 @@ void	Engine::_createGraphicsPipelines(
 	);
 	dynamic_state.pDynamicStates = dynamic_states.data();
 
+	/* PIPELINE ================================================================ */
 	VkGraphicsPipelineCreateInfo	pipeline_info{};
 	pipeline_info.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
 	pipeline_info.pVertexInputState = &vert_input;
@@ -395,7 +395,7 @@ void	Engine::_createGraphicsPipelines(
 		.width = _swap_chain.getExtent().width,
 		.height = _swap_chain.getExtent().height,
 		.depth_format = _swap_chain.findDepthFormat(_device),
-		.depth_samples = VK_SAMPLE_COUNT_1_BIT,
+		.depth_samples = _device.getMsaaSamples(),
 		.color_format = _swap_chain.getImageFormat(),
 		.color_samples = _device.getMsaaSamples() };
 	Target::TargetInfo	tar_info {
@@ -421,8 +421,8 @@ void	Engine::_createGraphicsPipelines(
 	depth_stencil.depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
 
 	rp_info = {
-		.width = 2048,
-		.height = 2048,
+		.width = SHADOWMAP_SIZE,
+		.height = SHADOWMAP_SIZE,
 		.depth_format = VK_FORMAT_D16_UNORM,
 		.depth_samples = VK_SAMPLE_COUNT_1_BIT };
 	tar_info = {
@@ -496,6 +496,8 @@ void	Engine::_createDescriptors(const ::vox::GameState& game) {
 
 	_pipelines.scene->setDescriptor(set);
 	_pipelines.shadows->setDescriptor(set);
+
+	set->init(_device);
 
 	_descriptor_pool.add(set);
 	_descriptor_pool.init(_device);
