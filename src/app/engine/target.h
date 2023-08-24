@@ -31,6 +31,7 @@ namespace scop::graphics {
 
 class Device;
 class RenderPass;
+class SwapChain;
 
 /**
  * @brief Wrapper class for target framebuffers.
@@ -45,10 +46,8 @@ public:
 	 * @brief Target creation info.
 	*/
 	struct TargetInfo {
-		std::vector<VkImageView>		swap_views;
-		uint32_t						width;
-		uint32_t						height;
-		std::shared_ptr<RenderPass>		render_pass;
+		SwapChain*					swap_chain;
+		std::shared_ptr<RenderPass>	render_pass;
 	};
 
 	/* ========================================================================= */

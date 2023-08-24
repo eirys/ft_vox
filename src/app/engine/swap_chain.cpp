@@ -189,7 +189,7 @@ void	SwapChain::_createImages(Device& device, uint32_t& image_count) {
 	);
 
 	// Create image view for each image
-	_image_views.resize(image_count);
+	_image_views.reserve(image_count);
 	auto createImageViewFunc =
 		[&device, this]
 		(VkImage image) -> VkImageView {

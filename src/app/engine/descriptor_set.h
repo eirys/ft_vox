@@ -32,33 +32,40 @@ namespace scop::graphics {
 
 class Device;
 class DescriptorPool;
-class TextureHandler;
 
 class DescriptorSet {
+
+	friend DescriptorPool;
+
 public:
 	/* ========================================================================= */
 	/*                               HELPER OBJECTS                              */
 	/* ========================================================================= */
 
 	struct DescriptorSizes {
-		std::size_t	uniform_buffer;
-		std::size_t	combined_image_sampler;
+		uint32_t	uniform_buffer;
+		uint32_t	combined_image_sampler;
 	};
 
 	struct Descriptor {
+		Descriptor(VkDescriptorType type): type(type) {}
+		virtual ~Descriptor() = default;
+
 		VkDescriptorType	type;
 		VkShaderStageFlags	stage;
 		uint32_t			binding;
 	};
 
-	struct BufferInfo: public Descriptor {
-		VkDescriptorType	type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	struct BufferInfo final: public Descriptor {
+		BufferInfo(): Descriptor(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER) {}
+
 		VkDeviceSize		offset;
 		VkDeviceSize		range;
 	};
 
-	struct ImageInfo: public Descriptor {
-		VkDescriptorType	type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+	struct ImageInfo final: public Descriptor {
+		ImageInfo(): Descriptor(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER) {}
+
 		VkSampler			sampler;
 		VkImageView			view;
 		VkImageLayout		layout;
@@ -96,7 +103,8 @@ public:
 	VkDescriptorSetLayout				getLayout() const noexcept;
 	VkDescriptorSet						getSet() const noexcept;
 	DescriptorSizes						getPoolSizes() const noexcept;
-	std::vector<VkWriteDescriptorSet>&&	getWrites() const noexcept;
+	const Buffer&						getBuffer() const noexcept;
+	const std::vector<DescriptorPtr>&	getInfos() const noexcept;
 
 private:
 	/* ========================================================================= */

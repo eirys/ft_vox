@@ -123,6 +123,9 @@ void	ShadowsRenderPass::_createResources(
 	Device& device,
 	const RenderPass::RenderPassInfo& rp_info
 ) {
+	super::_width = rp_info.width;
+	super::_height = rp_info.height;
+
 	_depth_image.initImage(
 		device,
 		rp_info.width,

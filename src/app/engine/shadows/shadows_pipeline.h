@@ -45,8 +45,9 @@ public:
 	void	init(
 		Device& device,
 		const RenderPass::RenderPassInfo& rp_info,
-		Target::TargetInfo& tar_info,
-		const std::vector<Texture>& textures,
+		Target::TargetInfo& tar_info) override;
+	void	assemble(
+		Device& device,
 		VkGraphicsPipelineCreateInfo& info) override;
 	void	setDescriptor(DescriptorSetPtr desc_ptr);
 	void	draw(
@@ -63,15 +64,6 @@ public:
 	using super::getTextureHandler;
 	using super::getTarget;
 	using super::getDescriptor;
-
-private:
-	/* ========================================================================= */
-	/*                                  METHODS                                  */
-	/* ========================================================================= */
-
-	void	_createPipeline(
-		Device& device,
-		VkGraphicsPipelineCreateInfo& info) override;
 
 }; // class ShadowsPipeline
 

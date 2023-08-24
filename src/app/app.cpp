@@ -13,9 +13,7 @@
 #include "app.h"
 #include "model.h"
 #include "obj_parser.h"
-#include "ppm_loader.h"
 #include "scop_math.h"
-#include "mtl_parser.h"
 #include "perlin_noise.h"
 
 namespace scop {
@@ -50,7 +48,7 @@ App::App() {
 	// material.ambient_color = {0.2,0.2,0.2};
 	// _loadLight(material);
 	_window.init(this);
-	_engine.init(_window, _textures, _game, _vertices, _indices);
+	_engine.init(_window, _game, _vertices, _indices);
 }
 
 App::~App() {
@@ -181,39 +179,6 @@ void	App::_loadTerrain() {
 
 	_game.setOrigin(mesh.origin);
 
-	// TEMPORARY ===
-	LOG("Loading textures...");
-	const std::vector<std::string>	paths {
-		SCOP_TEXTURE_PATH "grass_top.ppm",
-		//SCOP_TEXTURE_PATH "grass_side.ppm",
-		//SCOP_TEXTURE_PATH "dirt.ppm"
-	};
-
-	if (paths.size() > TEXTURE_SAMPLER_COUNT) {
-		throw std::invalid_argument("Too many textures to be loaded");
-	}
-
-	std::optional<std::size_t> width, height;
-	_textures.reserve(paths.size());
-	for (std::size_t i = 0; i < paths.size(); ++i) {
-		// Load texture
-		scop::PpmLoader	loader(paths[i]);
-		_textures.emplace_back(loader.load());
-
-		// Check dimensions
-		if (!width.has_value()) {
-			width.emplace(_textures[i].getWidth());
-			height.emplace(_textures[i].getHeight());
-		} else {
-			if (
-				width.value() != _textures[i].getWidth() ||
-				height.value() != _textures[i].getHeight()
-			) {
-				throw std::invalid_argument("Texture dimensions do not match");
-			}
-		}
-	}
-	LOG("Textures loaded.");
 }
 
 // void	App::_loadModel(const std::string& path) {

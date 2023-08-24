@@ -81,16 +81,6 @@ void	SceneRenderPass::_createRenderPass(
 	color_attachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 	color_attachment.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
-	VkAttachmentDescription	color_attachment_resolve{};
-	color_attachment_resolve.format = rp_info.color_format;
-	color_attachment_resolve.samples = VK_SAMPLE_COUNT_1_BIT;
-	color_attachment_resolve.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-	color_attachment_resolve.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-	color_attachment_resolve.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-	color_attachment_resolve.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-	color_attachment_resolve.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-	color_attachment_resolve.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-
 	VkAttachmentDescription	depth_attachment{};
 	depth_attachment.format = rp_info.depth_format;
 	depth_attachment.samples = rp_info.depth_samples;
@@ -101,22 +91,32 @@ void	SceneRenderPass::_createRenderPass(
 	depth_attachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 	depth_attachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
+	VkAttachmentDescription	color_attachment_resolve{};
+	color_attachment_resolve.format = rp_info.color_format;
+	color_attachment_resolve.samples = VK_SAMPLE_COUNT_1_BIT;
+	color_attachment_resolve.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+	color_attachment_resolve.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+	color_attachment_resolve.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+	color_attachment_resolve.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+	color_attachment_resolve.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+	color_attachment_resolve.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+
 	std::array<VkAttachmentDescription, 3>	attachments = {
 		color_attachment,
-		color_attachment_resolve,
-		depth_attachment
+		depth_attachment,
+		color_attachment_resolve
 	};
 
 	// Subpass
 	VkAttachmentReference	color_ref{};
-	VkAttachmentReference	color_resolve_ref{};
 	VkAttachmentReference	depth_ref{};
+	VkAttachmentReference	color_resolve_ref{};
 	color_ref.attachment = 0;
 	color_ref.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-	color_resolve_ref.attachment = 1;
-	color_resolve_ref.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-	depth_ref.attachment = 2;
+	depth_ref.attachment = 1;
 	depth_ref.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+	color_resolve_ref.attachment = 2;
+	color_resolve_ref.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
 	VkSubpassDescription	subpass{};
 	subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;

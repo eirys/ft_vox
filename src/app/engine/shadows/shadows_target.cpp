@@ -31,15 +31,15 @@ void	ShadowsTarget::init(
 		std::dynamic_pointer_cast<ShadowsRenderPass>(tar_info.render_pass);
 	VkImageView view = render_pass->getDepthResource().getView();
 
-	super::_frame_buffers.reserve(1);
+	super::_frame_buffers.resize(1);
 
 	VkFramebufferCreateInfo	fb_info{};
 	fb_info.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
 	fb_info.renderPass = render_pass->getRenderPass();
 	fb_info.attachmentCount = 1;
 	fb_info.pAttachments = &view;
-	fb_info.width = tar_info.width;
-	fb_info.height = tar_info.height;
+	fb_info.width = tar_info.render_pass->getWidth();
+	fb_info.height = tar_info.render_pass->getHeight();
 	fb_info.layers = 1;
 
 	if (vkCreateFramebuffer(device.getLogicalDevice(), &fb_info, nullptr, &(super::_frame_buffers[0])) != VK_SUCCESS) {

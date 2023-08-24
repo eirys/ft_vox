@@ -51,9 +51,11 @@ public:
 	void	init(
 		Device& device,
 		const RenderPass::RenderPassInfo& rp_info,
-		Target::TargetInfo& tar_info,
-		const std::vector<Texture>& textures,
+		Target::TargetInfo& tar_info) override;
+	void	assemble(
+		Device& device,
 		VkGraphicsPipelineCreateInfo& info) override;
+
 	void	setDescriptor(DescriptorSetPtr desc_ptr) override;
 	void	draw(
 		VkPipelineLayout layout,
@@ -74,10 +76,6 @@ private:
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
-
-	void	_createPipeline(
-		Device& device,
-		VkGraphicsPipelineCreateInfo& info) override;
 
 }; // class ScenePipeline
 

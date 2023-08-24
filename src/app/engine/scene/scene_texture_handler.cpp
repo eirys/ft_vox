@@ -16,27 +16,26 @@
 #include "command_pool.h"
 #include "command_buffer.h"
 #include "buffer.h"
+#include "utils.h"
+#include "ppm_loader.h"
+#include "mtl_parser.h"
 
 #include <stdexcept> // std::invalid_argument
 #include <algorithm> // std::max
 #include <stdexcept> // std::runtime_error
+#include <cassert> // assert
 
 namespace scop::graphics {
+
+using Texture = SceneTextureHandler::Texture;
 
 /* ========================================================================== */
 /*                                   PUBLIC                                   */
 /* ========================================================================== */
 
-void	SceneTextureHandler::init(
-	Device& device,
-	const std::vector<Texture>& images
-) {
-	if (images.empty()) {
-		throw std::invalid_argument("TextureHandler: no image provided");
-	}
-	super::_texture_count = static_cast<uint32_t>(images.size());
+void	SceneTextureHandler::init(Device& device) {
 	super::_layer_count = 1;
-	_createTextureImages(device, images);
+	_createTextureImages(device);
 	_createTextureImageView(device);
 	_createTextureSampler(device);
 }
@@ -47,13 +46,12 @@ void	SceneTextureHandler::init(
 
 /**
  * @brief Create texture images (VkImage).
- * @note Assuming all images have the same size as squares.
  * @note All textures will be stored in the same VkImage, as layers.
 */
-void	SceneTextureHandler::_createTextureImages(
-	Device& device,
-	const std::vector<Texture>& images
-) {
+void	SceneTextureHandler::_createTextureImages(Device& device) {
+	std::vector<Texture>	images = _loadTextures();
+
+	super::_texture_count = static_cast<uint32_t>(images.size());
 	const uint32_t	image_width = static_cast<uint32_t>(images[0].getWidth());
 	// A layer is an image.
 	const VkDeviceSize	layer_size = image_width * image_width * sizeof(uint32_t);
@@ -147,9 +145,7 @@ void	SceneTextureHandler::_createTextureImages(
 /**
  * @brief Create image view for sampler.
 */
-void	SceneTextureHandler::_createTextureImageView(
-	Device& device
-) {
+void	SceneTextureHandler::_createTextureImageView(Device& device) {
 	super::_texture_buffer.initView(
 		device,
 		VK_FORMAT_R8G8B8A8_SRGB,
@@ -162,9 +158,7 @@ void	SceneTextureHandler::_createTextureImageView(
 /**
  * @brief Create sampler for texture sampling in shaders.
 */
-void	SceneTextureHandler::_createTextureSampler(
-	Device& device
-) {
+void	SceneTextureHandler::_createTextureSampler(Device& device) {
 	 VkPhysicalDeviceProperties	properties{};
 	 vkGetPhysicalDeviceProperties(device.getPhysicalDevice(), &properties);
 
@@ -189,6 +183,45 @@ void	SceneTextureHandler::_createTextureSampler(
 	if (vkCreateSampler(device.getLogicalDevice(), &sampler_info, nullptr, &(super::_texture_sampler)) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create texture sampler");
 	}
+}
+
+/**
+ * @brief Loads images (textures).
+ * @note Assuming all images have the same size as squares.
+*/
+std::vector<Texture>	SceneTextureHandler::_loadTextures() const {
+	LOG("Loading textures...");
+	std::vector<Texture>	images;
+	const std::vector<std::string>	paths {
+		SCOP_TEXTURE_PATH "grass_top.ppm",
+		SCOP_TEXTURE_PATH "grass_side.ppm",
+		SCOP_TEXTURE_PATH "dirt.ppm"
+	};
+	images.reserve(paths.size());
+
+	assert(paths.size() < TEXTURE_SAMPLER_COUNT);
+
+	std::optional<std::size_t> side;
+	for (const std::string& path: paths) {
+		scop::PpmLoader	loader(path);
+
+		const Texture& image = images.emplace_back(loader.load());
+
+		// Check dimensions
+		if (!side.has_value()) {
+			side.emplace(image.getWidth());
+		} else {
+			if (
+				side.value() != image.getWidth() &&
+				side.value() != image.getHeight()
+			) {
+				throw std::invalid_argument("Texture dimensions do not match");
+			}
+		}
+	}
+	LOG("Textures loaded.");
+
+	return images;
 }
 
 } // namespace scop::graphics

@@ -21,16 +21,9 @@ namespace scop::graphics {
 /*                                   PUBLIC                                   */
 /* ========================================================================== */
 
-void	ShadowsTextureHandler::init(
-	Device& device,
-	const std::vector<Texture>& images
-) {
-	if (images.empty()) {
-		throw std::invalid_argument("TextureHandler: wtf u doin");
-	}
-	super::_texture_count = 0;
+void	ShadowsTextureHandler::init(Device& device) {
 	super::_layer_count = 1;
-	_createTextureImages(device, images);
+	_createTextureImages(device);
 	_createTextureImageView(device);
 	_createTextureSampler(device);
 }
@@ -39,11 +32,8 @@ void	ShadowsTextureHandler::init(
 /*                                   PRIVATE                                  */
 /* ========================================================================== */
 
-void	ShadowsTextureHandler::_createTextureImages(
-	Device& device,
-	const std::vector<Texture>& images
-) {
-	(void)images;
+void	ShadowsTextureHandler::_createTextureImages(Device& device) {
+	super::_texture_count = 0;
 	super::_texture_buffer.initImage(
 		device,
 		SHADOWMAP_SIZE,

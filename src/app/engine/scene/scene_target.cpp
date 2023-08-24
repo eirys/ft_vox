@@ -13,6 +13,7 @@
 #include "scene_target.h"
 #include "device.h"
 #include "scene_render_pass.h"
+#include "swap_chain.h"
 
 #include <array> // std::array
 #include <stdexcept> // std::runtime_error
@@ -30,11 +31,11 @@ void	SceneTarget::init(
 	Device& device,
 	const Target::TargetInfo& tar_info
 ) {
-	const auto& image_views = tar_info.swap_views;
+	const auto& image_views = tar_info.swap_chain->getImageViews();
 	const auto& render_pass =
 		std::dynamic_pointer_cast<SceneRenderPass>(tar_info.render_pass);
 
-	super::_frame_buffers.reserve(image_views.size());
+	super::_frame_buffers.resize(image_views.size());
 
 	for (std::size_t i = 0; i < image_views.size(); ++i) {
 		std::array<VkImageView, 3>	attachments = {
@@ -46,8 +47,8 @@ void	SceneTarget::init(
 		framebuffer.renderPass = render_pass->getRenderPass();
 		framebuffer.attachmentCount = static_cast<uint32_t>(attachments.size());
 		framebuffer.pAttachments = attachments.data();
-		framebuffer.width = tar_info.width;
-		framebuffer.height = tar_info.height;
+		framebuffer.width = tar_info.swap_chain->getExtent().width;
+		framebuffer.height = tar_info.swap_chain->getExtent().height;
 		framebuffer.layers = 1;
 
 		if (vkCreateFramebuffer(device.getLogicalDevice(), &framebuffer, nullptr, &(super::_frame_buffers[i])) != VK_SUCCESS) {

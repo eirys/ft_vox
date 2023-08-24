@@ -62,9 +62,10 @@ public:
 	virtual void		init(
 		Device& device,
 		const RenderPass::RenderPassInfo& rp_info,
-		Target::TargetInfo& tar_info,
-		const std::vector<Texture>& textures,
-		VkGraphicsPipelineCreateInfo& layout_info) = 0;
+		Target::TargetInfo& tar_info) = 0;
+	virtual void		assemble(
+		Device& device,
+		VkGraphicsPipelineCreateInfo& info) = 0;
 	void				destroy(Device& device);
 	virtual void		setDescriptor(DescriptorSetPtr desc_ptr);
 	virtual void		draw(
@@ -78,8 +79,8 @@ public:
 	/* ========================================================================= */
 
 	VkPipeline			getPipeline() const noexcept;
-	RenderPassPtr		getRenderPass() const noexcept;
 	TextureHandlerPtr	getTextureHandler() const noexcept;
+	RenderPassPtr		getRenderPass() const noexcept;
 	TargetPtr			getTarget() const noexcept;
 	DescriptorSetPtr	getDescriptor() const noexcept;
 
@@ -90,8 +91,8 @@ protected:
 
 	VkPipeline			_pipeline = VK_NULL_HANDLE;
 
-	RenderPassPtr		_render_pass;
 	TextureHandlerPtr	_texture;
+	RenderPassPtr		_render_pass;
 	TargetPtr			_target;
 
 	DescriptorSetPtr	_descriptor;
@@ -106,12 +107,6 @@ protected:
 
 	Pipeline(const Pipeline& other) = delete;
 	Pipeline& operator=(const Pipeline& other) = delete;
-
-	/* ========================================================================= */
-
-	virtual void		_createPipeline(
-		Device& device,
-		VkGraphicsPipelineCreateInfo& info) = 0;
 
 	/* UTILS =================================================================== */
 

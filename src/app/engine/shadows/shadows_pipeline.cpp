@@ -37,15 +37,40 @@ ShadowsPipeline::ShadowsPipeline() {
 void	ShadowsPipeline::init(
 	Device& device,
 	const RenderPass::RenderPassInfo& rp_info,
-	Target::TargetInfo& tar_info,
-	const std::vector<Texture>& textures,
-	VkGraphicsPipelineCreateInfo& info
+	Target::TargetInfo& tar_info
 ) {
+	super::_texture->init(device);
 	super::_render_pass->init(device, rp_info);
-	_createPipeline(device, info);
 	tar_info.render_pass = super::_render_pass;
 	super::_target->init(device, tar_info);
-	super::_texture->init(device, textures);
+}
+
+void	ShadowsPipeline::assemble(
+	Device& device,
+	VkGraphicsPipelineCreateInfo& info
+) {
+	/* SHADERS ================================================================= */
+	VkShaderModule	vert_module =
+		super::_createShaderModule(device, "shaders\\shadow_vert.spv");
+
+	VkPipelineShaderStageCreateInfo	vert_info{};
+	vert_info.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+	vert_info.stage = VK_SHADER_STAGE_VERTEX_BIT;
+	vert_info.module = vert_module;
+	vert_info.pName = "main";
+
+	info.pStages = &vert_info;
+	info.stageCount = 1;
+	info.renderPass = _render_pass->getRenderPass();
+
+	if (vkCreateGraphicsPipelines(device.getLogicalDevice(), VK_NULL_HANDLE, 1, &info, nullptr, &(super::_pipeline)) != VK_SUCCESS) {
+		throw std::runtime_error("failed to create shadow graphics pipeline");
+	}
+
+	vkDestroyShaderModule(
+		device.getLogicalDevice(),
+		vert_module,
+		nullptr);
 }
 
 void	ShadowsPipeline::setDescriptor(DescriptorSetPtr desc_ptr) {
@@ -140,37 +165,5 @@ void	ShadowsPipeline::draw(
 void	ShadowsPipeline::update(
 	const ::scop::UniformBufferObject& ubo
 ) noexcept {}
-
-/* ========================================================================== */
-/*                                   PRIVATE                                  */
-/* ========================================================================== */
-
-void	ShadowsPipeline::_createPipeline(
-	Device& device,
-	VkGraphicsPipelineCreateInfo& info
-) {
-	/* SHADERS ================================================================= */
-	VkShaderModule	vert_module =
-		super::_createShaderModule(device, "shaders\\shadow_vert.spv");
-
-	VkPipelineShaderStageCreateInfo	vert_info{};
-	vert_info.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-	vert_info.stage = VK_SHADER_STAGE_VERTEX_BIT;
-	vert_info.module = vert_module;
-	vert_info.pName = "main";
-
-	info.pStages = &vert_info;
-	info.stageCount = 1;
-	info.renderPass = _render_pass->getRenderPass();
-
-	if (vkCreateGraphicsPipelines(device.getLogicalDevice(), VK_NULL_HANDLE, 1, &info, nullptr, &(super::_pipeline)) != VK_SUCCESS) {
-		throw std::runtime_error("failed to create shadow graphics pipeline");
-	}
-
-	vkDestroyShaderModule(
-		device.getLogicalDevice(),
-		vert_module,
-		nullptr);
-}
 
 } // namespace scop::graphics

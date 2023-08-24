@@ -15,6 +15,7 @@
 #include "descriptor_set.h"
 
 #include <array> // std::array
+#include <list> // std::list
 #include <stdexcept> // std::runtime_error
 
 namespace scop::graphics {
@@ -108,11 +109,10 @@ void	DescriptorPool::_allocateSets(
 	std::vector<VkDescriptorSet>	descriptor_sets;
 
 	_layouts.reserve(_descriptors.size());
-	descriptor_sets.reserve(_descriptors.size());
+	descriptor_sets.resize(_descriptors.size());
 
 	for (const auto& set: _descriptors) {
 		_layouts.emplace_back(set->getLayout());
-		descriptor_sets.emplace_back(set->getSet());
 	}
 
 	VkDescriptorSetAllocateInfo	alloc_info{};
@@ -124,18 +124,52 @@ void	DescriptorPool::_allocateSets(
 	if (vkAllocateDescriptorSets(device.getLogicalDevice(), &alloc_info, descriptor_sets.data()) != VK_SUCCESS) {
 		throw std::runtime_error("failed to allocate descriptor sets");
 	}
+
+	for (std::size_t i = 0; i < _descriptors.size(); ++i) {
+		_descriptors[i]->_set = descriptor_sets[i];
+	}
+
 }
 
 /**
- * @brief Updates descriptors, properly plugging cpu/gpu sides
+ * @brief Reconstructs descriptor writes array from sets,
+ * 		  then updates descriptors, properly plugging cpu/gpu sides
 */
 void	DescriptorPool::_createWrites(Device& device) {
-	std::vector<VkWriteDescriptorSet>	writes;
+	using DescriptorPtr = DescriptorSet::DescriptorPtr;
+	using BufferInfo = DescriptorSet::BufferInfo;
+	using ImageInfo = DescriptorSet::ImageInfo;
 
-	// Reconstructs descriptor writes array from sets
-	for (const auto& set: _descriptors) {
-		for (auto write: set->getWrites()) {
-			//TODO
+	std::vector<VkWriteDescriptorSet>	writes;
+	std::list<VkDescriptorBufferInfo>	buffers;
+	std::list<VkDescriptorImageInfo>	images;
+
+	for (const auto& descriptor: _descriptors) {
+		for (const auto& info: descriptor->getInfos()) {
+			VkWriteDescriptorSet	write{};
+			write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			write.dstSet = descriptor->getSet();
+			write.dstBinding = info->binding;
+			write.dstArrayElement = 0;
+			write.descriptorType = info->type;
+			write.descriptorCount = 1;
+
+			if (info->type == VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER) {
+				std::shared_ptr<BufferInfo> buffer_info = std::dynamic_pointer_cast<BufferInfo>(info);
+				VkDescriptorBufferInfo	buffer{};
+				buffer.buffer = descriptor->getBuffer().getBuffer();
+				buffer.offset = buffer_info->offset;
+				buffer.range = buffer_info->range;
+				write.pBufferInfo = &buffers.emplace_back(buffer);
+			} else {
+				std::shared_ptr<ImageInfo> image_info = std::dynamic_pointer_cast<ImageInfo>(info);
+				VkDescriptorImageInfo	image{};
+				image.imageLayout = image_info->layout;
+				image.imageView = image_info->view;
+				image.sampler = image_info->sampler;
+				write.pImageInfo = &images.emplace_back(image);
+			}
+
 			writes.emplace_back(write);
 		}
 	}

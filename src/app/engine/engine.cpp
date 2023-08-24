@@ -38,7 +38,6 @@ const std::vector<const char*>	Engine::validation_layers = {
 
 void	Engine::init(
 	::scop::Window& window,
-	const std::vector<TextureHandler::Texture>& images,
 	const ::vox::GameState& game,
 	const std::vector<Vertex>& vertices,
 	const std::vector<uint32_t>& indices
@@ -46,15 +45,15 @@ void	Engine::init(
 	_pipelines.scene = std::make_shared<ScenePipeline>();
 	_pipelines.shadows = std::make_shared<ShadowsPipeline>();
 
-	_nb_indices = indices.size();
 	_createInstance();
 	_debug_module.init(_vk_instance);
 	_device.init(window, _vk_instance);
 	_swap_chain.init(_device, window);
 	_command_pool.init(_device);
+	_createGraphicsPipelines();
 	_createDescriptors(game);
 	_createGraphicsPipelineLayout();
-	_createGraphicsPipelines(images);
+	_assembleGraphicsPipelines();
 	_input_handler.init(_device, _command_pool, vertices, indices);
 	_main_command_buffer.init(_device, _command_pool, max_frames_in_flight);
 	_createSyncObjects();
@@ -262,9 +261,33 @@ void	Engine::_createInstance() {
 /**
  * @brief Create generic pipeline createinfo
 */
-void	Engine::_createGraphicsPipelines(
-	const std::vector<Texture>& scene_textures
-) {
+void	Engine::_createGraphicsPipelines() {
+	RenderPass::RenderPassInfo	rp_info {
+		.width = _swap_chain.getExtent().width,
+		.height = _swap_chain.getExtent().height,
+		.depth_format = _swap_chain.findDepthFormat(_device),
+		.depth_samples = _device.getMsaaSamples(),
+		.color_format = _swap_chain.getImageFormat(),
+		.color_samples = _device.getMsaaSamples() };
+	Target::TargetInfo	tar_info { .swap_chain = &_swap_chain };
+
+	_pipelines.scene->init(
+		_device,
+		rp_info,
+		tar_info);
+
+	rp_info.width = SHADOWMAP_SIZE;
+	rp_info.height = SHADOWMAP_SIZE;
+	rp_info.depth_format = VK_FORMAT_D16_UNORM;
+	rp_info.depth_samples = VK_SAMPLE_COUNT_1_BIT;
+
+	_pipelines.shadows->init(
+		_device,
+		rp_info,
+		tar_info);
+}
+
+void	Engine::_assembleGraphicsPipelines() {
 	/* INPUT FORMAT ============================================================ */
 	VkPipelineVertexInputStateCreateInfo	vert_input{};
 	auto	binding_description = scop::Vertex::getBindingDescription();
@@ -391,24 +414,7 @@ void	Engine::_createGraphicsPipelines(
 	multisampling.rasterizationSamples = _device.getMsaaSamples();
 	depth_stencil.depthCompareOp = VK_COMPARE_OP_LESS;
 
-	RenderPass::RenderPassInfo	rp_info {
-		.width = _swap_chain.getExtent().width,
-		.height = _swap_chain.getExtent().height,
-		.depth_format = _swap_chain.findDepthFormat(_device),
-		.depth_samples = _device.getMsaaSamples(),
-		.color_format = _swap_chain.getImageFormat(),
-		.color_samples = _device.getMsaaSamples() };
-	Target::TargetInfo	tar_info {
-		.swap_views = _swap_chain.getImageViews(),
-		.width = _swap_chain.getExtent().width,
-		.height = _swap_chain.getExtent().height };
-
-	_pipelines.scene->init(
-		_device,
-		rp_info,
-		tar_info,
-		scene_textures,
-		pipeline_info);
+	_pipelines.scene->assemble(_device, pipeline_info);
 
 	attribute_descriptions = ::scop::Vertex::getShadowAttributeDescriptions();
 	vert_input.vertexAttributeDescriptionCount =
@@ -420,21 +426,7 @@ void	Engine::_createGraphicsPipelines(
 	multisampling.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
 	depth_stencil.depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
 
-	rp_info = {
-		.width = SHADOWMAP_SIZE,
-		.height = SHADOWMAP_SIZE,
-		.depth_format = VK_FORMAT_D16_UNORM,
-		.depth_samples = VK_SAMPLE_COUNT_1_BIT };
-	tar_info = {
-		.width = rp_info.width,
-		.height = rp_info.height };
-
-	_pipelines.shadows->init(
-		_device,
-		rp_info,
-		tar_info,
-		{},
-		pipeline_info);
+	_pipelines.shadows->assemble(_device, pipeline_info);
 }
 
 void	Engine::_createGraphicsPipelineLayout() {
@@ -482,10 +474,7 @@ void	Engine::_updatePresentation(::scop::Window& window) {
 		.height = _swap_chain.getExtent().height,
 		.depth_format = _swap_chain.findDepthFormat(_device),
 		.color_format = _swap_chain.getImageFormat() };
-	Target::TargetInfo	tar_info {
-		.swap_views = _swap_chain.getImageViews(),
-		.width = _swap_chain.getExtent().width,
-		.height = _swap_chain.getExtent().height };
+	Target::TargetInfo	tar_info { .swap_chain = &_swap_chain };
 
 	_pipelines.scene->getRenderPass()->updateResources(_device, rp_info);
 	_pipelines.scene->getTarget()->update(_device, tar_info);
@@ -496,7 +485,6 @@ void	Engine::_createDescriptors(const ::vox::GameState& game) {
 
 	_pipelines.scene->setDescriptor(set);
 	_pipelines.shadows->setDescriptor(set);
-
 	set->init(_device);
 
 	_descriptor_pool.add(set);

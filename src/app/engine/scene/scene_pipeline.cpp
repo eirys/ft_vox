@@ -38,17 +38,57 @@ ScenePipeline::ScenePipeline() {
 void	ScenePipeline::init(
 	Device& device,
 	const RenderPass::RenderPassInfo& rp_info,
-	Target::TargetInfo& tar_info,
-	const std::vector<Texture>& textures,
-	VkGraphicsPipelineCreateInfo& info
+	Target::TargetInfo& tar_info
 ) {
+	super::_texture->init(device);
 	super::_render_pass->init(device, rp_info);
-	_createPipeline(device, info);
 	tar_info.render_pass = super::_render_pass;
 	super::_target->init(device, tar_info);
-	super::_texture->init(device, textures);
 }
 
+void	ScenePipeline::assemble(
+	Device& device,
+	VkGraphicsPipelineCreateInfo& info
+) {
+	/* SHADERS ================================================================= */
+	VkShaderModule	vert_module =
+		super::_createShaderModule(device, "shaders\\scene_vert.spv");
+	VkShaderModule	frag_module =
+		super::_createShaderModule(device, "shaders\\scene_frag.spv");
+
+	VkPipelineShaderStageCreateInfo	vert_info{};
+	vert_info.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+	vert_info.stage = VK_SHADER_STAGE_VERTEX_BIT;
+	vert_info.module = vert_module;
+	vert_info.pName = "main";
+
+	VkPipelineShaderStageCreateInfo	frag_info{};
+	frag_info.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+	frag_info.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
+	frag_info.module = frag_module;
+	frag_info.pName = "main";
+
+	std::array<VkPipelineShaderStageCreateInfo, 2>	shader_stages = {
+		vert_info,
+		frag_info };
+
+	info.stageCount = static_cast<uint32_t>(shader_stages.size());
+	info.pStages = shader_stages.data();
+	info.renderPass = _render_pass->getRenderPass();
+
+	if (vkCreateGraphicsPipelines(device.getLogicalDevice(), VK_NULL_HANDLE, 1, &info, nullptr, &(super::_pipeline)) != VK_SUCCESS) {
+		throw std::runtime_error("failed to create scene graphics pipeline");
+	}
+
+	vkDestroyShaderModule(
+		device.getLogicalDevice(),
+		vert_module,
+		nullptr);
+	vkDestroyShaderModule(
+		device.getLogicalDevice(),
+		frag_module,
+		nullptr);
+}
 /**
  * @brief Plugs a descriptor and modifies its properties.
 */
@@ -170,54 +210,6 @@ void	ScenePipeline::draw(
 */
 void	ScenePipeline::update(const ::scop::UniformBufferObject& ubo) noexcept {
 	super::_descriptor->update(ubo);
-}
-
-/* ========================================================================== */
-/*                                   PRIVATE                                  */
-/* ========================================================================== */
-
-void	ScenePipeline::_createPipeline(
-	Device& device,
-	VkGraphicsPipelineCreateInfo& info
-) {
-	/* SHADERS ================================================================= */
-	VkShaderModule	vert_module =
-		super::_createShaderModule(device, "shaders\\scene_vert.spv");
-	VkShaderModule	frag_module =
-		super::_createShaderModule(device, "shaders\\scene_frag.spv");
-
-	VkPipelineShaderStageCreateInfo	vert_info{};
-	vert_info.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-	vert_info.stage = VK_SHADER_STAGE_VERTEX_BIT;
-	vert_info.module = vert_module;
-	vert_info.pName = "main";
-
-	VkPipelineShaderStageCreateInfo	frag_info{};
-	frag_info.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-	frag_info.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
-	frag_info.module = frag_module;
-	frag_info.pName = "main";
-
-	std::array<VkPipelineShaderStageCreateInfo, 2>	shader_stages = {
-		vert_info,
-		frag_info };
-
-	info.stageCount = static_cast<uint32_t>(shader_stages.size());
-	info.pStages = shader_stages.data();
-	info.renderPass = _render_pass->getRenderPass();
-
-	if (vkCreateGraphicsPipelines(device.getLogicalDevice(), VK_NULL_HANDLE, 1, &info, nullptr, &(super::_pipeline)) != VK_SUCCESS) {
-		throw std::runtime_error("failed to create scene graphics pipeline");
-	}
-
-	vkDestroyShaderModule(
-		device.getLogicalDevice(),
-		vert_module,
-		nullptr);
-	vkDestroyShaderModule(
-		device.getLogicalDevice(),
-		frag_module,
-		nullptr);
 }
 
 } // namespace scop::graphics

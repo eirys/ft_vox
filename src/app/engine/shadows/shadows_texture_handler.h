@@ -52,9 +52,7 @@ public:
 
 	using super::destroy;
 
-	void					init(
-		Device& device,
-		const std::vector<Texture>& images) override;
+	void			init(Device& device) override;
 
 	/* ========================================================================= */
 
@@ -66,11 +64,9 @@ private:
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
 
-	void					_createTextureImages(
-		Device& device,
-		const std::vector<Texture>& images) override;
-	void					_createTextureImageView(Device& device) override;
-	void					_createTextureSampler(Device& device) override;
+	void			_createTextureImages(Device& device) override;
+	void			_createTextureImageView(Device& device) override;
+	void			_createTextureSampler(Device& device) override;
 
 }; // class ShadowsTextureHandler
 

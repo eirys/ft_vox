@@ -53,9 +53,7 @@ public:
 
 	/* ========================================================================= */
 
-	virtual void			init(
-		Device& device,
-		const std::vector<Texture>& images) = 0;
+	virtual void			init(Device& device) = 0;
 	void					destroy(Device& device);
 
 	/* ========================================================================= */
@@ -88,11 +86,10 @@ protected:
 
 	/* ========================================================================= */
 
-	virtual void			_createTextureImages(
-		Device& device,
-		const std::vector<Texture>& images) = 0;
+	virtual void			_createTextureImages(Device& device) = 0;
 	virtual void			_createTextureImageView(Device& device) = 0;
 	virtual void			_createTextureSampler(Device& device) = 0;
+
 	uint32_t				_getMipLevelCount(uint32_t image_width) const;
 
 }; // class TextureHandler

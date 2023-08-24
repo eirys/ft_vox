@@ -84,7 +84,6 @@ public:
 
 	void						init(
 		::scop::Window& window,
-		const std::vector<TextureHandler::Texture>& images,
 		const ::vox::GameState& game,
 		const std::vector<Vertex>& vertices,
 		const std::vector<uint32_t>& indices);
@@ -106,7 +105,6 @@ private:
 
 	Device						_device;
 	SwapChain					_swap_chain;
-	SceneRenderPass				_render_pass;
 	DescriptorPool				_descriptor_pool;
 	CommandPool					_command_pool;
 	InputHandler				_input_handler;
@@ -123,15 +121,13 @@ private:
 		PipelinePtr				shadows;
 	}							_pipelines;
 
-	std::size_t					_nb_indices;
-
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
 
 	void						_createInstance();
-	void						_createGraphicsPipelines(
-		const std::vector<Texture>& scene_textures);
+	void						_createGraphicsPipelines();
+	void						_assembleGraphicsPipelines();
 	void						_createGraphicsPipelineLayout();
 	void						_createSyncObjects();
 	void						_createDescriptors(
