@@ -17,13 +17,13 @@ struct Light {
 	float	intensity;
 };
 
-cbuffer light: register(b2) { Light light; }
+cbuffer light: register(b2, space0) { Light light; }
 
-Texture2DArray	tex_map: register(t3);
-SamplerState	tex_sampler: register(s3);
+Texture2DArray	tex_map: register(t3, space0);
+SamplerState	tex_sampler: register(s3, space0);
 
-Texture2D		shadow_map: register(t4);
-SamplerState	shadow_sampler: register(s4);
+Texture2D		shadow_map: register(t4, space0);
+SamplerState	shadow_sampler: register(s4, space0);
 
 // Sample shadow
 float	filterShadow(float4 shadow_coord) {

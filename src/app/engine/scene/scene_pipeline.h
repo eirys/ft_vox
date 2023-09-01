@@ -16,6 +16,7 @@
 # include <memory> // std::shared_ptr
 
 # include "pipeline.h"
+# include "buffer.h"
 
 namespace scop::graphics {
 
@@ -45,9 +46,6 @@ public:
 
 	/* ========================================================================= */
 
-	using super::destroy;
-	using super::setDescriptor;
-
 	void	init(
 		Device& device,
 		const RenderPass::RenderPassInfo& rp_info,
@@ -55,8 +53,9 @@ public:
 	void	assemble(
 		Device& device,
 		VkGraphicsPipelineCreateInfo& info) override;
+	void	plugDescriptor(Device& device, TextureHandlerPtr shadowmap);
+	void	destroy(Device& device) override;
 
-	void	setDescriptor(DescriptorSetPtr desc_ptr) override;
 	void	draw(
 		VkPipelineLayout layout,
 		CommandBuffer& command_buffer,
@@ -72,10 +71,22 @@ public:
 	using super::getTarget;
 	using super::getDescriptor;
 
+	Buffer&	getUbo() noexcept;
+
 private:
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
+
+	void	_beginRenderPass(
+		CommandBuffer& command_buffer,
+		int32_t image_index = 0) override;
+
+	/* ========================================================================= */
+	/*                               CLASS MEMBERS                               */
+	/* ========================================================================= */
+
+	Buffer	_ubo;
 
 }; // class ScenePipeline
 

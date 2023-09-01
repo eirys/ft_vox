@@ -16,9 +16,9 @@ struct Camera {
 	float4x4    vp;
 };
 
-cbuffer camera: register(b0) { Camera camera; }
+cbuffer camera: register(b0, space0) { Camera camera; }
 
-cbuffer projector: register(b1) { Camera projector; }
+cbuffer projector: register(b1, space0) { Camera projector; }
 
 // Normals
 static const float3 normals[6] = {

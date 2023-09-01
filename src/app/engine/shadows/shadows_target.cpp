@@ -42,7 +42,7 @@ void	ShadowsTarget::init(
 	fb_info.height = tar_info.render_pass->getHeight();
 	fb_info.layers = 1;
 
-	if (vkCreateFramebuffer(device.getLogicalDevice(), &fb_info, nullptr, &(super::_frame_buffers[0])) != VK_SUCCESS) {
+	if (vkCreateFramebuffer(device.getLogicalDevice(), &fb_info, nullptr, super::_frame_buffers.data()) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create frame buffer");
 	}
 }

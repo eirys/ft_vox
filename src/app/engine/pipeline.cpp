@@ -24,17 +24,20 @@ namespace scop::graphics {
 /* ========================================================================== */
 
 void	Pipeline::destroy(Device& device) {
+	_descriptor->destroy(device);
 	_render_pass->destroy(device);
 	_target->destroy(device);
 	_texture->destroy(device);
 	vkDestroyPipeline(device.getLogicalDevice(), _pipeline, nullptr);
 }
 
-void	Pipeline::setDescriptor(
-	Pipeline::DescriptorSetPtr desc_ptr
-) {
-	_descriptor = desc_ptr;
-}
+// void	Pipeline::setDescriptor(
+// 	Pipeline::DescriptorSetPtr desc_ptr
+// ) {
+// 	if (desc_ptr->getSetIndex() < _first_descriptor)
+// 		_first_descriptor = desc_ptr->getSetIndex();
+// 	_descriptor = desc_ptr;
+// }
 
 /* ========================================================================== */
 
@@ -67,7 +70,8 @@ Pipeline::DescriptorSetPtr	Pipeline::getDescriptor() const noexcept {
 */
 VkShaderModule	Pipeline::_createShaderModule(
 	Device& device,
-	const std::string& path) {
+	const std::string& path
+) {
 	// Read compiled shader binary file
 	std::vector<uint8_t>		code = ::scop::utils::readFile(path);
 	VkShaderModuleCreateInfo	shader_info{};

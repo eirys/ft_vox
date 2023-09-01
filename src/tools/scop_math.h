@@ -19,19 +19,19 @@
 
 namespace scop {
 namespace math {
-	
+
 /**
  * @brief Converts degrees to radians.
 */
 inline constexpr float	radians(float degrees) noexcept {
-	return degrees * M_PI / 180;
+	return static_cast<float>(degrees * M_PI / 180);
 }
 
 /**
  * @brief Converts radians to degrees.
 */
 inline constexpr float	dregrees(float radians) noexcept {
-	return radians * 180 / M_PI;
+	return static_cast<float>(radians * 180 / M_PI);
 }
 
 /**
@@ -39,19 +39,14 @@ inline constexpr float	dregrees(float radians) noexcept {
 */
 inline float	smoothen(const float x) noexcept {
 	return std::fma(
-		std::fma(
-			std::fma(x, -2.0f, 3.0f),
-			x,
-			0.0f
-		),
+		std::fma(std::fma(x, -2.0f, 3.0f), x, 0.0f),
 		x,
-		0.0f
-	);
+		0.0f);
 }
 
 /**
  * @brief Generates a random float between 0.0f and 1.0f.
- * 
+ *
  * @note Uses a Mersenne Twister pseudo-random generator.
 */
 inline float	generateRandomFloat() {
@@ -73,7 +68,7 @@ inline void	generateVibrantColor(float& red, float& green, float& blue) {
 	const float maxChannel = std::max(std::max(red, green), blue);
 	const float minChannel = std::min(std::min(red, green), blue);
 	const float delta = maxChannel - minChannel;
-	
+
 	if (delta > 0.0f) {
 		if (maxChannel == red) {
 			green = (green - minChannel) / delta;
@@ -95,7 +90,7 @@ inline void	generateVibrantColor(float& red, float& green, float& blue) {
  *
  * @param x,y	The values to interpolate between.
  * @param t		The interpolation factor.
- * 
+ *
  * @note T must be a basic type (float, int, etc.).
 */
 template <typename T>

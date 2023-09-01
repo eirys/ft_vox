@@ -51,7 +51,7 @@ void	SceneTarget::init(
 		framebuffer.height = tar_info.swap_chain->getExtent().height;
 		framebuffer.layers = 1;
 
-		if (vkCreateFramebuffer(device.getLogicalDevice(), &framebuffer, nullptr, &(super::_frame_buffers[i])) != VK_SUCCESS) {
+		if (vkCreateFramebuffer(device.getLogicalDevice(), &framebuffer, nullptr, super::_frame_buffers.data() + i) != VK_SUCCESS) {
 			throw std::runtime_error("failed to create frame buffer");
 		}
 	}

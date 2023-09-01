@@ -12,58 +12,30 @@
 
 #include "descriptor_set.h"
 #include "device.h"
-#include "texture_handler.h"
-#include "uniform_buffer_object.h"
-#include "descriptor_pool.h"
 
 #include "utils.h"
 
 namespace scop::graphics {
 
-using DescriptorPtr = DescriptorSet::DescriptorPtr;
+uint32_t	DescriptorSet::_descriptor_count = 0;
 
 /* ========================================================================== */
 /*                                   PUBLIC                                   */
 /* ========================================================================== */
 
-void	DescriptorSet::init(
-	Device& device
-	// TextureHandler& texture_handler,
-	// const ::scop::UniformBufferObject& ubo
-) {
-	_createLayout(device);
-	_createUniformBuffers(device);
-	// _createWrites(texture_handler);
-	// _initUniformBuffer(ubo);
-}
+DescriptorSet::DescriptorSet(): _index(_descriptor_count++) {}
+
+/* ========================================================================== */
 
 void	DescriptorSet::destroy(Device& device) {
-	_buffer.unmap(device.getLogicalDevice());
-	_buffer.destroy(device.getLogicalDevice());
-
 	vkDestroyDescriptorSetLayout(
 		device.getLogicalDevice(),
 		_layout,
 		nullptr);
 }
 
-/**
- * @brief	Copies updated ubo to the uniform buffer.
-*/
-void	DescriptorSet::update(
-	const ::scop::UniformBufferObject& ubo
-) noexcept {
-	_buffer.copyFrom(&ubo, sizeof(UniformBufferObject));
-}
-
-void	DescriptorSet::addDescriptor(const ImageInfo& image_info) {
-	_descriptor_infos.emplace_back(std::make_shared<ImageInfo>(image_info));
-	++_writes_sizes.combined_image_sampler;
-}
-
-void	DescriptorSet::addDescriptor(const BufferInfo& buffer_info) {
-	_descriptor_infos.emplace_back(std::make_shared<BufferInfo>(buffer_info));
-	++_writes_sizes.uniform_buffer;
+void	DescriptorSet::setDescriptors(VkDescriptorSet set) noexcept {
+	_set = set;
 }
 
 /* ========================================================================== */
@@ -76,58 +48,12 @@ VkDescriptorSet	DescriptorSet::getSet() const noexcept {
 	return _set;
 }
 
-DescriptorSet::DescriptorSizes	DescriptorSet::getPoolSizes() const noexcept {
+const DescriptorSet::DescriptorSizes&	DescriptorSet::getPoolSizes() const noexcept {
 	return _writes_sizes;
 }
 
-const Buffer& DescriptorSet::getBuffer() const noexcept {
-	return _buffer;
-}
-
-const std::vector<DescriptorPtr>&	DescriptorSet::getInfos() const noexcept {
-	return _descriptor_infos;
-}
-
-/* ========================================================================== */
-/*                                   PRIVATE                                  */
-/* ========================================================================== */
-
-void	DescriptorSet::_createLayout(Device& device) {
-	std::vector<VkDescriptorSetLayoutBinding>	bindings;
-	bindings.reserve(_descriptor_infos.size());
-
-	for (const auto& info: _descriptor_infos) {
-		VkDescriptorSetLayoutBinding binding{};
-		binding.binding = info->binding;
-		binding.descriptorCount = 1;
-		binding.descriptorType = info->type;
-		binding.stageFlags = info->stage;
-
-		bindings.emplace_back(binding);
-	}
-
-	VkDescriptorSetLayoutCreateInfo	layout_info{};
-	layout_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-	layout_info.bindingCount = static_cast<uint32_t>(bindings.size());
-	layout_info.pBindings = bindings.data();
-
-	if (vkCreateDescriptorSetLayout(device.getLogicalDevice(), &layout_info, nullptr, &_layout) != VK_SUCCESS) {
-		throw std::runtime_error("failed to create descriptor set layout");
-	}
-	LOG("Created layouts");
-}
-
-void	DescriptorSet::_createUniformBuffers(Device& device) {
-	VkDeviceSize	buffer_size = sizeof(UniformBufferObject);
-
-	_buffer.init(
-		device,
-		buffer_size,
-		VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-		VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
-		VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-
-	_buffer.map(device.getLogicalDevice(), buffer_size);
+uint32_t	DescriptorSet::getSetIndex() const noexcept {
+	return _index;
 }
 
 } // namespace scop::graphics

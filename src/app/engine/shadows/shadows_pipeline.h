@@ -16,6 +16,8 @@
 
 namespace scop::graphics {
 
+class Buffer;
+
 class ShadowsPipeline final: public Pipeline {
 public:
 	/* ========================================================================= */
@@ -49,7 +51,7 @@ public:
 	void	assemble(
 		Device& device,
 		VkGraphicsPipelineCreateInfo& info) override;
-	void	setDescriptor(DescriptorSetPtr desc_ptr);
+	void	plugDescriptor(Device& device, Buffer& ubo);
 	void	draw(
 		VkPipelineLayout layout,
 		CommandBuffer& command_buffer,
@@ -64,6 +66,15 @@ public:
 	using super::getTextureHandler;
 	using super::getTarget;
 	using super::getDescriptor;
+
+private:
+	/* ========================================================================= */
+	/*                                  METHODS                                  */
+	/* ========================================================================= */
+
+	void		_beginRenderPass(
+		CommandBuffer& command_buffer,
+		int32_t image_index = 0) override;
 
 }; // class ShadowsPipeline
 

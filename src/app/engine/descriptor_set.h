@@ -20,23 +20,12 @@
 
 // Std
 # include <vector> // std::vector
-# include <memory> // std::unique_ptr
-
-# include "buffer.h"
-
-namespace scop {
-struct UniformBufferObject;
-}
 
 namespace scop::graphics {
 
 class Device;
-class DescriptorPool;
 
 class DescriptorSet {
-
-	friend DescriptorPool;
-
 public:
 	/* ========================================================================= */
 	/*                               HELPER OBJECTS                              */
@@ -47,83 +36,51 @@ public:
 		uint32_t	combined_image_sampler;
 	};
 
-	struct Descriptor {
-		Descriptor(VkDescriptorType type): type(type) {}
-		virtual ~Descriptor() = default;
-
-		VkDescriptorType	type;
-		VkShaderStageFlags	stage;
-		uint32_t			binding;
-	};
-
-	struct BufferInfo final: public Descriptor {
-		BufferInfo(): Descriptor(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER) {}
-
-		VkDeviceSize		offset;
-		VkDeviceSize		range;
-	};
-
-	struct ImageInfo final: public Descriptor {
-		ImageInfo(): Descriptor(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER) {}
-
-		VkSampler			sampler;
-		VkImageView			view;
-		VkImageLayout		layout;
-	};
-
-	/* ========================================================================= */
-	/*                                  TYPEDEFS                                 */
-	/* ========================================================================= */
-
-	using DescriptorPtr = std::shared_ptr<Descriptor>;
-
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
 
-	DescriptorSet() = default;
-	~DescriptorSet() = default;
-	DescriptorSet(DescriptorSet&& other) = default;
-	DescriptorSet&	operator=(DescriptorSet&& other) = default;
+	virtual void			init(Device& device) = 0;
 
-	DescriptorSet(const DescriptorSet& other) = delete;
-	DescriptorSet&	operator=(const DescriptorSet& other) = delete;
+	void					destroy(Device& device);
+	void					setDescriptors(VkDescriptorSet set) noexcept;
 
 	/* ========================================================================= */
 
-	void	init(Device& device);
-	void	destroy(Device& device);
-	void	update(const ::scop::UniformBufferObject& ubo) noexcept;
+	VkDescriptorSetLayout	getLayout() const noexcept;
+	VkDescriptorSet			getSet() const noexcept;
+	const DescriptorSizes&	getPoolSizes() const noexcept;
+	uint32_t				getSetIndex() const noexcept;
 
-	void	addDescriptor(const ImageInfo& image_info);
-	void	addDescriptor(const BufferInfo& buffer_info);
-
+protected:
+	/* ========================================================================= */
+	/*                               STATIC MEMBERS                              */
 	/* ========================================================================= */
 
-	VkDescriptorSetLayout				getLayout() const noexcept;
-	VkDescriptorSet						getSet() const noexcept;
-	DescriptorSizes						getPoolSizes() const noexcept;
-	const Buffer&						getBuffer() const noexcept;
-	const std::vector<DescriptorPtr>&	getInfos() const noexcept;
+	static uint32_t			_descriptor_count;
 
-private:
 	/* ========================================================================= */
 	/*                               CLASS MEMBERS                               */
 	/* ========================================================================= */
 
-	VkDescriptorSetLayout				_layout;
-	VkDescriptorSet						_set;
-	Buffer								_buffer;
+	const uint32_t			_index;
 
-	DescriptorSizes						_writes_sizes;
-	std::vector<DescriptorPtr>			_descriptor_infos;
+	VkDescriptorSetLayout	_layout;
+	VkDescriptorSet			_set = VK_NULL_HANDLE;
+	DescriptorSizes			_writes_sizes;
 
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
 
-	void								_createLayout(Device& device);
-	void								_createUniformBuffers(Device& device);
+	DescriptorSet();
+
+	DescriptorSet(DescriptorSet&& other) = default;
+	DescriptorSet&	operator=(DescriptorSet&& other) = default;
+	virtual ~DescriptorSet() = default;
+
+	DescriptorSet(const DescriptorSet& other) = delete;
+	DescriptorSet&	operator=(const DescriptorSet& other) = delete;
 
 }; // class DescriptorSet
 

@@ -95,6 +95,20 @@ public:
 		const vox::GameState& game,
 		Timer& timer);
 
+	// class TmpHandler: public TextureHandler {
+	// 	public:
+
+	// 	using super = TextureHandler;
+	// 	void init(Device& device) override;
+
+	// 	private:
+	// 	void _createTextureSampler(Device& device) override;
+	// 	void _createTextureImages(Device& device) override;
+	// 	void _createTextureImageView(Device& device) override;
+	// };
+
+	// static TmpHandler		tmp;
+
 private:
 	/* ========================================================================= */
 	/*                               CLASS MEMBERS                               */
@@ -109,7 +123,7 @@ private:
 	CommandPool					_command_pool;
 	InputHandler				_input_handler;
 
-	CommandBuffer				_main_command_buffer;
+	CommandBuffer				_draw_buffer;
 
 	VkSemaphore					_image_available_semaphores;
 	VkSemaphore					_render_finished_semaphores;
@@ -130,18 +144,16 @@ private:
 	void						_assembleGraphicsPipelines();
 	void						_createGraphicsPipelineLayout();
 	void						_createSyncObjects();
-	void						_createDescriptors(
-		const ::vox::GameState& game);
+	void						_createDescriptors();
 
+	void						_initDescriptors(
+		const ::vox::GameState& game) noexcept;
 	::scop::UniformBufferObject	_updateUbo(
 		const ::vox::GameState& game) const noexcept;
 	void						_updatePresentation(::scop::Window& window);
 
 	bool						_checkValidationLayerSupport();
 	std::vector<const char*>	_getRequiredExtensions();
-	void						_recordDrawingCommand(
-		std::size_t indices_size,
-		uint32_t image_index);
 
 }; // class Engine
 

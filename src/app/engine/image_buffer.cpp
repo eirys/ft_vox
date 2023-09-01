@@ -353,5 +353,4 @@ VkImageView	ImageBuffer::getView() const noexcept {
 	return _view;
 }
 
-
 } // namespace vox

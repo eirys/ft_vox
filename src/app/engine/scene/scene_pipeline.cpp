@@ -20,6 +20,7 @@
 #include "scene_texture_handler.h"
 #include "scene_render_pass.h"
 #include "scene_target.h"
+#include "scene_descriptor_set.h"
 
 #include <stdexcept> // std::runtime_error
 
@@ -33,6 +34,7 @@ ScenePipeline::ScenePipeline() {
 	super::_render_pass = std::make_shared<SceneRenderPass>();
 	super::_target = std::make_shared<SceneTarget>();
 	super::_texture = std::make_shared<SceneTextureHandler>();
+	super::_descriptor = std::make_shared<SceneDescriptorSet>();
 }
 
 void	ScenePipeline::init(
@@ -44,6 +46,15 @@ void	ScenePipeline::init(
 	super::_render_pass->init(device, rp_info);
 	tar_info.render_pass = super::_render_pass;
 	super::_target->init(device, tar_info);
+	super::_descriptor->init(device);
+
+	_ubo.init(
+		device,
+		sizeof(UniformBufferObject),
+		VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+		VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
+		VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+	_ubo.map(device.getLogicalDevice(), sizeof(UniformBufferObject));
 }
 
 void	ScenePipeline::assemble(
@@ -89,45 +100,56 @@ void	ScenePipeline::assemble(
 		frag_module,
 		nullptr);
 }
-/**
- * @brief Plugs a descriptor and modifies its properties.
-*/
-void	ScenePipeline::setDescriptor(DescriptorSetPtr desc_ptr) {
-	using BufferInfo = DescriptorSet::BufferInfo;
-	using ImageInfo = DescriptorSet::ImageInfo;
-	using UniformBufferObject = ::scop::UniformBufferObject;
 
-	BufferInfo	camera{};
-	camera.stage = VK_SHADER_STAGE_VERTEX_BIT;
-	camera.binding = 0;
-	camera.offset = offsetof(UniformBufferObject, camera);
-	camera.range = sizeof(UniformBufferObject::Camera);
-	desc_ptr->addDescriptor(camera);
+void	ScenePipeline::destroy(Device& device) {
+	_ubo.unmap(device.getLogicalDevice());
+	_ubo.destroy(device.getLogicalDevice());
 
-	BufferInfo	projector{};
-	projector.stage = VK_SHADER_STAGE_VERTEX_BIT;
-	projector.binding = 1;
-	projector.offset = offsetof(UniformBufferObject, projector);
-	projector.range = sizeof(UniformBufferObject::Camera);
-	desc_ptr->addDescriptor(projector);
-
-	BufferInfo	light{};
-	light.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
-	light.binding = 2;
-	light.offset = offsetof(UniformBufferObject, light);
-	light.range = sizeof(UniformBufferObject::Light);
-	desc_ptr->addDescriptor(light);
-
-	ImageInfo	texture{};
-	texture.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
-	texture.binding = 3;
-	texture.sampler = _texture->getTextureSampler();
-	texture.view = _texture->getTextureBuffer().getView();
-	texture.layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-	desc_ptr->addDescriptor(texture);
-
-	super::setDescriptor(desc_ptr);
+	super::destroy(device);
 }
+
+void	ScenePipeline::plugDescriptor(
+	Device& device,
+	TextureHandlerPtr shadowmap
+) {
+	auto	scene_descriptors =
+		std::dynamic_pointer_cast<SceneDescriptorSet>(super::_descriptor);
+	scene_descriptors->plug(device, _ubo, super::_texture, shadowmap);
+}
+
+// void	ScenePipeline::plugDescriptor(DescriptorSetPtr desc_ptr) {
+// 	using BufferInfo = DescriptorSet::BufferInfo;
+// 	using ImageInfo = DescriptorSet::ImageInfo;
+// 	using UniformBufferObject = ::scop::UniformBufferObject;
+
+// 	BufferInfo	camera{};
+// 	camera.stage = VK_SHADER_STAGE_VERTEX_BIT;
+// 	camera.buffer = _ubo.getBuffer();
+// 	camera.offset = offsetof(UniformBufferObject, camera);
+// 	camera.range = sizeof(UniformBufferObject::Camera);
+// 	desc_ptr->addDescriptor(camera);
+
+// 	BufferInfo	projector{};
+// 	projector.stage = VK_SHADER_STAGE_VERTEX_BIT;
+// 	projector.buffer = _ubo.getBuffer();
+// 	projector.offset = offsetof(UniformBufferObject, projector);
+// 	projector.range = sizeof(UniformBufferObject::Camera);
+// 	desc_ptr->addDescriptor(projector);
+
+// 	BufferInfo	light{};
+// 	light.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
+// 	light.buffer = _ubo.getBuffer();
+// 	light.offset = offsetof(UniformBufferObject, light);
+// 	light.range = sizeof(UniformBufferObject::Light);
+// 	desc_ptr->addDescriptor(light);
+
+// 	ImageInfo	texture{};
+// 	texture.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
+// 	texture.sampler = _texture->getTextureSampler();
+// 	texture.view = _texture->getTextureBuffer().getView();
+// 	texture.layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+// 	desc_ptr->addDescriptor(texture);
+// }
 
 /**
  * @brief Record the drawing command of the pass.
@@ -136,6 +158,76 @@ void	ScenePipeline::draw(
 	VkPipelineLayout layout,
 	CommandBuffer& command_buffer,
 	InputHandler& input,
+	int32_t image_index
+) {
+	_beginRenderPass(command_buffer, image_index);
+
+	VkViewport	viewport{};
+	viewport.width = static_cast<float>(_render_pass->getWidth());
+	viewport.height = static_cast<float>(_render_pass->getHeight());
+	viewport.minDepth = 0.0f;
+	viewport.maxDepth = 1.0f;
+	vkCmdSetViewport(command_buffer.getBuffer(), 0, 1, &viewport);
+
+	VkRect2D	scissor{};
+	scissor.offset = { 0, 0 };
+	scissor.extent = { _render_pass->getWidth(), _render_pass->getHeight() };
+	vkCmdSetScissor(command_buffer.getBuffer(), 0, 1, &scissor);
+
+	std::array<VkDescriptorSet, 1>	descriptor_sets = { super::_descriptor->getSet() };
+
+	vkCmdBindDescriptorSets(
+		command_buffer.getBuffer(),
+		VK_PIPELINE_BIND_POINT_GRAPHICS,
+		layout,
+		super::_descriptor->getSetIndex(),
+		static_cast<uint32_t>(descriptor_sets.size()), descriptor_sets.data(),
+		0, nullptr);
+	vkCmdBindPipeline(
+		command_buffer.getBuffer(),
+		VK_PIPELINE_BIND_POINT_GRAPHICS,
+		super::_pipeline);
+
+	std::array<VkBuffer, 1>		vertex_buffers = { input.getVertexBuffer().getBuffer() };
+	std::array<VkDeviceSize, 1>	offsets = { 0 };
+	vkCmdBindVertexBuffers(
+		command_buffer.getBuffer(),
+		0,
+		static_cast<uint32_t>(vertex_buffers.size()), vertex_buffers.data(),
+		offsets.data() );
+	vkCmdBindIndexBuffer(
+		command_buffer.getBuffer(),
+		input.getIndexBuffer().getBuffer(),
+		0,
+		VK_INDEX_TYPE_UINT32 );
+
+	vkCmdDrawIndexed(
+		command_buffer.getBuffer(),
+		static_cast<uint32_t>(input.getIndicesCount()),
+		1, 0, 0, 0);
+
+	vkCmdEndRenderPass(command_buffer.getBuffer());
+}
+
+/**
+ * @brief Update the adequate descriptors with the new ubo.
+*/
+void	ScenePipeline::update(const ::scop::UniformBufferObject& ubo) noexcept {
+	_ubo.copyFrom(&ubo, sizeof(UniformBufferObject));
+}
+
+/* ========================================================================== */
+
+Buffer&	ScenePipeline::getUbo() noexcept {
+	return _ubo;
+}
+
+/* ========================================================================== */
+/*                                   PRIVATE                                  */
+/* ========================================================================== */
+
+void	ScenePipeline::_beginRenderPass(
+	CommandBuffer& command_buffer,
 	int32_t image_index
 ) {
 	std::array<VkClearValue, 2>	clear_values{};
@@ -156,60 +248,6 @@ void	ScenePipeline::draw(
 		command_buffer.getBuffer(),
 		&render_pass,
 		VK_SUBPASS_CONTENTS_INLINE);
-	vkCmdBindPipeline(
-		command_buffer.getBuffer(),
-		VK_PIPELINE_BIND_POINT_GRAPHICS,
-		super::_pipeline);
-
-	VkViewport	viewport{};
-	viewport.x = 0.0f;
-	viewport.y = 0.0f;
-	viewport.width = static_cast<float>(_render_pass->getWidth());
-	viewport.height = static_cast<float>(_render_pass->getHeight());
-	viewport.minDepth = 0.0f;
-	viewport.maxDepth = 1.0f;
-	vkCmdSetViewport(command_buffer.getBuffer(), 0, 1, &viewport);
-
-	VkRect2D	scissor{};
-	scissor.offset = { 0, 0 };
-	scissor.extent = { _render_pass->getWidth(), _render_pass->getHeight() };
-	vkCmdSetScissor(command_buffer.getBuffer(), 0, 1, &scissor);
-
-	std::array<VkBuffer, 1>		vertex_buffers = { input.getVertexBuffer().getBuffer() };
-	std::array<VkDeviceSize, 1>	offsets = { 0 };
-	vkCmdBindVertexBuffers(
-		command_buffer.getBuffer(),
-		0,
-		static_cast<uint32_t>(vertex_buffers.size()), vertex_buffers.data(),
-		offsets.data() );
-	vkCmdBindIndexBuffer(
-		command_buffer.getBuffer(),
-		input.getVertexBuffer().getBuffer(),
-		0,
-		VK_INDEX_TYPE_UINT32 );
-
-	VkDescriptorSet	descriptor_set = super::_descriptor->getSet();
-	vkCmdBindDescriptorSets(
-		command_buffer.getBuffer(),
-		VK_PIPELINE_BIND_POINT_GRAPHICS,
-		layout,
-		0,
-		1, &descriptor_set,
-		0, nullptr);
-
-	vkCmdDrawIndexed(
-		command_buffer.getBuffer(),
-		static_cast<uint32_t>(input.getIndicesCount()),
-		1, 0, 0, 0);
-
-	vkCmdEndRenderPass(command_buffer.getBuffer());
-}
-
-/**
- * @brief Update the adequate descriptors with the new ubo.
-*/
-void	ScenePipeline::update(const ::scop::UniformBufferObject& ubo) noexcept {
-	super::_descriptor->update(ubo);
 }
 
 } // namespace scop::graphics

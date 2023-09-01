@@ -27,28 +27,17 @@ using DescriptorSetPtr = DescriptorPool::DescriptorSetPtr;
 /* ========================================================================== */
 
 /**
- * @brief Saves a descriptors.
-*/
-void	DescriptorPool::add(DescriptorSetPtr set) {
-	_descriptors.emplace_back(set);
-}
-
-/**
  * @brief Descriptor set layout for uniform buffer and combined image sampler.
 */
 void	DescriptorPool::init(
-	Device& device
+	Device& device,
+	const std::vector<DescriptorSetPtr>& sets
 ) {
-	_createDescriptorPool(device);
-	_allocateSets(device);
-	_createWrites(device);
+	_createDescriptorPool(device, sets);
+	_allocateSets(device, sets);
 }
 
 void	DescriptorPool::destroy(Device& device) {
-	for (auto& set: _descriptors) {
-		set->destroy(device);
-	}
-
 	vkDestroyDescriptorPool(device.getLogicalDevice(), _pool, nullptr);
 }
 
@@ -62,10 +51,6 @@ const std::vector<VkDescriptorSetLayout>&	DescriptorPool::getLayouts() const noe
 	return _layouts;
 }
 
-const std::vector<DescriptorSetPtr>&	DescriptorPool::getDescriptors() const noexcept {
-	return _descriptors;
-}
-
 /* ========================================================================== */
 /*                                   PRIVATE                                  */
 /* ========================================================================== */
@@ -74,7 +59,8 @@ const std::vector<DescriptorSetPtr>&	DescriptorPool::getDescriptors() const noex
  * @brief Handler for descriptor sets allocation.
 */
 void	DescriptorPool::_createDescriptorPool(
-	Device& device
+	Device& device,
+	const std::vector<DescriptorSetPtr>& sets
 ) {
 	std::array<VkDescriptorPoolSize, 2>	pool_sizes;
 
@@ -83,7 +69,7 @@ void	DescriptorPool::_createDescriptorPool(
 	pool_sizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 	pool_sizes[1].descriptorCount = 0;
 
-	for (const auto& set: _descriptors) {
+	for (const auto& set: sets) {
 		const auto& sizes = set->getPoolSizes();
 		pool_sizes[0].descriptorCount += sizes.uniform_buffer;
 		pool_sizes[1].descriptorCount += sizes.combined_image_sampler;
@@ -93,7 +79,7 @@ void	DescriptorPool::_createDescriptorPool(
 	pool_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
 	pool_info.poolSizeCount = static_cast<uint32_t>(pool_sizes.size());
 	pool_info.pPoolSizes = pool_sizes.data();
-	pool_info.maxSets = static_cast<uint32_t>(_descriptors.size());
+	pool_info.maxSets = static_cast<uint32_t>(sets.size());
 
 	if (vkCreateDescriptorPool(device.getLogicalDevice(), &pool_info, nullptr, &_pool) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create descriptor pool");
@@ -104,14 +90,15 @@ void	DescriptorPool::_createDescriptorPool(
  * @brief Allocate every descriptor sets.
 */
 void	DescriptorPool::_allocateSets(
-	Device& device
+	Device& device,
+	const std::vector<DescriptorSetPtr>& sets
 ) {
 	std::vector<VkDescriptorSet>	descriptor_sets;
 
-	_layouts.reserve(_descriptors.size());
-	descriptor_sets.resize(_descriptors.size());
+	_layouts.reserve(sets.size());
+	descriptor_sets.resize(sets.size());
 
-	for (const auto& set: _descriptors) {
+	for (const auto& set: sets) {
 		_layouts.emplace_back(set->getLayout());
 	}
 
@@ -125,16 +112,15 @@ void	DescriptorPool::_allocateSets(
 		throw std::runtime_error("failed to allocate descriptor sets");
 	}
 
-	for (std::size_t i = 0; i < _descriptors.size(); ++i) {
-		_descriptors[i]->_set = descriptor_sets[i];
+	for (std::size_t i = 0; i < sets.size(); ++i) {
+		sets[i]->setDescriptors(descriptor_sets[i]);
 	}
-
 }
 
 /**
  * @brief Reconstructs descriptor writes array from sets,
  * 		  then updates descriptors, properly plugging cpu/gpu sides
-*/
+*//*
 void	DescriptorPool::_createWrites(Device& device) {
 	using DescriptorPtr = DescriptorSet::DescriptorPtr;
 	using BufferInfo = DescriptorSet::BufferInfo;
@@ -157,7 +143,8 @@ void	DescriptorPool::_createWrites(Device& device) {
 			if (info->type == VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER) {
 				std::shared_ptr<BufferInfo> buffer_info = std::dynamic_pointer_cast<BufferInfo>(info);
 				VkDescriptorBufferInfo	buffer{};
-				buffer.buffer = descriptor->getBuffer().getBuffer();
+				// buffer.buffer = descriptor->getBuffer().getBuffer();
+				buffer.buffer = buffer_info->buffer;
 				buffer.offset = buffer_info->offset;
 				buffer.range = buffer_info->range;
 				write.pBufferInfo = &buffers.emplace_back(buffer);
@@ -180,5 +167,5 @@ void	DescriptorPool::_createWrites(Device& device) {
 		writes.data(),
 		0, nullptr);
 }
-
+ */
 } // namespace scop::graphics

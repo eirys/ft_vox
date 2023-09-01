@@ -45,8 +45,7 @@ public:
 	void				init(
 		Device& device,
 		VkCommandPool pool,
-		uint32_t count = 1
-	);
+		uint32_t count = 1);
 	void				destroy(Device& device, VkCommandPool pool);
 
 	/* ========================================================================= */

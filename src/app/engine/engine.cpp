@@ -14,19 +14,82 @@
 #include "window.h"
 #include "uniform_buffer_object.h"
 #include "descriptor_set.h"
+#include "image_handler.h"
+#include "timer.h"
+#include "utils.h"
 
 #include "game_state.h"
-#include "image_handler.h"
 #include "scene_pipeline.h"
 #include "shadows_pipeline.h"
 #include "shadows_texture_handler.h"
 
-#include "timer.h"
-#include "utils.h"
-
 #include <cstring> // std::strcmp
 
 namespace scop::graphics {
+
+// void Engine::TmpHandler::init(Device& device) {
+// 	super::_texture_buffer.initImage(
+// 			device, 1, 1, DEPTH_FORMAT, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT|VK_IMAGE_USAGE_SAMPLED_BIT,VK_SAMPLE_COUNT_1_BIT);
+// 	super::_texture_buffer.initView(
+// 		device, DEPTH_FORMAT, VK_IMAGE_ASPECT_DEPTH_BIT
+// 	);
+// 		VkSamplerCreateInfo	sampler{};
+// 	sampler.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+// 	sampler.magFilter = VK_FILTER_LINEAR;
+// 	sampler.minFilter = VK_FILTER_LINEAR;
+// 	sampler.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+// 	sampler.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+// 	sampler.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+// 	sampler.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+// 	sampler.anisotropyEnable = VK_FALSE;
+// 	sampler.maxAnisotropy = 1.0;
+// 	sampler.compareEnable = VK_FALSE;
+// 	sampler.compareOp = VK_COMPARE_OP_ALWAYS;
+// 	sampler.mipLodBias = 0.0f;
+// 	sampler.minLod = 0.0f;
+// 	sampler.maxLod = 1.0f;
+// 	sampler.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
+
+// 	if (vkCreateSampler(device.getLogicalDevice(), &sampler, nullptr, &(super::_texture_sampler)) != VK_SUCCESS) {
+// 		throw std::runtime_error("failed to create texture sampler");
+// 	}
+
+// 	CommandBuffer	cmd = CommandPool::createBuffer(device);
+// 	cmd.begin();
+
+// 	VkImageSubresourceRange range{};
+
+// 	range.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+// 	range.baseMipLevel = 0;
+// 	range.baseArrayLayer = 0;
+// 	range.layerCount = 1;
+// 	range.levelCount = 1;
+
+// 	_texture_buffer.setLayout(
+// 		cmd,
+// 		VK_IMAGE_LAYOUT_UNDEFINED,
+// 		VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL,
+// 		0,
+// 		0,
+// 		VK_PIPELINE_STAGE_HOST_BIT,
+// 		VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+// 		range);
+
+// 	cmd.end(device);
+// 	CommandPool::destroyBuffer(device, cmd);
+// }
+
+// void Engine::TmpHandler::_createTextureSampler(Device& device) {
+
+// }
+// void Engine::TmpHandler::_createTextureImages(Device& device) {
+
+// }
+// void Engine::TmpHandler::_createTextureImageView(Device& device) {
+
+// }
+
+// Engine::TmpHandler	Engine::tmp;
 
 const std::vector<const char*>	Engine::validation_layers = {
 	"VK_LAYER_KHRONOS_validation"
@@ -51,12 +114,14 @@ void	Engine::init(
 	_swap_chain.init(_device, window);
 	_command_pool.init(_device);
 	_createGraphicsPipelines();
-	_createDescriptors(game);
+	_createDescriptors();
 	_createGraphicsPipelineLayout();
 	_assembleGraphicsPipelines();
 	_input_handler.init(_device, _command_pool, vertices, indices);
-	_main_command_buffer.init(_device, _command_pool, max_frames_in_flight);
+	_draw_buffer.init(_device, _command_pool, max_frames_in_flight);
 	_createSyncObjects();
+
+	_initDescriptors(game);
 }
 
 void	Engine::destroy() {
@@ -73,6 +138,8 @@ void	Engine::destroy() {
 
 	_descriptor_pool.destroy(_device);
 	_input_handler.destroy(_device);
+
+	// tmp.destroy(_device);
 
 	// Remove sync objects
 	vkDestroySemaphore(
@@ -135,41 +202,33 @@ void	Engine::render(
 	vkResetFences(_device.getLogicalDevice(), 1, &_in_flight_fences);
 
 	// Record buffer
-	_main_command_buffer.reset();
-	_main_command_buffer.begin(0);
-
+	_draw_buffer.reset();
+	_draw_buffer.begin(0);
 	_pipelines.shadows->draw(
 		_pipeline_layout,
-		_main_command_buffer,
+		_draw_buffer,
 		_input_handler,
 		image_index );
 	_pipelines.scene->draw(
 		_pipeline_layout,
-		_main_command_buffer,
+		_draw_buffer,
 		_input_handler,
 		image_index );
-
-	_main_command_buffer.end(_device, false);
+	_draw_buffer.end(_device, false);
 
 	_pipelines.scene->update(_updateUbo(game));
 
 	// Set synchronization objects
-	VkSemaphore				wait_semaphore[] = {
-		_image_available_semaphores
-	};
-	VkSemaphore				signal_semaphore[] = {
-		_render_finished_semaphores
-	};
-	VkPipelineStageFlags	wait_stages[] = {
-		VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT
-	};
+	VkSemaphore				wait_semaphore[] = { _image_available_semaphores };
+	VkSemaphore				signal_semaphore[] = { _render_finished_semaphores };
+	VkPipelineStageFlags	wait_stages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
 	VkSubmitInfo			submit_info{};
 	submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 	submit_info.waitSemaphoreCount = 1;
 	submit_info.pWaitSemaphores = wait_semaphore;
 	submit_info.pWaitDstStageMask = wait_stages;
 	submit_info.commandBufferCount = 1;
-	submit_info.pCommandBuffers = reinterpret_cast<VkCommandBuffer*>(&_main_command_buffer);
+	submit_info.pCommandBuffers = reinterpret_cast<VkCommandBuffer*>(&_draw_buffer);
 	submit_info.signalSemaphoreCount = 1;
 	submit_info.pSignalSemaphores = signal_semaphore;
 
@@ -287,6 +346,59 @@ void	Engine::_createGraphicsPipelines() {
 		tar_info);
 }
 
+void	Engine::_createDescriptors() {
+	// DescriptorPool::DescriptorSetPtr	scene_set = std::make_shared<DescriptorSet>();
+	// DescriptorPool::DescriptorSetPtr	shadowmap_set = std::make_shared<DescriptorSet>();
+
+	// tmp.init(_device);
+
+	// _pipelines.scene->setDescriptor(scene_set);
+	// _pipelines.shadows->setDescriptor(shadowmap_set);
+
+	// _pipelines.scene->plugDescriptor(scene_set);
+	// _pipelines.scene->plugDescriptor(shadowmap_set);
+	// _pipelines.shadows->plugDescriptor(scene_set);
+
+	// scene_set->init(_device);
+	// shadowmap_set->init(_device);
+
+	// const auto& ptr1 = _pipelines.scene->getDescriptor();
+	// const auto& ptr2 = _pipelines.shadows->getDescriptor();
+	// std::shared_ptr<SceneDescriptorSet>
+	// auto shadows_descriptors =
+		// std::dynamic_pointer_cast<ShadowsDescriptorSet>(_pipelines.shadows->getDescriptor());
+	// std::shared_ptr<DescriptorSet>	scene_descriptor = _pipelines.scene->getDescriptor();
+	using DescriptorSetPtr = std::shared_ptr<DescriptorSet>;
+	using ScenePipelinePtr = std::shared_ptr<ScenePipeline>;
+	using ShadowsPipelinePtr = std::shared_ptr<ShadowsPipeline>;
+
+	std::vector<DescriptorSetPtr>	descriptors = {
+		_pipelines.scene->getDescriptor(),
+		_pipelines.shadows->getDescriptor() };
+	_descriptor_pool.init(_device, descriptors);
+
+	ScenePipelinePtr scene_pipeline =
+		std::dynamic_pointer_cast<ScenePipeline>(_pipelines.scene);
+	ShadowsPipelinePtr shadows_pipeline =
+		std::dynamic_pointer_cast<ShadowsPipeline>(_pipelines.shadows);
+	scene_pipeline->plugDescriptor(_device, shadows_pipeline->getTextureHandler());
+	shadows_pipeline->plugDescriptor(_device, scene_pipeline->getUbo());
+}
+
+void	Engine::_createGraphicsPipelineLayout() {
+	// Pipeline layout setups
+	VkPipelineLayoutCreateInfo	pipeline_layout_info{};
+	pipeline_layout_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+	pipeline_layout_info.setLayoutCount = _descriptor_pool.getLayouts().size();
+	pipeline_layout_info.pSetLayouts = _descriptor_pool.getLayouts().data();
+	pipeline_layout_info.pushConstantRangeCount = 0;
+	pipeline_layout_info.pPushConstantRanges = nullptr;
+
+	if (vkCreatePipelineLayout(_device.getLogicalDevice(), &pipeline_layout_info, nullptr, &_pipeline_layout) != VK_SUCCESS) {
+		throw std::runtime_error("failed to create _pipeline layout");
+	}
+}
+
 void	Engine::_assembleGraphicsPipelines() {
 	/* INPUT FORMAT ============================================================ */
 	VkPipelineVertexInputStateCreateInfo	vert_input{};
@@ -373,7 +485,6 @@ void	Engine::_assembleGraphicsPipelines() {
 	depth_stencil.stencilTestEnable = VK_FALSE;			// unused. typically used for reflection, shadow...
 	depth_stencil.front = {};
 	depth_stencil.back = {};
-	// depth_stencil.depthCompareOp
 
 	/* DYNAMIC STATE =========================================================== */
 	std::vector<VkDynamicState>	dynamic_states = {
@@ -421,7 +532,6 @@ void	Engine::_assembleGraphicsPipelines() {
 		static_cast<uint32_t>(attribute_descriptions.size());
 	vert_input.pVertexAttributeDescriptions = attribute_descriptions.data();
 	color_blending.attachmentCount = 0;
-	color_blending.pAttachments = nullptr;
 	rasterizing.cullMode = VK_CULL_MODE_NONE;
 	multisampling.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
 	depth_stencil.depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
@@ -429,22 +539,8 @@ void	Engine::_assembleGraphicsPipelines() {
 	_pipelines.shadows->assemble(_device, pipeline_info);
 }
 
-void	Engine::_createGraphicsPipelineLayout() {
-	// Pipeline layout setups
-	VkPipelineLayoutCreateInfo	pipeline_layout_info{};
-	pipeline_layout_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-	pipeline_layout_info.setLayoutCount = _descriptor_pool.getLayouts().size();
-	pipeline_layout_info.pSetLayouts = _descriptor_pool.getLayouts().data();
-	pipeline_layout_info.pushConstantRangeCount = 0;
-	pipeline_layout_info.pPushConstantRanges = nullptr;
-
-	if (vkCreatePipelineLayout(_device.getLogicalDevice(), &pipeline_layout_info, nullptr, &_pipeline_layout) != VK_SUCCESS) {
-		throw std::runtime_error("failed to create _pipeline layout");
-	}
-}
-
 /**
- * Create semaphores and fences
+ * @brief Create semaphores and fences
 */
 void	Engine::_createSyncObjects() {
 	VkSemaphoreCreateInfo	semaphore_info{};
@@ -480,16 +576,9 @@ void	Engine::_updatePresentation(::scop::Window& window) {
 	_pipelines.scene->getTarget()->update(_device, tar_info);
 }
 
-void	Engine::_createDescriptors(const ::vox::GameState& game) {
-	DescriptorPool::DescriptorSetPtr	set = std::make_shared<DescriptorSet>();
-
-	_pipelines.scene->setDescriptor(set);
-	_pipelines.shadows->setDescriptor(set);
-	set->init(_device);
-
-	_descriptor_pool.add(set);
-	_descriptor_pool.init(_device);
-
+void	Engine::_initDescriptors(
+	const ::vox::GameState& game
+) noexcept {
 	::scop::UniformBufferObject	ubo = _updateUbo(game);
 	_pipelines.scene->update(ubo);
 }
@@ -565,110 +654,5 @@ std::vector<const char*>	Engine::_getRequiredExtensions() {
 	}
 	return extensions;
 }
-
-// // TODO Pass to pipeline::record
-// /**
-//  *  Write commands to command buffer to be subimtted to queue.
-//  */
-// void	Engine::_recordDrawingCommand(
-// 	std::size_t indices_size,
-// 	uint32_t image_index
-// ) {
-// 	_main_command_buffer.reset();
-// 	_main_command_buffer.begin(0);
-
-// 	// Define what corresponds to 'clear color'
-// 	std::array<VkClearValue, 2>	clear_values{};
-// 	clear_values[0].color = {{ 0.0f, 0.0f, 0.0f, 1.0f }};
-// 	clear_values[1].depthStencil = { 1.0f, 0 };
-
-// 	// Spectify to render pass how to handle the command buffer,
-// 	// and which framebuffer to render to
-// 	VkRenderPassBeginInfo	render_pass_info{};
-// 	render_pass_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-// 	render_pass_info.renderPass = _render_pass.getRenderPass();
-// 	render_pass_info.framebuffer =
-// 		_pipelines.scene->getTarget()->getFrameBuffers()[image_index];
-// 	render_pass_info.renderArea.offset = { 0, 0 };
-// 	render_pass_info.renderArea.extent = _swap_chain.getExtent();
-// 	render_pass_info.clearValueCount = static_cast<uint32_t>(
-// 		clear_values.size()
-// 	);
-// 	render_pass_info.pClearValues = clear_values.data();
-
-// 	// Begin rp and bind _pipeline
-// 	vkCmdBeginRenderPass(
-// 		_main_command_buffer.getBuffer(),
-// 		&render_pass_info,
-// 		VK_SUBPASS_CONTENTS_INLINE
-// 	);
-// 	vkCmdBindPipeline(
-// 		_main_command_buffer.getBuffer(),
-// 		VK_PIPELINE_BIND_POINT_GRAPHICS,
-// 		_pipelines.scene->getPipeline()
-// 	);
-
-// 	// Set viewport and scissors
-// 	VkViewport	viewport{};
-// 	viewport.x = 0.0f;
-// 	viewport.y = 0.0f;
-// 	viewport.width = static_cast<float>(
-// 		_swap_chain.getExtent().width
-// 	);
-// 	viewport.height = static_cast<float>(
-// 		_swap_chain.getExtent().height
-// 	);
-// 	viewport.minDepth = 0.0f;
-// 	viewport.maxDepth = 1.0f;
-// 	vkCmdSetViewport(_main_command_buffer.getBuffer(), 0, 1, &viewport);
-
-// 	VkRect2D	scissor{};
-// 	scissor.offset = { 0, 0 };
-// 	scissor.extent = _swap_chain.getExtent();
-// 	vkCmdSetScissor(_main_command_buffer.getBuffer(), 0, 1, &scissor);
-
-// 	// Bind vertex buffer && index buffer
-// 	VkBuffer		vertex_buffers[] = {
-// 		_input_handler.getVertexBuffer().getBuffer()
-// 	};
-// 	VkDeviceSize	offsets[] = { 0 };
-// 	vkCmdBindVertexBuffers(
-// 		_main_command_buffer.getBuffer(),
-// 		0,
-// 		1, vertex_buffers,
-// 		offsets
-// 	);
-// 	vkCmdBindIndexBuffer(
-// 		_main_command_buffer.getBuffer(),
-// 		_input_handler.getIndexBuffer().getBuffer(),
-// 		0,
-// 		VK_INDEX_TYPE_UINT32
-// 	);
-
-// 	// Bind descriptor sets
-// 	VkDescriptorSet	descriptor_set ;//= _descriptor_pool.getSet();
-// 	vkCmdBindDescriptorSets(
-// 		_main_command_buffer.getBuffer(),
-// 		VK_PIPELINE_BIND_POINT_GRAPHICS,
-// 		_pipeline_layout,
-// 		0,
-// 		1, &descriptor_set,
-// 		0, nullptr
-// 	);
-
-// 	// Issue draw command
-// 	vkCmdDrawIndexed(
-// 		_main_command_buffer.getBuffer(),
-// 		static_cast<uint32_t>(indices_size),
-// 		1,
-// 		0,
-// 		0,
-// 		0
-// 	);
-
-// 	// Stop the render target work
-// 	vkCmdEndRenderPass(_main_command_buffer.getBuffer());
-// 	_main_command_buffer.end(_device, false);
-// }
 
 } // namespace scop::graphics

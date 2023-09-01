@@ -66,8 +66,8 @@ public:
 	virtual void		assemble(
 		Device& device,
 		VkGraphicsPipelineCreateInfo& info) = 0;
-	void				destroy(Device& device);
-	virtual void		setDescriptor(DescriptorSetPtr desc_ptr);
+	// virtual void		plugDescriptor(Device& device) = 0;
+	virtual void		destroy(Device& device);
 	virtual void		draw(
 		VkPipelineLayout layout,
 		CommandBuffer& command_buffer,
@@ -94,7 +94,6 @@ protected:
 	TextureHandlerPtr	_texture;
 	RenderPassPtr		_render_pass;
 	TargetPtr			_target;
-
 	DescriptorSetPtr	_descriptor;
 
 	/* ========================================================================= */
@@ -107,6 +106,12 @@ protected:
 
 	Pipeline(const Pipeline& other) = delete;
 	Pipeline& operator=(const Pipeline& other) = delete;
+
+	/* ========================================================================= */
+
+	virtual void		_beginRenderPass(
+		CommandBuffer& command_buffer,
+		int32_t image_index = 0) = 0;
 
 	/* UTILS =================================================================== */
 
