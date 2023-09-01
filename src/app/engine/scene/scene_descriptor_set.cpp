@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/31 11:08:11 by etran             #+#    #+#             */
-/*   Updated: 2023/08/31 11:08:11 by etran            ###   ########.fr       */
+/*   Updated: 2023/09/01 17:32:17 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -94,7 +94,7 @@ void	SceneDescriptorSet::plug(
 	TextureHandlerPtr textures,
 	TextureHandlerPtr shadowmap
 ) {
-	std::array<VkWriteDescriptorSet, 5>	writes;
+	std::array<VkWriteDescriptorSet, 5>	writes{};
 
 	VkDescriptorBufferInfo	camera_info{};
 	camera_info.buffer = buffer.getBuffer();
@@ -176,8 +176,6 @@ void	SceneDescriptorSet::plug(
 	writes[4].pImageInfo = &depth_info;
 	writes[4].pTexelBufferView = nullptr;
 
-	 if(!this)
-		 assert(false);
 	vkUpdateDescriptorSets(
 		device.getLogicalDevice(),
 		static_cast<uint32_t>(writes.size()), writes.data(),

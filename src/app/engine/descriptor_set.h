@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/12 12:08:24 by etran             #+#    #+#             */
-/*   Updated: 2023/08/22 21:42:18 by etran            ###   ########.fr       */
+/*   Updated: 2023/09/01 15:29:33 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -75,11 +75,11 @@ protected:
 
 	DescriptorSet();
 
-	DescriptorSet(DescriptorSet&& other) = default;
-	DescriptorSet&	operator=(DescriptorSet&& other) = default;
 	virtual ~DescriptorSet() = default;
 
+	DescriptorSet(DescriptorSet&& other) = delete;
 	DescriptorSet(const DescriptorSet& other) = delete;
+	DescriptorSet&	operator=(DescriptorSet&& other) = delete;
 	DescriptorSet&	operator=(const DescriptorSet& other) = delete;
 
 }; // class DescriptorSet

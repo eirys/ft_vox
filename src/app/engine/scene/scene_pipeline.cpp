@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/06 20:50:48 by etran             #+#    #+#             */
-/*   Updated: 2023/08/22 22:12:51 by etran            ###   ########.fr       */
+/*   Updated: 2023/09/01 17:34:31 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -63,9 +63,9 @@ void	ScenePipeline::assemble(
 ) {
 	/* SHADERS ================================================================= */
 	VkShaderModule	vert_module =
-		super::_createShaderModule(device, "shaders\\scene_vert.spv");
+		super::_createShaderModule(device, "shaders\\scene.vertex.spv");
 	VkShaderModule	frag_module =
-		super::_createShaderModule(device, "shaders\\scene_frag.spv");
+		super::_createShaderModule(device, "shaders\\scene.fragment.spv");
 
 	VkPipelineShaderStageCreateInfo	vert_info{};
 	vert_info.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;

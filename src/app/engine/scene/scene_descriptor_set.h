@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/31 11:08:15 by etran             #+#    #+#             */
-/*   Updated: 2023/08/31 11:08:15 by etran            ###   ########.fr       */
+/*   Updated: 2023/09/01 15:30:34 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,11 +35,11 @@ public:
 	/* ========================================================================= */
 
 	SceneDescriptorSet() = default;
-	SceneDescriptorSet(SceneDescriptorSet&& other) = default;
-	SceneDescriptorSet& operator=(SceneDescriptorSet&& rhs) = default;
 	~SceneDescriptorSet() = default;
 
+	SceneDescriptorSet(SceneDescriptorSet&& other) = delete;
 	SceneDescriptorSet(const SceneDescriptorSet& other) = delete;
+	SceneDescriptorSet& operator=(SceneDescriptorSet&& rhs) = delete;
 	SceneDescriptorSet& operator=(const SceneDescriptorSet& rhs) = delete;
 
 	/* ========================================================================= */

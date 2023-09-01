@@ -6,7 +6,7 @@
 #    By: etran <etran@student.42.fr>                +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/04/06 03:40:09 by eli               #+#    #+#              #
-#    Updated: 2023/08/22 22:13:26 by etran            ###   ########.fr        #
+#    Updated: 2023/09/01 17:20:33 by etran            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -73,17 +73,21 @@ SRC_FILES	:=	$(TOOLS_DIR)/matrix.cpp \
 				$(ENG_DIR)/descriptor_set.cpp \
 				$(ENG_DIR)/command_pool.cpp \
 				$(ENG_DIR)/texture_handler.cpp \
+				$(ENG_DIR)/target.cpp \
 				$(ENG_DIR)/input_handler.cpp \
 				$(ENG_DIR)/engine.cpp \
 				$(ENG_DIR)/buffer.cpp \
 				$(ENG_DIR)/command_buffer.cpp \
 				$(ENG_DIR)/image_buffer.cpp \
 				$(SCENE_DIR)/scene_render_pass.cpp \
+				$(SCENE_DIR)/scene_descriptor_set.cpp \
 				$(SCENE_DIR)/scene_pipeline.cpp \
 				$(SCENE_DIR)/scene_texture_handler.cpp \
 				$(SCENE_DIR)/scene_target.cpp \
 				$(SHADOW_DIR)/shadows_render_pass.cpp \
+				$(SHADOW_DIR)/shadows_descriptor_set.cpp \
 				$(SHADOW_DIR)/shadows_pipeline.cpp \
+				$(SHADOW_DIR)/shadows_texture_handler.cpp \
 				$(SHADOW_DIR)/shadows_target.cpp \
 				$(APP_DIR)/app.cpp \
 				main.cpp
@@ -93,10 +97,11 @@ OBJ			:=	$(addprefix $(OBJ_DIR)/,$(SRC_FILES:.cpp=.o))
 DEP			:=	$(addprefix $(OBJ_DIR)/,$(SRC_FILES:.cpp=.d))
 
 # shaders
-SHD_FILES	:=	vertex \
-				fragment
+SHD_FILES	:=	scene.fragment \
+				scene.vertex \
+				shadow.vertex
 
-SHD			:=	$(addprefix $(SHD_DIR)/,$(SHD_FILES))
+SHD			:=	$(addprefix $(SHD_DIR)/, $(SHD_FILES))
 SHD_BIN		:=	$(addsuffix .spv,$(SHD))
 
 # compiler
@@ -145,7 +150,7 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
 
 $(SHD_DIR)/%.spv: $(SHD_DIR)/%.glsl
 	@echo "Compiling shader $<..."
-	@$(GLSLC) -fshader-stage=$* $< -o $@
+	@$(GLSLC) -fshader-stage=$(subst .,,$(suffix $(basename $<))) $< -o $@
 
 .PHONY: clean
 clean:

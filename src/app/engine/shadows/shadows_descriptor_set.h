@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/31 11:34:45 by etran             #+#    #+#             */
-/*   Updated: 2023/08/31 11:34:45 by etran            ###   ########.fr       */
+/*   Updated: 2023/09/01 15:30:58 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,11 +31,11 @@ public:
 	/* ========================================================================= */
 
 	ShadowsDescriptorSet() = default;
-	ShadowsDescriptorSet(ShadowsDescriptorSet&& other) = default;
-	ShadowsDescriptorSet& operator=(ShadowsDescriptorSet&& rhs) = default;
 	~ShadowsDescriptorSet() = default;
 
+	ShadowsDescriptorSet(ShadowsDescriptorSet&& other) = delete;
 	ShadowsDescriptorSet(const ShadowsDescriptorSet& other) = delete;
+	ShadowsDescriptorSet& operator=(ShadowsDescriptorSet&& rhs) = delete;
 	ShadowsDescriptorSet& operator=(const ShadowsDescriptorSet& rhs) = delete;
 
 	/* ========================================================================= */

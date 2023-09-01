@@ -15,7 +15,7 @@ layout(binding = 4) uniform Light {
 	vec3 ambient;
 	vec3 vector;
 	vec3 color;
-	float intensity;
+	// float intensity;
 } light;
 
 bool isShadow(vec3 shadow) {
@@ -30,14 +30,13 @@ vec4 directionalLighting(
 	vec3 shadow_coord,
 	vec3 normal,
 	vec3 vector,
-	vec3 color,
-	float intensity
+	vec3 color
 ) {
 	if (isShadow(shadow_coord))
 		return vec4(0.0);
 
 	float illumination = max(dot(normal, vector), 0.0f);
-	return vec4(intensity * color * illumination, 1.0f);
+	return vec4(color * illumination, 1.0f);
 }
 
 void main() {
@@ -51,8 +50,7 @@ void main() {
 		shadow,
 		in_normal,
 		light.vector,
-		light.color,
-		light.intensity);
+		light.color);
 
 	out_color = color * (directional + ambient);
 }

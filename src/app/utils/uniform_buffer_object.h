@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:17:15 by etran             #+#    #+#             */
-/*   Updated: 2023/08/12 15:10:45 by etran            ###   ########.fr       */
+/*   Updated: 2023/09/01 16:13:21 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,7 +35,7 @@ public:
 		alignas(__ALIGNMENT_VEC3) scop::Vect3	ambient_color;
 		alignas(__ALIGNMENT_VEC3) scop::Vect3	light_vector;
 		alignas(__ALIGNMENT_VEC3) scop::Vect3	light_color;
-		alignas(__ALIGNMENT_SCAL) float			light_intensity; // TODO Remove. Can be set in color
+		// alignas(__ALIGNMENT_SCAL) float			light_intensity; // TODO Remove. Can be set in color
 	};
 
 	using Projector = Camera;

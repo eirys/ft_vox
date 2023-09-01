@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/02 16:09:44 by etran             #+#    #+#             */
-/*   Updated: 2023/08/22 22:13:01 by etran            ###   ########.fr       */
+/*   Updated: 2023/09/01 16:13:48 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -604,8 +604,8 @@ void	Engine::_initDescriptors(
 	ubo.light = {
 		.ambient_color = ::scop::Vect3(0.2f, 0.2f, 0.2f),
 		.light_vector = ::scop::normalize(::scop::Vect3(0.1f, 1.0f, 0.3f)),
-		.light_color = ::scop::Vect3(1.0f, 1.0f, 0.8f),
-		.light_intensity = 0.4f };
+		.light_color = ::scop::Vect3(1.0f, 1.0f, 0.8f) };
+		// .light_intensity = 0.4f };
 
 	return ubo;
 }

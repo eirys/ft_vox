@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/17 15:00:10 by etran             #+#    #+#             */
-/*   Updated: 2023/08/17 15:00:10 by etran            ###   ########.fr       */
+/*   Updated: 2023/09/01 15:41:21 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,6 +53,9 @@ void	ShadowsTarget::init(
 void	ShadowsTarget::update(
 	Device& device,
 	const Target::TargetInfo& info
-) {}
+) {
+	(void)device;
+	(void)info;
+}
 
 } // namespace scop::graphics
