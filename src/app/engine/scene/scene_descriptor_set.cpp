@@ -180,9 +180,6 @@ void	SceneDescriptorSet::plug(
 		device.getLogicalDevice(),
 		static_cast<uint32_t>(writes.size()), writes.data(),
 		0, nullptr );
-
-	 //LOG("Hey");
-	//  int a =0;
 }
 
 } // namespace scop::graphics

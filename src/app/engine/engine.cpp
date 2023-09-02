@@ -27,70 +27,6 @@
 
 namespace scop::graphics {
 
-// void Engine::TmpHandler::init(Device& device) {
-// 	super::_texture_buffer.initImage(
-// 			device, 1, 1, DEPTH_FORMAT, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT|VK_IMAGE_USAGE_SAMPLED_BIT,VK_SAMPLE_COUNT_1_BIT);
-// 	super::_texture_buffer.initView(
-// 		device, DEPTH_FORMAT, VK_IMAGE_ASPECT_DEPTH_BIT
-// 	);
-// 		VkSamplerCreateInfo	sampler{};
-// 	sampler.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
-// 	sampler.magFilter = VK_FILTER_LINEAR;
-// 	sampler.minFilter = VK_FILTER_LINEAR;
-// 	sampler.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
-// 	sampler.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-// 	sampler.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-// 	sampler.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-// 	sampler.anisotropyEnable = VK_FALSE;
-// 	sampler.maxAnisotropy = 1.0;
-// 	sampler.compareEnable = VK_FALSE;
-// 	sampler.compareOp = VK_COMPARE_OP_ALWAYS;
-// 	sampler.mipLodBias = 0.0f;
-// 	sampler.minLod = 0.0f;
-// 	sampler.maxLod = 1.0f;
-// 	sampler.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
-
-// 	if (vkCreateSampler(device.getLogicalDevice(), &sampler, nullptr, &(super::_texture_sampler)) != VK_SUCCESS) {
-// 		throw std::runtime_error("failed to create texture sampler");
-// 	}
-
-// 	CommandBuffer	cmd = CommandPool::createBuffer(device);
-// 	cmd.begin();
-
-// 	VkImageSubresourceRange range{};
-
-// 	range.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
-// 	range.baseMipLevel = 0;
-// 	range.baseArrayLayer = 0;
-// 	range.layerCount = 1;
-// 	range.levelCount = 1;
-
-// 	_texture_buffer.setLayout(
-// 		cmd,
-// 		VK_IMAGE_LAYOUT_UNDEFINED,
-// 		VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL,
-// 		0,
-// 		0,
-// 		VK_PIPELINE_STAGE_HOST_BIT,
-// 		VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-// 		range);
-
-// 	cmd.end(device);
-// 	CommandPool::destroyBuffer(device, cmd);
-// }
-
-// void Engine::TmpHandler::_createTextureSampler(Device& device) {
-
-// }
-// void Engine::TmpHandler::_createTextureImages(Device& device) {
-
-// }
-// void Engine::TmpHandler::_createTextureImageView(Device& device) {
-
-// }
-
-// Engine::TmpHandler	Engine::tmp;
-
 const std::vector<const char*>	Engine::validation_layers = {
 	"VK_LAYER_KHRONOS_validation"
 };
@@ -126,8 +62,6 @@ void	Engine::init(
 
 void	Engine::destroy() {
 	_swap_chain.destroy(_device);
-
-	// Remove graphics _pipeline
 	_pipelines.scene->destroy(_device);
 	_pipelines.shadows->destroy(_device);
 
@@ -138,8 +72,6 @@ void	Engine::destroy() {
 
 	_descriptor_pool.destroy(_device);
 	_input_handler.destroy(_device);
-
-	// tmp.destroy(_device);
 
 	// Remove sync objects
 	vkDestroySemaphore(

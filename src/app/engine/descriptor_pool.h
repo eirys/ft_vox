@@ -52,7 +52,6 @@ public:
 	/* ========================================================================= */
 
 	void		init(Device& device, const std::vector<DescriptorSetPtr>& sets);
-	void		add(DescriptorSetPtr set);
 	void		destroy(Device& device);
 
 	/* ========================================================================= */

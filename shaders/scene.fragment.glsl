@@ -9,14 +9,13 @@ layout(location = 2) in vec3 in_shadow;
 layout(location = 0) out vec4 out_color;
 
 // Uniforms
-layout(binding = 2) uniform sampler2D tex_sampler;
-layout(binding = 3) uniform sampler2D shadow_sampler;
-layout(binding = 4) uniform Light {
+layout(binding = 2) uniform Light {
 	vec3 ambient;
 	vec3 vector;
 	vec3 color;
-	// float intensity;
 } light;
+layout(binding = 3) uniform sampler2DArray tex_sampler;
+layout(binding = 4) uniform sampler2D shadow_sampler;
 
 bool isShadow(vec3 shadow) {
 	if (shadow.z > -1.0f && shadow.z < 1.0f) {
@@ -40,7 +39,7 @@ vec4 directionalLighting(
 }
 
 void main() {
-	vec4 color = texture(tex_sampler, in_uvw.xy, in_uvw.z);
+	vec4 color = texture(tex_sampler, vec3(in_uvw.xy, in_uvw.z));
 
 	// Clamp depth value to [0, 1]
 	vec3 shadow = vec3(in_shadow.xy * 0.5f + 0.5f, in_shadow.z);
