@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/10 22:32:26 by etran             #+#    #+#             */
-/*   Updated: 2023/08/11 23:58:27 by etran            ###   ########.fr       */
+/*   Updated: 2023/09/18 10:27:08 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -159,9 +159,6 @@ void	SceneTextureHandler::_createTextureImageView(Device& device) {
  * @brief Create sampler for texture sampling in shaders.
 */
 void	SceneTextureHandler::_createTextureSampler(Device& device) {
-	 VkPhysicalDeviceProperties	properties{};
-	 vkGetPhysicalDeviceProperties(device.getPhysicalDevice(), &properties);
-
 	VkSamplerCreateInfo	sampler_info{};
 	sampler_info.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
 	sampler_info.magFilter = VK_FILTER_NEAREST;
@@ -169,8 +166,8 @@ void	SceneTextureHandler::_createTextureSampler(Device& device) {
 	sampler_info.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
 	sampler_info.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
 	sampler_info.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-	sampler_info.anisotropyEnable = VK_TRUE;
-	sampler_info.maxAnisotropy = properties.limits.maxSamplerAnisotropy;
+	sampler_info.anisotropyEnable = VK_FALSE; // If true, causes linear filtering
+	sampler_info.maxAnisotropy = 0;
 	sampler_info.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
 	sampler_info.unnormalizedCoordinates = VK_FALSE;
 	sampler_info.compareEnable = VK_FALSE;

@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/02 16:09:44 by etran             #+#    #+#             */
-/*   Updated: 2023/09/15 15:56:38 by etran            ###   ########.fr       */
+/*   Updated: 2023/09/15 18:06:29 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -520,8 +520,8 @@ void	Engine::_initDescriptors(const GameState& game) noexcept {
 		0.0f, 0.0f, 0.5f, 0.0f,
 		0.0f, 0.0f, 0.5f, 1.0f };
 	const Mat4	projection = bias * ::scop::orthographic(
-		-100.0f, 100.0f,
-		-100.0f, 100.0f,
+		-150.0f, 150.0f,
+		-150.0f, 150.0f,
 		1.0f, 100.0f);
 	ubo.projector.vp = projection * view;
 
