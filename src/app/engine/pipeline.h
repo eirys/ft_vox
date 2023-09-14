@@ -29,6 +29,7 @@
 namespace scop {
 class Image;
 struct UniformBufferObject;
+struct Camera;
 }
 
 namespace scop::graphics {
@@ -50,6 +51,8 @@ public:
 	using DescriptorSetPtr = std::shared_ptr<DescriptorSet>;
 
 	using Texture = ::scop::Image;
+	using UniformBufferObject = ::scop::UniformBufferObject;
+	using Camera = ::scop::Camera;
 
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
@@ -61,20 +64,19 @@ public:
 
 	virtual void		init(
 		Device& device,
-		const RenderPass::RenderPassInfo& rp_info,
+		RenderPass::RenderPassInfo& rp_info,
 		Target::TargetInfo& tar_info) = 0;
 	virtual void		assemble(
 		Device& device,
 		VkGraphicsPipelineCreateInfo& info) = 0;
-	// virtual void		plugDescriptor(Device& device) = 0;
 	virtual void		destroy(Device& device);
 	virtual void		draw(
 		VkPipelineLayout layout,
 		CommandBuffer& command_buffer,
 		InputHandler& input,
 		int32_t image_index) = 0;
-	virtual void		update(
-		const ::scop::UniformBufferObject& ubo) noexcept = 0;
+	virtual void		update(const UniformBufferObject& ubo) noexcept;
+	virtual void		update(const Camera& camera) noexcept;
 
 	/* ========================================================================= */
 

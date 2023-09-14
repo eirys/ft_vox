@@ -32,7 +32,7 @@ void	ShadowsRenderPass::init(
 }
 
 void	ShadowsRenderPass::destroy(Device& device) {
-	_depth_image.destroy(device);
+	// _depth_image.destroy(device);
 	super::destroy(device);
 }
 
@@ -123,21 +123,9 @@ void	ShadowsRenderPass::_createResources(
 	Device& device,
 	const RenderPass::RenderPassInfo& rp_info
 ) {
+	_depth_image = *rp_info.texture_buffer;
 	super::_width = rp_info.width;
 	super::_height = rp_info.height;
-
-	_depth_image.initImage(
-		device,
-		rp_info.width,
-		rp_info.height,
-		rp_info.depth_format,
-		VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT |
-		VK_IMAGE_USAGE_SAMPLED_BIT,
-		VK_SAMPLE_COUNT_1_BIT);
-	_depth_image.initView(
-		device,
-		rp_info.depth_format,
-		VK_IMAGE_ASPECT_DEPTH_BIT);
 }
 
 } // namespace scop::graphics

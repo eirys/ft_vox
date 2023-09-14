@@ -46,7 +46,7 @@ public:
 
 	void	init(
 		Device& device,
-		const RenderPass::RenderPassInfo& rp_info,
+		RenderPass::RenderPassInfo& rp_info,
 		Target::TargetInfo& tar_info) override;
 	void	assemble(
 		Device& device,
@@ -57,7 +57,6 @@ public:
 		CommandBuffer& command_buffer,
 		InputHandler& input,
 		int32_t image_index) override;
-	void	update(const ::scop::UniformBufferObject& ubo) noexcept override;
 
 	/* ========================================================================= */
 

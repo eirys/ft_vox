@@ -44,9 +44,6 @@ static ObjectDirection	opposite(ObjectDirection dir) noexcept {
 App::App() {
 	_loadTerrain();
 	resetGame();
-	// scop::mtl::Material material;
-	// material.ambient_color = {0.2,0.2,0.2};
-	// _loadLight(material);
 	_window.init(this);
 	_engine.init(_window, _game, _vertices, _indices);
 }
@@ -59,12 +56,12 @@ App::~App() {
 
 void	App::run() {
 	_timer.start();
-	// while (_window.alive()) {
-		// _window.poll();
+	while (_window.alive()) {
+		_window.poll();
 		_updateGame();
 		_engine.render(_window, _game, _timer);
 		_timer.check();
-	// }
+	}
 	_engine.idle();
 }
 
@@ -231,15 +228,6 @@ void	App::_loadTerrain() {
 // 	// 	std::move(*model.getMaterial().ambient_texture)
 // 	// );
 // 	// model.getMaterial().ambient_texture.release();
-// }
-
-// void	App::_loadLight(const scop::mtl::Material& mat) {
-// 	_light = scop::UniformBufferObject::Light{
-// 		.ambient_color = mat.ambient_color,
-// 		.light_vector = scop::normalize(scop::Vect3(0.1f, 1.0f, 0.3f)),
-// 		.light_color = scop::Vect3(1.0f, 1.0f, 0.8f),
-// 		.light_intensity = 0.4f
-// 	};
 // }
 
 } // namespace scop

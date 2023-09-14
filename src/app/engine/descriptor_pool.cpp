@@ -47,10 +47,6 @@ VkDescriptorPool		DescriptorPool::getPool() const noexcept {
 	return _pool;
 }
 
-const std::vector<VkDescriptorSetLayout>&	DescriptorPool::getLayouts() const noexcept {
-	return _layouts;
-}
-
 /* ========================================================================== */
 /*                                   PRIVATE                                  */
 /* ========================================================================== */
@@ -93,20 +89,19 @@ void	DescriptorPool::_allocateSets(
 	Device& device,
 	const std::vector<DescriptorSetPtr>& sets
 ) {
-	std::vector<VkDescriptorSet>	descriptor_sets;
-
-	_layouts.reserve(sets.size());
-	descriptor_sets.resize(sets.size());
+	std::vector<VkDescriptorSet>		descriptor_sets(sets.size());
+	std::vector<VkDescriptorSetLayout>	layouts;
+	layouts.reserve(sets.size());
 
 	for (const auto& set: sets) {
-		_layouts.emplace_back(set->getLayout());
+		layouts.emplace_back(set->getLayout());
 	}
 
 	VkDescriptorSetAllocateInfo	alloc_info{};
 	alloc_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
 	alloc_info.descriptorPool = _pool;
 	alloc_info.descriptorSetCount = static_cast<uint32_t>(descriptor_sets.size());
-	alloc_info.pSetLayouts = _layouts.data();
+	alloc_info.pSetLayouts = layouts.data();
 
 	if (vkAllocateDescriptorSets(device.getLogicalDevice(), &alloc_info, descriptor_sets.data()) != VK_SUCCESS) {
 		throw std::runtime_error("failed to allocate descriptor sets");
@@ -117,55 +112,4 @@ void	DescriptorPool::_allocateSets(
 	}
 }
 
-/**
- * @brief Reconstructs descriptor writes array from sets,
- * 		  then updates descriptors, properly plugging cpu/gpu sides
-*//*
-void	DescriptorPool::_createWrites(Device& device) {
-	using DescriptorPtr = DescriptorSet::DescriptorPtr;
-	using BufferInfo = DescriptorSet::BufferInfo;
-	using ImageInfo = DescriptorSet::ImageInfo;
-
-	std::vector<VkWriteDescriptorSet>	writes;
-	std::list<VkDescriptorBufferInfo>	buffers;
-	std::list<VkDescriptorImageInfo>	images;
-
-	for (const auto& descriptor: _descriptors) {
-		for (const auto& info: descriptor->getInfos()) {
-			VkWriteDescriptorSet	write{};
-			write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			write.dstSet = descriptor->getSet();
-			write.dstBinding = info->binding;
-			write.dstArrayElement = 0;
-			write.descriptorType = info->type;
-			write.descriptorCount = 1;
-
-			if (info->type == VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER) {
-				std::shared_ptr<BufferInfo> buffer_info = std::dynamic_pointer_cast<BufferInfo>(info);
-				VkDescriptorBufferInfo	buffer{};
-				// buffer.buffer = descriptor->getBuffer().getBuffer();
-				buffer.buffer = buffer_info->buffer;
-				buffer.offset = buffer_info->offset;
-				buffer.range = buffer_info->range;
-				write.pBufferInfo = &buffers.emplace_back(buffer);
-			} else {
-				std::shared_ptr<ImageInfo> image_info = std::dynamic_pointer_cast<ImageInfo>(info);
-				VkDescriptorImageInfo	image{};
-				image.imageLayout = image_info->layout;
-				image.imageView = image_info->view;
-				image.sampler = image_info->sampler;
-				write.pImageInfo = &images.emplace_back(image);
-			}
-
-			writes.emplace_back(write);
-		}
-	}
-
-	vkUpdateDescriptorSets(
-		device.getLogicalDevice(),
-		static_cast<uint32_t>(writes.size()),
-		writes.data(),
-		0, nullptr);
-}
- */
 } // namespace scop::graphics

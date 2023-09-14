@@ -104,8 +104,7 @@ void	SceneRenderPass::_createRenderPass(
 	std::array<VkAttachmentDescription, 3>	attachments = {
 		color_attachment,
 		depth_attachment,
-		color_attachment_resolve
-	};
+		color_attachment_resolve };
 
 	// Subpass
 	VkAttachmentReference	color_ref{};
@@ -161,7 +160,6 @@ void	SceneRenderPass::_createResources(
 	super::_width = rp_info.width;
 	super::_height = rp_info.height;
 
-	// Color image
 	_color_image.initImage(
 		device,
 		super::_width,
@@ -175,7 +173,6 @@ void	SceneRenderPass::_createResources(
 		rp_info.color_format,
 		VK_IMAGE_ASPECT_COLOR_BIT);
 
-	// Depth stencil image
 	_depth_image.initImage(
 		device,
 		super::_width,

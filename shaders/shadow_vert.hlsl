@@ -12,7 +12,7 @@ struct Camera {
 	float4x4    vp;
 };
 
-cbuffer projector: register(b1, space1) { Camera projector; }
+cbuffer projector: register(b0, space1) { Camera projector; }
 
 // Extract actual vertex position from input
 float4	extractPos(int input) {

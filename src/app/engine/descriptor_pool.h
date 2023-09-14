@@ -26,7 +26,6 @@
 namespace scop::graphics {
 
 class Device;
-class TextureHandler;
 class DescriptorSet;
 
 class DescriptorPool {
@@ -51,30 +50,28 @@ public:
 
 	/* ========================================================================= */
 
-	void		init(Device& device, const std::vector<DescriptorSetPtr>& sets);
-	void		destroy(Device& device);
+	void				init(Device& device, const std::vector<DescriptorSetPtr>& sets);
+	void				destroy(Device& device);
 
 	/* ========================================================================= */
 
-	const std::vector<VkDescriptorSetLayout>&	getLayouts() const noexcept;
-	VkDescriptorPool							getPool() const noexcept;
+	VkDescriptorPool	getPool() const noexcept;
 
 private:
 	/* ========================================================================= */
 	/*                               CLASS MEMBERS                               */
 	/* ========================================================================= */
 
-	VkDescriptorPool					_pool;
-	std::vector<VkDescriptorSetLayout>	_layouts;
+	VkDescriptorPool	_pool;
 
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
 
-	void		_createDescriptorPool(
+	void				_createDescriptorPool(
 		Device& device,
 		const std::vector<DescriptorSetPtr>& sets);
-	void		_allocateSets(
+	void				_allocateSets(
 		Device& device,
 		const std::vector<DescriptorSetPtr>& sets);
 

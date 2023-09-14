@@ -30,7 +30,6 @@ struct Vertex;
 
 namespace scop::graphics {
 class Device;
-class CommandPool;
 
 class InputHandler {
 public:
@@ -50,7 +49,6 @@ public:
 
 	void			init(
 		Device& device,
-		CommandPool& command_pool,
 		const std::vector<Vertex>& vertices,
 		const std::vector<uint32_t>& indices
 	);
@@ -77,12 +75,10 @@ private:
 
 	void			_createVertexBuffer(
 		Device& device,
-		CommandPool& command_pool,
 		const std::vector<Vertex>& vertices
 	);
 	void			_createIndexBuffer(
 		Device& device,
-		CommandPool& command_pool,
 		const std::vector<uint32_t>& indices
 	);
 

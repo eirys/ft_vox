@@ -8,45 +8,42 @@ layout(location = 2) in vec3 in_shadow;
 // Output
 layout(location = 0) out vec4 out_color;
 
-// Uniforms
-layout(binding = 2) uniform Light {
+/* UNIFORMS ================================================================= */
+layout(binding = 2, set = 0) uniform Light {
 	vec3 ambient;
 	vec3 vector;
 	vec3 color;
 } light;
-layout(binding = 3) uniform sampler2DArray tex_sampler;
-layout(binding = 4) uniform sampler2D shadow_sampler;
+layout(binding = 3, set = 0) uniform sampler2DArray	tex_sampler;
+layout(binding = 4, set = 0) uniform sampler2D		shadow_sampler;
 
-bool isShadow(vec3 shadow) {
-	if (shadow.z > -1.0f && shadow.z < 1.0f) {
-		float depth = texture(shadow_sampler, shadow.xy).r;
-		return shadow.z + 0.00005f > depth;
+/* HELPERS ================================================================== */
+bool isShadow(vec3 _shadow_coord) {
+	if (_shadow_coord.z > -1.0f && _shadow_coord.z < 1.0f) {
+		float depth = texture(shadow_sampler, _shadow_coord.xy).r;
+		return _shadow_coord.z + 0.00005f > depth;
 	}
 	return false;
 }
 
 vec4 directionalLighting(
-	vec3 shadow_coord,
-	vec3 normal,
-	vec3 vector,
-	vec3 color
+	vec3 _shadow_coord,
+	vec3 _vertex_normal,
+	vec3 _light_vector,
+	vec3 _light_color
 ) {
-	if (isShadow(shadow_coord))
+	if (isShadow(_shadow_coord))
 		return vec4(0.0);
-
-	float illumination = max(dot(normal, vector), 0.0f);
-	return vec4(color * illumination, 1.0f);
+	float illumination = max(dot(_vertex_normal, _light_vector), 0.0f);
+	return vec4(_light_color * illumination, 1.0f);
 }
 
+/* MAIN ===================================================================== */
 void main() {
 	vec4 color = texture(tex_sampler, vec3(in_uvw.xy, in_uvw.z));
-
-	// Clamp depth value to [0, 1]
-	vec3 shadow = vec3(in_shadow.xy * 0.5f + 0.5f, in_shadow.z);
-
 	vec4 ambient = vec4(light.ambient, 1.0f);
 	vec4 directional = directionalLighting(
-		shadow,
+		in_shadow,
 		in_normal,
 		light.vector,
 		light.color);

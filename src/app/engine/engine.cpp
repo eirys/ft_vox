@@ -25,6 +25,13 @@
 
 #include <cstring> // std::strcmp
 
+using UniformBufferObject = ::scop::UniformBufferObject;
+using GameState = ::vox::GameState;
+using Window = ::scop::Window;
+
+using Mat4 = ::scop::Mat4;
+using Camera = ::scop::Camera;
+
 namespace scop::graphics {
 
 const std::vector<const char*>	Engine::validation_layers = {
@@ -37,7 +44,7 @@ const std::vector<const char*>	Engine::validation_layers = {
 
 void	Engine::init(
 	::scop::Window& window,
-	const ::vox::GameState& game,
+	const GameState& game,
 	const std::vector<Vertex>& vertices,
 	const std::vector<uint32_t>& indices
 ) {
@@ -50,10 +57,10 @@ void	Engine::init(
 	_swap_chain.init(_device, window);
 	_command_pool.init(_device);
 	_createGraphicsPipelines();
-	_createDescriptors();
 	_createGraphicsPipelineLayout();
 	_assembleGraphicsPipelines();
-	_input_handler.init(_device, _command_pool, vertices, indices);
+	_createDescriptors();
+	_input_handler.init(_device, vertices, indices);
 	_draw_buffer.init(_device, _command_pool, max_frames_in_flight);
 	_createSyncObjects();
 
@@ -140,29 +147,30 @@ void	Engine::render(
 		_pipeline_layout,
 		_draw_buffer,
 		_input_handler,
-		image_index );
+		image_index);
 	_pipelines.scene->draw(
 		_pipeline_layout,
 		_draw_buffer,
 		_input_handler,
-		image_index );
+		image_index);
 	_draw_buffer.end(_device, false);
 
-	_pipelines.scene->update(_updateUbo(game));
+	_pipelines.scene->update(_generateCameraMatrix(game));
 
 	// Set synchronization objects
-	VkSemaphore				wait_semaphore[] = { _image_available_semaphores };
-	VkSemaphore				signal_semaphore[] = { _render_finished_semaphores };
-	VkPipelineStageFlags	wait_stages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
-	VkSubmitInfo			submit_info{};
+	std::array<VkSemaphore, 1>			wait_semaphores = { _image_available_semaphores };
+	std::array<VkSemaphore, 1>			signal_semaphores = { _render_finished_semaphores };
+	std::array<VkPipelineStageFlags, 1>	wait_stages = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
+
+	VkSubmitInfo	submit_info{};
 	submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-	submit_info.waitSemaphoreCount = 1;
-	submit_info.pWaitSemaphores = wait_semaphore;
-	submit_info.pWaitDstStageMask = wait_stages;
+	submit_info.waitSemaphoreCount = static_cast<uint32_t>(wait_semaphores.size());
+	submit_info.pWaitSemaphores = wait_semaphores.data();
+	submit_info.pWaitDstStageMask = wait_stages.data();
+	submit_info.signalSemaphoreCount = static_cast<uint32_t>(signal_semaphores.size());
+	submit_info.pSignalSemaphores = signal_semaphores.data();
 	submit_info.commandBufferCount = 1;
 	submit_info.pCommandBuffers = reinterpret_cast<VkCommandBuffer*>(&_draw_buffer);
-	submit_info.signalSemaphoreCount = 1;
-	submit_info.pSignalSemaphores = signal_semaphore;
 
 	// Submit command buffer to be processed by graphics queue
 	if (vkQueueSubmit(_device.getGraphicsQueue(), 1, &submit_info, _in_flight_fences) != VK_SUCCESS) {
@@ -170,13 +178,13 @@ void	Engine::render(
 	}
 
 	// Set presentation for next swap chain image
-	VkSwapchainKHR	swap_chains[] = { _swap_chain.getSwapChain() };
-	VkPresentInfoKHR	present_info{};
+	std::array<VkSwapchainKHR, 1>	swap_chains = { _swap_chain.getSwapChain() };
+	VkPresentInfoKHR				present_info{};
 	present_info.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
-	present_info.waitSemaphoreCount = 1;
-	present_info.pWaitSemaphores = signal_semaphore;
-	present_info.swapchainCount = 1;
-	present_info.pSwapchains = swap_chains;
+	present_info.waitSemaphoreCount = static_cast<uint32_t>(wait_semaphores.size());
+	present_info.pWaitSemaphores = signal_semaphores.data();
+	present_info.swapchainCount = static_cast<uint32_t>(swap_chains.size());
+	present_info.pSwapchains = swap_chains.data();
 	present_info.pImageIndices = &image_index;
 	present_info.pResults = nullptr;
 
@@ -269,7 +277,7 @@ void	Engine::_createGraphicsPipelines() {
 
 	rp_info.width = SHADOWMAP_SIZE;
 	rp_info.height = SHADOWMAP_SIZE;
-	rp_info.depth_format = VK_FORMAT_D16_UNORM;
+	rp_info.depth_format = DEPTH_FORMAT;
 	rp_info.depth_samples = VK_SAMPLE_COUNT_1_BIT;
 
 	_pipelines.shadows->init(
@@ -279,27 +287,6 @@ void	Engine::_createGraphicsPipelines() {
 }
 
 void	Engine::_createDescriptors() {
-	// DescriptorPool::DescriptorSetPtr	scene_set = std::make_shared<DescriptorSet>();
-	// DescriptorPool::DescriptorSetPtr	shadowmap_set = std::make_shared<DescriptorSet>();
-
-	// tmp.init(_device);
-
-	// _pipelines.scene->setDescriptor(scene_set);
-	// _pipelines.shadows->setDescriptor(shadowmap_set);
-
-	// _pipelines.scene->plugDescriptor(scene_set);
-	// _pipelines.scene->plugDescriptor(shadowmap_set);
-	// _pipelines.shadows->plugDescriptor(scene_set);
-
-	// scene_set->init(_device);
-	// shadowmap_set->init(_device);
-
-	// const auto& ptr1 = _pipelines.scene->getDescriptor();
-	// const auto& ptr2 = _pipelines.shadows->getDescriptor();
-	// std::shared_ptr<SceneDescriptorSet>
-	// auto shadows_descriptors =
-		// std::dynamic_pointer_cast<ShadowsDescriptorSet>(_pipelines.shadows->getDescriptor());
-	// std::shared_ptr<DescriptorSet>	scene_descriptor = _pipelines.scene->getDescriptor();
 	using DescriptorSetPtr = std::shared_ptr<DescriptorSet>;
 	using ScenePipelinePtr = std::shared_ptr<ScenePipeline>;
 	using ShadowsPipelinePtr = std::shared_ptr<ShadowsPipeline>;
@@ -318,11 +305,14 @@ void	Engine::_createDescriptors() {
 }
 
 void	Engine::_createGraphicsPipelineLayout() {
-	// Pipeline layout setups
+	std::vector<VkDescriptorSetLayout>	layouts = {
+		_pipelines.scene->getDescriptor()->getLayout(),
+		_pipelines.shadows->getDescriptor()->getLayout()
+	};
 	VkPipelineLayoutCreateInfo	pipeline_layout_info{};
 	pipeline_layout_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-	pipeline_layout_info.setLayoutCount = _descriptor_pool.getLayouts().size();
-	pipeline_layout_info.pSetLayouts = _descriptor_pool.getLayouts().data();
+	pipeline_layout_info.setLayoutCount = layouts.size();
+	pipeline_layout_info.pSetLayouts = layouts.data();
 	pipeline_layout_info.pushConstantRangeCount = 0;
 	pipeline_layout_info.pPushConstantRanges = nullptr;
 
@@ -335,11 +325,15 @@ void	Engine::_assembleGraphicsPipelines() {
 	/* INPUT FORMAT ============================================================ */
 	VkPipelineVertexInputStateCreateInfo	vert_input{};
 	auto	binding_description = scop::Vertex::getBindingDescription();
+	auto	attribute_descriptions = ::scop::Vertex::getSceneAttributeDescriptions();
 
 	vert_input.sType =
 		VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
 	vert_input.vertexBindingDescriptionCount = 1;
 	vert_input.pVertexBindingDescriptions = &binding_description;
+	vert_input.vertexAttributeDescriptionCount =
+		static_cast<uint32_t>(attribute_descriptions.size());
+	vert_input.pVertexAttributeDescriptions = attribute_descriptions.data();
 
 	/* INPUT ASSEMBLY ========================================================== */
 	VkPipelineInputAssemblyStateCreateInfo	input_assembly{};
@@ -367,8 +361,8 @@ void	Engine::_assembleGraphicsPipelines() {
 	rasterizing.depthBiasEnable = VK_FALSE;
 	rasterizing.depthBiasConstantFactor = 0.0f;
 	rasterizing.depthBiasClamp = 0.0f;
+	rasterizing.cullMode = VK_CULL_MODE_BACK_BIT;
 	rasterizing.depthBiasSlopeFactor = 0.0f;
-	// rasterizing.cullMode
 
 	/* MULTISAMPLING =========================================================== */
 	VkPipelineMultisampleStateCreateInfo	multisampling{};
@@ -379,16 +373,7 @@ void	Engine::_assembleGraphicsPipelines() {
 	multisampling.pSampleMask = nullptr;
 	multisampling.alphaToCoverageEnable = VK_FALSE;
 	multisampling.alphaToOneEnable = VK_FALSE;
-
-	/* COLOR BLENDING ========================================================== */
-	VkPipelineColorBlendStateCreateInfo	color_blending{};
-	color_blending.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
-	color_blending.logicOpEnable = VK_FALSE;
-	color_blending.logicOp = VK_LOGIC_OP_COPY;
-	color_blending.blendConstants[0] = 0.0f;
-	color_blending.blendConstants[1] = 0.0f;
-	color_blending.blendConstants[2] = 0.0f;
-	color_blending.blendConstants[3] = 0.0f;
+	multisampling.rasterizationSamples = _device.getMsaaSamples();
 
 	/* COLOR BLENDING ========================================================== */
 	VkPipelineColorBlendAttachmentState	color_blend_attachment{};
@@ -405,6 +390,17 @@ void	Engine::_assembleGraphicsPipelines() {
 	color_blend_attachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
 	color_blend_attachment.alphaBlendOp = VK_BLEND_OP_ADD;
 
+	VkPipelineColorBlendStateCreateInfo	color_blending{};
+	color_blending.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
+	color_blending.logicOpEnable = VK_FALSE;
+	color_blending.logicOp = VK_LOGIC_OP_COPY;
+	color_blending.blendConstants[0] = 0.0f;
+	color_blending.blendConstants[1] = 0.0f;
+	color_blending.blendConstants[2] = 0.0f;
+	color_blending.blendConstants[3] = 0.0f;
+	color_blending.attachmentCount = 1;
+	color_blending.pAttachments = &color_blend_attachment;
+
 	/* DEPTH STENCIL =========================================================== */
 	VkPipelineDepthStencilStateCreateInfo	depth_stencil{};
 	depth_stencil.sType =
@@ -417,6 +413,7 @@ void	Engine::_assembleGraphicsPipelines() {
 	depth_stencil.stencilTestEnable = VK_FALSE;			// unused. typically used for reflection, shadow...
 	depth_stencil.front = {};
 	depth_stencil.back = {};
+	depth_stencil.depthCompareOp = VK_COMPARE_OP_LESS;
 
 	/* DYNAMIC STATE =========================================================== */
 	std::vector<VkDynamicState>	dynamic_states = {
@@ -446,16 +443,6 @@ void	Engine::_assembleGraphicsPipelines() {
 	pipeline_info.subpass = 0;
 	pipeline_info.basePipelineHandle = VK_NULL_HANDLE;
 	pipeline_info.basePipelineIndex = -1;
-
-	auto	attribute_descriptions = ::scop::Vertex::getSceneAttributeDescriptions();
-	vert_input.vertexAttributeDescriptionCount =
-		static_cast<uint32_t>(attribute_descriptions.size());
-	vert_input.pVertexAttributeDescriptions = attribute_descriptions.data();
-	color_blending.attachmentCount = 1;
-	color_blending.pAttachments = &color_blend_attachment;
-	rasterizing.cullMode = VK_CULL_MODE_BACK_BIT;
-	multisampling.rasterizationSamples = _device.getMsaaSamples();
-	depth_stencil.depthCompareOp = VK_COMPARE_OP_LESS;
 
 	_pipelines.scene->assemble(_device, pipeline_info);
 
@@ -508,38 +495,52 @@ void	Engine::_updatePresentation(::scop::Window& window) {
 	_pipelines.scene->getTarget()->update(_device, tar_info);
 }
 
-void	Engine::_initDescriptors(
-	const ::vox::GameState& game
-) noexcept {
-	::scop::UniformBufferObject	ubo = _updateUbo(game);
+void	Engine::_initDescriptors(const GameState& game) noexcept {
+	UniformBufferObject	ubo{};
+
+	// Camera
+	ubo.camera = _generateCameraMatrix(game);
+
+	// Light
+	ubo.light = {
+		.ambient_color = ::scop::Vect3(0.17f, 0.15f, 0.1f),
+		.light_vector = ::scop::normalize(::scop::Vect3(0.1f, 1.0f, 0.3f)),
+		.light_color = ::scop::Vect3(1.0f, 1.0f, 0.8f) };
+
+	// Projector
+	const Mat4	view = ::scop::lookAt(
+		ubo.light.light_vector * 15.0f,
+		Vect3(0.0f, 0.0f, 0.0f),
+		Vect3(1.0f, 0.0f, 0.0f));
+	const Mat4	bias = {	// sus & tmp
+		1.0f, 0.0f, 0.0f, 0.0f,
+		0.0f, 1.0f, 0.0f, 0.0f,
+		0.0f, 0.0f, 0.5f, 0.0f,
+		0.0f, 0.0f, 0.5f, 1.0f };
+	const Mat4	projection = bias * ::scop::orthographic(-100.0f, 100.0f, -100.0f, 100.0f, 1.0f, 100.0f);
+	ubo.projector.vp = projection * view;
+
 	_pipelines.scene->update(ubo);
 }
 
-::scop::UniformBufferObject	Engine::_updateUbo(
-	const ::vox::GameState& game
-) const noexcept {
-	::scop::UniformBufferObject	ubo{};
-
-	float ratio =
+Camera	Engine::_generateCameraMatrix(const GameState& game) const noexcept {
+	float window_ratio =
 		_swap_chain.getExtent().width /
 		static_cast<float>(_swap_chain.getExtent().height);
-	::scop::Mat4	view = ::scop::lookAtDir(
+	Mat4	view = ::scop::lookAtDir(
 		game.getPlayer().getPosition(),
 		game.getPlayer().getEyeDir(),
 		::scop::Vect3(0.0f, 1.0f, 0.0f));
-	::scop::Mat4	projection = ::scop::perspective(
+	Mat4	projection = ::scop::perspective(
 		::scop::math::radians(70.0f),
-		ratio,
+		window_ratio,
 		0.1f,
 		1000.0f);
-	ubo.camera.vp = projection * view;
-	ubo.light = {
-		.ambient_color = ::scop::Vect3(0.2f, 0.2f, 0.2f),
-		.light_vector = ::scop::normalize(::scop::Vect3(0.1f, 1.0f, 0.3f)),
-		.light_color = ::scop::Vect3(1.0f, 1.0f, 0.8f) };
-		// .light_intensity = 0.4f };
 
-	return ubo;
+	Camera	camera{};
+	camera.vp = projection * view;
+
+	return camera;
 }
 
 /* ========================================================================== */

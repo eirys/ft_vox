@@ -41,10 +41,11 @@ ShadowsPipeline::ShadowsPipeline() {
 
 void	ShadowsPipeline::init(
 	Device& device,
-	const RenderPass::RenderPassInfo& rp_info,
+	RenderPass::RenderPassInfo& rp_info,
 	Target::TargetInfo& tar_info
 ) {
 	super::_texture->init(device);
+	rp_info.texture_buffer = &(super::_texture->getTextureBuffer());
 	super::_render_pass->init(device, rp_info);
 	tar_info.render_pass = super::_render_pass;
 	super::_target->init(device, tar_info);
@@ -57,7 +58,7 @@ void	ShadowsPipeline::assemble(
 ) {
 	/* SHADERS ================================================================= */
 	VkShaderModule	vert_module =
-		super::_createShaderModule(device, "shaders\\shadow.vertex.spv");
+		super::_createShaderModule(device, "shaders\\shadow_vert.spv");
 
 	VkPipelineShaderStageCreateInfo	vert_info{};
 	vert_info.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -128,12 +129,12 @@ void	ShadowsPipeline::draw(
 		command_buffer.getBuffer(),
 		0,
 		static_cast<uint32_t>(vertex_buffers.size()), vertex_buffers.data(),
-		offsets.data() );
+		offsets.data());
 	vkCmdBindIndexBuffer(
 		command_buffer.getBuffer(),
 		input.getIndexBuffer().getBuffer(),
 		0,
-		VK_INDEX_TYPE_UINT32 );
+		VK_INDEX_TYPE_UINT32);
 
 	vkCmdDrawIndexed(
 		command_buffer.getBuffer(),
@@ -141,15 +142,6 @@ void	ShadowsPipeline::draw(
 		1, 0, 0, 0);
 
 	vkCmdEndRenderPass(command_buffer.getBuffer());
-}
-
-/**
- * @brief Shouldn't need update so far (same descriptor as scene).
-*/
-void	ShadowsPipeline::update(
-	const ::scop::UniformBufferObject& ubo
-) noexcept {
-	(void)ubo;
 }
 
 /* ========================================================================== */
@@ -176,7 +168,7 @@ void	ShadowsPipeline::_beginRenderPass(
 	vkCmdBeginRenderPass(
 		command_buffer.getBuffer(),
 		&render_pass,
-		VK_SUBPASS_CONTENTS_INLINE );
+		VK_SUBPASS_CONTENTS_INLINE);
 }
 
 } // namespace scop::graphics

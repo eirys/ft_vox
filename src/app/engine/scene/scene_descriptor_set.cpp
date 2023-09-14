@@ -94,8 +94,6 @@ void	SceneDescriptorSet::plug(
 	TextureHandlerPtr textures,
 	TextureHandlerPtr shadowmap
 ) {
-	std::array<VkWriteDescriptorSet, 5>	writes{};
-
 	VkDescriptorBufferInfo	camera_info{};
 	camera_info.buffer = buffer.getBuffer();
 	camera_info.offset = offsetof(UniformBufferObject, camera);
@@ -120,6 +118,8 @@ void	SceneDescriptorSet::plug(
 	depth_info.imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
 	depth_info.imageView = shadowmap->getTextureBuffer().getView();
 	depth_info.sampler = shadowmap->getTextureSampler();
+
+	std::array<VkWriteDescriptorSet, 5>	writes{};
 
 	// Camera UBO
 	writes[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
@@ -179,7 +179,7 @@ void	SceneDescriptorSet::plug(
 	vkUpdateDescriptorSets(
 		device.getLogicalDevice(),
 		static_cast<uint32_t>(writes.size()), writes.data(),
-		0, nullptr );
+		0, nullptr);
 }
 
 } // namespace scop::graphics

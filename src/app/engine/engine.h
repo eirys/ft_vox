@@ -30,9 +30,7 @@
 # include "descriptor_pool.h"
 # include "command_pool.h"
 # include "input_handler.h"
-# include "player.h"
 # include "command_buffer.h"
-
 # include "texture_handler.h"
 # include "pipeline.h"
 
@@ -42,7 +40,9 @@ class GameState;
 
 namespace scop {
 class Timer;
+struct Camera;
 }
+
 
 namespace scop::graphics {
 
@@ -55,6 +55,10 @@ public:
 	using Texture = TextureHandler::Texture;
 	using PipelinePtr = std::shared_ptr<Pipeline>;
 
+	using UniformBufferObject = ::scop::UniformBufferObject;
+	using GameState = ::vox::GameState;
+	using Window = ::scop::Window;
+
 	/* ========================================================================= */
 	/*                               CONST MEMBERS                               */
 	/* ========================================================================= */
@@ -62,10 +66,10 @@ public:
 	static const std::vector<const char*>	validation_layers;
 	static constexpr std::size_t	max_frames_in_flight = 1;
 
-	#ifndef NDEBUG
-	static constexpr bool			enable_validation_layers = false;
-	#else
+	#ifdef NDEBUG
 	static constexpr bool			enable_validation_layers = true;
+	#else
+	static constexpr bool			enable_validation_layers = false;
 	#endif
 
 	/* ========================================================================= */
@@ -83,31 +87,17 @@ public:
 	/* ========================================================================= */
 
 	void						init(
-		::scop::Window& window,
-		const ::vox::GameState& game,
+		Window& window,
+		const GameState& game,
 		const std::vector<Vertex>& vertices,
 		const std::vector<uint32_t>& indices);
 	void						destroy();
 
 	void						idle();
 	void						render(
-		::scop::Window& window,
+		Window& window,
 		const vox::GameState& game,
 		Timer& timer);
-
-	// class TmpHandler: public TextureHandler {
-	// 	public:
-
-	// 	using super = TextureHandler;
-	// 	void init(Device& device) override;
-
-	// 	private:
-	// 	void _createTextureSampler(Device& device) override;
-	// 	void _createTextureImages(Device& device) override;
-	// 	void _createTextureImageView(Device& device) override;
-	// };
-
-	// static TmpHandler		tmp;
 
 private:
 	/* ========================================================================= */
@@ -146,11 +136,11 @@ private:
 	void						_createSyncObjects();
 	void						_createDescriptors();
 
-	void						_initDescriptors(
-		const ::vox::GameState& game) noexcept;
-	::scop::UniformBufferObject	_updateUbo(
-		const ::vox::GameState& game) const noexcept;
-	void						_updatePresentation(::scop::Window& window);
+	void						_initDescriptors(const GameState& game) noexcept;
+	// UniformBufferObject			_updateUbo(const GameState& game) const noexcept;
+	Camera						_generateCameraMatrix(const GameState& game) const noexcept;
+
+	void						_updatePresentation(Window& window);
 
 	bool						_checkValidationLayerSupport();
 	std::vector<const char*>	_getRequiredExtensions();

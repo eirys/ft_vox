@@ -105,9 +105,9 @@ PerlinNoise::PerlinMesh	PerlinNoise::toMesh() const {
 		[&mesh]
 		(const Cube::Face& face) -> void {
 			for (std::size_t i = 0; i < 4; ++i) {
-				uint8_t	face_index = 
+				uint8_t	face_index =
 					face.side == FaceType::FACE_TOP ? 0 : (
-					face.side == FaceType::FACE_BOTTOM ? 1 : 2
+					face.side == FaceType::FACE_BOTTOM ? 2 : 1
 				);
 				scop::Vertex	vertex(
 					face.vertices[i],

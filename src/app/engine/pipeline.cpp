@@ -31,14 +31,13 @@ void	Pipeline::destroy(Device& device) {
 	vkDestroyPipeline(device.getLogicalDevice(), _pipeline, nullptr);
 }
 
-// void	Pipeline::setDescriptor(
-// 	Pipeline::DescriptorSetPtr desc_ptr
-// ) {
-// 	if (desc_ptr->getSetIndex() < _first_descriptor)
-// 		_first_descriptor = desc_ptr->getSetIndex();
-// 	_descriptor = desc_ptr;
-// }
+void	Pipeline::update(const UniformBufferObject& ubo) noexcept {
+	(void)ubo;
+}
 
+void	Pipeline::update(const Camera& camera) noexcept {
+	(void)camera;
+}
 /* ========================================================================== */
 
 VkPipeline	Pipeline::getPipeline() const noexcept {

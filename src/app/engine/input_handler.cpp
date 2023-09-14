@@ -27,13 +27,12 @@ namespace scop::graphics {
 
 void	InputHandler::init(
 	Device& device,
-	CommandPool& command_pool,
 	const std::vector<Vertex>& vertices,
 	const std::vector<uint32_t>& indices
 ) {
 	_indices_count = indices.size();
-	_createVertexBuffer(device, command_pool, vertices);
-	_createIndexBuffer(device, command_pool, indices);
+	_createVertexBuffer(device, vertices);
+	_createIndexBuffer(device, indices);
 }
 
 void	InputHandler::destroy(Device& device) {
@@ -65,7 +64,6 @@ const Buffer&	InputHandler::getIndexBuffer() const noexcept {
 */
 void	InputHandler::_createVertexBuffer(
 	Device& device,
-	CommandPool& command_pool,
 	const std::vector<Vertex>& vertices
 ) {
 	const VkDeviceSize	buffer_size = sizeof(Vertex) * vertices.size();
@@ -94,15 +92,14 @@ void	InputHandler::_createVertexBuffer(
 		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
 	// Transfer data from staging buffer to vertex buffer
-	CommandBuffer	command_buffer;
-	command_buffer.init(device, command_pool);
+	CommandBuffer	command_buffer = CommandPool::createBuffer(device);
 	command_buffer.begin();
 	_vertex_buffer.copyBuffer(
 		command_buffer,
 		staging_buffer,
 		buffer_size);
 	command_buffer.end(device);
-	command_buffer.destroy(device, command_pool);
+	CommandPool::destroyBuffer(device, command_buffer);
 
 	// Cleanup staging buffer
 	staging_buffer.destroy(device.getLogicalDevice());
@@ -113,7 +110,6 @@ void	InputHandler::_createVertexBuffer(
  */
 void	InputHandler::_createIndexBuffer(
 	Device& device,
-	CommandPool& command_pool,
 	const std::vector<uint32_t>& indices
 ) {
 	const VkDeviceSize	buffer_size = sizeof(uint32_t) * indices.size();
@@ -142,15 +138,14 @@ void	InputHandler::_createIndexBuffer(
 		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
 	// Transfer data from staging buffer to index buffer
-	CommandBuffer	command_buffer;
-	command_buffer.init(device, command_pool);
+	CommandBuffer	command_buffer = CommandPool::createBuffer(device);
 	command_buffer.begin();
 	_index_buffer.copyBuffer(
 		command_buffer,
 		staging_buffer,
 		buffer_size);
 	command_buffer.end(device);
-	command_buffer.destroy(device, command_pool);
+	CommandPool::destroyBuffer(device, command_buffer);
 
 	// Cleanup staging buffer
 	staging_buffer.destroy(device.getLogicalDevice());

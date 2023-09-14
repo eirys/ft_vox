@@ -33,7 +33,7 @@ void	ShadowsTextureHandler::init(Device& device) {
 /* ========================================================================== */
 
 void	ShadowsTextureHandler::_createTextureImages(Device& device) {
-	super::_texture_count = 0;
+	super::_texture_count = 1;
 	super::_texture_buffer.initImage(
 		device,
 		SHADOWMAP_SIZE,

@@ -32,7 +32,7 @@ void	SceneTarget::init(
 	const Target::TargetInfo& tar_info
 ) {
 	const auto& image_views = tar_info.swap_chain->getImageViews();
-	const auto& render_pass =
+	auto render_pass =
 		std::dynamic_pointer_cast<SceneRenderPass>(tar_info.render_pass);
 
 	super::_frame_buffers.resize(image_views.size());

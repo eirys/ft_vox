@@ -39,7 +39,7 @@ ScenePipeline::ScenePipeline() {
 
 void	ScenePipeline::init(
 	Device& device,
-	const RenderPass::RenderPassInfo& rp_info,
+	RenderPass::RenderPassInfo& rp_info,
 	Target::TargetInfo& tar_info
 ) {
 	super::_texture->init(device);
@@ -63,9 +63,9 @@ void	ScenePipeline::assemble(
 ) {
 	/* SHADERS ================================================================= */
 	VkShaderModule	vert_module =
-		super::_createShaderModule(device, "shaders\\scene.vertex.spv");
+		super::_createShaderModule(device, "shaders\\scene_vert.spv");
 	VkShaderModule	frag_module =
-		super::_createShaderModule(device, "shaders\\scene.fragment.spv");
+		super::_createShaderModule(device, "shaders\\scene_frag.spv");
 
 	VkPipelineShaderStageCreateInfo	vert_info{};
 	vert_info.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -117,40 +117,6 @@ void	ScenePipeline::plugDescriptor(
 	scene_descriptors->plug(device, _ubo, super::_texture, shadowmap);
 }
 
-// void	ScenePipeline::plugDescriptor(DescriptorSetPtr desc_ptr) {
-// 	using BufferInfo = DescriptorSet::BufferInfo;
-// 	using ImageInfo = DescriptorSet::ImageInfo;
-// 	using UniformBufferObject = ::scop::UniformBufferObject;
-
-// 	BufferInfo	camera{};
-// 	camera.stage = VK_SHADER_STAGE_VERTEX_BIT;
-// 	camera.buffer = _ubo.getBuffer();
-// 	camera.offset = offsetof(UniformBufferObject, camera);
-// 	camera.range = sizeof(UniformBufferObject::Camera);
-// 	desc_ptr->addDescriptor(camera);
-
-// 	BufferInfo	projector{};
-// 	projector.stage = VK_SHADER_STAGE_VERTEX_BIT;
-// 	projector.buffer = _ubo.getBuffer();
-// 	projector.offset = offsetof(UniformBufferObject, projector);
-// 	projector.range = sizeof(UniformBufferObject::Camera);
-// 	desc_ptr->addDescriptor(projector);
-
-// 	BufferInfo	light{};
-// 	light.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
-// 	light.buffer = _ubo.getBuffer();
-// 	light.offset = offsetof(UniformBufferObject, light);
-// 	light.range = sizeof(UniformBufferObject::Light);
-// 	desc_ptr->addDescriptor(light);
-
-// 	ImageInfo	texture{};
-// 	texture.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
-// 	texture.sampler = _texture->getTextureSampler();
-// 	texture.view = _texture->getTextureBuffer().getView();
-// 	texture.layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-// 	desc_ptr->addDescriptor(texture);
-// }
-
 /**
  * @brief Record the drawing command of the pass.
 */
@@ -194,12 +160,12 @@ void	ScenePipeline::draw(
 		command_buffer.getBuffer(),
 		0,
 		static_cast<uint32_t>(vertex_buffers.size()), vertex_buffers.data(),
-		offsets.data() );
+		offsets.data());
 	vkCmdBindIndexBuffer(
 		command_buffer.getBuffer(),
 		input.getIndexBuffer().getBuffer(),
 		0,
-		VK_INDEX_TYPE_UINT32 );
+		VK_INDEX_TYPE_UINT32);
 
 	vkCmdDrawIndexed(
 		command_buffer.getBuffer(),
@@ -212,8 +178,18 @@ void	ScenePipeline::draw(
 /**
  * @brief Update the adequate descriptors with the new ubo.
 */
-void	ScenePipeline::update(const ::scop::UniformBufferObject& ubo) noexcept {
+void	ScenePipeline::update(const UniformBufferObject& ubo) noexcept {
 	_ubo.copyFrom(&ubo, sizeof(UniformBufferObject));
+}
+
+/**
+ * @brief Update the camera part of the ubo.
+*/
+void	ScenePipeline::update(const Camera& camera) noexcept {
+	_ubo.copyFrom(
+		&camera,
+		sizeof(Camera),
+		offsetof(UniformBufferObject, camera));
 }
 
 /* ========================================================================== */

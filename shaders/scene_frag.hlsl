@@ -14,7 +14,6 @@ struct Light {
 	float3	ambient;
 	float3	dir;
 	float3	color;
-	float	intensity;
 };
 
 cbuffer light: register(b2, space0) { Light light; }
@@ -27,23 +26,17 @@ SamplerState	shadow_sampler: register(s4, space0);
 
 // Sample shadow
 float	filterShadow(float4 shadow_coord) {
-	if (shadow_coord.z >= -1.0f && shadow_coord.z <= 1.0f) {
+	if (shadow_coord.z >= -1.0 && shadow_coord.z <= 1.0) {
 		float dist = shadow_map.Sample(shadow_sampler, shadow_coord.xy).r;
 		if (dist + 0.00005 /*???*/ < shadow_coord.z)
-			return 0.0f;
+			return 0.0;
 	}
-	return 1.0f;
+	return 1.0;
 }
 
-float4	directionalLighting(
-	float3 normal,
-	float3 light_dir,
-	float intensity
-) {
-	float illumination = intensity * max(dot(normal, light_dir), 0.0);
-	return float4(
-		(float3)illumination,
-		1.0);
+float4	directionalLighting(float3 normal, float3 light_dir) {
+	float illumination = saturate(dot(normal, light_dir));
+	return float4((float3)illumination, 1.0);
 }
 
 // MAIN FUNCTION
@@ -52,11 +45,11 @@ Output	main(Input input) {
 
 	input.shadow.xy = input.shadow.xy * 0.5 + 0.5;
 	float4	color = tex_map.Sample(tex_sampler, input.uvw);
-	float4	directional = directionalLighting(input.normal, light.dir, light.intensity);
+	float4	directional = directionalLighting(input.normal, light.dir);
 	float4	ambient = float4(light.ambient, 1.0);
 	float	shadow = filterShadow(input.shadow);
 
-	output.color =  color * (shadow * directional + ambient);
+	output.color = color * saturate(shadow * directional + ambient);
 
 	return output;
 }

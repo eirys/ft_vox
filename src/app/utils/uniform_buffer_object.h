@@ -21,24 +21,31 @@
 
 namespace scop {
 
+/* ========================================================================== */
+/*                               HELPER OBJECTS                               */
+/* ========================================================================== */
+
+struct Camera {
+	alignas(__ALIGNMENT_MAT4) scop::Mat4	vp;
+};
+
+struct Light {
+	alignas(__ALIGNMENT_VEC3) scop::Vect3	ambient_color;
+	alignas(__ALIGNMENT_VEC3) scop::Vect3	light_vector;
+	alignas(__ALIGNMENT_VEC3) scop::Vect3	light_color;
+};
+
+/**
+ * @brief Constant buffer object.
+*/
 struct UniformBufferObject {
-public:
 	/* ========================================================================= */
-	/*                               HELPER OBJECTS                              */
+	/*                                  TYPEDEFS                                 */
 	/* ========================================================================= */
 
-	struct Camera {
-		alignas(__ALIGNMENT_MAT4) scop::Mat4	vp;
-	};
-
-	struct Light {
-		alignas(__ALIGNMENT_VEC3) scop::Vect3	ambient_color;
-		alignas(__ALIGNMENT_VEC3) scop::Vect3	light_vector;
-		alignas(__ALIGNMENT_VEC3) scop::Vect3	light_color;
-		// alignas(__ALIGNMENT_SCAL) float			light_intensity; // TODO Remove. Can be set in color
-	};
-
+	using Camera = ::scop::Camera;
 	using Projector = Camera;
+	using Light = ::scop::Light;
 
 	/* ========================================================================= */
 	/*                                  METHODS                                  */

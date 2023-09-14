@@ -24,6 +24,7 @@ namespace scop::graphics {
 class Device;
 class Pipeline;
 class SwapChain;
+class ImageBuffer;
 
 class RenderPass {
 public:
@@ -41,6 +42,8 @@ public:
 		VkSampleCountFlagBits depth_samples;
 		VkFormat color_format;
 		VkSampleCountFlagBits color_samples;
+
+		const ImageBuffer*	texture_buffer;
 	};
 
 	/* ========================================================================= */

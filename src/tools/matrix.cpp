@@ -21,7 +21,7 @@ namespace scop {
 /* ========================================================================== */
 
 Mat4::Mat4() {
-	memset(mat, 0.0f, 16 * sizeof(float));
+	memset(mat, 0, 16 * sizeof(float));
 }
 
 Mat4::Mat4(const Mat4& other) {
@@ -103,7 +103,7 @@ Mat4&	Mat4::operator*=(const Mat4& rhs) noexcept {
 		for (std::size_t j = 0; j < 4; j++) {
 			for (std::size_t k = 0; k < 4; k++) {
 				result[i * 4 + j] = static_cast<float>(
-					std::fma(mat[i * 4 + k], rhs.mat[k * 4 + j], result[i * 4 + j])
+					std::fma(mat[k * 4 + j], rhs.mat[i * 4 + k], result[i * 4 + j])
 				);
 			}
 		}
@@ -138,21 +138,21 @@ Vect3	Mat4::operator*(const Vect3& rhs) const noexcept {
 		std::fma(
 			mat[0],
 			rhs.x,
-			std::fma(mat[1], rhs.y, std::fma(mat[2], rhs.z, mat[3]))
+			std::fma(mat[4], rhs.y, std::fma(mat[8], rhs.z, mat[12]))
 		)
 	);
 	result.y = static_cast<float>(
 		std::fma(
-			mat[4],
+			mat[1],
 			rhs.x,
-			std::fma(mat[5], rhs.y, std::fma(mat[6], rhs.z, mat[7]))
+			std::fma(mat[5], rhs.y, std::fma(mat[9], rhs.z, mat[13]))
 		)
 	);
 	result.z = static_cast<float>(
 		std::fma(
-			mat[8],
+			mat[2],
 			rhs.x,
-			std::fma(mat[9], rhs.y, std::fma(mat[10], rhs.z, mat[11]))
+			std::fma(mat[6], rhs.y, std::fma(mat[10], rhs.z, mat[14]))
 		)
 	);
 	return result;
@@ -192,7 +192,7 @@ float	Mat4::det() const {
 
 	for (std::size_t j = 0; j < 4; ++j) {
 		sum = std::fma(
-			std::pow(-1.0f, j),
+			static_cast<float>(std::pow(-1.0f, j)),
 			std::fma(
 				minor(0, j).det(),
 				mat[j],
@@ -210,7 +210,7 @@ Mat4	Mat4::adjugate() const {
 	for (std::size_t i = 0; i < 4; ++i) {
 		for (std::size_t j = 0; j < 4; ++j) {
 			cofactor[4 * i + j] = std::fma(
-				std::pow(-1.0, i + j),
+				static_cast<float>(std::pow(-1.0f, i + j)),
 				minor(i, j).det(),
 				0.0f
 			);
@@ -240,7 +240,7 @@ Mat4	Mat4::transpose() const {
  * @param mat:		matrix to rotate
  * @param angle:	angle in radians
  * @param axis:		axis of rotation
- * 
+ *
  * @details Result:
  * [[u.x * u.x * (1 - c) + c,			row 0
  *	 u.x * u.y * (1 - c) - u.z * s,
@@ -256,30 +256,31 @@ Mat4	Mat4::transpose() const {
  *	 0],
  *	[0, 0, 0, 1]]						row 3
 */
+// TODO FIX
 Mat4	rotate(const Mat4& mat, float angle, const Vect3& axis) noexcept {
 	const float	c = std::cos(angle);
 	const float	s = std::sin(angle);
 	const Vect3	u = scop::normalize(axis);
 
-	return Mat4{
-		// Row 1
+	return mat * Mat4{
+		// Col 1
 		static_cast<float>(std::fma(u.x, std::fma(u.x, 1 - c, 0), c)),
 		static_cast<float>(std::fma(u.x, std::fma(u.y, 1 - c, 0), std::fma(-u.z, s, 0))),
 		static_cast<float>(std::fma(u.x, std::fma(u.z, 1 - c, 0), std::fma(u.y, s, 0))),
 		0,
-		// Row 2
+		// Col 2
 		static_cast<float>(std::fma(u.y, std::fma(u.x, 1 - c, 0), std::fma(u.z, s, 0))),
 		static_cast<float>(std::fma(u.y, std::fma(u.y, 1 - c, 0), c)),
 		static_cast<float>(std::fma(u.y, std::fma(u.z, 1 - c, 0), std::fma(-u.x, s, 0))),
 		0,
-		// Row 3
+		// Col 3
 		static_cast<float>(std::fma(u.z, std::fma(u.x, 1 - c, 0), std::fma(-u.y, s, 0))),
 		static_cast<float>(std::fma(u.z, std::fma(u.y, 1 - c, 0), std::fma(u.x, s, 0))),
 		static_cast<float>(std::fma(u.z, std::fma(u.z, 1 - c, 0), c)),
 		0,
-		// Row 4
+		// Col 4
 		0, 0, 0, 1
-	} * mat;
+	};
 }
 
 /**
@@ -292,25 +293,25 @@ Mat4	rotate(const Mat4& mat, float angle, const Vect3& axis) noexcept {
  * 					to the vector from eye to center.
 */
 Mat4	lookAt(const Vect3& eye, const Vect3& center, const Vect3& up) noexcept {
-	const Vect3	f = scop::normalize(center - eye);
-	const Vect3	s = scop::normalize(scop::cross(f, up));
-	const Vect3	u = scop::cross(s, f);
+	const Vect3	f = scop::normalize(center - eye);			// forward
+	const Vect3	s = scop::normalize(scop::cross(f, up));	// side
+	const Vect3	u = scop::cross(s, f);						// up
 
 	return Mat4{
-		// Row 1
+		// Col 1
 		s.x, u.x, -f.x, 0,
-		// Row 2
+		// Col 2
 		s.y, u.y, -f.y, 0,
-		// Row 3
+		// Col 3
 		s.z, u.z, -f.z, 0,
-		// Row 4
+		// Col 4
 		scop::dot(-s, eye), scop::dot(-u, eye), scop::dot(f, eye), 1
 	};
 }
 
 /**
  * @brief Produces lookAt matrix, but instead of center, takes direction
- * 
+ *
  * @param eye:		position of the camera
  * @param dir:		direction of the camera. It must be normalized.
  * @param up:		up vector, usually (0, 0, 1).
@@ -320,13 +321,13 @@ Mat4	lookAtDir(const Vect3& eye, const Vect3& dir, const Vect3& up) noexcept {
 	const Vect3 u = scop::cross(s, dir);
 
 	return Mat4 {
-		// Row 1
+		// Col 1
 		s.x, u.x, -dir.x, 0,
-		// Row 2
+		// Col 2
 		s.y, u.y, -dir.y, 0,
-		// Row 3
+		// Col 3
 		s.z, u.z, -dir.z, 0,
-		// Row 4
+		// Col 4
 		scop::dot(-s, eye), scop::dot(-u, eye), scop::dot(dir, eye), 1
 	};
 }
@@ -344,39 +345,39 @@ Mat4	perspective(float fov, float aspect_ratio, float near, float far) noexcept 
 	const float	range = far - near;
 
 	return Mat4{
-		// Row 1
+		// Col 1
 		1 / (aspect_ratio * tanHalfFov), 0, 0, 0,
-		// Row 2
-		0, 1 / tanHalfFov, 0, 0,
-		// Row 3
-		0, 0, -(far + near) / range, -1,
-		// Row 4
-		0, 0, -2 * far * near / range, 0
+		// Col 2
+		0, -1 / tanHalfFov, 0, 0,
+		// Col 3
+		0, 0, -far / range, -1,
+		// Col 4
+		0, 0, -(far * near) / range, 0
 	};
 }
 
 Mat4	orthographic(
-	float bot, 
-	float top, 
-	float left, 
-	float right, 
-	float near, 
+	float left,
+	float right,
+	float bot,
+	float top,
+	float near,
 	float far
 ) noexcept {
 	const float width = right - left;
-	const float height = top - bot;
-	const float	range = far - near;
+	const float height = bot - top;
+	const float	range = near - far;
 	return Mat4{
-		// Row 1
+		// Col 1
 		2 / width, 0, 0, 0,
-		// Row 2
+		// Col 2
 		0, 2 / height, 0, 0,
-		// Row 3
-		0, 0, -2 / range, 0,
-		// Row 4
-		width / (right + left), 
-		height / (top + bot),
-		range / (far + near),
+		// Col 3
+		0, 0, 1 / range, 0,
+		// Col 4
+		-(right + left) / width,
+		-(top + bot) / height,
+		near / range,
 		1
 	};
 }
@@ -496,7 +497,7 @@ float	Mat3::det() const {
 
 	for (std::size_t j = 0; j < 3; ++j) {
 		sum = std::fma(
-			std::pow(-1.0f, j),
+			static_cast<float>(std::pow(-1.0f, j)),
 			std::fma(
 				minor(0, j).det(),
 				mat[j],
