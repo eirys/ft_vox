@@ -489,7 +489,9 @@ void	Engine::_updatePresentation(::scop::Window& window) {
 		.height = _swap_chain.getExtent().height,
 		.depth_format = _swap_chain.findDepthFormat(_device),
 		.color_format = _swap_chain.getImageFormat() };
-	Target::TargetInfo	tar_info { .swap_chain = &_swap_chain };
+	Target::TargetInfo	tar_info {
+		.swap_chain = &_swap_chain,
+		.render_pass = _pipelines.scene->getRenderPass() };
 
 	_pipelines.scene->getRenderPass()->updateResources(_device, rp_info);
 	_pipelines.scene->getTarget()->update(_device, tar_info);
@@ -509,15 +511,18 @@ void	Engine::_initDescriptors(const GameState& game) noexcept {
 
 	// Projector
 	const Mat4	view = ::scop::lookAt(
-		ubo.light.light_vector * 15.0f,
+		ubo.light.light_vector,
 		Vect3(0.0f, 0.0f, 0.0f),
-		Vect3(1.0f, 0.0f, 0.0f));
+		Vect3(0.0f, 1.0f, 0.0f));
 	const Mat4	bias = {	// sus & tmp
 		1.0f, 0.0f, 0.0f, 0.0f,
 		0.0f, 1.0f, 0.0f, 0.0f,
 		0.0f, 0.0f, 0.5f, 0.0f,
 		0.0f, 0.0f, 0.5f, 1.0f };
-	const Mat4	projection = bias * ::scop::orthographic(-100.0f, 100.0f, -100.0f, 100.0f, 1.0f, 100.0f);
+	const Mat4	projection = bias * ::scop::orthographic(
+		-100.0f, 100.0f,
+		-100.0f, 100.0f,
+		1.0f, 100.0f);
 	ubo.projector.vp = projection * view;
 
 	_pipelines.scene->update(ubo);
