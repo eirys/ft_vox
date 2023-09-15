@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:17:06 by etran             #+#    #+#             */
-/*   Updated: 2023/08/12 23:39:04 by etran            ###   ########.fr       */
+/*   Updated: 2023/09/15 16:02:41 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,12 +25,8 @@
 # include <map> // std::map
 
 # include "window.h"
-# include "utils.h"
-# include "matrix.h"
 # include "vertex.h"
-# include "image_handler.h"
 # include "engine.h"
-# include "uniform_buffer_object.h"
 # include "game_state.h"
 # include "material.h"
 # include "timer.h"
@@ -97,7 +93,6 @@ private:
 	std::vector<scop::Vertex>	_vertices;
 	std::vector<uint32_t>		_indices;
 	std::vector<Texture>		_textures;
-	// UniformBufferObject::Light	_light;
 
 	// Camera input
 	bool						_keys_pressed_directions[6] = { false };
@@ -109,7 +104,6 @@ private:
 
 	//void						_loadModel(const std::string& path);
 	void						_loadTerrain();
-	// void						_loadLight(const scop::mtl::Material& mat);
 	void						_updateGame();
 
 }; // class App

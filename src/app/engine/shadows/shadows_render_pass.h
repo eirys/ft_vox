@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/17 10:57:55 by etran             #+#    #+#             */
-/*   Updated: 2023/08/17 10:57:55 by etran            ###   ########.fr       */
+/*   Updated: 2023/09/15 16:00:01 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -73,9 +73,7 @@ private:
 	void		_createRenderPass(
 		Device& device,
 		const super::RenderPassInfo& rp_info) override;
-	void		_createResources(
-		Device& device,
-		const super::RenderPassInfo& rp_info) override;
+	void		_importResources(const super::RenderPassInfo& rp_info);
 
 }; // class ShadowsRenderPass
 

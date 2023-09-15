@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:14:50 by etran             #+#    #+#             */
-/*   Updated: 2023/08/15 19:18:36 by etran            ###   ########.fr       */
+/*   Updated: 2023/09/15 15:59:17 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -92,9 +92,6 @@ protected:
 	/* ========================================================================= */
 
 	virtual void	_createRenderPass(
-		Device& device,
-		const RenderPassInfo& create_info) = 0;
-	virtual void	_createResources(
 		Device& device,
 		const RenderPassInfo& create_info) = 0;
 

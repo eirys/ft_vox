@@ -6,7 +6,7 @@
 #    By: etran <etran@student.42.fr>                +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/04/06 03:40:09 by eli               #+#    #+#              #
-#    Updated: 2023/09/01 17:20:33 by etran            ###   ########.fr        #
+#    Updated: 2023/09/15 16:17:13 by etran            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -109,14 +109,18 @@ CXX			:=	clang++
 EXTRA		:=	-Wall -Werror -Wextra
 INCLUDES	:=	$(addprefix -I./,$(INC_SUBDIRS))
 
+MACROS		:=	__DEBUG \
+				__LINUX \
+				NDEBUG
+DEFINES		:=	$(addprefix -D,$(MACROS))
+
 CFLAGS		:=	$(EXTRA) \
 				-std=c++17 \
 				-MMD \
 				-MP \
 				$(INCLUDES) \
 				-g \
-				-D__DEBUG \
-				-DNDEBUG
+				$(DEFINES)
 
 LDFLAGS		:=	-lglfw \
 				-lvulkan \
@@ -137,6 +141,11 @@ RM			:=	rm -rf
 
 .PHONY: all
 all: $(NAME)
+
+# Enable verbose flags (Vulkan validation layers)
+.PHONY: verbose
+verbose:
+	$(MAKE) CFLAGS:="$(CFLAGS) -D__VERBOSE" all
 
 -include $(DEP)
 $(NAME): $(SHD_BIN) $(OBJ)

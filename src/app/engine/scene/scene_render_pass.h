@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/05 13:32:01 by etran             #+#    #+#             */
-/*   Updated: 2023/08/15 19:19:26 by etran            ###   ########.fr       */
+/*   Updated: 2023/09/15 15:59:28 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -78,7 +78,7 @@ private:
 		const super::RenderPassInfo& create_info) override;
 	void		_createResources(
 		Device& device,
-		const super::RenderPassInfo& create_info) override;
+		const super::RenderPassInfo& create_info);
 
 	void		_destroyResources(Device& device);
 

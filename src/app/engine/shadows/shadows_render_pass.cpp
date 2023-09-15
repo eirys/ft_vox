@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/17 10:58:14 by etran             #+#    #+#             */
-/*   Updated: 2023/08/22 22:15:18 by etran            ###   ########.fr       */
+/*   Updated: 2023/09/15 16:00:26 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,7 +28,7 @@ void	ShadowsRenderPass::init(
 	const RenderPass::RenderPassInfo& rp_info
 ) {
 	_createRenderPass(device, rp_info);
-	_createResources(device, rp_info);
+	_importResources(rp_info);
 }
 
 void	ShadowsRenderPass::destroy(Device& device) {
@@ -119,10 +119,7 @@ void	ShadowsRenderPass::_createRenderPass(
 	}
 }
 
-void	ShadowsRenderPass::_createResources(
-	Device& device,
-	const RenderPass::RenderPassInfo& rp_info
-) {
+void	ShadowsRenderPass::_importResources(const RenderPass::RenderPassInfo& rp_info) {
 	_depth_image = *rp_info.texture_buffer;
 	super::_width = rp_info.width;
 	super::_height = rp_info.height;

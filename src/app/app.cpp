@@ -6,15 +6,15 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/28 11:12:12 by eli               #+#    #+#             */
-/*   Updated: 2023/08/12 23:38:58 by etran            ###   ########.fr       */
+/*   Updated: 2023/09/15 16:12:36 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "app.h"
-#include "model.h"
-#include "obj_parser.h"
 #include "scop_math.h"
+#include "obj_parser.h"
 #include "perlin_noise.h"
+#include "utils.h"
 
 namespace scop {
 

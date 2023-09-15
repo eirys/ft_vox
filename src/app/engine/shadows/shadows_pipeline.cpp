@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/16 10:16:30 by etran             #+#    #+#             */
-/*   Updated: 2023/09/01 17:35:06 by etran            ###   ########.fr       */
+/*   Updated: 2023/09/15 15:56:39 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,7 +58,7 @@ void	ShadowsPipeline::assemble(
 ) {
 	/* SHADERS ================================================================= */
 	VkShaderModule	vert_module =
-		super::_createShaderModule(device, "shaders\\shadow_vert.spv");
+		super::_createShaderModule(device, "shaders/shadow.vertex.spv");
 
 	VkPipelineShaderStageCreateInfo	vert_info{};
 	vert_info.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -121,7 +121,6 @@ void	ShadowsPipeline::draw(
 		command_buffer.getBuffer(),
 		VK_PIPELINE_BIND_POINT_GRAPHICS,
 		super::_pipeline);
-
 
 	std::array<VkBuffer, 1>		vertex_buffers = { input.getVertexBuffer().getBuffer() };
 	std::array<VkDeviceSize, 1>	offsets = { 0 };

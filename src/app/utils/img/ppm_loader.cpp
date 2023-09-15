@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/12 15:00:15 by eli               #+#    #+#             */
-/*   Updated: 2023/06/08 20:31:21 by etran            ###   ########.fr       */
+/*   Updated: 2023/09/15 16:14:42 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -89,7 +89,11 @@ PpmLoader::Pixels	PpmLoader::parseBody() {
 		if (cursor >= base::data.size()) {
 			throw PpmParseError("unexpected end of file");
 		}
+		#ifdef __LINUX
+		return base::data[cursor++];
+		#else
 		return base::data[++cursor];
+		#endif
 	};
 
 	// Reads a number.

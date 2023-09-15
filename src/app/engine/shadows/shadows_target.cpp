@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/17 15:00:10 by etran             #+#    #+#             */
-/*   Updated: 2023/09/01 15:41:21 by etran            ###   ########.fr       */
+/*   Updated: 2023/09/04 10:29:30 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,7 +27,7 @@ void	ShadowsTarget::init(
 	Device& device,
 	const Target::TargetInfo& tar_info
 ) {
-	const auto& render_pass =
+	auto render_pass =
 		std::dynamic_pointer_cast<ShadowsRenderPass>(tar_info.render_pass);
 	VkImageView view = render_pass->getDepthResource().getView();
 
