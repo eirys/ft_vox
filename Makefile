@@ -6,7 +6,7 @@
 #    By: etran <etran@student.42.fr>                +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/04/06 03:40:09 by eli               #+#    #+#              #
-#    Updated: 2023/09/15 16:29:23 by etran            ###   ########.fr        #
+#    Updated: 2023/09/18 10:49:38 by etran            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -101,7 +101,7 @@ SHD_FILES	:=	scene.fragment \
 				scene.vertex \
 				shadow.vertex
 
-SHD			:=	$(addprefix $(SHD_DIR)/, $(SHD_FILES))
+SHD			:=	$(addprefix $(SHD_DIR)/,$(SHD_FILES))
 SHD_BIN		:=	$(addsuffix .spv,$(SHD))
 
 # compiler
@@ -142,11 +142,6 @@ RM			:=	rm -rf
 .PHONY: all
 all: $(NAME)
 
-# Enable verbose flags (Vulkan validation layers)
-.PHONY: verbose
-verbose:
-	$(MAKE) CFLAGS:="$(CFLAGS) -D__VERBOSE" all
-
 -include $(DEP)
 $(NAME): $(SHD_BIN) $(OBJ)
 	@$(CXX) $(CFLAGS) $(OBJ) -o $(NAME) $(LDFLAGS)
@@ -157,7 +152,7 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
 	@echo "Compiling file $<..."
 	@$(CXX) $(CFLAGS) -c $< -o $@
 
-$(SHD_DIR)/%.spv: $(SHD_DIR)/%.glsl
+$(SHD_DIR)/%.spv: $(SHD_DIR)/glsl/%.glsl
 	@echo "Compiling shader $<..."
 	@$(GLSLC) -fshader-stage=$(subst .,,$(suffix $(basename $<))) $< -o $@
 

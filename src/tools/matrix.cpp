@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/19 23:18:11 by etran             #+#    #+#             */
-/*   Updated: 2023/06/04 16:52:39 by etran            ###   ########.fr       */
+/*   Updated: 2023/09/18 11:36:13 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -373,13 +373,9 @@ Mat4	orthographic(
 		// Col 2
 		0, 2 / height, 0, 0,
 		// Col 3
-		0, 0, 1 / range, 0,
+		0, 0, 1 / (2 * range), 0,
 		// Col 4
-		-(right + left) / width,
-		-(top + bot) / height,
-		near / range,
-		1
-	};
+		-(right + left) / width, -(top + bot) / height, near / range + 0.5f, 1 };
 }
 /**
  * @brief Scales the matrix by the given vector

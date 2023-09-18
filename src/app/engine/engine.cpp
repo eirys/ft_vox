@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/02 16:09:44 by etran             #+#    #+#             */
-/*   Updated: 2023/09/15 18:06:29 by etran            ###   ########.fr       */
+/*   Updated: 2023/09/18 11:37:56 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -511,18 +511,13 @@ void	Engine::_initDescriptors(const GameState& game) noexcept {
 
 	// Projector
 	const Mat4	view = ::scop::lookAt(
-		ubo.light.light_vector,
+		ubo.light.light_vector*15.0f,
 		Vect3(0.0f, 0.0f, 0.0f),
 		Vect3(0.0f, 1.0f, 0.0f));
-	const Mat4	bias = {	// sus & tmp
-		1.0f, 0.0f, 0.0f, 0.0f,
-		0.0f, 1.0f, 0.0f, 0.0f,
-		0.0f, 0.0f, 0.5f, 0.0f,
-		0.0f, 0.0f, 0.5f, 1.0f };
-	const Mat4	projection = bias * ::scop::orthographic(
+	const Mat4	projection = ::scop::orthographic(
 		-150.0f, 150.0f,
 		-150.0f, 150.0f,
-		1.0f, 100.0f);
+		10.0f, 100.0f);
 	ubo.projector.vp = projection * view;
 
 	_pipelines.scene->update(ubo);

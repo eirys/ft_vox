@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/23 10:26:08 by etran             #+#    #+#             */
-/*   Updated: 2023/07/16 11:00:27 by etran            ###   ########.fr       */
+/*   Updated: 2023/09/18 11:57:30 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -107,14 +107,12 @@ PerlinNoise::PerlinMesh	PerlinNoise::toMesh() const {
 			for (std::size_t i = 0; i < 4; ++i) {
 				uint8_t	face_index =
 					face.side == FaceType::FACE_TOP ? 0 : (
-					face.side == FaceType::FACE_BOTTOM ? 2 : 1
-				);
+					face.side == FaceType::FACE_BOTTOM ? 2 : 1);
 				scop::Vertex	vertex(
 					face.vertices[i],
 					face.side,
 					i,
-					face_index
-				);
+					face_index);
 				mesh.vertices.emplace_back(vertex);
 			}
 		};

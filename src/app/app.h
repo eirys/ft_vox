@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:17:06 by etran             #+#    #+#             */
-/*   Updated: 2023/09/15 16:02:41 by etran            ###   ########.fr       */
+/*   Updated: 2023/09/18 11:08:13 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,8 +31,11 @@
 # include "material.h"
 # include "timer.h"
 
-# define SCOP_MOUSE_SENSITIVITY	0.25f
-# define SCOP_MOVE_SPEED		0.05f
+# ifdef __LINUX
+#  define SCOP_MOVE_SPEED		0.1f
+# else
+#  define SCOP_MOVE_SPEED		0.05f
+# endif
 
 namespace scop {
 

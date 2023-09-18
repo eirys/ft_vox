@@ -19,7 +19,7 @@ layout(binding = 4, set = 0) uniform sampler2D		shadow_sampler;
 
 /* HELPERS ================================================================== */
 bool isShadow(vec3 _shadow_coord) {
-	if (_shadow_coord.z > -1.0f && _shadow_coord.z < 1.0f) {
+	if (_shadow_coord.z >= -1.0f && _shadow_coord.z <= 1.0f) {
 		float dist = texture(shadow_sampler, _shadow_coord.xy).r;
 		if (dist + 0.00002 < _shadow_coord.z)
 			return true;
