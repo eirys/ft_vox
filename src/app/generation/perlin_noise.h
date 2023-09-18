@@ -79,12 +79,6 @@ public:
 		Vect3						origin;
 		std::vector<scop::Vertex>	vertices;
 		std::vector<uint32_t>		indices;
-
-		// std::vector<Vect3>		vertices;
-		// std::vector<uint32_t>	indices;
-		// std::vector<Vect3>		normals;
-		// std::vector<Vect2>		uvs;
-		// std::vector<int32_t>	texture_indices;
 	};
 
 	/* ========================================================================= */

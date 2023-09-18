@@ -30,18 +30,11 @@
 namespace vox {
 
 /**
- * @brief Converts a float to a 32-bit integer.
-*/
-inline int32_t convert(float x, uint8_t shift = 0) noexcept {
-	return x * (1 << shift);
-}
-
-/**
  * @brief Converts a position to a 32-bit integer.
- * 
+ *
  * @note x (4 bits) | y (4 bits) | z (4 bits) | chunk address (20 bits)
  * @note x, y and z are local to the chunk.
- * 
+ *
  * @note The chunk address is composed of the x, y and z chunk coordinates:
  * @note x_chunk (8 bits) | y_chunk (4 bits) | z_chunk (8 bits)
 */
