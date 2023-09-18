@@ -42,8 +42,8 @@ private:
 	/* ========================================================================= */
 
 	static constexpr const std::size_t	seed = 42;
-	static constexpr const std::size_t	chunk_size = 16;
-	static constexpr const std::size_t	render_distance = 16;
+	static constexpr const std::size_t	chunk_size = CHUNK_SIZE;
+	static constexpr const std::size_t	render_distance = RENDER_DISTANCE;
 
 	/* ========================================================================= */
 	/*                               CLASS MEMBERS                               */

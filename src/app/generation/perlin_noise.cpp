@@ -15,7 +15,6 @@
 #include "vector.h"
 #include "cube.h"
 
-#include <cstdint> // uint32_t
 #include <vector> // std::vector
 #include <algorithm> // std::shuffle
 
@@ -33,19 +32,18 @@ namespace vox {
  *
  * @note No verification is done on the parameters.
 */
-PerlinNoise::PerlinNoise(
-	PerlinNoise::NoiseMapInfo info
-):
-seed(info.seed.has_value() ? info.seed.value() : generateSeed()),
-width(info.width),
-height(info.height),
-depth(info.depth),
-layers(info.layers),
-frequency(info.frequency_0),
-frequency_mult(info.frequency_mult),
-amplitude_mult(info.amplitude_mult),
-generator(seed),
-permutation_table(generatePermutationTable()) {
+PerlinNoise::PerlinNoise(PerlinNoise::NoiseMapInfo info):
+	seed(info.seed.has_value() ? info.seed.value() : generateSeed()),
+	width(info.width),
+	height(info.height),
+	depth(info.depth),
+	layers(info.layers),
+	frequency(info.frequency_0),
+	frequency_mult(info.frequency_mult),
+	amplitude_mult(info.amplitude_mult),
+	generator(seed),
+	permutation_table(generatePermutationTable())
+{
 	std::vector<float>	(PerlinNoise::*generateNoiseMapFn)();
 
 	// Select the correct function to generate the noise map
