@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/23 10:26:08 by etran             #+#    #+#             */
-/*   Updated: 2023/09/18 11:57:30 by etran            ###   ########.fr       */
+/*   Updated: 2023/09/18 17:39:38 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 #include "scop_math.h"
 #include "vector.h"
 #include "cube.h"
+#include "block.h"
 
 #include <vector> // std::vector
 #include <algorithm> // std::shuffle
@@ -108,7 +109,7 @@ PerlinNoise::PerlinMesh	PerlinNoise::toMesh() const {
 					face.side == FaceType::FACE_BOTTOM ? 2 : 1);
 				scop::Vertex	vertex(
 					face.vertices[i],
-					face.side,
+					static_cast<uint8_t>(face.side),
 					i,
 					face_index);
 				mesh.vertices.emplace_back(vertex);
@@ -204,7 +205,7 @@ PerlinNoise::PerlinMesh	PerlinNoise::toMesh() const {
 	// Perlin noise at the center of the mesh:
 	mesh.origin = {
 		half_width,
-		noiseAt(half_height, half_width) + Cube::size,
+		noiseAt(half_height, half_width) + BLOCK_SIZE,
 		half_height
 	};
 	return mesh;

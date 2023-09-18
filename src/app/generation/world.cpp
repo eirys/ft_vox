@@ -1,20 +1,21 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   map.h                                              :+:      :+:    :+:   */
+/*   world.cpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/06/04 22:53:11 by etran             #+#    #+#             */
-/*   Updated: 2023/06/04 22:53:46 by etran            ###   ########.fr       */
+/*   Created: 2023/09/18 17:42:36 by etran             #+#    #+#             */
+/*   Updated: 2023/09/18 17:44:12 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#pragma once
+#include "world.h"
 
 namespace vox {
 
-class Map {
-}; // class Map
+World::World(const PerlinNoise& noise) {
+
+}
 
 } // namespace vox

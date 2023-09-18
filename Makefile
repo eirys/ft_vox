@@ -6,7 +6,7 @@
 #    By: etran <etran@student.42.fr>                +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/04/06 03:40:09 by eli               #+#    #+#              #
-#    Updated: 2023/09/18 10:49:38 by etran            ###   ########.fr        #
+#    Updated: 2023/09/18 17:44:33 by etran            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -58,6 +58,8 @@ SRC_FILES	:=	$(TOOLS_DIR)/matrix.cpp \
 				$(MODEL_DIR)/mtl_parser.cpp \
 				$(GEN_DIR)/perlin_noise.cpp \
 				$(GEN_DIR)/cube.cpp \
+				$(GEN_DIR)/world.cpp \
+				$(GEN_DIR)/world_generator.cpp \
 				$(IMG_DIR)/ppm_loader.cpp \
 				$(IMG_DIR)/image_handler.cpp \
 				$(GAME_DIR)/game_state.cpp \
@@ -143,15 +145,19 @@ RM			:=	rm -rf
 all: $(NAME)
 
 -include $(DEP)
+
+# Compile binary
 $(NAME): $(SHD_BIN) $(OBJ)
 	@$(CXX) $(CFLAGS) $(OBJ) -o $(NAME) $(LDFLAGS)
 	@echo "\`$(NAME)\` successfully created."
 
+# Compile obj files
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
 	@mkdir -p $(OBJ_DIR) $(OBJ_SUBDIRS)
 	@echo "Compiling file $<..."
 	@$(CXX) $(CFLAGS) -c $< -o $@
 
+# Compile shader binaries
 $(SHD_DIR)/%.spv: $(SHD_DIR)/glsl/%.glsl
 	@echo "Compiling shader $<..."
 	@$(GLSLC) -fshader-stage=$(subst .,,$(suffix $(basename $<))) $< -o $@

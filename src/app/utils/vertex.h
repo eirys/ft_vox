@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:17:01 by etran             #+#    #+#             */
-/*   Updated: 2023/08/06 22:14:15 by etran            ###   ########.fr       */
+/*   Updated: 2023/09/18 16:03:40 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,6 +43,8 @@ struct Vertex {
 		uint8_t index
 	):	pos(vox::toChunkPos(pos.x, pos.y, pos.z)),
 		n_uv_f(normal | uv << 8 | index << 16) {}
+
+	// Vertex(const Block& block) {}
 
 	Vertex() = default;
 	Vertex(Vertex&&) = default;

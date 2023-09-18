@@ -1,0 +1,88 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   chunk.h                                            :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2023/07/06 12:07:38 by etran             #+#    #+#             */
+/*   Updated: 2023/09/18 17:33:44 by etran            ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
+#pragma once
+
+// Std
+# include <cstddef>
+
+# include "block.h"
+
+# define CHUNK_SIZE			16
+# define RENDER_DISTANCE	16
+
+# define RENDER_WIDTH		RENDER_DISTANCE * CHUNK_SIZE	// 256
+# define RENDER_DEPTH		RENDER_DISTANCE * CHUNK_SIZE	// 256
+
+# define CHUNK_VOLUME		CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE	// 65536
+
+namespace vox {
+
+
+class Chunk final {
+public:
+	/* ========================================================================= */
+	/*                                  METHODS                                  */
+	/* ========================================================================= */
+
+	Chunk();
+
+	Chunk(Chunk &&src) = default;
+	Chunk &operator=(Chunk &&rhs) = default;
+	~Chunk() = default;
+
+	Chunk(const Chunk &src) = delete;
+	Chunk &operator=(const Chunk &rhs) = delete;
+
+	/* ========================================================================= */
+
+	const Block&		getBlock(uint8_t x, uint8_t y, uint8_t z) const noexcept;
+	const Block&		getBlock(uint32_t packed_coordinates) const noexcept;
+
+private:
+	/* ========================================================================= */
+	/*                               CLASS MEMBERS                               */
+	/* ========================================================================= */
+
+	std::array<Block, CHUNK_VOLUME>	_blocks;
+
+}; // class Chunk
+
+/**
+ * @brief Converts a position to a 32-bit integer.
+ *
+ * @note x (4 bits) | y (4 bits) | z (4 bits) | chunk address (20 bits)
+ * @note x, y and z are local to the chunk.
+ *
+ * @note The chunk address is composed of the x, y and z chunk coordinates:
+ * @note x_chunk (8 bits) | y_chunk (4 bits) | z_chunk (8 bits)
+*/
+inline int32_t	toChunkPos(float x, float y, float z) noexcept {
+	// xxxxxxxx yyyy zzzzzzzz
+	int32_t x_chunk = static_cast<int32_t>(x) / CHUNK_SIZE;
+	int32_t y_chunk = (static_cast<int32_t>(y) / CHUNK_SIZE) << 8;
+	int32_t z_chunk = (static_cast<int32_t>(z) / CHUNK_SIZE) << 12;
+	int32_t chunk_address = x_chunk | y_chunk | z_chunk;
+
+	// xxxx yyyy zzzz
+	x = static_cast<int32_t>(x) % CHUNK_SIZE;
+	y = static_cast<int32_t>(y) % CHUNK_SIZE;
+	z = static_cast<int32_t>(z) % CHUNK_SIZE;
+
+	return
+		static_cast<int32_t>(x) |
+		static_cast<int32_t>(y) << 4 |
+		static_cast<int32_t>(z) << 8 |
+		chunk_address << 12;
+}
+
+} // namespace vox

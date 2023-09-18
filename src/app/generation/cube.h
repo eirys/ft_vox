@@ -6,31 +6,31 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:19:11 by etran             #+#    #+#             */
-/*   Updated: 2023/07/07 16:54:13 by etran            ###   ########.fr       */
+/*   Updated: 2023/09/18 17:38:34 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
 # include "vector.h"
-# include "chunk.h"
 
 namespace vox {
 
-enum MaterialType {
-	MATERIAL_GRASS,
-	MATERIAL_DIRT,
-	MATERIAL_STONE,
-	MATERIAL_WOOD,
-	MATERIAL_LEAVES,
-	MATERIAL_SAND,
-	MATERIAL_WATER,
-	MATERIAL_LAVA,
-	MATERIAL_ICE,
-	MATERIAL_SNOW
+// Total material types possible: 256
+enum class MaterialType: uint8_t {
+	MATERIAL_GRASS		= 0x00, // Default
+	MATERIAL_DIRT		= 0x01,
+	MATERIAL_STONE		= 0x02,
+	MATERIAL_WOOD		= 0x03,
+	MATERIAL_LEAVES		= 0x04,
+	MATERIAL_SAND		= 0x05,
+	MATERIAL_WATER		= 0x06,
+	MATERIAL_LAVA		= 0x07,
+	MATERIAL_ICE		= 0x08,
+	MATERIAL_SNOW		= 0x09
 };
 
-enum FaceType: uint8_t {
+enum class FaceType: uint8_t {
 	FACE_LEFT,
 	FACE_RIGHT,
 	FACE_FRONT,
@@ -64,12 +64,6 @@ struct Cube {
 
 		scop::Vect3	normal() const noexcept;
 	};
-
-	/* ========================================================================= */
-	/*                               CONST MEMBERS                               */
-	/* ========================================================================= */
-
-	static constexpr const float	size = BLOCK_SIZE;
 
 	/* ========================================================================= */
 	/*                                  METHODS                                  */

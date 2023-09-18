@@ -1,58 +1,53 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   world_generator.h                                  :+:      :+:    :+:   */
+/*   block.h                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/06/04 22:54:18 by etran             #+#    #+#             */
-/*   Updated: 2023/09/18 17:31:06 by etran            ###   ########.fr       */
+/*   Created: 2023/09/18 16:08:29 by etran             #+#    #+#             */
+/*   Updated: 2023/09/18 17:06:39 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
-# include "perlin_noise.h"
+#include "cube.h"
+
+# define BLOCK_SIZE	1
 
 namespace vox {
 
-class World;
-
-/**
- * @brief Generates a world using perlin noise.
-*/
-class WorldGenerator {
+class Block final {
 public:
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
 
-	WorldGenerator() = default;
-	WorldGenerator(WorldGenerator &&src) = default;
-	WorldGenerator &operator=(WorldGenerator &&rhs) = default;
-	~WorldGenerator() = default;
+	Block(uint8_t x, uint8_t y, uint8_t z, MaterialType type) noexcept;
 
-	WorldGenerator(const WorldGenerator &src) = delete;
-	WorldGenerator &operator=(const WorldGenerator &rhs) = delete;
+	Block(Block &&src) = default;
+	Block &operator=(Block &&rhs) = default;
+	~Block() = default;
+
+	Block() = delete;
+	Block(const Block &src) = delete;
+	Block &operator=(const Block &rhs) = delete;
 
 	/* ========================================================================= */
 
-	World		generate(std::size_t seed) const noexcept;
+	uint32_t		packCoordinates() const noexcept;
 
 private:
-	/* ========================================================================= */
-	/*                               CONST MEMBERS                               */
-	/* ========================================================================= */
-
-	static constexpr const std::size_t	chunk_size = CHUNK_SIZE;
-	static constexpr const std::size_t	render_distance = RENDER_DISTANCE;
-
 	/* ========================================================================= */
 	/*                               CLASS MEMBERS                               */
 	/* ========================================================================= */
 
-	std::size_t		_offset = 0; // Updated as the player moves.
+	uint8_t			_x;
+	uint8_t			_y;
+	uint8_t			_z;
+	MaterialType	_type;
 
-}; // class WorldGenerator
+}; // class Block
 
 } // namespace vox
