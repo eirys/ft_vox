@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:16:25 by etran             #+#    #+#             */
-/*   Updated: 2023/07/21 21:06:36 by etran            ###   ########.fr       */
+/*   Updated: 2023/07/05 22:10:14 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,7 @@
 # include <iostream>
 # include <cstring>
 
-# define __NL '\n'
+# define __NL std::endl
 
 # ifdef __DEBUG
 #  define LOG(X) std::cerr << X << __NL
@@ -59,7 +59,7 @@ inline std::vector<uint8_t>	readFile(const std::string& filename) {
 	std::size_t			file_size = static_cast<std::size_t>(file.tellg());
 	std::vector<uint8_t>	buffer(file_size);
 	file.seekg(0);
-	file.read(reinterpret_cast<char*>(buffer.data()), file_size);
+	file.read((char*)buffer.data(), file_size);
 	file.close();
 	return buffer;
 }

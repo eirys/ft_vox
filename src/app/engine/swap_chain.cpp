@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/02 19:40:11 by etran             #+#    #+#             */
-/*   Updated: 2023/07/03 11:06:47 by etran            ###   ########.fr       */
+/*   Updated: 2023/08/11 23:09:42 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,8 +19,7 @@
 #include <stdexcept> // std::runtime_error
 #include <array> // std::array
 
-namespace scop {
-namespace graphics {
+namespace scop::graphics {
 
 /* ========================================================================== */
 /*                                   PUBLIC                                   */
@@ -28,78 +27,35 @@ namespace graphics {
 
 void	SwapChain::init(
 	Device& device,
-	scop::Window& window
+	::scop::Window& window
 ) {
 	_createSwapChain(device, window);
-	_createResources(device);
-}
-
-/**
- * @brief Create frame buffers wrapping each swap chain image view.
-*/
-void	SwapChain::initFrameBuffers(
-	Device& device,
-	RenderPass& render_pass
-) {
-	_frame_buffers.resize(_image_views.size());
-	for (std::size_t i = 0; i < _image_views.size(); ++i) {
-		std::array<VkImageView, 3>	attachments = {
-			_color_image.getView(),
-			_depth_image.getView(),
-			_image_views[i]
-		};
-
-		// Create frame buffer from image view, associate with a render pass
-		VkFramebufferCreateInfo	create_info{};
-		create_info.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-		create_info.renderPass = render_pass.getRenderPass();
-		create_info.attachmentCount = static_cast<uint32_t>(attachments.size());
-		create_info.pAttachments = attachments.data();
-		create_info.width = _extent.width;
-		create_info.height = _extent.height;
-		create_info.layers = 1;
-
-		if (vkCreateFramebuffer(device.getLogicalDevice(), &create_info, nullptr, &_frame_buffers[i]) != VK_SUCCESS) {
-			throw std::runtime_error("failed to create frame buffer");
-		}
-	}
 }
 
 void	SwapChain::destroy(Device& device) {
-	_color_image.destroy(device);
-	_depth_image.destroy(device);
-
-	for (std::size_t i = 0; i < _frame_buffers.size(); ++i) {
-		vkDestroyFramebuffer(
-			device.getLogicalDevice(),
-			_frame_buffers[i],
-			nullptr
-		);
-	}
 	for (std::size_t i = 0; i < _image_views.size(); ++i) {
 		vkDestroyImageView(
 			device.getLogicalDevice(),
 			_image_views[i],
-			nullptr
-		);
+			nullptr);
 	}
-
 	// Remove swap chain handler
 	vkDestroySwapchainKHR(device.getLogicalDevice(), _swap_chain, nullptr);
 }
 
 void	SwapChain::update(
 	Device& device,
-	scop::Window& window,
-	RenderPass& render_pass
+	::scop::Window& window
 ) {
 	window.pause();
 	device.idle();
 
 	destroy(device);
 	init(device, window);
-	initFrameBuffers(device, render_pass);
+	// recreate resources and fb
+	// initFrameBuffers(device, render_pass);
 }
+
 /* ========================================================================== */
 
 /**
@@ -129,8 +85,12 @@ VkExtent2D	SwapChain::getExtent() const noexcept {
 	return _extent;
 }
 
-const std::vector<VkFramebuffer>&	SwapChain::getFrameBuffers() const noexcept {
-	return _frame_buffers;
+const std::vector<VkImage>&	SwapChain::getImages() const noexcept {
+	return _images;
+}
+
+const std::vector<VkImageView>&	SwapChain::getImageViews() const noexcept {
+	return _image_views;
 }
 
 /* ========================================================================== */
@@ -139,29 +99,26 @@ const std::vector<VkFramebuffer>&	SwapChain::getFrameBuffers() const noexcept {
 
 void	SwapChain::_createSwapChain(
 	Device& device,
-	scop::Window& window
+	::scop::Window& window
 ) {
 	Device::SwapChainSupportDetails	swap_chain_support =
 		device.querySwapChainSupport();
 
 	// Setup options for functionning swap chain
 	VkSurfaceFormatKHR	surface_format = _chooseSwapSurfaceFormat(
-		swap_chain_support.formats
-	);
+		swap_chain_support.formats);
 	VkPresentModeKHR	present_mode = _chooseSwapPresentMode(
-		swap_chain_support.present_modes
-	);
+		swap_chain_support.present_modes);
 	VkExtent2D			swap_extent = _chooseSwapExtent(
 		swap_chain_support.capabilities,
-		window
-	);
+		window);
 
 	// Nb of images in the swap chain
 	uint32_t	image_count =
 		swap_chain_support.capabilities.minImageCount + 1;
 
-	if (swap_chain_support.capabilities.maxImageCount > 0
-	&& image_count > swap_chain_support.capabilities.maxImageCount) {
+	if (swap_chain_support.capabilities.maxImageCount > 0 &&
+		image_count > swap_chain_support.capabilities.maxImageCount) {
 		// Avoid value exceeding max
 		image_count = swap_chain_support.capabilities.maxImageCount;
 	}
@@ -214,40 +171,6 @@ void	SwapChain::_createSwapChain(
 	_createImages(device, image_count);
 }
 
-void	SwapChain::_createResources(Device& device) {
-	// Color image
-	_color_image.initImage(
-		device,
-		_extent.width,
-		_extent.height,
-		_image_format,
-		VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT |
-		VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
-		device.getMsaaSamples()
-	);
-	_color_image.initView(
-		device,
-		_image_format,
-		VK_IMAGE_ASPECT_COLOR_BIT
-	);
-
-	// Depth stencil image
-	VkFormat	depth_format = findDepthFormat(device);
-	_depth_image.initImage(
-		device,
-		_extent.width,
-		_extent.height,
-		depth_format,
-		VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
-		device.getMsaaSamples()
-	);
-	_depth_image.initView(
-		device,
-		depth_format,
-		VK_IMAGE_ASPECT_DEPTH_BIT
-	);
-}
-
 /**
  * @brief Retrieve VkImage handles from the swap chain and create image views.
 */
@@ -266,7 +189,7 @@ void	SwapChain::_createImages(Device& device, uint32_t& image_count) {
 	);
 
 	// Create image view for each image
-	_image_views.resize(image_count);
+	_image_views.reserve(image_count);
 	auto createImageViewFunc =
 		[&device, this]
 		(VkImage image) -> VkImageView {
@@ -287,7 +210,7 @@ void	SwapChain::_createImages(Device& device, uint32_t& image_count) {
 		};
 
 	for (std::size_t i = 0; i < image_count; ++i) {
-		_image_views[i] = createImageViewFunc(_images[i]);
+		_image_views.emplace_back(createImageViewFunc(_images[i]));
 	}
 }
 
@@ -328,7 +251,7 @@ VkPresentModeKHR	SwapChain::_chooseSwapPresentMode(
 */
 VkExtent2D	SwapChain::_chooseSwapExtent(
 	VkSurfaceCapabilitiesKHR capabilities,
-	scop::Window& window
+	::scop::Window& window
 ) const {
 	// Pick swap extent (~ resolution of the window, in px)
 	if (capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max()) {
@@ -356,5 +279,4 @@ VkExtent2D	SwapChain::_chooseSwapExtent(
 	}
 }
 
-} // namespace graphics
-} // namespace scop
+} // namespace scop::graphics

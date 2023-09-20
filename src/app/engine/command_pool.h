@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:14:01 by etran             #+#    #+#             */
-/*   Updated: 2023/07/04 09:42:54 by etran            ###   ########.fr       */
+/*   Updated: 2023/08/12 00:29:49 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,12 +16,12 @@
 # ifndef GLFW_INCLUDE_VULKAN
 #  define GLFW_INCLUDE_VULKAN
 # endif
-
 # include <GLFW/glfw3.h>
 
-namespace scop {
-namespace graphics {
+namespace scop::graphics {
+
 class Device;
+class CommandBuffer;
 
 /**
  * @brief Simple wrapper class for VkCommandPool.
@@ -42,12 +42,15 @@ public:
 
 	/* ========================================================================= */
 
-	void				init(Device& device);
-	void				destroy(Device& device);
+	void					init(Device& device);
+	void					destroy(Device& device);
+
+	static CommandBuffer	createBuffer(Device& device);
+	static void				destroyBuffer(Device& device, CommandBuffer& buffer);
 
 	/* ========================================================================= */
 
-	VkCommandPool		getPool() const noexcept;
+	static VkCommandPool	getPool() noexcept;
 	operator VkCommandPool() const noexcept;
 
 private:
@@ -55,10 +58,8 @@ private:
 	/*                               CLASS MEMBERS                               */
 	/* ========================================================================= */
 
-	VkCommandPool		_pool;
+	static VkCommandPool		_pool;
 
 }; // class CommandPool
 
-} // namespace graphics
-} // namespace scop
-
+} // namespace scop::graphics

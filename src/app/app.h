@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:17:06 by etran             #+#    #+#             */
-/*   Updated: 2023/07/16 11:03:37 by etran            ###   ########.fr       */
+/*   Updated: 2023/09/18 11:08:13 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,18 +25,17 @@
 # include <map> // std::map
 
 # include "window.h"
-# include "utils.h"
-# include "matrix.h"
 # include "vertex.h"
-# include "image_handler.h"
 # include "engine.h"
-# include "uniform_buffer_object.h"
-# include "gameplay.h"
+# include "game_state.h"
 # include "material.h"
 # include "timer.h"
 
-# define SCOP_MOUSE_SENSITIVITY	0.25f
-# define SCOP_MOVE_SPEED		0.05f
+# ifdef __LINUX
+#  define SCOP_MOVE_SPEED		0.1f
+# else
+#  define SCOP_MOVE_SPEED		0.05f
+# endif
 
 namespace scop {
 
@@ -50,7 +49,7 @@ enum ObjectDirection {
 };
 
 /**
- * @brief Handler for input and game logic.
+ * @brief Main class of the program.
 */
 class App {
 public:
@@ -58,7 +57,7 @@ public:
 	/*                                  TYPEDEFS                                 */
 	/* ========================================================================= */
 
-	typedef	graphics::TextureSampler::Texture	Texture;
+	typedef	graphics::TextureHandler::Texture	Texture;
 
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
@@ -88,7 +87,7 @@ private:
 	/*                               CLASS MEMBERS                               */
 	/* ========================================================================= */
 
-	vox::Gameplay				_game;
+	vox::GameState				_game;
 	scop::Window				_window;
 	scop::graphics::Engine		_engine;
 	Timer						_timer;
@@ -97,7 +96,6 @@ private:
 	std::vector<scop::Vertex>	_vertices;
 	std::vector<uint32_t>		_indices;
 	std::vector<Texture>		_textures;
-	UniformBufferObject::Light	_light;
 
 	// Camera input
 	bool						_keys_pressed_directions[6] = { false };
@@ -107,10 +105,9 @@ private:
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
 
-	void						loadModel(const std::string& path);
-	void						loadTerrain();
-	void						loadLight(const scop::mtl::Material& mat);
-	void						updateGame();
+	//void						_loadModel(const std::string& path);
+	void						_loadTerrain();
+	void						_updateGame();
 
 }; // class App
 

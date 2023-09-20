@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:14:30 by etran             #+#    #+#             */
-/*   Updated: 2023/07/03 11:45:24 by etran            ###   ########.fr       */
+/*   Updated: 2023/08/12 23:43:18 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,8 +24,9 @@
 
 namespace scop {
 class Window;
+} // namespace scop
 
-namespace graphics {
+namespace scop::graphics {
 
 /**
  * @brief Wrapper class for Vulkan device.
@@ -33,7 +34,7 @@ namespace graphics {
 class Device {
 public:
 	/* ========================================================================= */
-	/*                                HELPER CLASS                               */
+	/*                               HELPER OBJECTS                              */
 	/* ========================================================================= */
 
 	struct QueueFamilyIndices {
@@ -66,7 +67,7 @@ public:
 	/* ========================================================================= */
 
 	void					init(
-		scop::Window& window,
+		::scop::Window& window,
 		VkInstance instance
 	);
 	void					destroy(VkInstance instance);
@@ -121,7 +122,7 @@ private:
 
 	void					_createSurface(
 		VkInstance instance,
-		scop::Window& window
+		::scop::Window& window
 	);
 	void					_pickPhysicalDevice(VkInstance vk_instance);
 	void					_createLogicalDevice();
@@ -130,14 +131,10 @@ private:
 	bool					_checkDeviceExtensionSupport(
 		VkPhysicalDevice device
 	);
-	bool					_isDeviceSuitable(
-		VkPhysicalDevice device
-	);
+	bool					_isDeviceSuitable(VkPhysicalDevice device);
 	QueueFamilyIndices		_findQueueFamilies(VkPhysicalDevice device);
 	SwapChainSupportDetails	_querySwapChainSupport(VkPhysicalDevice device);
 
 }; // class Device
 
-} // namespace graphics
-} // namespace scop
-
+} // namespace scop::graphics

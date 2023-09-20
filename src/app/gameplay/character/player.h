@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/05 09:50:49 by etran             #+#    #+#             */
-/*   Updated: 2023/07/04 10:27:18 by etran            ###   ########.fr       */
+/*   Updated: 2023/09/18 11:08:39 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,11 @@
 
 # include "character.h"
 
-# define VOX_PLAYER_SPEED		0.1f
+# ifdef __LINUX
+#  define VOX_CAMERA_SPEED		0.1f
+# else
+#  define VOX_CAMERA_SPEED		0.05f
+# endif
 # define VOX_DEFAULT_EYE_DIR	scop::Vect3(0.0f, 0.0f, 1.0f)
 
 # define VOX_DEFAULT_POS_X		1.0f

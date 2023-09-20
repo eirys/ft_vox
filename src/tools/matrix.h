@@ -71,6 +71,13 @@ struct Mat4 {
 Mat4	lookAt(const Vect3& eye, const Vect3& center, const Vect3& up) noexcept;
 Mat4	lookAtDir(const Vect3& eye, const Vect3& dir, const Vect3& up) noexcept;
 Mat4	perspective(float fov, float aspect_ratio, float near, float far) noexcept;
+Mat4	orthographic(
+			float bot, 
+			float top, 
+			float left, 
+			float right, 
+			float near, 
+			float far) noexcept;
 Mat4	rotate(const Mat4& mat, float angle, const Vect3& axis) noexcept;
 Mat4	scale(const Mat4& mat, const Vect3& scale) noexcept;
 Mat4	translate(const Mat4& mat, const Vect3& dir) noexcept;

@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/12 15:00:15 by eli               #+#    #+#             */
-/*   Updated: 2023/07/21 21:12:02 by etran            ###   ########.fr       */
+/*   Updated: 2023/09/15 16:14:42 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -81,7 +81,7 @@ void	PpmLoader::parseHeader() {
 }
 
 /**
- * @brief Parses the image body.
+ * Parses the image body.
 */
 PpmLoader::Pixels	PpmLoader::parseBody() {
 	// Reads a character.
@@ -89,7 +89,11 @@ PpmLoader::Pixels	PpmLoader::parseBody() {
 		if (cursor >= base::data.size()) {
 			throw PpmParseError("unexpected end of file");
 		}
+		#ifdef __LINUX
 		return base::data[cursor++];
+		#else
+		return base::data[++cursor];
+		#endif
 	};
 
 	// Reads a number.
@@ -116,7 +120,6 @@ PpmLoader::Pixels	PpmLoader::parseBody() {
 	ParseNumberFn	parseChannelFn(format == Format::P6 ? readExcept : readNb);
 	PpmLoader::Pixels	pixels(base::width * base::height * sizeof(uint32_t));
 	std::size_t	row = 0;
-
 	while (row < base::height) {
 		uint8_t	r, g, b;
 

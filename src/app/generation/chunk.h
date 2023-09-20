@@ -6,106 +6,108 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/06 12:07:38 by etran             #+#    #+#             */
-/*   Updated: 2023/07/23 14:03:36 by etran            ###   ########.fr       */
+/*   Updated: 2023/09/18 17:33:44 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
 // Std
-# include <cstdint>
 # include <array> // std::array
-
-/**
- * @brief Max values for a block's x and z coordinates (local to chunk).
-*/
-# define CHUNK_SIZE			16
-
-/**
- * @brief Max value for a block's y coordinate.
-*/
-# define CHUNK_HEIGHT		256
-
-/**
- * @brief Max values for a chunk's x and z coordinates (world).
-*/
-# define CHUNK_COUNT		1024
-
-/**
- * @brief Number of chunks rendered around the player.
-*/
-# define RENDER_DISTANCE	16
-# define BLOCK_SIZE			1
-
-/**
- * @brief Max values for a block's x and z coordinates (in world).
-*/
-# define WORLD_SIZE			CHUNK_COUNT * CHUNK_SIZE		// 16384
-# define WORLD_HEIGHT		CHUNK_HEIGHT					// 256
-
-# define RENDER_WIDTH		RENDER_DISTANCE * CHUNK_SIZE	// 256
-# define RENDER_DEPTH		RENDER_DISTANCE * CHUNK_SIZE	// 256
 
 # include "block.h"
 
+# define CHUNK_SIZE			16 // Number of blocks per chunk row
+# define RENDER_DISTANCE	16 // Number of chunks to render
+
+# define RENDER_WIDTH		RENDER_DISTANCE * CHUNK_SIZE			// 256
+# define RENDER_DEPTH		RENDER_DISTANCE * CHUNK_SIZE			// 256
+
+# define CHUNK_AREA			CHUNK_SIZE * CHUNK_SIZE					// 256
+# define CHUNK_VOLUME		CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE	// 65536
+
+// Number of vertices in a flat chunk mesh
+# define BLOCK_VERTICES_COUNT		8
+# define CHUNK_VERTICES_COUNT		BLOCK_VERTICES_COUNT * CHUNK_AREA
+
+// Number of indices in a flat chunk mesh
+# define TRIANGLE_VERTICES_COUNT	3
+# define QUAD_VERTICES_COUNT		2 * TRIANGLE_VERTICES_COUNT
+# define BLOCK_FACES_COUNT			6
+# define CHUNK_INDICES_COUNT		CHUNK_AREA * BLOCK_FACES_COUNT * QUAD_VERTICES_COUNT
+
+// namespace scop {
+
+// struct Vertex;
+
+// }
+struct Vertex;
+
 namespace vox {
 
+class PerlinNoise;
+
 /**
- * @brief Holds data about a chunk (local cube positions, etc.).
- *
- * @note A chunk is a 16x256x16 cube of blocks.
+ * @brief World subdivision. A chunk size is 16 x 16 x 16.
 */
-class Chunk {
+class Chunk final {
 public:
 	/* ========================================================================= */
 	/*                                  TYPEDEFS                                 */
 	/* ========================================================================= */
 
-	/**
-	 * @brief A column of blocks with y coordinate ranging from 0 to 255.
-	*/
-	typedef	std::array<Block, CHUNK_HEIGHT>		ChunkColumn;
+	using VerticeArray = std::array<Vertex, CHUNK_VERTICES_COUNT>;
+	using IndexArray = std::array<uint32_t, CHUNK_INDICES_COUNT>;
 
-	/**
-	 * @brief A row of block columns with x coordinate ranging from 0 to 15.
-	*/
-	typedef	std::array<ChunkColumn, CHUNK_SIZE>	ChunkRow;
+	struct ChunkMesh {
+		VerticeArray	vertices;
+		IndexArray		indices;
+	};
 
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
 
-	Chunk(int16_t x, int16_t z);
+	Chunk(const PerlinNoise& noise, uint8_t x, uint8_t y, uint8_t z);
 
-	Chunk(Chunk&& src) = default;
-	Chunk &operator=(Chunk&& rhs) = default;
+	Chunk() = default;
+	Chunk(Chunk &&src) = default;
+	Chunk &operator=(Chunk &&rhs) = default;
 	~Chunk() = default;
 
-	Chunk() = delete;
-	Chunk(const Chunk& src) = delete;
-	Chunk &operator=(const Chunk& rhs) = delete;
+	Chunk(const Chunk &src) = delete;
+	Chunk &operator=(const Chunk &rhs) = delete;
 
 	/* ========================================================================= */
 
-	void								addBlock(Block block);
+	static ChunkMesh	generateChunkMesh() noexcept;
+
+	/* ========================================================================= */
+
+	const Block&		getBlock(uint8_t x, uint8_t y, uint8_t z) const noexcept;
+	const Block&		getBlock(uint32_t packed_coordinates) const noexcept;
 
 private:
 	/* ========================================================================= */
 	/*                               CLASS MEMBERS                               */
 	/* ========================================================================= */
 
-	int16_t								_x;	// min: 0, max: 1023
-	int16_t								_z;	// min: 0, max: 1023
-	std::array<ChunkRow, CHUNK_SIZE>	_blocks;
+	uint8_t							_x;
+	uint8_t							_y;
+	uint8_t							_z;
+	std::array<Block, CHUNK_VOLUME>	_blocks{};
+
+	/* ========================================================================= */
+	/*                                  METHODS                                  */
+	/* ========================================================================= */
+
+	void		_generateChunk(const PerlinNoise& noise);
+	void		_fillColumn(
+		std::size_t x,
+		std::size_t y,
+		MaterialType material = MaterialType::MATERIAL_DIRT);
 
 }; // class Chunk
-
-/**
- * @brief Converts a float to a 32-bit integer.
-*/
-inline int32_t convert(float x, uint8_t shift = 0) noexcept {
-	return x * (1 << shift);
-}
 
 /**
  * @brief Converts a position to a 32-bit integer.
@@ -117,22 +119,21 @@ inline int32_t convert(float x, uint8_t shift = 0) noexcept {
  * @note x_chunk (8 bits) | y_chunk (4 bits) | z_chunk (8 bits)
 */
 inline int32_t	toChunkPos(float x, float y, float z) noexcept {
-	// TODO: Add render distance in ubo
+	// xxxxxxxx yyyy zzzzzzzz
+	int32_t x_chunk = static_cast<int32_t>(x) / CHUNK_SIZE;
+	int32_t y_chunk = (static_cast<int32_t>(y) / CHUNK_SIZE) << 8;
+	int32_t z_chunk = (static_cast<int32_t>(z) / CHUNK_SIZE) << 12;
+	int32_t chunk_address = x_chunk | y_chunk | z_chunk;
 
-	// TODO: uint?
-	int32_t chunk_address =
-		(int32_t)x / CHUNK_SIZE |
-		(int32_t)y / CHUNK_SIZE << 8 |
-		(int32_t)z / CHUNK_SIZE << 12;
-
-	x = (int32_t)x % CHUNK_SIZE;
-	y = (int32_t)y % CHUNK_SIZE;
-	z = (int32_t)z % CHUNK_SIZE;
+	// xxxx yyyy zzzz
+	x = static_cast<int32_t>(x) % CHUNK_SIZE;
+	y = static_cast<int32_t>(y) % CHUNK_SIZE;
+	z = static_cast<int32_t>(z) % CHUNK_SIZE;
 
 	return
-		(int32_t)x |
-		(int32_t)y << 4 |
-		(int32_t)z << 8 |
+		static_cast<int32_t>(x) |
+		static_cast<int32_t>(y) << 4 |
+		static_cast<int32_t>(z) << 8 |
 		chunk_address << 12;
 }
 

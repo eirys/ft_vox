@@ -6,16 +6,20 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/16 12:47:19 by etran             #+#    #+#             */
-/*   Updated: 2023/07/04 09:42:49 by etran            ###   ########.fr       */
+/*   Updated: 2023/08/12 00:29:54 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "command_pool.h"
-#include "engine.h"
 #include "device.h"
+#include "command_buffer.h"
 
-namespace scop {
-namespace graphics {
+#include <cassert> // assert
+#include <stdexcept> // std::runtime_error
+
+namespace scop::graphics {
+
+VkCommandPool	CommandPool::_pool = VK_NULL_HANDLE;
 
 /* ========================================================================== */
 /*                                   PUBLIC                                   */
@@ -39,9 +43,24 @@ void	CommandPool::destroy(Device& device) {
 	vkDestroyCommandPool(device.getLogicalDevice(), _pool, nullptr);
 }
 
+CommandBuffer	CommandPool::createBuffer(Device& device) {
+	assert(_pool != VK_NULL_HANDLE);
+
+	CommandBuffer	command_buffer;
+	command_buffer.init(device, _pool);
+
+	return command_buffer;
+}
+
+void	CommandPool::destroyBuffer(Device& device, CommandBuffer& buffer) {
+	assert(_pool != VK_NULL_HANDLE);
+
+	buffer.destroy(device, _pool);
+}
+
 /* ========================================================================== */
 
-VkCommandPool	CommandPool::getPool() const noexcept {
+VkCommandPool	CommandPool::getPool() noexcept {
 	return _pool;
 }
 
@@ -49,5 +68,4 @@ CommandPool::operator VkCommandPool() const noexcept {
 	return _pool;
 }
 
-} // namespace graphics
-} // namespace scop
+} // namespace scop::graphics

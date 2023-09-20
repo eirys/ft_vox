@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/23 06:30:15 by etran             #+#    #+#             */
-/*   Updated: 2023/07/04 09:42:00 by etran            ###   ########.fr       */
+/*   Updated: 2023/08/10 22:08:07 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,8 +22,8 @@
 // Std
 # include <cstddef> // std::size_t
 
-namespace scop {
-namespace graphics {
+namespace scop::graphics {
+
 class Device;
 
 /**
@@ -87,5 +87,4 @@ private:
 
 }; // class Buffer
 
-} // namespace graphics
-}  // namespace scop
+} // namespace scop::graphics

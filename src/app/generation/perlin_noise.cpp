@@ -6,16 +6,17 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/23 10:26:08 by etran             #+#    #+#             */
-/*   Updated: 2023/07/21 20:49:06 by etran            ###   ########.fr       */
+/*   Updated: 2023/09/18 17:39:38 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "perlin_noise.h"
-#include "math.h"
+#include "scop_math.h"
 #include "vector.h"
 #include "cube.h"
+#include "block.h"
 
-#include <cstdint> // uint32_t
+#include <cassert> // assert
 #include <vector> // std::vector
 #include <algorithm> // std::shuffle
 
@@ -33,17 +34,18 @@ namespace vox {
  *
  * @note No verification is done on the parameters.
 */
-PerlinNoise::PerlinNoise(PerlinNoise::NoiseMapInfo info):
-	_seed(info.seed.has_value() ? info.seed.value() : generateSeed()),
-	_width(info.width),
-	_height(info.height),
-	_depth(info.depth),
-	_layers(info.layers),
-	_frequency(info.frequency_0),
-	_frequency_mult(info.frequency_mult),
-	_amplitude_mult(info.amplitude_mult),
-	_generator(_seed),
-	_permutation_table(generatePermutationTable()) {
+PerlinNoise::PerlinNoise(const PerlinNoise::NoiseMapInfo& info):
+	seed(info.seed.has_value() ? info.seed.value() : generateSeed()),
+	width(info.width),
+	height(info.height),
+	depth(info.depth),
+	layers(info.layers),
+	frequency(info.frequency_0),
+	frequency_mult(info.frequency_mult),
+	amplitude_mult(info.amplitude_mult),
+	generator(seed),
+	permutation_table(generatePermutationTable())
+{
 	std::vector<float>	(PerlinNoise::*generateNoiseMapFn)();
 
 	// Select the correct function to generate the noise map
@@ -57,8 +59,21 @@ PerlinNoise::PerlinNoise(PerlinNoise::NoiseMapInfo info):
 		throw std::invalid_argument("Invalid noise type.");
 	}
 
-	_noise_map = (this->*generateNoiseMapFn)();
+	noise_map = (this->*generateNoiseMapFn)();
 }
+
+PerlinNoise::PerlinNoise(PerlinNoise&& other):
+	seed(other.seed),
+	width(other.width),
+	height(other.height),
+	depth(other.depth),
+	layers(other.layers),
+	frequency(other.frequency),
+	frequency_mult(other.frequency_mult),
+	amplitude_mult(other.amplitude_mult),
+	generator(seed),
+	permutation_table(std::move(other.permutation_table)),
+	noise_map(std::move(other.noise_map)) {}
 
 /* ========================================================================== */
 
@@ -66,168 +81,187 @@ PerlinNoise::PerlinNoise(PerlinNoise::NoiseMapInfo info):
  * @brief Converts the noise map to a vector of pixels. (image)
 */
 std::vector<uint32_t>	PerlinNoise::toPixels() const {
-	std::vector<uint32_t>	pixels(_width * _height);
+	std::vector<uint32_t>	pixels(width * height);
 
-	for (std::size_t i = 0; i < _width * _height; ++i) {
+	for (std::size_t i = 0; i < width * height; ++i) {
 		// Convert to grayscale
-		pixels[i] = static_cast<uint32_t>(_noise_map[i] * 255);
+		pixels[i] = static_cast<uint32_t>(noise_map[i] * 255);
 	}
 	return pixels;
 }
 
 /**
  * @brief Converts the noise map to a cube world.
- *
- * @todo Put in class.
 */
-PerlinNoise::PerlinMesh	PerlinNoise::toMesh() const {
-	PerlinMesh		mesh;
+// PerlinNoise::PerlinMesh	PerlinNoise::toMesh() const {
+// 	PerlinMesh		mesh;
 
-	// Center the mesh
-	const float				half_width = _width / 2;
-	const float				half_height = _height / 2;
+// 	// Center the mesh
+// 	const float				half_width = width / 2;
+// 	const float				half_height = height / 2;
 
-	auto	noiseAt =
-		[this]
-		(std::size_t x, std::size_t y) -> float {
-			// TODO: Make this configurable
-			static const constexpr float	shift = 0;
-			static const constexpr float	scale = 20; // Values will range from 0 to 20
+// 	auto	noiseAt =
+// 		[this]
+// 		(std::size_t x, std::size_t y) -> float {
+// 			return std::floor(
+// 				std::fma(noise_map[std::fma(y, width, x)], scale, shift));
+// 		};
 
-			return std::floor(
-				std::fma(_noise_map[std::fma(y, _width, x)], scale, shift)
-			);
-		};
+// 	auto	addFace =
+// 		[&mesh]
+// 		(const Cube::Face& face) -> void {
+// 			for (std::size_t i = 0; i < 4; ++i) {
+// 				uint8_t	face_index =
+// 					face.side == FaceType::FACE_TOP ? 0 : (
+// 					face.side == FaceType::FACE_BOTTOM ? 2 : 1);
+// 				scop::Vertex	vertex(
+// 					face.vertices[i],
+// 					static_cast<uint8_t>(face.side),
+// 					i,
+// 					face_index);
+// 				mesh.vertices.emplace_back(vertex);
+// 			}
+// 		};
 
-	auto	addFace =
-		[&mesh]
-		(const Cube::Face& face) -> void {
-			for (std::size_t i = 0; i < 4; ++i) {
-				uint8_t	face_index =
-					face.side == FaceType::FACE_TOP ? 0 : (
-					face.side == FaceType::FACE_BOTTOM ? 1 : 2
-				);
-				scop::Vertex	vertex(
-					face.vertices[i],
-					face.side,
-					i,
-					face_index
-				);
-				mesh.vertices.emplace_back(vertex);
-			}
-		};
+// 	auto	addIndices =
+// 		[&mesh]
+// 		(uint32_t pos) -> void {
+// 			uint32_t e = pos;
+// 			uint32_t f = pos + 1;
+// 			uint32_t g = pos + 2;
+// 			uint32_t h = pos + 3;
 
-	auto	addIndices =
-		[&mesh]
-		(uint32_t pos) -> void {
-			uint32_t e = pos;
-			uint32_t f = pos + 1;
-			uint32_t g = pos + 2;
-			uint32_t h = pos + 3;
+// 			// First triangle
+// 			mesh.indices.emplace_back(e);
+// 			mesh.indices.emplace_back(g);
+// 			mesh.indices.emplace_back(f);
 
-			// First triangle
-			mesh.indices.emplace_back(e);
-			mesh.indices.emplace_back(g);
-			mesh.indices.emplace_back(f);
+// 			// Second triangle
+// 			mesh.indices.emplace_back(e);
+// 			mesh.indices.emplace_back(h);
+// 			mesh.indices.emplace_back(g);
+// 		};
 
-			// Second triangle
-			mesh.indices.emplace_back(e);
-			mesh.indices.emplace_back(h);
-			mesh.indices.emplace_back(g);
-		};
+// 	// TODO: Use a better algorithm
+// 	// TODO store map
 
-	// TODO: Use a better algorithm
-	// TODO store map
+// 	for (std::size_t row = 0; row < height; ++row) {
+// 		for (std::size_t col = 0; col < width; ++col) {
+// 			// A pixel of the noise map will be a block.
+// 			//   h_____g    Frame of reference:
+// 			// e/|___f/|    y z
+// 			// | d---|-c    |/
+// 			// |/    |/     O___x
+// 			// a_____b
 
-	for (std::size_t row = 0; row < _height; ++row) {
-		for (std::size_t col = 0; col < _width; ++col) {
-			// A pixel of the noise map will be a block.
-			//   h_____g    Frame of reference:
-			// e/|___f/|    y z
-			// | d---|-c    |/
-			// |/    |/     O___x
-			// a_____b
+// 			// Evaluate the current cube
+// 			const float	perlin = noiseAt(col, row);
 
-			// Evaluate the current cube
-			const float	perlin = noiseAt(col, row);
+// 			const Cube	cube({
+// 				static_cast<float>(col),
+// 				perlin,
+// 				static_cast<float>(row)
+// 			});
 
-			const Cube	cube({
-				static_cast<float>(col),
-				perlin,
-				static_cast<float>(row)
-			});
+// 			// Add the top face
+// 			if (row != height - 1 && col != width - 1)
+// 				addIndices(mesh.vertices.size());
+// 			addFace(cube.top());
 
-			// Add the top face
-			if (row != _height - 1 && col != _width - 1)
-				addIndices(mesh.vertices.size());
-			addFace(cube.top());
+// 			// Check Perlin noise on side blocks
+// 			// Add the south face
+// 			if (row != 0) {
+// 				const float	south = noiseAt(col, row - 1);
+// 				if (south < perlin) {
+// 					if (row != height - 1 && col != width - 1)
+// 						addIndices(mesh.vertices.size());
+// 					addFace(cube.back());
+// 				}
+// 			}
+// 			// Add the north face
+// 			if (row != height - 1) {
+// 				const float	north = noiseAt(col, row + 1);
+// 				if (north < perlin) {
+// 					if (col != width - 1)
+// 						addIndices(mesh.vertices.size());
+// 					addFace(cube.front());
+// 				}
+// 			}
+// 			// Add the west face
+// 			if (col != 0) {
+// 				const float	west = noiseAt(col - 1, row);
+// 				if (west < perlin) {
+// 					if (row != height - 1 && col != width - 1)
+// 						addIndices(mesh.vertices.size());
+// 					addFace(cube.left());
+// 				}
+// 			}
+// 			// Add the east face
+// 			if (col != width - 1) {
+// 				const float	east = noiseAt(col + 1, row);
+// 				if (east < perlin) {
+// 					if (row != height - 1)
+// 						addIndices(mesh.vertices.size());
+// 					addFace(cube.right());
+// 				}
+// 			}
+// 		}
+// 	}
 
-			// Check Perlin noise on side blocks
-			// Add the south face
-			if (row != 0) {
-				const float	south = noiseAt(col, row - 1);
-				if (south < perlin) {
-					if (row != _height - 1 && col != _width - 1)
-						addIndices(mesh.vertices.size());
-					addFace(cube.back());
-				}
-			}
-			// Add the north face
-			if (row != _height - 1) {
-				const float	north = noiseAt(col, row + 1);
-				if (north < perlin) {
-					if (col != _width - 1)
-						addIndices(mesh.vertices.size());
-					addFace(cube.front());
-				}
-			}
-			// Add the west face
-			if (col != 0) {
-				const float	west = noiseAt(col - 1, row);
-				if (west < perlin) {
-					if (row != _height - 1 && col != _width - 1)
-						addIndices(mesh.vertices.size());
-					addFace(cube.left());
-				}
-			}
-			// Add the east face
-			if (col != _width - 1) {
-				const float	east = noiseAt(col + 1, row);
-				if (east < perlin) {
-					if (row != _height - 1)
-						addIndices(mesh.vertices.size());
-					addFace(cube.right());
-				}
-			}
-		}
-	}
+// 	// Set mesh origin
+// 	// Perlin noise at the center of the mesh:
+// 	mesh.origin = {
+// 		half_width,
+// 		noiseAt(half_height, half_width) + BLOCK_SIZE,
+// 		half_height
+// 	};
+// 	return mesh;
+// }
 
-	// Set mesh origin
-	// Perlin noise at the center of the mesh:
-	mesh.origin = {
-		half_width,
-		noiseAt(half_height, half_width) + Cube::size,
-		half_height
-	};
-	return mesh;
+float	PerlinNoise::noiseAt(std::size_t x) const noexcept {
+	assert(x < width);
+
+	float noise = noise_map[width + x];
+	return std::floor(std::fma(noise, scale, shift));
+}
+
+float	PerlinNoise::noiseAt(std::size_t x, std::size_t y) const noexcept {
+	assert(x < width);
+	assert(y < height);
+
+	float noise = noise_map[std::fma(y, width, x)];
+	return std::floor(std::fma(noise, scale, shift));
+}
+
+float	PerlinNoise::noiseAt(
+	std::size_t x,
+	std::size_t y,
+	std::size_t z
+) const noexcept {
+	assert(x < width);
+	assert(y < height);
+	assert(z < depth);
+
+	float noise = noise_map[std::fma(std::fma(z, height, y), width, x)];
+	return std::floor(std::fma(noise, scale, shift));
 }
 
 /* GETTERS ================================================================== */
 
 std::size_t	PerlinNoise::getWidth() const noexcept {
-	return _width;
+	return width;
 }
 
 std::size_t	PerlinNoise::getHeight() const noexcept {
-	return _height;
+	return height;
 }
 
 uint32_t	PerlinNoise::getSeed() const noexcept {
-	return _seed;
+	return seed;
 }
 
 const std::vector<float>&	PerlinNoise::getNoiseMap() const noexcept {
-	return _noise_map;
+	return noise_map;
 }
 
 /* ========================================================================== */
@@ -248,7 +282,7 @@ uint32_t	PerlinNoise::generateSeed() const {
 */
 float	PerlinNoise::generateFloat(float min, float max) {
 	std::uniform_real_distribution<float> dis(min, max);
-	return dis(_generator);
+	return dis(generator);
 }
 
 /**
@@ -299,7 +333,7 @@ std::vector<std::size_t>	PerlinNoise::generatePermutationTable() {
 		table[i] = i;
 	}
 	// Shuffle table using the seed.
-	std::shuffle(table.begin(), table.begin() + table_sizes, _generator);
+	std::shuffle(table.begin(), table.begin() + table_sizes, generator);
 
 	// Duplicate the table.
 	for (std::size_t i = 0; i < table_sizes; ++i) {
@@ -342,7 +376,7 @@ float	PerlinNoise::evaluateAt(
  * @brief Returns a value from the permutation table (1D noise).
 */
 std::size_t	PerlinNoise::hash(const float x) const noexcept {
-	return _permutation_table[static_cast<std::size_t>(x)];
+	return permutation_table[static_cast<std::size_t>(x)];
 }
 
 /**
@@ -352,8 +386,8 @@ std::size_t	PerlinNoise::hash(
 	const float x,
 	const float y
 ) const noexcept {
-	return _permutation_table[
-		_permutation_table[static_cast<std::size_t>(x)] +
+	return permutation_table[
+		permutation_table[static_cast<std::size_t>(x)] +
 		static_cast<std::size_t>(y)
 	];
 }
@@ -366,9 +400,9 @@ std::size_t	PerlinNoise::hash(
 	const float y,
 	const float z
 ) const noexcept {
-	return _permutation_table[
-		_permutation_table[
-			_permutation_table[static_cast<std::size_t>(x)] +
+	return permutation_table[
+		permutation_table[
+			permutation_table[static_cast<std::size_t>(x)] +
 			static_cast<std::size_t>(y)
 		] + static_cast<std::size_t>(z)
 	];
@@ -377,12 +411,12 @@ std::size_t	PerlinNoise::hash(
 /* ========================================================================== */
 
 /**
- * @brief Generates a 1d noise map of size _width.
+ * @brief Generates a 1d noise map of size width.
  *
  * @note The noise map doesn't take in consideration the layers.
 */
 std::vector<float>	PerlinNoise::generate1dNoiseMap() {
-	std::vector<float>	_noise_map(_width);
+	std::vector<float>	noise_map(width);
 	std::vector<float>	random_table = generateRandomTable();
 
 	std::function<float(const float&)>	floorFn =
@@ -407,8 +441,8 @@ std::vector<float>	PerlinNoise::generate1dNoiseMap() {
 			);
 		};
 
-	for (std::size_t x = 0; x < _width; ++x) {
-		_noise_map[x] = evaluateAt(
+	for (std::size_t x = 0; x < width; ++x) {
+		noise_map[x] = evaluateAt(
 			static_cast<float>(x),
 			floorFn,
 			modFn,
@@ -416,14 +450,14 @@ std::vector<float>	PerlinNoise::generate1dNoiseMap() {
 			1.0f
 		);
 	}
-	return _noise_map;
+	return noise_map;
 }
 
 /**
  * @brief Generates a 2d noise map.
 */
 std::vector<float>	PerlinNoise::generate2dNoiseMap() {
-	std::vector<float>	_noise_map(_width * _height);
+	std::vector<float>	noise_map(width * height);
 	std::vector<float>	random_table = generateRandomTable();
 
 	std::function<scop::Vect2(const scop::Vect2&)> floorFn =
@@ -465,14 +499,14 @@ std::vector<float>	PerlinNoise::generate2dNoiseMap() {
 		};
 
 	float	norm = 0;
-	for (std::size_t y = 0; y < _height; ++y) {
-		for (std::size_t x = 0; x < _width; ++x) {
-			scop::Vect2	coord = scop::Vect2(x, y) * _frequency;
+	for (std::size_t y = 0; y < height; ++y) {
+		for (std::size_t x = 0; x < width; ++x) {
+			scop::Vect2	coord = scop::Vect2(x, y) * frequency;
 			float		amplitude = 1;	// Amplitude of the layer.
 
-			for (std::size_t layer = 0; layer < _layers; ++layer) {
+			for (std::size_t layer = 0; layer < layers; ++layer) {
 				// Evaluate and stack up layers.
-				_noise_map[y * _width + x] = std::fma(
+				noise_map[y * width + x] = std::fma(
 					evaluateAt(
 						coord,
 						floorFn,
@@ -481,31 +515,31 @@ std::vector<float>	PerlinNoise::generate2dNoiseMap() {
 						scop::Vect2(1.0f, 1.0f)
 					),
 					amplitude,
-					_noise_map[y * _width + x]
+					noise_map[y * width + x]
 				);
-				coord *= _frequency_mult;
-				amplitude *= _amplitude_mult;
+				coord *= frequency_mult;
+				amplitude *= amplitude_mult;
 			}
 
 			// Retrieve max value for normalization.
-			if (_noise_map[y * _width + x] > norm) {
-				norm = _noise_map[y * _width + x];
+			if (noise_map[y * width + x] > norm) {
+				norm = noise_map[y * width + x];
 			}
 		}
 	}
 
 	// Normalize noise map to [0, 1]: divide by norm.
-	for (auto& value: _noise_map) {
+	for (auto& value: noise_map) {
 		value /= norm;
 	}
-	return _noise_map;
+	return noise_map;
 }
 
 /**
  * @brief Generates a 3d noise map.
 */
 std::vector<float>	PerlinNoise::generate3dNoiseMap() {
-	std::vector<float>	_noise_map(_width * _height * _depth);
+	std::vector<float>	noise_map(width * height * depth);
 	std::vector<scop::Vect3>	gradients = generateGradientTable();
 
 	std::function<scop::Vect3(const scop::Vect3&)>	floorFn =
@@ -590,15 +624,15 @@ std::vector<float>	PerlinNoise::generate3dNoiseMap() {
 			);
 		};
 
-	for (std::size_t z = 0; z < _depth; ++z) {
-		for (std::size_t y = 0; y < _height; ++y) {
-			for (std::size_t x = 0; x < _width; ++x) {
+	for (std::size_t z = 0; z < depth; ++z) {
+		for (std::size_t y = 0; y < height; ++y) {
+			for (std::size_t x = 0; x < width; ++x) {
 				std::size_t	index = std::fma(
-					z * _width,
-					_height,
-					std::fma(y, _width, x)
+					z * width,
+					height,
+					std::fma(y, width, x)
 				);
-				_noise_map[index] = evaluateAt(
+				noise_map[index] = evaluateAt(
 					scop::Vect3(x, y, z),
 					floorFn,
 					modFn,
@@ -608,7 +642,7 @@ std::vector<float>	PerlinNoise::generate3dNoiseMap() {
 			}
 		}
 	}
-	return _noise_map;
+	return noise_map;
 }
 
 } // namespace vox

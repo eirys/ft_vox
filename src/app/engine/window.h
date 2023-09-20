@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:15:08 by etran             #+#    #+#             */
-/*   Updated: 2023/07/03 10:12:32 by etran            ###   ########.fr       */
+/*   Updated: 2023/08/10 22:10:42 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,7 @@
 # include <chrono>
 
 namespace scop {
+
 class App;
 
 /**
@@ -64,10 +65,12 @@ public:
 	bool							alive() const;
 	bool							resized() const noexcept;
 	void							toggleFrameBufferResized(bool resized) noexcept;
+	void							toggleMouse() noexcept;
 
 	/* ========================================================================= */
 
 	void							retrieveSize(int& width, int& height) const;
+	bool							mouseActive() const noexcept;
 	GLFWwindow*						getWindow() noexcept;
 	GLFWwindow const*				getWindow() const noexcept;
 	App*							getApp() noexcept;
@@ -81,7 +84,8 @@ private:
 	GLFWwindow*						_window = nullptr;
 	App*							_app = nullptr;
 	bool							_frame_buffer_resized = false;
+	bool							_mouse_active = false;
 
 }; // class Window
 
-} // namespace scop
+} // namespace scop::graphics

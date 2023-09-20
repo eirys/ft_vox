@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:13:52 by etran             #+#    #+#             */
-/*   Updated: 2023/07/16 11:28:40 by etran            ###   ########.fr       */
+/*   Updated: 2023/08/12 15:12:01 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,7 +26,7 @@ namespace vox {
 typedef struct scop::Vect2	Vect2;
 typedef	struct scop::Vect3	Vect3;
 
-enum PerlinNoiseType {
+enum class PerlinNoiseType {
 	PERLIN_NOISE_1D,
 	PERLIN_NOISE_2D,
 	PERLIN_NOISE_3D
@@ -38,7 +38,7 @@ enum PerlinNoiseType {
 class PerlinNoise {
 public:
 	/* ========================================================================= */
-	/*                                HELPER CLASS                               */
+	/*                               HELPER OBJECTS                              */
 	/* ========================================================================= */
 
 	/**
@@ -58,17 +58,19 @@ public:
 	 * 							A higher value means a rockier noise map.
 	 * @param amplitude_mult	The amplitude multiplier to use for each layer.
 	 * 							A higher value means a rockier noise map.
+	 *
+	 * @param scale
 	*/
 	struct NoiseMapInfo {
 		PerlinNoiseType			type;
 		std::optional<uint32_t>	seed;
-		const std::size_t		width;
-		const std::size_t		height;
-		const std::size_t		depth;
-		const std::size_t		layers;
-		const float				frequency_0;
-		const float				frequency_mult;
-		const float				amplitude_mult;
+		std::size_t				width;
+		std::size_t				height;
+		std::size_t				depth;
+		std::size_t				layers;
+		float					frequency_0;
+		float					frequency_mult;
+		float					amplitude_mult;
 	};
 
 	/**
@@ -85,20 +87,28 @@ public:
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
 
-	PerlinNoise(NoiseMapInfo info);
+	PerlinNoise(const NoiseMapInfo& info);
+	PerlinNoise(PerlinNoise&& other);
 
-	PerlinNoise(PerlinNoise&& other) = default;
 	~PerlinNoise() = default;
 
 	PerlinNoise() = delete;
 	PerlinNoise(const PerlinNoise& other) = delete;
-	PerlinNoise& operator=(PerlinNoise&& other) = delete;
 	PerlinNoise& operator=(const PerlinNoise& other) = delete;
 
 	/* ========================================================================= */
 
 	std::vector<uint32_t>		toPixels() const;
 	PerlinMesh					toMesh() const;
+
+	float						noiseAt(std::size_t x) const noexcept;
+	float						noiseAt(
+		std::size_t x,
+		std::size_t y) const noexcept;
+	float						noiseAt(
+		std::size_t x,
+		std::size_t y,
+		std::size_t z) const noexcept;
 
 	/* GETTERS ================================================================= */
 
@@ -122,18 +132,21 @@ private:
 	/*                               CLASS MEMBERS                               */
 	/* ========================================================================= */
 
-	const uint32_t				_seed;
-	const std::size_t			_width;
-	const std::size_t			_height;
-	const std::size_t			_depth;
-	const std::size_t			_layers;
-	const float					_frequency;
-	const float					_frequency_mult;
-	const float					_amplitude_mult;
-	std::mt19937				_generator;
+	const uint32_t				seed;
+	const std::size_t			width;
+	const std::size_t			height;
+	const std::size_t			depth;
+	const std::size_t			layers;
+	const float					frequency;
+	const float					frequency_mult;
+	const float					amplitude_mult;
+	std::mt19937				generator;
 
-	std::vector<std::size_t>	_permutation_table;
-	std::vector<float>			_noise_map;
+	std::vector<std::size_t>	permutation_table;
+	std::vector<float>			noise_map;
+
+	const float					scale = 20;
+	const float					shift = 0;
 
 	/* ========================================================================= */
 	/*                                  METHODS                                  */

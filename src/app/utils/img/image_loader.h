@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:17:44 by etran             #+#    #+#             */
-/*   Updated: 2023/07/21 21:06:07 by etran            ###   ########.fr       */
+/*   Updated: 2023/07/04 10:34:43 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,7 +33,7 @@ enum ImageType {
 
 /**
  * Image loader interface.
- *
+ * 
  * The files are loaded into a vector of char, which is then parsed.
  * This format is necessary to be able to load binary files (images).
 */
@@ -74,11 +74,11 @@ protected:
 	/*                               CLASS MEMBERS                               */
 	/* ========================================================================= */
 
-	const std::string		path;	// File path
-	ImageType				type;	// File extension
-	std::vector<uint8_t>	data;	// Contains file entire content
-	std::size_t				width;
-	std::size_t				height;
+	const std::string	path;		// File path
+	ImageType			type;		// File extension
+	std::vector<uint8_t>	data;		// Contains file entire content
+	std::size_t			width;
+	std::size_t			height;
 
 	/* ========================================================================= */
 	/*                                  METHODS                                  */

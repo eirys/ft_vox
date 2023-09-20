@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/16 15:07:01 by etran             #+#    #+#             */
-/*   Updated: 2023/07/03 08:43:55 by etran            ###   ########.fr       */
+/*   Updated: 2023/08/10 22:11:58 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,8 +16,7 @@
 #include <stdexcept> // std::runtime_error
 #include <iostream> // std::cerr
 
-namespace scop {
-namespace graphics {
+namespace scop::graphics {
 
 /* ========================================================================== */
 /*                                   PUBLIC                                   */
@@ -128,5 +127,4 @@ VKAPI_ATTR VkBool32 VKAPI_CALL	debugCallback(
 	return VK_FALSE;
 }
 
-} // namespace graphics
-} // namespace scop
+} // namespace scop::graphics

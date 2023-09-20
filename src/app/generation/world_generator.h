@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 22:54:18 by etran             #+#    #+#             */
-/*   Updated: 2023/07/16 15:26:12 by etran            ###   ########.fr       */
+/*   Updated: 2023/09/18 17:31:06 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,9 +16,12 @@
 
 namespace vox {
 
+class World;
+
 /**
  * @brief Generates a world using perlin noise.
- * Handles the generation of the world's chunks.
+ *
+ * Responsible for world update as the player advances in the world.
 */
 class WorldGenerator {
 public:
@@ -26,31 +29,42 @@ public:
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
 
-	WorldGenerator();
-	~WorldGenerator();
+	WorldGenerator(std::size_t seed);
 
-	WorldGenerator(WorldGenerator&& src) = delete;
-	WorldGenerator(const WorldGenerator& src) = delete;
-	WorldGenerator &operator=(WorldGenerator&& rhs) = delete;
-	WorldGenerator &operator=(const WorldGenerator& rhs) = delete;
+	WorldGenerator(WorldGenerator &&src) = default;
+	~WorldGenerator() = default;
+
+	WorldGenerator &operator=(WorldGenerator &&rhs) = delete;
+	WorldGenerator(const WorldGenerator &src) = delete;
+	WorldGenerator &operator=(const WorldGenerator &rhs) = delete;
 
 	/* ========================================================================= */
+
+	World		generate() const noexcept;
+
+	/* ========================================================================= */
+
+	// void		updateWorld(World& world /* , Data */) const noexcept;
+	std::array<float, CHUNK_AREA>	generateHeightBuffer() const noexcept;
+	PerlinNoise::PerlinMesh			toPerlinMesh() const noexcept; // Temporary
 
 private:
-	/* ========================================================================= */
-	/*                               CONST MEMBERS                               */
-	/* ========================================================================= */
-
-	static constexpr const std::size_t	seed = 42;
-	static constexpr const std::size_t	chunk_size = 16;
-	static constexpr const std::size_t	render_distance = 16;
-
 	/* ========================================================================= */
 	/*                               CLASS MEMBERS                               */
 	/* ========================================================================= */
 
-	PerlinNoise		_noise;
 	std::size_t		_offset = 0; // Updated as the player moves.
+	PerlinNoise		_noise;
+
+	uint32_t		_width = RENDER_DISTANCE * CHUNK_SIZE;
+	uint32_t		_height = RENDER_DISTANCE * CHUNK_SIZE;
+	uint32_t		_depth = 2 * CHUNK_SIZE;
+
+	/* ========================================================================= */
+	/*                                  METHODS                                  */
+	/* ========================================================================= */
+
+	PerlinNoise::NoiseMapInfo	_getDefaultMapInfo(std::size_t seed) const noexcept;
 
 }; // class WorldGenerator
 

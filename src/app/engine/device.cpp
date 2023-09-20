@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/16 01:00:19 by etran             #+#    #+#             */
-/*   Updated: 2023/07/03 20:36:11 by etran            ###   ########.fr       */
+/*   Updated: 2023/08/10 22:14:49 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,14 +20,13 @@
 #include <set> // std::set
 #include <stdexcept> // std::runtime_error
 
-namespace scop {
-namespace graphics {
+namespace scop::graphics {
 
 /* ========================================================================== */
 /*                                   PUBLIC                                   */
 /* ========================================================================== */
 
-void	Device::init(scop::Window& window, VkInstance instance) {
+void	Device::init(::scop::Window& window, VkInstance instance) {
 	_createSurface(instance, window);
 	_pickPhysicalDevice(instance);
 	_createLogicalDevice();
@@ -141,7 +140,7 @@ VkQueue	Device::getPresentQueue() const noexcept {
 */
 void	Device::_createSurface(
 	VkInstance instance,
-	scop::Window& window
+	::scop::Window& window
 ) {
 	if (glfwCreateWindowSurface(instance, window.getWindow(), nullptr, &_vk_surface) != VK_SUCCESS)
 		throw std::runtime_error("failed to create window surface");
@@ -413,5 +412,4 @@ Device::QueueFamilyIndices	Device::_findQueueFamilies(
 	return indices;
 }
 
-} // namespace graphics
-} // namespace scop
+} // namespace scop::graphics

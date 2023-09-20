@@ -5,8 +5,8 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/06/04 17:14:18 by etran             #+#    #+#             */
-/*   Updated: 2023/07/04 10:10:13 by etran            ###   ########.fr       */
+/*   Created: 2023/08/12 12:08:24 by etran             #+#    #+#             */
+/*   Updated: 2023/09/01 15:29:33 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,96 +16,72 @@
 # ifndef GLFW_INCLUDE_VULKAN
 #  define GLFW_INCLUDE_VULKAN
 # endif
-
 # include <GLFW/glfw3.h>
 
 // Std
-# include <chrono> // std::chrono
+# include <vector> // std::vector
 
-# include "buffer.h"
-# include "uniform_buffer_object.h"
-# include "player.h"
+namespace scop::graphics {
 
-# define TEXTURE_SAMPLER_COUNT 16
-
-namespace scop {
-namespace graphics {
 class Device;
-class TextureSampler;
 
 class DescriptorSet {
 public:
 	/* ========================================================================= */
+	/*                               HELPER OBJECTS                              */
+	/* ========================================================================= */
+
+	struct DescriptorSizes {
+		uint32_t	uniform_buffer;
+		uint32_t	combined_image_sampler;
+	};
+
+	/* ========================================================================= */
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
 
-	DescriptorSet() = default;
-	~DescriptorSet() = default;
+	virtual void			init(Device& device) = 0;
 
-	DescriptorSet(DescriptorSet&& other) = delete;
-	DescriptorSet(const DescriptorSet& other) = delete;
-	DescriptorSet&	operator=(const DescriptorSet& other) = delete;
-	DescriptorSet&	operator=(DescriptorSet&& other) = delete;
-
-	/* ========================================================================= */
-
-	void					initLayout(
-		Device& device
-	);
-	void					initSets(
-		Device& device,
-		TextureSampler& texture_sampler,
-		const UniformBufferObject::Light& light
-	);
 	void					destroy(Device& device);
-	void					updateUniformBuffer(
-		VkExtent2D extent,
-		const vox::Player& player
-	);
+	void					setDescriptors(VkDescriptorSet set) noexcept;
 
 	/* ========================================================================= */
 
 	VkDescriptorSetLayout	getLayout() const noexcept;
 	VkDescriptorSet			getSet() const noexcept;
+	const DescriptorSizes&	getPoolSizes() const noexcept;
+	uint32_t				getSetIndex() const noexcept;
 
-private:
+protected:
 	/* ========================================================================= */
-	/*                                  TYPEDEF                                  */
+	/*                               STATIC MEMBERS                              */
 	/* ========================================================================= */
 
-	typedef	std::chrono::high_resolution_clock::time_point	time_point;
+	static uint32_t			_descriptor_count;
 
 	/* ========================================================================= */
 	/*                               CLASS MEMBERS                               */
 	/* ========================================================================= */
 
-	VkDescriptorSetLayout	_layout;
-	VkDescriptorPool		_pool;
-	VkDescriptorSet			_set;
+	const uint32_t			_index;
 
-	Buffer					_ubo;
+	VkDescriptorSetLayout	_layout;
+	VkDescriptorSet			_set = VK_NULL_HANDLE;
+	DescriptorSizes			_writes_sizes;
 
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
 
-	void					_createDescriptorPool(Device& device, uint32_t count);
-	void					_createDescriptorSets(
-		Device& device,
-		TextureSampler& texture_sampler,
-		uint32_t count
-	);
-	void					_createUniformBuffers(Device& device);
-	void					_initUniformBuffer(
-		const UniformBufferObject::Light& light
-	) noexcept;
+	DescriptorSet();
 
-	void					_updateCamera(
-		VkExtent2D extent,
-		const vox::Player& player
-	);
+	virtual ~DescriptorSet() = default;
+
+	DescriptorSet(DescriptorSet&& other) = delete;
+	DescriptorSet(const DescriptorSet& other) = delete;
+	DescriptorSet&	operator=(DescriptorSet&& other) = delete;
+	DescriptorSet&	operator=(const DescriptorSet& other) = delete;
 
 }; // class DescriptorSet
 
-} // namespace graphics
-} // namespace scop
+} // namespace scop::graphics

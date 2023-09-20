@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:14:35 by etran             #+#    #+#             */
-/*   Updated: 2023/07/21 21:04:28 by etran            ###   ########.fr       */
+/*   Updated: 2023/08/15 19:34:30 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,24 +26,39 @@
 # include "debug_module.h"
 # include "device.h"
 # include "swap_chain.h"
-# include "render_pass.h"
-# include "texture_sampler.h"
-# include "descriptor_set.h"
+# include "scene_render_pass.h"
+# include "descriptor_pool.h"
 # include "command_pool.h"
-# include "input_buffer.h"
-# include "player.h"
+# include "input_handler.h"
 # include "command_buffer.h"
+# include "texture_handler.h"
+# include "pipeline.h"
 
-# define FRAG_SHADER_BIN "shaders/frag.spv"
-# define VERT_SHADER_BIN "shaders/vert.spv"
+namespace vox {
+class GameState;
+}
 
 namespace scop {
 class Timer;
+struct Camera;
+}
 
-namespace graphics {
+
+namespace scop::graphics {
 
 class Engine {
 public:
+	/* ========================================================================= */
+	/*                                  TYPEDEFS                                 */
+	/* ========================================================================= */
+
+	using Texture = TextureHandler::Texture;
+	using PipelinePtr = std::shared_ptr<Pipeline>;
+
+	using UniformBufferObject = ::scop::UniformBufferObject;
+	using GameState = ::vox::GameState;
+	using Window = ::scop::Window;
+
 	/* ========================================================================= */
 	/*                               CONST MEMBERS                               */
 	/* ========================================================================= */
@@ -51,10 +66,10 @@ public:
 	static const std::vector<const char*>	validation_layers;
 	static constexpr std::size_t	max_frames_in_flight = 1;
 
-	#ifndef NDEBUG
-	static constexpr bool			enable_validation_layers = false;
-	#else
+	#ifdef NDEBUG
 	static constexpr bool			enable_validation_layers = true;
+	#else
+	static constexpr bool			enable_validation_layers = false;
 	#endif
 
 	/* ========================================================================= */
@@ -71,68 +86,65 @@ public:
 
 	/* ========================================================================= */
 
-	void							init(
-		scop::Window& window,
-		const std::vector<TextureSampler::Texture>& images,
-		const UniformBufferObject::Light& light,
+	void						init(
+		Window& window,
+		const GameState& game,
 		const std::vector<Vertex>& vertices,
-		const std::vector<uint32_t>& indices
-	);
-	void							destroy();
+		const std::vector<uint32_t>& indices);
+	void						destroy();
 
-	void							idle();
-	void							render(
-		scop::Window& window,
-		const vox::Player& player,
-		Timer& timer
-	);
+	void						idle();
+	void						render(
+		Window& window,
+		const vox::GameState& game,
+		Timer& timer);
 
 private:
 	/* ========================================================================= */
 	/*                               CLASS MEMBERS                               */
 	/* ========================================================================= */
 
-	VkInstance						_vk_instance;
-	DebugModule						_debug_module;
+	VkInstance					_vk_instance;
+	DebugModule					_debug_module;
 
-	Device							_device;
+	Device						_device;
+	SwapChain					_swap_chain;
+	DescriptorPool				_descriptor_pool;
+	CommandPool					_command_pool;
+	InputHandler				_input_handler;
 
-	SwapChain						_swap_chain;
-	RenderPass						_render_pass;
-	TextureSampler					_texture_sampler;
-	DescriptorSet					_descriptor_set;
-	CommandPool						_command_pool;
-	InputBuffer						_input_buffer;
+	CommandBuffer				_draw_buffer;
 
-	CommandBuffer					_main_command_buffer;
+	VkSemaphore					_image_available_semaphores;
+	VkSemaphore					_render_finished_semaphores;
+	VkFence						_in_flight_fences;
 
-	VkSemaphore						_image_available_semaphores;
-	VkSemaphore						_render_finished_semaphores;
-	VkFence							_in_flight_fences;
-
-	VkPipelineLayout				_pipeline_layout;
-	VkPipeline						_pipeline;
-
-	std::size_t						_nb_indices;
+	VkPipelineLayout			_pipeline_layout;
+	struct {
+		PipelinePtr				scene;
+		PipelinePtr				shadows;
+	}							_pipelines;
 
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
 
-	void							_createInstance();
-	void							_createGraphicsPipeline();
-	void							_createSyncObjects();
+	void						_createInstance();
+	void						_createGraphicsPipelines();
+	void						_assembleGraphicsPipelines();
+	void						_createGraphicsPipelineLayout();
+	void						_createSyncObjects();
+	void						_createDescriptors();
 
-	bool							_checkValidationLayerSupport();
-	std::vector<const char*>		_getRequiredExtensions();
-	VkShaderModule					_createShaderModule(const std::string& path);
-	void							_recordDrawingCommand(
-		std::size_t indices_size,
-		uint32_t image_index
-	);
+	void						_initDescriptors(const GameState& game) noexcept;
+	// UniformBufferObject			_updateUbo(const GameState& game) const noexcept;
+	Camera						_generateCameraMatrix(const GameState& game) const noexcept;
+
+	void						_updatePresentation(Window& window);
+
+	bool						_checkValidationLayerSupport();
+	std::vector<const char*>	_getRequiredExtensions();
 
 }; // class Engine
 
-} // namespace graphics
-} // namespace scop
-
+} // namespace scop::graphics

@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:17:01 by etran             #+#    #+#             */
-/*   Updated: 2023/07/17 21:50:25 by etran            ###   ########.fr       */
+/*   Updated: 2023/09/18 16:03:40 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,11 +42,9 @@ struct Vertex {
 		uint8_t uv,
 		uint8_t index
 	):	pos(vox::toChunkPos(pos.x, pos.y, pos.z)),
-		n_uv_f(
-			vox::convert(normal) |
-			vox::convert(uv, 8) |
-			vox::convert(index, 16)
-		) {}
+		n_uv_f(normal | uv << 8 | index << 16) {}
+
+	// Vertex(const Block& block) {}
 
 	Vertex() = default;
 	Vertex(Vertex&&) = default;
@@ -71,9 +69,9 @@ struct Vertex {
 	}
 
 	/**
-	 * Expliciting to vulkan the vertex struct format.
+	 * @brief Vertex format description.
 	*/
-	static std::vector<VkVertexInputAttributeDescription>	getAttributeDescriptions() {
+	static std::vector<VkVertexInputAttributeDescription>	getSceneAttributeDescriptions() {
 		std::vector<VkVertexInputAttributeDescription>	attribute_descriptions;
 		attribute_descriptions.reserve(2);
 
@@ -90,6 +88,21 @@ struct Vertex {
 		attribute.location = 1;
 		attribute.format = VK_FORMAT_R32_SINT;
 		attribute.offset = offsetof(Vertex, n_uv_f);
+		attribute_descriptions.emplace_back(attribute);
+
+		return attribute_descriptions;
+	}
+	static std::vector<VkVertexInputAttributeDescription>	getShadowAttributeDescriptions() {
+		std::vector<VkVertexInputAttributeDescription>	attribute_descriptions;
+		attribute_descriptions.reserve(1);
+
+		VkVertexInputAttributeDescription	attribute{};
+		attribute.binding = 0;
+
+		// `pos` attribute
+		attribute.location = 0;
+		attribute.format = VK_FORMAT_R32_SINT;
+		attribute.offset = offsetof(Vertex, pos);
 		attribute_descriptions.emplace_back(attribute);
 
 		return attribute_descriptions;

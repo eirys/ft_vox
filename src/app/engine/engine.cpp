@@ -6,20 +6,33 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/02 16:09:44 by etran             #+#    #+#             */
-/*   Updated: 2023/07/21 21:05:37 by etran            ###   ########.fr       */
+/*   Updated: 2023/09/18 11:37:56 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "engine.h"
 #include "window.h"
-#include "player.h"
+#include "uniform_buffer_object.h"
+#include "descriptor_set.h"
+#include "image_handler.h"
 #include "timer.h"
 #include "utils.h"
 
+#include "game_state.h"
+#include "scene_pipeline.h"
+#include "shadows_pipeline.h"
+#include "shadows_texture_handler.h"
+
 #include <cstring> // std::strcmp
 
-namespace scop {
-namespace graphics {
+using UniformBufferObject = ::scop::UniformBufferObject;
+using GameState = ::vox::GameState;
+using Window = ::scop::Window;
+
+using Mat4 = ::scop::Mat4;
+using Camera = ::scop::Camera;
+
+namespace scop::graphics {
 
 const std::vector<const char*>	Engine::validation_layers = {
 	"VK_LAYER_KHRONOS_validation"
@@ -30,61 +43,56 @@ const std::vector<const char*>	Engine::validation_layers = {
 /* ========================================================================== */
 
 void	Engine::init(
-	scop::Window& window,
-	const std::vector<TextureSampler::Texture>& images,
-	const UniformBufferObject::Light& light,
+	::scop::Window& window,
+	const GameState& game,
 	const std::vector<Vertex>& vertices,
 	const std::vector<uint32_t>& indices
 ) {
-	_nb_indices = indices.size();
+	_pipelines.scene = std::make_shared<ScenePipeline>();
+	_pipelines.shadows = std::make_shared<ShadowsPipeline>();
+
 	_createInstance();
 	_debug_module.init(_vk_instance);
 	_device.init(window, _vk_instance);
 	_swap_chain.init(_device, window);
-	_render_pass.init(_device, _swap_chain);
-	_swap_chain.initFrameBuffers(_device, _render_pass);
-	_descriptor_set.initLayout(_device);
-	_createGraphicsPipeline();
 	_command_pool.init(_device);
-	_texture_sampler.init(_device, _command_pool, images);
-	_input_buffer.init(_device, _command_pool, vertices, indices);
-	_descriptor_set.initSets(_device, _texture_sampler, light);
-	_main_command_buffer.init(_device, _command_pool, max_frames_in_flight);
+	_createGraphicsPipelines();
+	_createGraphicsPipelineLayout();
+	_assembleGraphicsPipelines();
+	_createDescriptors();
+	_input_handler.init(_device, vertices, indices);
+	_draw_buffer.init(_device, _command_pool, max_frames_in_flight);
 	_createSyncObjects();
+
+	_initDescriptors(game);
 }
 
 void	Engine::destroy() {
 	_swap_chain.destroy(_device);
-	_render_pass.destroy(_device);
-	_texture_sampler.destroy(_device);
+	_pipelines.scene->destroy(_device);
+	_pipelines.shadows->destroy(_device);
 
-	// Remove graphics _pipeline
-	vkDestroyPipeline(_device.getLogicalDevice(), _pipeline, nullptr);
 	vkDestroyPipelineLayout(
 		_device.getLogicalDevice(),
 		_pipeline_layout,
-		nullptr
-	);
+		nullptr);
 
-	_descriptor_set.destroy(_device);
-	_input_buffer.destroy(_device);
+	_descriptor_pool.destroy(_device);
+	_input_handler.destroy(_device);
 
 	// Remove sync objects
 	vkDestroySemaphore(
 		_device.getLogicalDevice(),
 		_image_available_semaphores,
-		nullptr
-	);
+		nullptr);
 	vkDestroySemaphore(
 		_device.getLogicalDevice(),
 		_render_finished_semaphores,
-		nullptr
-	);
+		nullptr);
 	vkDestroyFence(
 		_device.getLogicalDevice(),
 		_in_flight_fences,
-		nullptr
-	);
+		nullptr);
 
 	_command_pool.destroy(_device);
 	_device.destroy(_vk_instance);
@@ -101,8 +109,8 @@ void	Engine::idle() {
 }
 
 void	Engine::render(
-	scop::Window& window,
-	const vox::Player& player,
+	::scop::Window& window,
+	const vox::GameState& game,
 	Timer& timer
 ) {
 	// Wait fence available, lock it
@@ -121,11 +129,9 @@ void	Engine::render(
 		UINT64_MAX,
 		_image_available_semaphores,
 		VK_NULL_HANDLE,
-		&image_index
-	);
+		&image_index);
 	if (result == VK_ERROR_OUT_OF_DATE_KHR) {
-		// Swap chain incompatible for rendering
-		_swap_chain.update(_device, window, _render_pass);
+		_updatePresentation(window);
 		return;
 	} else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
 		throw std::runtime_error("failed to acquire swap chain image");
@@ -135,33 +141,36 @@ void	Engine::render(
 	vkResetFences(_device.getLogicalDevice(), 1, &_in_flight_fences);
 
 	// Record buffer
-	_main_command_buffer.reset();
-	_recordDrawingCommand(_nb_indices, image_index);
+	_draw_buffer.reset();
+	_draw_buffer.begin(0);
+	_pipelines.shadows->draw(
+		_pipeline_layout,
+		_draw_buffer,
+		_input_handler,
+		image_index);
+	_pipelines.scene->draw(
+		_pipeline_layout,
+		_draw_buffer,
+		_input_handler,
+		image_index);
+	_draw_buffer.end(_device, false);
 
-	_descriptor_set.updateUniformBuffer(
-		_swap_chain.getExtent(),
-		player
-	);
+	_pipelines.scene->update(_generateCameraMatrix(game));
 
 	// Set synchronization objects
-	VkSemaphore				wait_semaphore[] = {
-		_image_available_semaphores
-	};
-	VkSemaphore				signal_semaphores[] = {
-		_render_finished_semaphores
-	};
-	VkPipelineStageFlags	wait_stages[] = {
-		VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT
-	};
-	VkSubmitInfo			submit_info{};
+	std::array<VkSemaphore, 1>			wait_semaphores = { _image_available_semaphores };
+	std::array<VkSemaphore, 1>			signal_semaphores = { _render_finished_semaphores };
+	std::array<VkPipelineStageFlags, 1>	wait_stages = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
+
+	VkSubmitInfo	submit_info{};
 	submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-	submit_info.waitSemaphoreCount = 1;
-	submit_info.pWaitSemaphores = wait_semaphore;
-	submit_info.pWaitDstStageMask = wait_stages;
+	submit_info.waitSemaphoreCount = static_cast<uint32_t>(wait_semaphores.size());
+	submit_info.pWaitSemaphores = wait_semaphores.data();
+	submit_info.pWaitDstStageMask = wait_stages.data();
+	submit_info.signalSemaphoreCount = static_cast<uint32_t>(signal_semaphores.size());
+	submit_info.pSignalSemaphores = signal_semaphores.data();
 	submit_info.commandBufferCount = 1;
-	submit_info.pCommandBuffers = reinterpret_cast<VkCommandBuffer*>(&_main_command_buffer);
-	submit_info.signalSemaphoreCount = 1;
-	submit_info.pSignalSemaphores = signal_semaphores;
+	submit_info.pCommandBuffers = reinterpret_cast<VkCommandBuffer*>(&_draw_buffer);
 
 	// Submit command buffer to be processed by graphics queue
 	if (vkQueueSubmit(_device.getGraphicsQueue(), 1, &submit_info, _in_flight_fences) != VK_SUCCESS) {
@@ -169,13 +178,13 @@ void	Engine::render(
 	}
 
 	// Set presentation for next swap chain image
-	VkSwapchainKHR	swap_chains[] = { _swap_chain.getSwapChain() };
-	VkPresentInfoKHR	present_info{};
+	std::array<VkSwapchainKHR, 1>	swap_chains = { _swap_chain.getSwapChain() };
+	VkPresentInfoKHR				present_info{};
 	present_info.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
-	present_info.waitSemaphoreCount = 1;
-	present_info.pWaitSemaphores = signal_semaphores;
-	present_info.swapchainCount = 1;
-	present_info.pSwapchains = swap_chains;
+	present_info.waitSemaphoreCount = static_cast<uint32_t>(wait_semaphores.size());
+	present_info.pWaitSemaphores = signal_semaphores.data();
+	present_info.swapchainCount = static_cast<uint32_t>(swap_chains.size());
+	present_info.pSwapchains = swap_chains.data();
 	present_info.pImageIndices = &image_index;
 	present_info.pResults = nullptr;
 
@@ -189,7 +198,7 @@ void	Engine::render(
 		window.resized()
 	) {
 		window.toggleFrameBufferResized(false);
-		_swap_chain.update(_device, window, _render_pass);
+		_updatePresentation(window);
 	} else if (result != VK_SUCCESS) {
 		throw std::runtime_error("failed to present swapchain image");
 	}
@@ -248,83 +257,125 @@ void	Engine::_createInstance() {
 		throw std::runtime_error("failed to create _vk_instance");
 }
 
-void	Engine::_createGraphicsPipeline() {
-	// Create shader modules to be used for shader stages
-	VkShaderModule		vert_shader_module = _createShaderModule(VERT_SHADER_BIN);
-	VkShaderModule		frag_shader_module = _createShaderModule(FRAG_SHADER_BIN);
+/**
+ * @brief Create generic pipeline createinfo
+*/
+void	Engine::_createGraphicsPipelines() {
+	RenderPass::RenderPassInfo	rp_info {
+		.width = _swap_chain.getExtent().width,
+		.height = _swap_chain.getExtent().height,
+		.depth_format = _swap_chain.findDepthFormat(_device),
+		.depth_samples = _device.getMsaaSamples(),
+		.color_format = _swap_chain.getImageFormat(),
+		.color_samples = _device.getMsaaSamples() };
+	Target::TargetInfo	tar_info { .swap_chain = &_swap_chain };
 
-	VkPipelineShaderStageCreateInfo	vert_info{};
-	vert_info.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-	vert_info.stage = VK_SHADER_STAGE_VERTEX_BIT;
-	vert_info.module = vert_shader_module;
-	vert_info.pName = "main";
+	_pipelines.scene->init(
+		_device,
+		rp_info,
+		tar_info);
 
-	VkPipelineShaderStageCreateInfo	frag_info{};
-	frag_info.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-	frag_info.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
-	frag_info.module = frag_shader_module;
-	frag_info.pName = "main";
+	rp_info.width = SHADOWMAP_SIZE;
+	rp_info.height = SHADOWMAP_SIZE;
+	rp_info.depth_format = DEPTH_FORMAT;
+	rp_info.depth_samples = VK_SAMPLE_COUNT_1_BIT;
 
-	VkPipelineShaderStageCreateInfo	shader_stages[] = {
-		vert_info,
-		frag_info
+	_pipelines.shadows->init(
+		_device,
+		rp_info,
+		tar_info);
+}
+
+void	Engine::_createDescriptors() {
+	using DescriptorSetPtr = std::shared_ptr<DescriptorSet>;
+	using ScenePipelinePtr = std::shared_ptr<ScenePipeline>;
+	using ShadowsPipelinePtr = std::shared_ptr<ShadowsPipeline>;
+
+	std::vector<DescriptorSetPtr>	descriptors = {
+		_pipelines.scene->getDescriptor(),
+		_pipelines.shadows->getDescriptor() };
+	_descriptor_pool.init(_device, descriptors);
+
+	ScenePipelinePtr scene_pipeline =
+		std::dynamic_pointer_cast<ScenePipeline>(_pipelines.scene);
+	ShadowsPipelinePtr shadows_pipeline =
+		std::dynamic_pointer_cast<ShadowsPipeline>(_pipelines.shadows);
+	scene_pipeline->plugDescriptor(_device, shadows_pipeline->getTextureHandler());
+	shadows_pipeline->plugDescriptor(_device, scene_pipeline->getUbo());
+}
+
+void	Engine::_createGraphicsPipelineLayout() {
+	std::vector<VkDescriptorSetLayout>	layouts = {
+		_pipelines.scene->getDescriptor()->getLayout(),
+		_pipelines.shadows->getDescriptor()->getLayout()
 	};
+	VkPipelineLayoutCreateInfo	pipeline_layout_info{};
+	pipeline_layout_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+	pipeline_layout_info.setLayoutCount = layouts.size();
+	pipeline_layout_info.pSetLayouts = layouts.data();
+	pipeline_layout_info.pushConstantRangeCount = 0;
+	pipeline_layout_info.pPushConstantRanges = nullptr;
 
-	// Vertex data input handler
+	if (vkCreatePipelineLayout(_device.getLogicalDevice(), &pipeline_layout_info, nullptr, &_pipeline_layout) != VK_SUCCESS) {
+		throw std::runtime_error("failed to create _pipeline layout");
+	}
+}
+
+void	Engine::_assembleGraphicsPipelines() {
+	/* INPUT FORMAT ============================================================ */
 	VkPipelineVertexInputStateCreateInfo	vert_input{};
 	auto	binding_description = scop::Vertex::getBindingDescription();
-	auto	attribute_descriptions = scop::Vertex::getAttributeDescriptions();
+	auto	attribute_descriptions = ::scop::Vertex::getSceneAttributeDescriptions();
 
 	vert_input.sType =
 		VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
 	vert_input.vertexBindingDescriptionCount = 1;
-	vert_input.vertexAttributeDescriptionCount = static_cast<uint32_t>(
-		attribute_descriptions.size()
-	);
 	vert_input.pVertexBindingDescriptions = &binding_description;
+	vert_input.vertexAttributeDescriptionCount =
+		static_cast<uint32_t>(attribute_descriptions.size());
 	vert_input.pVertexAttributeDescriptions = attribute_descriptions.data();
 
-	// Vertex input assembly descriptor: regular triangles here
+	/* INPUT ASSEMBLY ========================================================== */
 	VkPipelineInputAssemblyStateCreateInfo	input_assembly{};
 	input_assembly.sType =
 		VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
 	input_assembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
 	input_assembly.primitiveRestartEnable = VK_FALSE;
 
-	// Viewport state
+	/* VIEWPORT ================================================================ */
 	VkPipelineViewportStateCreateInfo	viewport_state{};
 	viewport_state.sType =
 		VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
 	viewport_state.viewportCount = 1;
 	viewport_state.scissorCount = 1;
 
-	// Rasterizer setup
-	VkPipelineRasterizationStateCreateInfo	rasterizer{};
-	rasterizer.sType =
+	/* RASTERIZER ============================================================== */
+	VkPipelineRasterizationStateCreateInfo	rasterizing{};
+	rasterizing.sType =
 		VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
-	rasterizer.depthClampEnable = VK_FALSE;
-	rasterizer.rasterizerDiscardEnable = VK_FALSE;
-	rasterizer.polygonMode = VK_POLYGON_MODE_FILL;
-	rasterizer.lineWidth = 1.0f;
-	rasterizer.cullMode = VK_CULL_MODE_BACK_BIT;
-	rasterizer.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
-	rasterizer.depthBiasEnable = VK_FALSE;
-	rasterizer.depthBiasConstantFactor = 0.0f;
-	rasterizer.depthBiasClamp = 0.0f;
-	rasterizer.depthBiasSlopeFactor = 0.0f;
+	rasterizing.depthClampEnable = VK_FALSE;
+	rasterizing.rasterizerDiscardEnable = VK_FALSE;
+	rasterizing.polygonMode = VK_POLYGON_MODE_FILL;
+	rasterizing.lineWidth = 1.0f;
+	rasterizing.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
+	rasterizing.depthBiasEnable = VK_FALSE;
+	rasterizing.depthBiasConstantFactor = 0.0f;
+	rasterizing.depthBiasClamp = 0.0f;
+	rasterizing.cullMode = VK_CULL_MODE_BACK_BIT;
+	rasterizing.depthBiasSlopeFactor = 0.0f;
 
-	// Multisampling
+	/* MULTISAMPLING =========================================================== */
 	VkPipelineMultisampleStateCreateInfo	multisampling{};
 	multisampling.sType =
 		VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
 	multisampling.sampleShadingEnable = VK_FALSE;
-	multisampling.rasterizationSamples = _device.getMsaaSamples();
 	multisampling.minSampleShading = 1.0f;
 	multisampling.pSampleMask = nullptr;
 	multisampling.alphaToCoverageEnable = VK_FALSE;
 	multisampling.alphaToOneEnable = VK_FALSE;
+	multisampling.rasterizationSamples = _device.getMsaaSamples();
 
-	// Color blending for a single framebuffer setup
+	/* COLOR BLENDING ========================================================== */
 	VkPipelineColorBlendAttachmentState	color_blend_attachment{};
 	color_blend_attachment.colorWriteMask =
 		VK_COLOR_COMPONENT_R_BIT |
@@ -343,28 +394,28 @@ void	Engine::_createGraphicsPipeline() {
 	color_blending.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
 	color_blending.logicOpEnable = VK_FALSE;
 	color_blending.logicOp = VK_LOGIC_OP_COPY;
-	color_blending.attachmentCount = 1;
-	color_blending.pAttachments = &color_blend_attachment;
 	color_blending.blendConstants[0] = 0.0f;
 	color_blending.blendConstants[1] = 0.0f;
 	color_blending.blendConstants[2] = 0.0f;
 	color_blending.blendConstants[3] = 0.0f;
+	color_blending.attachmentCount = 1;
+	color_blending.pAttachments = &color_blend_attachment;
 
-	// Define depth stencil used for depth buffer
+	/* DEPTH STENCIL =========================================================== */
 	VkPipelineDepthStencilStateCreateInfo	depth_stencil{};
 	depth_stencil.sType =
 		VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
 	depth_stencil.depthTestEnable = VK_TRUE;			// fragment depth compared to depth buffer enabled
 	depth_stencil.depthWriteEnable = VK_TRUE;			// if test passed, new depth saved in buffer enabled
-	depth_stencil.depthCompareOp = VK_COMPARE_OP_LESS;	// depth low = object closer
 	depth_stencil.depthBoundsTestEnable = VK_FALSE;		// unused. specifies min/max depth bounds
 	depth_stencil.minDepthBounds = 0.0f;
 	depth_stencil.maxDepthBounds = 1.0f;
 	depth_stencil.stencilTestEnable = VK_FALSE;			// unused. typically used for reflection, shadow...
 	depth_stencil.front = {};
 	depth_stencil.back = {};
+	depth_stencil.depthCompareOp = VK_COMPARE_OP_LESS;
 
-	// Enable dynamic states
+	/* DYNAMIC STATE =========================================================== */
 	std::vector<VkDynamicState>	dynamic_states = {
 		VK_DYNAMIC_STATE_VIEWPORT,
 		VK_DYNAMIC_STATE_SCISSOR
@@ -377,62 +428,38 @@ void	Engine::_createGraphicsPipeline() {
 	);
 	dynamic_state.pDynamicStates = dynamic_states.data();
 
-	// Push constants setup
-	// VkPushConstantRange	push_constant_range{};
-	// push_constant_range.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-	// push_constant_range.offset = 0;
-	// push_constant_range.size = sizeof(PushConstantData);
-
-	// Pipeline layout setups
-	VkPipelineLayoutCreateInfo	pipeline_layout_info{};
-	VkDescriptorSetLayout descriptor_layout = _descriptor_set.getLayout();
-	pipeline_layout_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-	pipeline_layout_info.setLayoutCount = 1;
-	pipeline_layout_info.pSetLayouts = &descriptor_layout;
-	pipeline_layout_info.pushConstantRangeCount = 0;
-	pipeline_layout_info.pPushConstantRanges = nullptr;
-
-	if (vkCreatePipelineLayout(_device.getLogicalDevice(), &pipeline_layout_info, nullptr, &_pipeline_layout) != VK_SUCCESS) {
-		throw std::runtime_error("failed to create _pipeline layout");
-	}
-
-	// Graphics _pipeline
+	/* PIPELINE ================================================================ */
 	VkGraphicsPipelineCreateInfo	pipeline_info{};
 	pipeline_info.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-	pipeline_info.stageCount = 2;
-	pipeline_info.pStages = shader_stages;
 	pipeline_info.pVertexInputState = &vert_input;
 	pipeline_info.pInputAssemblyState = &input_assembly;
 	pipeline_info.pViewportState = &viewport_state;
-	pipeline_info.pRasterizationState = &rasterizer;
+	pipeline_info.pRasterizationState = &rasterizing;
 	pipeline_info.pMultisampleState = &multisampling;
 	pipeline_info.pDepthStencilState = &depth_stencil;
 	pipeline_info.pColorBlendState = &color_blending;
 	pipeline_info.pDynamicState = &dynamic_state;
 	pipeline_info.layout = _pipeline_layout;
-	pipeline_info.renderPass = _render_pass.getRenderPass();
 	pipeline_info.subpass = 0;
 	pipeline_info.basePipelineHandle = VK_NULL_HANDLE;
 	pipeline_info.basePipelineIndex = -1;
 
-	if (vkCreateGraphicsPipelines(_device.getLogicalDevice(), VK_NULL_HANDLE, 1, &pipeline_info, nullptr, &_pipeline) != VK_SUCCESS) {
-		throw std::runtime_error("failed to create graphics _pipeline");
-	}
+	_pipelines.scene->assemble(_device, pipeline_info);
 
-	vkDestroyShaderModule(
-		_device.getLogicalDevice(),
-		frag_shader_module,
-		nullptr
-	);
-	vkDestroyShaderModule(
-		_device.getLogicalDevice(),
-		vert_shader_module,
-		nullptr
-	);
+	attribute_descriptions = ::scop::Vertex::getShadowAttributeDescriptions();
+	vert_input.vertexAttributeDescriptionCount =
+		static_cast<uint32_t>(attribute_descriptions.size());
+	vert_input.pVertexAttributeDescriptions = attribute_descriptions.data();
+	color_blending.attachmentCount = 0;
+	rasterizing.cullMode = VK_CULL_MODE_NONE;
+	multisampling.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
+	depth_stencil.depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
+
+	_pipelines.shadows->assemble(_device, pipeline_info);
 }
 
 /**
- * Create semaphores and fences
+ * @brief Create semaphores and fences
 */
 void	Engine::_createSyncObjects() {
 	VkSemaphoreCreateInfo	semaphore_info{};
@@ -447,6 +474,73 @@ void	Engine::_createSyncObjects() {
 		vkCreateFence(_device.getLogicalDevice(), &fence_info, nullptr, &_in_flight_fences) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create semaphore");
 	}
+}
+
+/* ========================================================================== */
+
+/**
+ * @brief Update presentation objects to match window size.
+*/
+void	Engine::_updatePresentation(::scop::Window& window) {
+	_swap_chain.update(_device, window);
+
+	RenderPass::RenderPassInfo	rp_info {
+		.width = _swap_chain.getExtent().width,
+		.height = _swap_chain.getExtent().height,
+		.depth_format = _swap_chain.findDepthFormat(_device),
+		.color_format = _swap_chain.getImageFormat() };
+	Target::TargetInfo	tar_info {
+		.swap_chain = &_swap_chain,
+		.render_pass = _pipelines.scene->getRenderPass() };
+
+	_pipelines.scene->getRenderPass()->updateResources(_device, rp_info);
+	_pipelines.scene->getTarget()->update(_device, tar_info);
+}
+
+void	Engine::_initDescriptors(const GameState& game) noexcept {
+	UniformBufferObject	ubo{};
+
+	// Camera
+	ubo.camera = _generateCameraMatrix(game);
+
+	// Light
+	ubo.light = {
+		.ambient_color = ::scop::Vect3(0.17f, 0.15f, 0.1f),
+		.light_vector = ::scop::normalize(::scop::Vect3(0.1f, 1.0f, 0.3f)),
+		.light_color = ::scop::Vect3(1.0f, 1.0f, 0.8f) };
+
+	// Projector
+	const Mat4	view = ::scop::lookAt(
+		ubo.light.light_vector*15.0f,
+		Vect3(0.0f, 0.0f, 0.0f),
+		Vect3(0.0f, 1.0f, 0.0f));
+	const Mat4	projection = ::scop::orthographic(
+		-150.0f, 150.0f,
+		-150.0f, 150.0f,
+		10.0f, 100.0f);
+	ubo.projector.vp = projection * view;
+
+	_pipelines.scene->update(ubo);
+}
+
+Camera	Engine::_generateCameraMatrix(const GameState& game) const noexcept {
+	float window_ratio =
+		_swap_chain.getExtent().width /
+		static_cast<float>(_swap_chain.getExtent().height);
+	Mat4	view = ::scop::lookAtDir(
+		game.getPlayer().getPosition(),
+		game.getPlayer().getEyeDir(),
+		::scop::Vect3(0.0f, 1.0f, 0.0f));
+	Mat4	projection = ::scop::perspective(
+		::scop::math::radians(70.0f),
+		window_ratio,
+		0.1f,
+		1000.0f);
+
+	Camera	camera{};
+	camera.vp = projection * view;
+
+	return camera;
 }
 
 /* ========================================================================== */
@@ -494,135 +588,4 @@ std::vector<const char*>	Engine::_getRequiredExtensions() {
 	return extensions;
 }
 
-/**
- * @brief Create a shader module from a shader binary.
-*/
-VkShaderModule	Engine::_createShaderModule(const std::string& path) {
-	const std::vector<uint8_t>	code = scop::utils::readFile(path);
-	VkShaderModuleCreateInfo	shader_info{};
-
-	shader_info.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-	shader_info.codeSize = code.size();
-	shader_info.pCode = reinterpret_cast<const uint32_t*>(code.data());
-
-	VkShaderModule	shader_module;
-	if (vkCreateShaderModule(_device.getLogicalDevice(), &shader_info, nullptr, &shader_module) != VK_SUCCESS) {
-		throw std::runtime_error("failed to create shader module");
-	}
-	return shader_module;
-}
-
-/**
- *  Write commands to command buffer to be subimtted to queue.
- */
-void	Engine::_recordDrawingCommand(
-	std::size_t indices_size,
-	uint32_t image_index
-) {
-	VkCommandBufferBeginInfo	begin_info{};
-	begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-	begin_info.flags = 0;
-	begin_info.pInheritanceInfo = nullptr;
-
-	if (vkBeginCommandBuffer(_main_command_buffer.getBuffer(), &begin_info) != VK_SUCCESS) {
-		throw std::runtime_error("failed to begin recording command buffer");
-	}
-
-	// Define what corresponds to 'clear color'
-	std::array<VkClearValue, 2>	clear_values{};
-	clear_values[0].color = {{ 0.0f, 0.0f, 0.0f, 1.0f }};
-	clear_values[1].depthStencil = { 1.0f, 0 };
-
-	// Spectify to render pass how to handle the command buffer,
-	// and which framebuffer to render to
-	VkRenderPassBeginInfo	render_pass_info{};
-	render_pass_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-	render_pass_info.renderPass = _render_pass.getRenderPass();
-	render_pass_info.framebuffer =
-		_swap_chain.getFrameBuffers()[image_index];
-	render_pass_info.renderArea.offset = { 0, 0 };
-	render_pass_info.renderArea.extent = _swap_chain.getExtent();
-	render_pass_info.clearValueCount = static_cast<uint32_t>(
-		clear_values.size()
-	);
-	render_pass_info.pClearValues = clear_values.data();
-
-	// Begin rp and bind _pipeline
-	vkCmdBeginRenderPass(
-		_main_command_buffer.getBuffer(),
-		&render_pass_info,
-		VK_SUBPASS_CONTENTS_INLINE
-	);
-	vkCmdBindPipeline(
-		_main_command_buffer.getBuffer(),
-		VK_PIPELINE_BIND_POINT_GRAPHICS,
-		_pipeline
-	);
-
-	// Set viewport and scissors
-	VkViewport	viewport{};
-	viewport.x = 0.0f;
-	viewport.y = 0.0f;
-	viewport.width = static_cast<float>(
-		_swap_chain.getExtent().width
-	);
-	viewport.height = static_cast<float>(
-		_swap_chain.getExtent().height
-	);
-	viewport.minDepth = 0.0f;
-	viewport.maxDepth = 1.0f;
-	vkCmdSetViewport(_main_command_buffer.getBuffer(), 0, 1, &viewport);
-
-	VkRect2D	scissor{};
-	scissor.offset = { 0, 0 };
-	scissor.extent = _swap_chain.getExtent();
-	vkCmdSetScissor(_main_command_buffer.getBuffer(), 0, 1, &scissor);
-
-	// Bind vertex buffer && index buffer
-	VkBuffer		vertex_buffers[] = {
-		_input_buffer.getVertexBuffer().getBuffer()
-	};
-	VkDeviceSize	offsets[] = { 0 };
-	vkCmdBindVertexBuffers(
-		_main_command_buffer.getBuffer(),
-		0,
-		1, vertex_buffers,
-		offsets
-	);
-	vkCmdBindIndexBuffer(
-		_main_command_buffer.getBuffer(),
-		_input_buffer.getIndexBuffer().getBuffer(),
-		0,
-		VK_INDEX_TYPE_UINT32
-	);
-	// Bind descriptor sets
-	VkDescriptorSet	descriptor_set = _descriptor_set.getSet();
-	vkCmdBindDescriptorSets(
-		_main_command_buffer.getBuffer(),
-		VK_PIPELINE_BIND_POINT_GRAPHICS,
-		_pipeline_layout,
-		0,
-		1, &descriptor_set,
-		0, nullptr
-	);
-
-	// Issue draw command
-	vkCmdDrawIndexed(
-		_main_command_buffer.getBuffer(),
-		static_cast<uint32_t>(indices_size),
-		1,
-		0,
-		0,
-		0
-	);
-
-	// Stop the render target work
-	vkCmdEndRenderPass(_main_command_buffer.getBuffer());
-
-	if (vkEndCommandBuffer(_main_command_buffer.getBuffer()) != VK_SUCCESS) {
-		throw std::runtime_error("failed to record command buffer");
-	}
-}
-
-} // namespace graphics
-} // namespace scop
+} // namespace scop::graphics

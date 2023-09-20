@@ -6,18 +6,33 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:19:11 by etran             #+#    #+#             */
-/*   Updated: 2023/07/21 20:48:08 by etran            ###   ########.fr       */
+/*   Updated: 2023/09/18 17:38:34 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
 # include "vector.h"
-# include "chunk.h"
 
 namespace vox {
 
-enum FaceType: uint8_t {
+// Total material types possible: 256
+enum class MaterialType: uint8_t {
+	MATERIAL_AIR		= 0,
+
+	MATERIAL_GRASS		= 1,
+	MATERIAL_DIRT		= 2,
+	MATERIAL_STONE		= 3,
+	MATERIAL_WOOD		= 4,
+	MATERIAL_LEAVES		= 5,
+	MATERIAL_SAND		= 6,
+	MATERIAL_WATER		= 7,
+	MATERIAL_LAVA		= 8,
+	MATERIAL_ICE		= 9,
+	MATERIAL_SNOW		= 10
+};
+
+enum class FaceType: uint8_t {
 	FACE_LEFT,
 	FACE_RIGHT,
 	FACE_FRONT,
@@ -31,7 +46,6 @@ enum FaceType: uint8_t {
  *
  * @note Its position is represented by the bottom left corner of its lower face.
  *
- * @details The cube is generated from its position.
  *   h_____g    Frame of reference:
  * e/|___f/|    y z
  * | d---|-c    |/
@@ -54,23 +68,17 @@ struct Cube {
 	};
 
 	/* ========================================================================= */
-	/*                               CONST MEMBERS                               */
-	/* ========================================================================= */
-
-	static constexpr const float	size = BLOCK_SIZE;
-
-	/* ========================================================================= */
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
 
 	Cube(const scop::Vect3& pos);
 
 	Cube() = default;
-	Cube(Cube&&) = default;
-	Cube(const Cube&) = default;
-	Cube& operator=(Cube&&) = default;
-	Cube& operator=(const Cube&) = default;
-	virtual ~Cube() = default;
+	Cube(Cube&& x) = default;
+	Cube(const Cube& x) = default;
+	Cube& operator=(Cube&& x) = default;
+	Cube& operator=(const Cube& x) = default;
+	~Cube() = default;
 
 	/* VERTICES ================================================================ */
 
@@ -100,7 +108,8 @@ struct Cube {
 	/* ========================================================================= */
 
 	scop::Vect3			pos;
+	MaterialType		material = MaterialType::MATERIAL_GRASS;
 
-}; // struct Cube
+}; // class Cube
 
 } // namespace vox
