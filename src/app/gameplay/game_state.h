@@ -16,6 +16,8 @@
 
 namespace vox {
 
+class World;
+
 class GameState {
 public:
 	/* ========================================================================= */
@@ -40,6 +42,8 @@ public:
 
 	/* ========================================================================= */
 
+	const World&	getWorld() const noexcept;
+	World&			getWorld() noexcept;
 	const Player&	getPlayer() const noexcept;
 	Player&			getPlayer() noexcept;
 
@@ -48,7 +52,7 @@ private:
 	/*                               CLASS MEMBERS                               */
 	/* ========================================================================= */
 
-	scop::Vect3		_world_origin = {0.0f, 0.0f, 0.0f};
+	World			_world;
 	Player			_player;
 
 }; // class GameState

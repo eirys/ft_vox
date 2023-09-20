@@ -13,9 +13,10 @@
 #pragma once
 
 // #include <array> // std::array
-#include <vector> // std::vector
+# include <vector> // std::vector
 
-#include "chunk.h"
+# include "chunk.h"
+# include "perlin_noise.h"
 
 # define WORLD_WIDTH	1024 * CHUNK_SIZE				// 16384
 # define WORLD_DEPTH	WORLD_WIDTH						// 16384
@@ -26,15 +27,19 @@
 
 namespace vox {
 
-class PerlinNoise;
-
+/**
+ * @brief Contains data on the world (block position, state, etc).
+*/
 class World final {
 public:
 	/* ========================================================================= */
 	/*                                   PUBLIC                                  */
 	/* ========================================================================= */
 
-	World(const PerlinNoise& noise);
+	World(
+		const PerlinNoise& noise,
+		std::size_t width,
+		std::size_t height);
 
 	World(World &&src) = default;
 	World &operator=(World &&rhs) = default;
@@ -44,6 +49,11 @@ public:
 	World(const World &src) = delete;
 	World &operator=(const World &rhs) = delete;
 
+	/* ========================================================================= */
+
+	void				setOrigin(const scop::Vect3& origin) noexcept;
+	const scop::Vect3&	getOrigin() const noexcept;
+
 private:
 	/* ========================================================================= */
 	/*                               CLASS MEMBERS                               */
@@ -51,6 +61,8 @@ private:
 
 	// TODO: Need to store it differently...
 	// std::array<Chunk, WORLD_VOLUME>	_chunks;
+
+	scop::Vect3			_origin = {0.0f, 0.0f, 0.0f};
 
 	// Temporary
 	std::vector<Chunk>	_chunks;

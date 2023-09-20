@@ -16,6 +16,9 @@
 #include "perlin_noise.h"
 #include "utils.h"
 
+#include "world_generator.h"
+#include "world.h"
+
 namespace scop {
 
 /* ========================================================================== */
@@ -152,82 +155,16 @@ void	App::_updateGame() {
 }
 
 void	App::_loadTerrain() {
+	using namespace vox;
 	LOG("Loading terrain...");
-	const constexpr std::size_t	chunk_size = 16;
-	const constexpr std::size_t	render_distance_xy = 10;
-	const constexpr std::size_t	render_distance_z = 2;
 
-	vox::PerlinNoise	noise({
-		.type = vox::PerlinNoiseType::PERLIN_NOISE_2D,
-		.seed = 42,
-		.width = render_distance_xy * chunk_size,
-		.height = render_distance_xy * chunk_size,
-		.depth = render_distance_z * chunk_size,
-		.layers = 3,
-		.frequency_0 = .03f,
-		.frequency_mult = 1.8f,
-		.amplitude_mult = 0.5f
-	});
+	WorldGenerator	generator(42);
+	World			world = generator.generate();
+	vox::PerlinNoise::PerlinMesh	mesh = generator.toPerlinMesh();
 
-	vox::PerlinNoise::PerlinMesh	mesh = noise.toMesh();
 	_vertices = std::move(mesh.vertices);
 	_indices = std::move(mesh.indices);
 	LOG("Terrain loaded.");
-
-	_game.setOrigin(mesh.origin);
-
 }
-
-// void	App::_loadModel(const std::string& path) {
-// 	LOG("Loading model...");
-
-// 	scop::obj::ObjParser	parser;
-// 	scop::obj::Model	model = parser.parseFile(path.c_str());
-
-// 	std::unordered_map<scop::Vertex, uint32_t>	unique_vertices{};
-
-// 	const auto&	model_vertices = model.getVertexCoords();
-// 	const auto& model_textures = model.getTextureCoords();
-// 	const auto& model_normals = model.getNormalCoords();
-// 	const auto& model_triangles = model.getTriangles();
-
-// 	// Retrieve unique vertices:
-// 	for (const auto& triangle: model_triangles) {
-// 		for (const auto& index: triangle.indices) {
-// 			scop::Vertex	vertex{};
-
-// 			vertex.pos = model_vertices[index.vertex];
-// 			vertex.uv = {
-// 				model_textures[index.texture].x,
-// 				1.0f - model_textures[index.texture].y
-// 			};
-// 			vertex.normal = model_normals[index.normal];
-// 			// math::generateVibrantColor(
-// 			// 	vertex.color.x,
-// 			// 	vertex.color.y,
-// 			// 	vertex.color.z
-// 			// );
-
-// 			if (unique_vertices.count(vertex) == 0) {
-// 				unique_vertices[vertex] = static_cast<uint32_t>(_vertices.size());
-// 				_vertices.emplace_back(vertex);
-// 			}
-// 			_indices.emplace_back(unique_vertices[vertex]);
-// 		}
-// 	}
-
-// 	// Center model
-// 	scop::Vect3	barycenter = utils::computeBarycenter(_vertices);
-// 	for (auto& vertex: _vertices) {
-// 		vertex.pos -= barycenter;
-// 	}
-
-// 	// Pass ownership of texture image from model to app
-// 	//TODO
-// 	// _textures.emplace_back(
-// 	// 	std::move(*model.getMaterial().ambient_texture)
-// 	// );
-// 	// model.getMaterial().ambient_texture.release();
-// }
 
 } // namespace scop

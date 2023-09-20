@@ -16,6 +16,7 @@
 #include "cube.h"
 #include "block.h"
 
+#include <cassert> // assert
 #include <vector> // std::vector
 #include <algorithm> // std::shuffle
 
@@ -33,7 +34,7 @@ namespace vox {
  *
  * @note No verification is done on the parameters.
 */
-PerlinNoise::PerlinNoise(PerlinNoise::NoiseMapInfo info):
+PerlinNoise::PerlinNoise(const PerlinNoise::NoiseMapInfo& info):
 	seed(info.seed.has_value() ? info.seed.value() : generateSeed()),
 	width(info.width),
 	height(info.height),
@@ -61,6 +62,19 @@ PerlinNoise::PerlinNoise(PerlinNoise::NoiseMapInfo info):
 	noise_map = (this->*generateNoiseMapFn)();
 }
 
+PerlinNoise::PerlinNoise(PerlinNoise&& other):
+	seed(other.seed),
+	width(other.width),
+	height(other.height),
+	depth(other.depth),
+	layers(other.layers),
+	frequency(other.frequency),
+	frequency_mult(other.frequency_mult),
+	amplitude_mult(other.amplitude_mult),
+	generator(seed),
+	permutation_table(std::move(other.permutation_table)),
+	noise_map(std::move(other.noise_map)) {}
+
 /* ========================================================================== */
 
 /**
@@ -78,137 +92,158 @@ std::vector<uint32_t>	PerlinNoise::toPixels() const {
 
 /**
  * @brief Converts the noise map to a cube world.
- *
- * @todo Put in class.
 */
-PerlinNoise::PerlinMesh	PerlinNoise::toMesh() const {
-	PerlinMesh		mesh;
+// PerlinNoise::PerlinMesh	PerlinNoise::toMesh() const {
+// 	PerlinMesh		mesh;
 
-	// Center the mesh
-	const float				half_width = width / 2;
-	const float				half_height = height / 2;
+// 	// Center the mesh
+// 	const float				half_width = width / 2;
+// 	const float				half_height = height / 2;
 
-	auto	noiseAt =
-		[this]
-		(std::size_t x, std::size_t y) -> float {
-			// TODO: Make this configurable
-			static const constexpr float	shift = 0;
-			static const constexpr float	scale = 20;
+// 	auto	noiseAt =
+// 		[this]
+// 		(std::size_t x, std::size_t y) -> float {
+// 			return std::floor(
+// 				std::fma(noise_map[std::fma(y, width, x)], scale, shift));
+// 		};
 
-			return std::floor(
-				std::fma(noise_map[std::fma(y, width, x)], scale, shift)
-			);
-		};
+// 	auto	addFace =
+// 		[&mesh]
+// 		(const Cube::Face& face) -> void {
+// 			for (std::size_t i = 0; i < 4; ++i) {
+// 				uint8_t	face_index =
+// 					face.side == FaceType::FACE_TOP ? 0 : (
+// 					face.side == FaceType::FACE_BOTTOM ? 2 : 1);
+// 				scop::Vertex	vertex(
+// 					face.vertices[i],
+// 					static_cast<uint8_t>(face.side),
+// 					i,
+// 					face_index);
+// 				mesh.vertices.emplace_back(vertex);
+// 			}
+// 		};
 
-	auto	addFace =
-		[&mesh]
-		(const Cube::Face& face) -> void {
-			for (std::size_t i = 0; i < 4; ++i) {
-				uint8_t	face_index =
-					face.side == FaceType::FACE_TOP ? 0 : (
-					face.side == FaceType::FACE_BOTTOM ? 2 : 1);
-				scop::Vertex	vertex(
-					face.vertices[i],
-					static_cast<uint8_t>(face.side),
-					i,
-					face_index);
-				mesh.vertices.emplace_back(vertex);
-			}
-		};
+// 	auto	addIndices =
+// 		[&mesh]
+// 		(uint32_t pos) -> void {
+// 			uint32_t e = pos;
+// 			uint32_t f = pos + 1;
+// 			uint32_t g = pos + 2;
+// 			uint32_t h = pos + 3;
 
-	auto	addIndices =
-		[&mesh]
-		(uint32_t pos) -> void {
-			uint32_t e = pos;
-			uint32_t f = pos + 1;
-			uint32_t g = pos + 2;
-			uint32_t h = pos + 3;
+// 			// First triangle
+// 			mesh.indices.emplace_back(e);
+// 			mesh.indices.emplace_back(g);
+// 			mesh.indices.emplace_back(f);
 
-			// First triangle
-			mesh.indices.emplace_back(e);
-			mesh.indices.emplace_back(g);
-			mesh.indices.emplace_back(f);
+// 			// Second triangle
+// 			mesh.indices.emplace_back(e);
+// 			mesh.indices.emplace_back(h);
+// 			mesh.indices.emplace_back(g);
+// 		};
 
-			// Second triangle
-			mesh.indices.emplace_back(e);
-			mesh.indices.emplace_back(h);
-			mesh.indices.emplace_back(g);
-		};
+// 	// TODO: Use a better algorithm
+// 	// TODO store map
 
-	// TODO: Use a better algorithm
-	// TODO store map
+// 	for (std::size_t row = 0; row < height; ++row) {
+// 		for (std::size_t col = 0; col < width; ++col) {
+// 			// A pixel of the noise map will be a block.
+// 			//   h_____g    Frame of reference:
+// 			// e/|___f/|    y z
+// 			// | d---|-c    |/
+// 			// |/    |/     O___x
+// 			// a_____b
 
-	for (std::size_t row = 0; row < height; ++row) {
-		for (std::size_t col = 0; col < width; ++col) {
-			// A pixel of the noise map will be a block.
-			//   h_____g    Frame of reference:
-			// e/|___f/|    y z
-			// | d---|-c    |/
-			// |/    |/     O___x
-			// a_____b
+// 			// Evaluate the current cube
+// 			const float	perlin = noiseAt(col, row);
 
-			// Evaluate the current cube
-			const float	perlin = noiseAt(col, row);
+// 			const Cube	cube({
+// 				static_cast<float>(col),
+// 				perlin,
+// 				static_cast<float>(row)
+// 			});
 
-			const Cube	cube({
-				static_cast<float>(col),
-				perlin,
-				static_cast<float>(row)
-			});
+// 			// Add the top face
+// 			if (row != height - 1 && col != width - 1)
+// 				addIndices(mesh.vertices.size());
+// 			addFace(cube.top());
 
-			// Add the top face
-			if (row != height - 1 && col != width - 1)
-				addIndices(mesh.vertices.size());
-			addFace(cube.top());
+// 			// Check Perlin noise on side blocks
+// 			// Add the south face
+// 			if (row != 0) {
+// 				const float	south = noiseAt(col, row - 1);
+// 				if (south < perlin) {
+// 					if (row != height - 1 && col != width - 1)
+// 						addIndices(mesh.vertices.size());
+// 					addFace(cube.back());
+// 				}
+// 			}
+// 			// Add the north face
+// 			if (row != height - 1) {
+// 				const float	north = noiseAt(col, row + 1);
+// 				if (north < perlin) {
+// 					if (col != width - 1)
+// 						addIndices(mesh.vertices.size());
+// 					addFace(cube.front());
+// 				}
+// 			}
+// 			// Add the west face
+// 			if (col != 0) {
+// 				const float	west = noiseAt(col - 1, row);
+// 				if (west < perlin) {
+// 					if (row != height - 1 && col != width - 1)
+// 						addIndices(mesh.vertices.size());
+// 					addFace(cube.left());
+// 				}
+// 			}
+// 			// Add the east face
+// 			if (col != width - 1) {
+// 				const float	east = noiseAt(col + 1, row);
+// 				if (east < perlin) {
+// 					if (row != height - 1)
+// 						addIndices(mesh.vertices.size());
+// 					addFace(cube.right());
+// 				}
+// 			}
+// 		}
+// 	}
 
-			// Check Perlin noise on side blocks
-			// Add the south face
-			if (row != 0) {
-				const float	south = noiseAt(col, row - 1);
-				if (south < perlin) {
-					if (row != height - 1 && col != width - 1)
-						addIndices(mesh.vertices.size());
-					addFace(cube.back());
-				}
-			}
-			// Add the north face
-			if (row != height - 1) {
-				const float	north = noiseAt(col, row + 1);
-				if (north < perlin) {
-					if (col != width - 1)
-						addIndices(mesh.vertices.size());
-					addFace(cube.front());
-				}
-			}
-			// Add the west face
-			if (col != 0) {
-				const float	west = noiseAt(col - 1, row);
-				if (west < perlin) {
-					if (row != height - 1 && col != width - 1)
-						addIndices(mesh.vertices.size());
-					addFace(cube.left());
-				}
-			}
-			// Add the east face
-			if (col != width - 1) {
-				const float	east = noiseAt(col + 1, row);
-				if (east < perlin) {
-					if (row != height - 1)
-						addIndices(mesh.vertices.size());
-					addFace(cube.right());
-				}
-			}
-		}
-	}
+// 	// Set mesh origin
+// 	// Perlin noise at the center of the mesh:
+// 	mesh.origin = {
+// 		half_width,
+// 		noiseAt(half_height, half_width) + BLOCK_SIZE,
+// 		half_height
+// 	};
+// 	return mesh;
+// }
 
-	// Set mesh origin
-	// Perlin noise at the center of the mesh:
-	mesh.origin = {
-		half_width,
-		noiseAt(half_height, half_width) + BLOCK_SIZE,
-		half_height
-	};
-	return mesh;
+float	PerlinNoise::noiseAt(std::size_t x) const noexcept {
+	assert(x < width);
+
+	float noise = noise_map[width + x];
+	return std::floor(std::fma(noise, scale, shift));
+}
+
+float	PerlinNoise::noiseAt(std::size_t x, std::size_t y) const noexcept {
+	assert(x < width);
+	assert(y < height);
+
+	float noise = noise_map[std::fma(y, width, x)];
+	return std::floor(std::fma(noise, scale, shift));
+}
+
+float	PerlinNoise::noiseAt(
+	std::size_t x,
+	std::size_t y,
+	std::size_t z
+) const noexcept {
+	assert(x < width);
+	assert(y < height);
+	assert(z < depth);
+
+	float noise = noise_map[std::fma(std::fma(z, height, y), width, x)];
+	return std::floor(std::fma(noise, scale, shift));
 }
 
 /* GETTERS ================================================================== */

@@ -13,35 +13,74 @@
 #pragma once
 
 // Std
-# include <cstddef>
+# include <array> // std::array
 
 # include "block.h"
 
-# define CHUNK_SIZE			16
-# define RENDER_DISTANCE	16
+# define CHUNK_SIZE			16 // Number of blocks per chunk row
+# define RENDER_DISTANCE	16 // Number of chunks to render
 
-# define RENDER_WIDTH		RENDER_DISTANCE * CHUNK_SIZE	// 256
-# define RENDER_DEPTH		RENDER_DISTANCE * CHUNK_SIZE	// 256
+# define RENDER_WIDTH		RENDER_DISTANCE * CHUNK_SIZE			// 256
+# define RENDER_DEPTH		RENDER_DISTANCE * CHUNK_SIZE			// 256
 
+# define CHUNK_AREA			CHUNK_SIZE * CHUNK_SIZE					// 256
 # define CHUNK_VOLUME		CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE	// 65536
+
+// Number of vertices in a flat chunk mesh
+# define BLOCK_VERTICES_COUNT		8
+# define CHUNK_VERTICES_COUNT		BLOCK_VERTICES_COUNT * CHUNK_AREA
+
+// Number of indices in a flat chunk mesh
+# define TRIANGLE_VERTICES_COUNT	3
+# define QUAD_VERTICES_COUNT		2 * TRIANGLE_VERTICES_COUNT
+# define BLOCK_FACES_COUNT			6
+# define CHUNK_INDICES_COUNT		CHUNK_AREA * BLOCK_FACES_COUNT * QUAD_VERTICES_COUNT
+
+// namespace scop {
+
+// struct Vertex;
+
+// }
+struct Vertex;
 
 namespace vox {
 
+class PerlinNoise;
 
+/**
+ * @brief World subdivision. A chunk size is 16 x 16 x 16.
+*/
 class Chunk final {
 public:
+	/* ========================================================================= */
+	/*                                  TYPEDEFS                                 */
+	/* ========================================================================= */
+
+	using VerticeArray = std::array<Vertex, CHUNK_VERTICES_COUNT>;
+	using IndexArray = std::array<uint32_t, CHUNK_INDICES_COUNT>;
+
+	struct ChunkMesh {
+		VerticeArray	vertices;
+		IndexArray		indices;
+	};
+
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
 
-	Chunk();
+	Chunk(const PerlinNoise& noise, uint8_t x, uint8_t y, uint8_t z);
 
+	Chunk() = default;
 	Chunk(Chunk &&src) = default;
 	Chunk &operator=(Chunk &&rhs) = default;
 	~Chunk() = default;
 
 	Chunk(const Chunk &src) = delete;
 	Chunk &operator=(const Chunk &rhs) = delete;
+
+	/* ========================================================================= */
+
+	static ChunkMesh	generateChunkMesh() noexcept;
 
 	/* ========================================================================= */
 
@@ -53,7 +92,20 @@ private:
 	/*                               CLASS MEMBERS                               */
 	/* ========================================================================= */
 
-	std::array<Block, CHUNK_VOLUME>	_blocks;
+	uint8_t							_x;
+	uint8_t							_y;
+	uint8_t							_z;
+	std::array<Block, CHUNK_VOLUME>	_blocks{};
+
+	/* ========================================================================= */
+	/*                                  METHODS                                  */
+	/* ========================================================================= */
+
+	void		_generateChunk(const PerlinNoise& noise);
+	void		_fillColumn(
+		std::size_t x,
+		std::size_t y,
+		MaterialType material = MaterialType::MATERIAL_DIRT);
 
 }; // class Chunk
 

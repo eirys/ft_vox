@@ -12,7 +12,7 @@
 
 #pragma once
 
-#include "cube.h"
+# include "cube.h"
 
 # define BLOCK_SIZE	1
 
@@ -24,29 +24,32 @@ public:
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
 
-	Block(uint8_t x, uint8_t y, uint8_t z, MaterialType type) noexcept;
+	Block(MaterialType type) noexcept;
 
+	Block() = default;
 	Block(Block &&src) = default;
 	Block &operator=(Block &&rhs) = default;
 	~Block() = default;
 
-	Block() = delete;
 	Block(const Block &src) = delete;
 	Block &operator=(const Block &rhs) = delete;
 
 	/* ========================================================================= */
 
-	uint32_t		packCoordinates() const noexcept;
+	// uint32_t		packCoordinates() const noexcept;
+	void			setType(MaterialType block_type) noexcept;
+	MaterialType	getType() const noexcept;
+
+	/* ========================================================================= */
+
+	bool			operator!() const noexcept;
 
 private:
 	/* ========================================================================= */
 	/*                               CLASS MEMBERS                               */
 	/* ========================================================================= */
 
-	uint8_t			_x;
-	uint8_t			_y;
-	uint8_t			_z;
-	MaterialType	_type;
+	MaterialType	_type = MaterialType::MATERIAL_AIR;
 
 }; // class Block
 

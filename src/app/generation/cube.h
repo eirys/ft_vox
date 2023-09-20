@@ -18,16 +18,18 @@ namespace vox {
 
 // Total material types possible: 256
 enum class MaterialType: uint8_t {
-	MATERIAL_GRASS		= 0x00, // Default
-	MATERIAL_DIRT		= 0x01,
-	MATERIAL_STONE		= 0x02,
-	MATERIAL_WOOD		= 0x03,
-	MATERIAL_LEAVES		= 0x04,
-	MATERIAL_SAND		= 0x05,
-	MATERIAL_WATER		= 0x06,
-	MATERIAL_LAVA		= 0x07,
-	MATERIAL_ICE		= 0x08,
-	MATERIAL_SNOW		= 0x09
+	MATERIAL_AIR		= 0,
+
+	MATERIAL_GRASS		= 1,
+	MATERIAL_DIRT		= 2,
+	MATERIAL_STONE		= 3,
+	MATERIAL_WOOD		= 4,
+	MATERIAL_LEAVES		= 5,
+	MATERIAL_SAND		= 6,
+	MATERIAL_WATER		= 7,
+	MATERIAL_LAVA		= 8,
+	MATERIAL_ICE		= 9,
+	MATERIAL_SNOW		= 10
 };
 
 enum class FaceType: uint8_t {
