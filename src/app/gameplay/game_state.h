@@ -12,11 +12,10 @@
 
 #pragma once
 
+# include "world.h"
 # include "player.h"
 
 namespace vox {
-
-class World;
 
 class GameState {
 public:
@@ -24,10 +23,10 @@ public:
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
 
-	GameState();
-
+	GameState(std::size_t seed);
 	~GameState() = default;
 
+	GameState() = delete;
 	GameState(GameState&& other) = delete;
 	GameState(const GameState& other) = delete;
 	GameState&	operator=(GameState&& other) = delete;

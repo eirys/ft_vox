@@ -68,7 +68,7 @@ protected:
 
 	uint32_t				_texture_count;
 	uint32_t				_layer_count;
-	uint32_t				_mip_levels;
+	uint32_t				_mip_levels = 1;
 
 	ImageBuffer				_texture_buffer;
 	VkSampler				_texture_sampler;

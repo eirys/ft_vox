@@ -52,7 +52,8 @@ public:
 		Device& device,
 		Buffer& buffer,
 		TextureHandlerPtr textures,
-		TextureHandlerPtr shadowmap);
+		TextureHandlerPtr shadowmap,
+		TextureHandlerPtr heightmap);
 
 	/* ========================================================================= */
 

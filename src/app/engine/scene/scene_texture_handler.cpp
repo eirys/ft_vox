@@ -89,7 +89,7 @@ void	SceneTextureHandler::_createTextureImages(Device& device) {
 		VK_IMAGE_USAGE_TRANSFER_DST_BIT |	// For copy command
 		VK_IMAGE_USAGE_SAMPLED_BIT,			// For shader access
 		VK_SAMPLE_COUNT_1_BIT,
-		_mip_levels,
+		super::_mip_levels,
 		super::_texture_count,
 		0,
 		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);

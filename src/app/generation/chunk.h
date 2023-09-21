@@ -13,38 +13,15 @@
 #pragma once
 
 // Std
-# include <array> // std::array
+# include <array> // std::vector
+# include <vector> // std::vector
 
 # include "block.h"
-
-# define CHUNK_SIZE			16 // Number of blocks per chunk row
-# define RENDER_DISTANCE	16 // Number of chunks to render
-
-# define RENDER_WIDTH		RENDER_DISTANCE * CHUNK_SIZE			// 256
-# define RENDER_DEPTH		RENDER_DISTANCE * CHUNK_SIZE			// 256
-
-# define CHUNK_AREA			CHUNK_SIZE * CHUNK_SIZE					// 256
-# define CHUNK_VOLUME		CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE	// 65536
-
-// Number of vertices in a flat chunk mesh
-# define BLOCK_VERTICES_COUNT		8
-# define CHUNK_VERTICES_COUNT		BLOCK_VERTICES_COUNT * CHUNK_AREA
-
-// Number of indices in a flat chunk mesh
-# define TRIANGLE_VERTICES_COUNT	3
-# define QUAD_VERTICES_COUNT		2 * TRIANGLE_VERTICES_COUNT
-# define BLOCK_FACES_COUNT			6
-# define CHUNK_INDICES_COUNT		CHUNK_AREA * BLOCK_FACES_COUNT * QUAD_VERTICES_COUNT
-
-// namespace scop {
-
-// struct Vertex;
-
-// }
-struct Vertex;
+# include "chunk_macros.h"
 
 namespace vox {
 
+struct Vertex;
 class PerlinNoise;
 
 /**
@@ -56,12 +33,16 @@ public:
 	/*                                  TYPEDEFS                                 */
 	/* ========================================================================= */
 
-	using VerticeArray = std::array<Vertex, CHUNK_VERTICES_COUNT>;
-	using IndexArray = std::array<uint32_t, CHUNK_INDICES_COUNT>;
+	using ChunkSlice = std::array<Block, CHUNK_AREA>; // slice y
+	using ChunkRow = std::array<Block, CHUNK_SIZE>; // row x of slice y
+
+	/* ========================================================================= */
+	/*                                HELPER CLASS                               */
+	/* ========================================================================= */
 
 	struct ChunkMesh {
-		VerticeArray	vertices;
-		IndexArray		indices;
+		std::vector<Vertex>		vertices;
+		std::vector<uint32_t>	indices;
 	};
 
 	/* ========================================================================= */
@@ -84,8 +65,15 @@ public:
 
 	/* ========================================================================= */
 
-	const Block&		getBlock(uint8_t x, uint8_t y, uint8_t z) const noexcept;
-	const Block&		getBlock(uint32_t packed_coordinates) const noexcept;
+	std::array<uint8_t, CHUNK_AREA>	getHeightMap() const noexcept;
+	uint32_t						getChunkCoordinates() const noexcept;
+
+	const Block&					getBlock(
+		uint8_t x,
+		uint8_t y,
+		uint8_t z) const noexcept;
+	ChunkRow						getRow(uint8_t x, uint8_t y) const;
+	ChunkSlice						getSlice(uint8_t y) const;
 
 private:
 	/* ========================================================================= */
@@ -95,7 +83,7 @@ private:
 	uint8_t							_x;
 	uint8_t							_y;
 	uint8_t							_z;
-	std::array<Block, CHUNK_VOLUME>	_blocks{};
+	std::vector<Block>				_blocks{};
 
 	/* ========================================================================= */
 	/*                                  METHODS                                  */

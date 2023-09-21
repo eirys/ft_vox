@@ -2,7 +2,7 @@
 
 // Input
 layout(location = 0) in int in_position;
-layout(location = 1) in int in_nuvf;
+// layout(location = 1) in int in_nuvf;
 
 // Output
 layout(location = 0) out vec3 out_normal;
@@ -10,8 +10,9 @@ layout(location = 1) out vec3 out_uvw;
 layout(location = 2) out vec3 out_shadow;
 
 /* UNIFORMS ================================================================= */
-layout(binding = 0, set = 0) uniform Camera { mat4 vp; } camera;
-layout(binding = 1, set = 0) uniform Projector { mat4 vp; } projector;
+layout(binding = 0, set = 0) uniform Camera { mat4 vp; }	camera;
+layout(binding = 1, set = 0) uniform Projector { mat4 vp; }	projector;
+layout(binding = 5, set = 0) uniform sampler2DArray			height_map;
 
 /* CONSTS =================================================================== */
 const vec3 normals[6] = {
@@ -30,19 +31,19 @@ const vec2 uvs[4] = {
 };
 
 /* HELPERS ================================================================== */
-vec2	extractUV(int _data) {
-	int index = (_data >> 8) & 0xFF;
-	return uvs[index];
-}
+// vec2	extractUV(int _data) {
+// 	int index = (_data >> 8) & 0xFF;
+// 	return uvs[index];
+// }
 
-vec3	extractNormal(int _data) {
-	int index = _data & 0xFF;
-	return normals[index];
-}
+// vec3	extractNormal(int _data) {
+// 	int index = _data & 0xFF;
+// 	return normals[index];
+// }
 
-int	extractTextureIndex(int _data) {
-	return (_data >> 16) & 0xFF;
-}
+// int	extractTextureIndex(int _data) {
+// 	return (_data >> 16) & 0xFF;
+// }
 
 vec4	extractPos(int _data) {
 	vec3 position = vec3(
@@ -50,10 +51,15 @@ vec4	extractPos(int _data) {
 		(_data >> 4) & 0xF,
 		(_data >> 8) & 0xF);
 
+	float alt = texture(height_map, vec3(position.xz, gl_InstanceIndex)).x;
 	vec3 chunk = 16 * vec3(
-		(_data >> 12) & 0xFF,
-		(_data >> 20) & 0xF,
-		(_data >> 24) & 0xFF);
+		gl_InstanceIndex % 5,
+		0,
+		int(gl_InstanceIndex / 5));
+	// vec3 chunk = 16 * vec3(
+	// 	(_data >> 12) & 0xFF,
+	// 	(_data >> 20) & 0xF,
+	// 	(_data >> 24) & 0xFF);
 
 	return vec4(chunk + position, 1.0);
 }
@@ -63,8 +69,11 @@ void	main() {
 	vec4 position = extractPos(in_position);
 	vec3 shadow_coord = (projector.vp * position).xyz;
 
-	out_normal = extractNormal(in_nuvf);
-	out_uvw = vec3(extractUV(in_nuvf), extractTextureIndex(in_nuvf));
+	// out_normal = extractNormal(in_nuvf);
+	out_normal = normals[int(gl_VertexIndex / 4)];
+	// out_uvw = vec3(extractUV(in_nuvf), extractTextureIndex(in_nuvf));
+	out_uvw = vec3(uvs[int(gl_VertexIndex % 4)], 0);
+
 	out_shadow = vec3(shadow_coord.xy * 0.5f + 0.5f, shadow_coord.z);
 	gl_Position = camera.vp * position;
 }

@@ -12,11 +12,30 @@
 
 #pragma once
 
-# include "cube.h"
+// Std
+# include <cstdint>
 
 # define BLOCK_SIZE	1
 
 namespace vox {
+
+// Total material types possible: 256
+enum class MaterialType: uint8_t {
+	MATERIAL_AIR		= 0,
+
+	MATERIAL_GRASS		= 1,
+	MATERIAL_DIRT		= 2,
+	MATERIAL_STONE		= 3,
+	MATERIAL_WOOD		= 4,
+	MATERIAL_LEAVES		= 5,
+	MATERIAL_SAND		= 6,
+	MATERIAL_WATER		= 7,
+	MATERIAL_LAVA		= 8,
+	MATERIAL_ICE		= 9,
+	MATERIAL_SNOW		= 10,
+
+	Last				= 255
+};
 
 class Block final {
 public:
@@ -42,7 +61,8 @@ public:
 
 	/* ========================================================================= */
 
-	bool			operator!() const noexcept;
+	bool				operator!() const noexcept;
+	explicit operator	bool() const noexcept;
 
 private:
 	/* ========================================================================= */

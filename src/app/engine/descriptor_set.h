@@ -20,6 +20,7 @@
 
 // Std
 # include <vector> // std::vector
+# include <memory> // std::shared_ptr
 
 namespace scop::graphics {
 

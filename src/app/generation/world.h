@@ -12,7 +12,7 @@
 
 #pragma once
 
-// #include <array> // std::array
+// Std
 # include <vector> // std::vector
 
 # include "chunk.h"
@@ -41,31 +41,36 @@ public:
 		std::size_t width,
 		std::size_t height);
 
+	World() = default;
 	World(World &&src) = default;
 	World &operator=(World &&rhs) = default;
 	~World() = default;
 
-	World() = delete;
 	World(const World &src) = delete;
 	World &operator=(const World &rhs) = delete;
 
 	/* ========================================================================= */
 
-	void				setOrigin(const scop::Vect3& origin) noexcept;
-	const scop::Vect3&	getOrigin() const noexcept;
+	std::vector<uint8_t>	generateHeightBuffer() const noexcept;
+
+	/* ========================================================================== */
+
+	void					setOrigin(const scop::Vect3& origin) noexcept;
+	const scop::Vect3&		getOrigin() const noexcept;
 
 private:
 	/* ========================================================================= */
 	/*                               CLASS MEMBERS                               */
 	/* ========================================================================= */
 
-	// TODO: Need to store it differently...
-	// std::array<Chunk, WORLD_VOLUME>	_chunks;
+	scop::Vect3				_origin = {0.0f, 0.0f, 0.0f};
+	std::vector<Chunk>		_chunks;
 
-	scop::Vect3			_origin = {0.0f, 0.0f, 0.0f};
+	/* ========================================================================= */
+	/*                                  METHODS                                  */
+	/* ========================================================================= */
 
-	// Temporary
-	std::vector<Chunk>	_chunks;
+	void					_generateChunks(const PerlinNoise& noise);
 
 }; // class World
 

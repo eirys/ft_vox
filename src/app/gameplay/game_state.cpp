@@ -11,6 +11,7 @@
 /* ************************************************************************** */
 
 #include "game_state.h"
+#include "world_generator.h"
 
 namespace vox {
 
@@ -18,8 +19,12 @@ namespace vox {
 /*                                   PUBLIC                                   */
 /* ========================================================================== */
 
-GameState::GameState():
-	_player(scop::Vect3(), VOX_DEFAULT_EYE_DIR) {}
+GameState::GameState(std::size_t seed):
+	_player(scop::Vect3(), VOX_DEFAULT_EYE_DIR)
+{
+	WorldGenerator	generator(seed);
+	_world = std::move(generator.generate());
+}
 
 /* ========================================================================== */
 
@@ -31,7 +36,7 @@ void	GameState::reset() noexcept {
  * @brief Sets spawn position.
 */
 void	GameState::setOrigin(const scop::Vect3& origin) noexcept {
-	_world.getOrigin() = origin;
+	_world.setOrigin(origin);
 }
 
 void	GameState::setCameraDir(float yaw, float pitch) noexcept {

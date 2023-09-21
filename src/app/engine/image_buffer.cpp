@@ -30,7 +30,7 @@ void ImageBuffer::initImage(
 	Device& device,
 	uint32_t width,
 	uint32_t height,
-	VkFormat format,
+	VkFormat pixel_format,
 	VkImageUsageFlags usage,
 	VkSampleCountFlagBits sample_count,
 	uint32_t mip_count,
@@ -46,7 +46,7 @@ void ImageBuffer::initImage(
 	image_info.extent = { width, height, 1 };
 	image_info.mipLevels = mip_count;
 	image_info.arrayLayers = layer_count;
-	image_info.format = format;
+	image_info.format = pixel_format;
 	image_info.tiling = tiling;
 	image_info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 	image_info.usage = usage;

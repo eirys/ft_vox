@@ -17,6 +17,7 @@
 namespace scop::graphics {
 
 class Buffer;
+class TextureHandler;
 
 class ShadowsDescriptorSet final: public DescriptorSet {
 public:
@@ -25,6 +26,7 @@ public:
 	/* ========================================================================= */
 
 	using super = DescriptorSet;
+	using TextureHandlerPtr = std::shared_ptr<TextureHandler>;
 
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
@@ -44,7 +46,11 @@ public:
 	using super::setDescriptors;
 
 	void	init(Device& device) override;
-	void	plug(Device& device, Buffer& buffer);
+
+	void	plug(
+		Device& device,
+		Buffer& buffer,
+		TextureHandlerPtr heightmap);
 
 	/* ========================================================================= */
 

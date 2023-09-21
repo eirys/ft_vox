@@ -11,6 +11,7 @@
 /* ************************************************************************** */
 
 #include "cube.h"
+#include "block.h"
 
 namespace vox {
 
@@ -36,15 +37,15 @@ typedef scop::Vect3	Vect3;
 
 scop::Vect3	Cube::Face::normal() const noexcept {
 	switch (side) {
-		case FACE_TOP:
+		case FaceType::FACE_TOP:
 			return {0.0f, 1.0f, 0.0f};	// +y
-		case FACE_BOTTOM:
+		case FaceType::FACE_BOTTOM:
 			return {0.0f, -1.0f, 0.0f};	// -y
-		case FACE_RIGHT:
+		case FaceType::FACE_RIGHT:
 			return {1.0f, 0.0f, 0.0f};	// +x
-		case FACE_LEFT:
+		case FaceType::FACE_LEFT:
 			return {-1.0f, 0.0f, 0.0f};	// -x
-		case FACE_FRONT:
+		case FaceType::FACE_FRONT:
 			return {0.0f, 0.0f, 1.0f};	// +z
 		default:
 			return {0.0f, 0.0f, -1.0f};	// -z
@@ -74,45 +75,46 @@ Vect3	Cube::lowerBottomLeft() const noexcept {
 
 // Vertice b
 Vect3	Cube::lowerBottomRight() const noexcept {
-	return {pos.x + size, pos.y, pos.z};
+	return {pos.x + BLOCK_SIZE, pos.y, pos.z};
 }
 
 // Vertice c
 Vect3	Cube::lowerTopRight() const noexcept {
-	return {pos.x + size, pos.y, pos.z + size};
+	return {pos.x + BLOCK_SIZE, pos.y, pos.z + BLOCK_SIZE};
 }
 
 // Vertice d
 Vect3	Cube::lowerTopLeft() const noexcept {
-	return {pos.x, pos.y, pos.z + size};
+	return {pos.x, pos.y, pos.z + BLOCK_SIZE};
 }
 
 // Vertice e
 Vect3	Cube::upperBottomLeft() const noexcept {
-	return {pos.x, pos.y + size, pos.z};
+	return {pos.x, pos.y + BLOCK_SIZE, pos.z};
 }
 
 // Vertice f
 Vect3	Cube::upperBottomRight() const noexcept {
-	return {pos.x + size, pos.y + size, pos.z};
+	return {pos.x + BLOCK_SIZE, pos.y + BLOCK_SIZE, pos.z};
 }
 
 // Vertice g
 Vect3	Cube::upperTopRight() const noexcept {
-	return {pos.x + size, pos.y + size, pos.z + size};
+	return {pos.x + BLOCK_SIZE, pos.y + BLOCK_SIZE, pos.z + BLOCK_SIZE};
 }
 
 // Vertice h
 Vect3	Cube::upperTopLeft() const noexcept {
-	return {pos.x, pos.y + size, pos.z + size};
+	return {pos.x, pos.y + BLOCK_SIZE, pos.z + BLOCK_SIZE};
 }
 
 // Center of upper face
 Vect3	Cube::center() const noexcept {
+	float block_size = BLOCK_SIZE;
 	return {
-		std::fma(size, 0.5f, pos.x),
-		pos.y + size,
-		std::fma(size, 0.5f, pos.z)
+		std::fma(block_size, 0.5f, pos.x),
+		pos.y + block_size,
+		std::fma(block_size, 0.5f, pos.z)
 	};
 }
 
@@ -120,7 +122,7 @@ Vect3	Cube::center() const noexcept {
 
 /**
  * @details Here is the mapping of the texture coordinates:
- * 
+ *
  * x: 0    0.25  0.5   0.75   1
  *                               y:
  *                h ___ g        0
@@ -130,7 +132,7 @@ Vect3	Cube::center() const noexcept {
  *    c ___ d ___ a ___ b ___ c  0.5
  *                |  B  |
  *                d ___ c        0.75
- * 
+ *
  * { Empty line }                1
 */
 

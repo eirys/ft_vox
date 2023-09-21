@@ -34,6 +34,7 @@
 # include "texture_handler.h"
 # include "pipeline.h"
 
+
 namespace vox {
 class GameState;
 }
@@ -42,7 +43,6 @@ namespace scop {
 class Timer;
 struct Camera;
 }
-
 
 namespace scop::graphics {
 
@@ -54,6 +54,7 @@ public:
 
 	using Texture = TextureHandler::Texture;
 	using PipelinePtr = std::shared_ptr<Pipeline>;
+	using TextureHandlerPtr = std::shared_ptr<TextureHandler>;
 
 	using UniformBufferObject = ::scop::UniformBufferObject;
 	using GameState = ::vox::GameState;
@@ -86,11 +87,9 @@ public:
 
 	/* ========================================================================= */
 
-	void						init(
-		Window& window,
-		const GameState& game,
-		const std::vector<Vertex>& vertices,
-		const std::vector<uint32_t>& indices);
+	void						init(Window& window, const GameState& game);
+		// const std::vector<::vox::Vertex>& vertices,
+		// const std::vector<uint32_t>& indices);
 	void						destroy();
 
 	void						idle();
@@ -125,6 +124,8 @@ private:
 		PipelinePtr				shadows;
 	}							_pipelines;
 
+	TextureHandlerPtr			_height_map;
+
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
@@ -137,7 +138,6 @@ private:
 	void						_createDescriptors();
 
 	void						_initDescriptors(const GameState& game) noexcept;
-	// UniformBufferObject			_updateUbo(const GameState& game) const noexcept;
 	Camera						_generateCameraMatrix(const GameState& game) const noexcept;
 
 	void						_updatePresentation(Window& window);

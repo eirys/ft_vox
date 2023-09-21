@@ -22,14 +22,6 @@ Block::Block(MaterialType type) noexcept: _type(type)  {}
 
 /* ========================================================================== */
 
-// uint32_t	Block::packCoordinates() const noexcept {
-// 	return
-// 		static_cast<uint32_t>(_x) |
-// 		static_cast<uint32_t>(_y) << 8 |
-// 		static_cast<uint32_t>(_z) << 16 |
-// 		static_cast<uint32_t>(_type) << 24;
-// }
-
 void	Block::setType(MaterialType block_type) noexcept {
 	_type = block_type;
 }
@@ -39,6 +31,10 @@ MaterialType	Block::getType() const noexcept {
 }
 
 /* ========================================================================== */
+
+Block::operator bool() const noexcept {
+	return _type != MaterialType::MATERIAL_AIR;
+}
 
 bool	Block::operator!() const noexcept {
 	return _type == MaterialType::MATERIAL_AIR;

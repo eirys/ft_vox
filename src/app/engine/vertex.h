@@ -16,35 +16,23 @@
 # include <vulkan/vulkan.h>
 
 // Std
-# include <vector>
+# include <array>
 # include <cmath>
 
-# include "vector.h"
-# include "chunk.h"
-
-namespace scop {
+namespace vox {
 
 struct Vertex {
 	/* ========================================================================= */
 	/*                               CLASS MEMBERS                               */
 	/* ========================================================================= */
 
-	int32_t	pos{};		// Vertex position
-	int32_t	n_uv_f{};	// Normal, UV and Face index
+	uint16_t	packed_position{};
 
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
 
-	Vertex(
-		scop::Vect3 pos,
-		uint8_t normal,
-		uint8_t uv,
-		uint8_t index
-	):	pos(vox::toChunkPos(pos.x, pos.y, pos.z)),
-		n_uv_f(normal | uv << 8 | index << 16) {}
-
-	// Vertex(const Block& block) {}
+	Vertex(uint8_t x, uint8_t y, uint8_t z): packed_position(x << 8 | y << 4 | z) {}
 
 	Vertex() = default;
 	Vertex(Vertex&&) = default;
@@ -71,58 +59,16 @@ struct Vertex {
 	/**
 	 * @brief Vertex format description.
 	*/
-	static std::vector<VkVertexInputAttributeDescription>	getSceneAttributeDescriptions() {
-		std::vector<VkVertexInputAttributeDescription>	attribute_descriptions;
-		attribute_descriptions.reserve(2);
-
+	static std::array<VkVertexInputAttributeDescription, 1>	getAttributeDescriptions() {
 		VkVertexInputAttributeDescription	attribute{};
 		attribute.binding = 0;
-
-		// `pos` attribute
 		attribute.location = 0;
-		attribute.format = VK_FORMAT_R32_SINT;
-		attribute.offset = offsetof(Vertex, pos);
-		attribute_descriptions.emplace_back(attribute);
+		attribute.format = VK_FORMAT_R16_SINT;
+		attribute.offset = offsetof(Vertex, packed_position);
 
-		// `normal_index`, `uv_index` and `face_index` attribute
-		attribute.location = 1;
-		attribute.format = VK_FORMAT_R32_SINT;
-		attribute.offset = offsetof(Vertex, n_uv_f);
-		attribute_descriptions.emplace_back(attribute);
-
-		return attribute_descriptions;
-	}
-	static std::vector<VkVertexInputAttributeDescription>	getShadowAttributeDescriptions() {
-		std::vector<VkVertexInputAttributeDescription>	attribute_descriptions;
-		attribute_descriptions.reserve(1);
-
-		VkVertexInputAttributeDescription	attribute{};
-		attribute.binding = 0;
-
-		// `pos` attribute
-		attribute.location = 0;
-		attribute.format = VK_FORMAT_R32_SINT;
-		attribute.offset = offsetof(Vertex, pos);
-		attribute_descriptions.emplace_back(attribute);
-
-		return attribute_descriptions;
-	}
-
-	bool	operator==(const Vertex& rhs) const {
-		return
-			pos == rhs.pos &&
-			n_uv_f == rhs.n_uv_f;
+		return std::array<VkVertexInputAttributeDescription, 1>{ attribute };
 	}
 
 }; // struct Vertex
 
-} // namespace scop
-
-template<>
-struct std::hash<scop::Vertex> {
-	std::size_t	operator()(const scop::Vertex& vertex) const {
-		return
-			(std::hash<uint32_t>()(vertex.pos)) ^
-			(std::hash<uint32_t>()(vertex.n_uv_f));
-	}
-};
+} // namespace vox
