@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:17:01 by etran             #+#    #+#             */
-/*   Updated: 2023/09/18 16:03:40 by etran            ###   ########.fr       */
+/*   Updated: 2023/09/22 15:16:15 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,13 +26,13 @@ struct Vertex {
 	/*                               CLASS MEMBERS                               */
 	/* ========================================================================= */
 
-	uint16_t	packed_position{};
+	uint32_t	packed_position{};
 
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
 
-	Vertex(uint8_t x, uint8_t y, uint8_t z): packed_position(x << 8 | y << 4 | z) {}
+	Vertex(uint8_t x, uint8_t y, uint8_t z): packed_position((x << 16) | (y << 8) | z) {}
 
 	Vertex() = default;
 	Vertex(Vertex&&) = default;
@@ -63,7 +63,7 @@ struct Vertex {
 		VkVertexInputAttributeDescription	attribute{};
 		attribute.binding = 0;
 		attribute.location = 0;
-		attribute.format = VK_FORMAT_R16_SINT;
+		attribute.format = VK_FORMAT_R32_SINT;
 		attribute.offset = offsetof(Vertex, packed_position);
 
 		return std::array<VkVertexInputAttributeDescription, 1>{ attribute };

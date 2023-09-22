@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/16 10:16:30 by etran             #+#    #+#             */
-/*   Updated: 2023/09/15 16:28:50 by etran            ###   ########.fr       */
+/*   Updated: 2023/09/22 16:25:12 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -150,7 +150,7 @@ void	ShadowsPipeline::draw(
 	vkCmdDrawIndexed(
 		command_buffer.getBuffer(),
 		input.getIndicesCount(),
-		RENDER_DISTANCE, 0, 0, 0);
+		RENDER_DISTANCE * RENDER_DISTANCE, 0, 0, 0);
 
 	vkCmdEndRenderPass(command_buffer.getBuffer());
 }

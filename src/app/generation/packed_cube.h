@@ -6,13 +6,13 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/20 15:10:33 by etran             #+#    #+#             */
-/*   Updated: 2023/09/20 15:10:33 by etran            ###   ########.fr       */
+/*   Updated: 2023/09/22 11:20:19 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
-# include <cstddef>
+# include <cstdint>
 # include <array> // std::array
 
 namespace vox {

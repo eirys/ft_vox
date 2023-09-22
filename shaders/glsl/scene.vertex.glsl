@@ -31,31 +31,21 @@ const vec2 uvs[4] = {
 };
 
 /* HELPERS ================================================================== */
-// vec2	extractUV(int _data) {
-// 	int index = (_data >> 8) & 0xFF;
-// 	return uvs[index];
-// }
-
-// vec3	extractNormal(int _data) {
-// 	int index = _data & 0xFF;
-// 	return normals[index];
-// }
-
-// int	extractTextureIndex(int _data) {
-// 	return (_data >> 16) & 0xFF;
-// }
 
 vec4	extractPos(int _data) {
 	vec3 position = vec3(
-		_data & 0xF,
-		(_data >> 4) & 0xF,
-		(_data >> 8) & 0xF);
+		_data & 0xFF,
+		(_data >> 8) & 0xFF,
+		(_data >> 16) & 0xFF);
 
-	float alt = texture(height_map, vec3(position.xz, gl_InstanceIndex)).x;
+	// vec4 height = texture(height_map, vec3(position.xz, gl_InstanceIndex));
+	// position.y += int(height.r) & 0xFF;
+
 	vec3 chunk = 16 * vec3(
 		gl_InstanceIndex % 5,
-		alt,
-		int(gl_InstanceIndex / 5));
+		0,
+		gl_InstanceIndex / 5);
+
 	// vec3 chunk = 16 * vec3(
 	// 	(_data >> 12) & 0xFF,
 	// 	(_data >> 20) & 0xF,
@@ -70,7 +60,7 @@ void	main() {
 	vec3 shadow_coord = (projector.vp * position).xyz;
 
 	// out_normal = extractNormal(in_nuvf);
-	out_normal = normals[int(gl_VertexIndex / 4)];
+	out_normal = normals[int(gl_VertexIndex / 4) % 6];
 	// out_uvw = vec3(extractUV(in_nuvf), extractTextureIndex(in_nuvf));
 	out_uvw = vec3(uvs[int(gl_VertexIndex % 4)], 0);
 

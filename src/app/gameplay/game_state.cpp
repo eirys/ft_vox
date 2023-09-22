@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/05 15:35:50 by etran             #+#    #+#             */
-/*   Updated: 2023/08/20 02:44:26 by etran            ###   ########.fr       */
+/*   Updated: 2023/09/22 16:19:17 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,17 +19,16 @@ namespace vox {
 /*                                   PUBLIC                                   */
 /* ========================================================================== */
 
-GameState::GameState(std::size_t seed):
-	_player(scop::Vect3(), VOX_DEFAULT_EYE_DIR)
-{
+GameState::GameState(std::size_t seed) {
 	WorldGenerator	generator(seed);
-	_world = std::move(generator.generate());
+	_world = generator.generate();
+	_player = Player(_world.getOrigin());
 }
 
 /* ========================================================================== */
 
 void	GameState::reset() noexcept {
-	_player.reset(_world.getOrigin(), VOX_DEFAULT_EYE_DIR);
+	_player.reset(_world.getOrigin());
 }
 
 /**

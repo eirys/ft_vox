@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/20 15:10:33 by etran             #+#    #+#             */
-/*   Updated: 2023/09/20 15:10:33 by etran            ###   ########.fr       */
+/*   Updated: 2023/09/22 16:23:41 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,12 +61,16 @@ UnpackedVertex	PackedCube::h() const noexcept {
 
 using Face = vox::PackedCube::Face;
 
+/**
+ * @note The vertices are set counter clockwise, seen from the outside.
+*/
+
 Face	PackedCube::top() const noexcept {
 	return { e(), f(), g(), h() };
 }
 
 Face	PackedCube::bottom() const noexcept {
-	return { a(), b(), c(), d() };
+	return { a(), d(), c(), b() };
 }
 
 Face	PackedCube::left() const noexcept {

@@ -49,5 +49,6 @@ void main() {
 		light.vector,
 		light.color);
 
-	out_color = color * (directional + ambient);
+	// out_color = color * (directional + ambient);
+	out_color = color;
 }

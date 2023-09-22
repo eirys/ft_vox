@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 22:54:18 by etran             #+#    #+#             */
-/*   Updated: 2023/09/18 17:31:06 by etran            ###   ########.fr       */
+/*   Updated: 2023/09/22 10:41:06 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,7 +48,7 @@ private:
 	/*                               CLASS MEMBERS                               */
 	/* ========================================================================= */
 
-	std::size_t						_offset = 0; // Updated as the player moves.
+	// std::size_t						_offset = 0; // Updated as the player moves.
 	PerlinNoise						_noise;
 
 	// number of blocks rendered

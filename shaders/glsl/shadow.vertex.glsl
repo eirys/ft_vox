@@ -32,7 +32,8 @@ vec4	extractPos(int _data) {
 }
 
 void	main() {
-	vec4 position = extractPos(in_position);
+	// vec4 position = extractPos(in_position);
 
-	gl_Position = projector.vp * position;
+	// gl_Position = projector.vp * position;
+	gl_Position = vec4(0.0, 0.0, 0.0, 1.0);
 }

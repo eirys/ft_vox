@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/19 11:46:11 by etran             #+#    #+#             */
-/*   Updated: 2023/09/19 11:46:11 by etran            ###   ########.fr       */
+/*   Updated: 2023/09/22 15:19:38 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,22 +41,22 @@ Chunk::ChunkMesh	Chunk::generateChunkMesh() noexcept {
 
 	auto	addFace =
 		[&mesh](const PackedCube::Face& face) -> void {
+			// Indices
+			uint32_t pos = mesh.vertices.size();
+			uint32_t e = pos;
+			uint32_t f = pos + 1;
+			uint32_t g = pos + 2;
+			uint32_t h = pos + 3;
+
+			mesh.indices.emplace_back(e);
+			mesh.indices.emplace_back(g);
+			mesh.indices.emplace_back(f);
+
+			mesh.indices.emplace_back(e);
+			mesh.indices.emplace_back(h);
+			mesh.indices.emplace_back(g);
+
 			for (auto& uvertex: face.vertices) {
-				// Indices
-				uint32_t pos = mesh.vertices.size();
-				uint32_t e = pos;
-				uint32_t f = pos + 1;
-				uint32_t g = pos + 2;
-				uint32_t h = pos + 3;
-
-				mesh.indices.emplace_back(e);
-				mesh.indices.emplace_back(g);
-				mesh.indices.emplace_back(f);
-
-				mesh.indices.emplace_back(e);
-				mesh.indices.emplace_back(h);
-				mesh.indices.emplace_back(g);
-
 				// Vertices
 				mesh.vertices.emplace_back(Vertex(uvertex.x, uvertex.y, uvertex.z));
 			}
@@ -85,7 +85,7 @@ std::array<uint8_t, CHUNK_AREA>	Chunk::getHeightMap() const noexcept {
 		for (uint8_t x = 0; x < CHUNK_SIZE; ++x) {
 
 			for (uint8_t y = 0; y < CHUNK_SIZE; ++y) {
-				if (static_cast<bool>(_blocks[y * CHUNK_SIZE + (z * CHUNK_SIZE + x)])) {
+				if (static_cast<bool>(_blocks[z * CHUNK_SIZE + (y * CHUNK_SIZE + x)])) {
 					height_map[z * CHUNK_SIZE + x] = y;
 					break;
 				}
@@ -110,7 +110,7 @@ void	Chunk::_generateChunk(const PerlinNoise& perlin_noise) {
 	for (uint8_t z = 0; z < CHUNK_SIZE; ++z) {
 		for (uint8_t x = 0; x < CHUNK_SIZE; ++x) {
 			float y = perlin_noise.noiseAt(x, z);
-			Block& block = _blocks[y * CHUNK_SIZE + (z * CHUNK_SIZE + x)];
+			Block& block = _blocks[z * CHUNK_SIZE + (y * CHUNK_SIZE + x)];
 
 			block.setType(MaterialType::MATERIAL_GRASS);
 			// TODO

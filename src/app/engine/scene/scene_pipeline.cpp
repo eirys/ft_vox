@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/06 20:50:48 by etran             #+#    #+#             */
-/*   Updated: 2023/09/15 16:28:07 by etran            ###   ########.fr       */
+/*   Updated: 2023/09/22 16:25:00 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -185,7 +185,7 @@ void	ScenePipeline::draw(
 	vkCmdDrawIndexed(
 		command_buffer.getBuffer(),
 		static_cast<uint32_t>(input.getIndicesCount()),
-		RENDER_DISTANCE, 0, 0, 0);
+		RENDER_DISTANCE * RENDER_DISTANCE, 0, 0, 0);
 
 	vkCmdEndRenderPass(command_buffer.getBuffer());
 }

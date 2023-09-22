@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/18 12:06:07 by etran             #+#    #+#             */
-/*   Updated: 2023/09/18 17:34:06 by etran            ###   ########.fr       */
+/*   Updated: 2023/09/22 10:40:45 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -145,7 +145,7 @@ PerlinNoise::NoiseMapInfo	WorldGenerator::_getDefaultMapInfo(
 ) const noexcept {
 	PerlinNoise::NoiseMapInfo	noise_info{};
 	noise_info.type = vox::PerlinNoiseType::PERLIN_NOISE_2D;
-	noise_info.seed = 42;
+	noise_info.seed = seed;
 
 	// World sizes
 	noise_info.width = _width;
