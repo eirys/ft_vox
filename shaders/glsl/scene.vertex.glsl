@@ -54,7 +54,7 @@ vec4	extractPos(int _data) {
 	float alt = texture(height_map, vec3(position.xz, gl_InstanceIndex)).x;
 	vec3 chunk = 16 * vec3(
 		gl_InstanceIndex % 5,
-		0,
+		alt,
 		int(gl_InstanceIndex / 5));
 	// vec3 chunk = 16 * vec3(
 	// 	(_data >> 12) & 0xFF,
