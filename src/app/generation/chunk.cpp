@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/19 11:46:11 by etran             #+#    #+#             */
-/*   Updated: 2023/09/22 15:19:38 by etran            ###   ########.fr       */
+/*   Updated: 2023/09/22 16:53:27 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -100,7 +100,6 @@ std::array<uint8_t, CHUNK_AREA>	Chunk::getHeightMap() const noexcept {
 /*                                   PRIVATE                                  */
 /* ========================================================================== */
 
-// Fill surface, then fill column
 /**
  * @brief Fills chunk volume data.
 */

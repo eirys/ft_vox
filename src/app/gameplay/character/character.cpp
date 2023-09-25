@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/05 09:57:24 by etran             #+#    #+#             */
-/*   Updated: 2023/09/22 15:44:41 by etran            ###   ########.fr       */
+/*   Updated: 2023/09/22 16:58:00 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,12 +45,7 @@ void	Character::move(const scop::Vect3& input) noexcept {
 	_position = scop::fma(
 		_eye_dir,
 		input.z,
-		scop::fma(
-			y_axis,
-			input.y,
-			scop::fma(side, input.x, _position)
-		)
-	);
+		scop::fma(y_axis, input.y, scop::fma(side, input.x, _position)));
 }
 
 /**

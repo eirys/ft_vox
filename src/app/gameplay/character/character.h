@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/05 09:55:33 by etran             #+#    #+#             */
-/*   Updated: 2023/09/22 16:24:28 by etran            ###   ########.fr       */
+/*   Updated: 2023/09/22 16:45:56 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,7 @@
 # include "vector.h"
 
 # ifdef __LINUX
-#  define VOX_CAMERA_SPEED		0.1f
+#  define VOX_CAMERA_SPEED		0.15f
 # else
 #  define VOX_CAMERA_SPEED		0.05f
 # endif

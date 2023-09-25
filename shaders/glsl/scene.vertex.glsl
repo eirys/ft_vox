@@ -34,12 +34,14 @@ const vec2 uvs[4] = {
 
 vec4	extractPos(int _data) {
 	vec3 position = vec3(
-		_data & 0xFF,
+		(_data >> 16) & 0xFF,
 		(_data >> 8) & 0xFF,
-		(_data >> 16) & 0xFF);
+		_data & 0xFF);
 
+	// A layer of height_map = a chunk
+	// To retrieve a value from the height_map, we need to know the chunk:
 	// vec4 height = texture(height_map, vec3(position.xz, gl_InstanceIndex));
-	// position.y += int(height.r) & 0xFF;
+	position.y += texelFetch(height_map, ivec3(position.xz, gl_InstanceIndex), 0).r / 255.0;
 
 	vec3 chunk = 16 * vec3(
 		gl_InstanceIndex % 5,
@@ -59,11 +61,11 @@ void	main() {
 	vec4 position = extractPos(in_position);
 	vec3 shadow_coord = (projector.vp * position).xyz;
 
-	// out_normal = extractNormal(in_nuvf);
-	out_normal = normals[int(gl_VertexIndex / 4) % 6];
-	// out_uvw = vec3(extractUV(in_nuvf), extractTextureIndex(in_nuvf));
-	out_uvw = vec3(uvs[int(gl_VertexIndex % 4)], 0);
+	int side = int(gl_VertexIndex / 4) % 6;
+	out_normal = normals[side];
+	out_uvw = vec3(uvs[int(gl_VertexIndex % 4)], side);
 
-	out_shadow = vec3(shadow_coord.xy * 0.5f + 0.5f, shadow_coord.z);
+	// out_shadow = vec3(shadow_coord.xy * 0.5f + 0.5f, shadow_coord.z);
+	out_shadow = texture(height_map, vec3(position.xz, gl_InstanceIndex)).rgb;
 	gl_Position = camera.vp * position;
 }

@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/02 16:09:44 by etran             #+#    #+#             */
-/*   Updated: 2023/09/22 16:20:56 by etran            ###   ########.fr       */
+/*   Updated: 2023/09/22 19:12:31 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -378,7 +378,7 @@ void	Engine::_assembleGraphicsPipelines() {
 	rasterizing.depthBiasEnable = VK_FALSE;
 	rasterizing.depthBiasConstantFactor = 0.0f;
 	rasterizing.depthBiasClamp = 0.0f;
-	rasterizing.cullMode = VK_CULL_MODE_FRONT_BIT;
+	rasterizing.cullMode = VK_CULL_MODE_BACK_BIT;
 	rasterizing.depthBiasSlopeFactor = 0.0f;
 
 	/* MULTISAMPLING =========================================================== */
