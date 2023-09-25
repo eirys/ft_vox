@@ -116,7 +116,7 @@ void	HeightTextureHandler::_createTextureImages(Device& device) {
 		device,
 		CHUNK_SIZE,
 		CHUNK_SIZE,
-		VK_FORMAT_R8_SRGB,
+		VK_FORMAT_R8_SNORM,
 		VK_IMAGE_USAGE_TRANSFER_DST_BIT |	// For copy command
 		VK_IMAGE_USAGE_SAMPLED_BIT,
 		VK_SAMPLE_COUNT_1_BIT,
@@ -129,7 +129,7 @@ void	HeightTextureHandler::_createTextureImages(Device& device) {
 void	HeightTextureHandler::_createTextureImageView(Device& device) {
 	super::_texture_buffer.initView(
 		device,
-		VK_FORMAT_R8_SRGB,
+		VK_FORMAT_R8_SNORM,
 		VK_IMAGE_ASPECT_COLOR_BIT,
 		VK_IMAGE_VIEW_TYPE_2D_ARRAY,
 		super::_mip_levels,

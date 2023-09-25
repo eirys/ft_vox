@@ -2,7 +2,6 @@
 
 // Input
 layout(location = 0) in int in_position;
-// layout(location = 1) in int in_nuvf;
 
 // Output
 layout(location = 0) out vec3 out_normal;
@@ -39,19 +38,17 @@ vec4	extractPos(int _data) {
 		_data & 0xFF);
 
 	// A layer of height_map = a chunk
-	// To retrieve a value from the height_map, we need to know the chunk:
 	// vec4 height = texture(height_map, vec3(position.xz, gl_InstanceIndex));
-	position.y += texelFetch(height_map, ivec3(position.xz, gl_InstanceIndex), 0).r / 255.0;
+
+	int cube_id = gl_VertexIndex / 24; // cube id in chunk
+	ivec2 cube_pos = ivec2(cube_id & 0xF0, cube_id & 0x0F);
+
+	position.y += texelFetch(height_map, ivec3(cube_pos, gl_InstanceIndex), 0).r * 10.0;
 
 	vec3 chunk = 16 * vec3(
 		gl_InstanceIndex % 5,
 		0,
 		gl_InstanceIndex / 5);
-
-	// vec3 chunk = 16 * vec3(
-	// 	(_data >> 12) & 0xFF,
-	// 	(_data >> 20) & 0xF,
-	// 	(_data >> 24) & 0xFF);
 
 	return vec4(chunk + position, 1.0);
 }
@@ -64,8 +61,7 @@ void	main() {
 	int side = int(gl_VertexIndex / 4) % 6;
 	out_normal = normals[side];
 	out_uvw = vec3(uvs[int(gl_VertexIndex % 4)], side);
-
 	// out_shadow = vec3(shadow_coord.xy * 0.5f + 0.5f, shadow_coord.z);
-	out_shadow = texture(height_map, vec3(position.xz, gl_InstanceIndex)).rgb;
+
 	gl_Position = camera.vp * position;
 }

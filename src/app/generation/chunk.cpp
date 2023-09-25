@@ -85,7 +85,8 @@ std::array<uint8_t, CHUNK_AREA>	Chunk::getHeightMap() const noexcept {
 		for (uint8_t x = 0; x < CHUNK_SIZE; ++x) {
 
 			for (uint8_t y = 0; y < CHUNK_SIZE; ++y) {
-				if (static_cast<bool>(_blocks[z * CHUNK_SIZE + (y * CHUNK_SIZE + x)])) {
+				const Block& block = _blocks[z * CHUNK_SIZE + (y * CHUNK_SIZE + x)];
+				if (block.getType() != MaterialType::MATERIAL_AIR) {
 					height_map[z * CHUNK_SIZE + x] = y;
 					break;
 				}
