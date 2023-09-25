@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/19 11:46:11 by etran             #+#    #+#             */
-/*   Updated: 2023/09/22 16:53:27 by etran            ###   ########.fr       */
+/*   Updated: 2023/09/25 14:50:03 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,7 @@ namespace vox {
 
 Chunk::Chunk(const PerlinNoise& noise, uint8_t x, uint8_t y, uint8_t z):
 	_x(x), _y(y), _z(z) {
-		_blocks.reserve(CHUNK_VOLUME);
+		// _blocks.reserve(CHUNK_VOLUME);
 		_generateChunk(noise);
 }
 
@@ -78,23 +78,27 @@ Chunk::ChunkMesh	Chunk::generateChunkMesh() noexcept {
 	return mesh;
 }
 
-std::array<uint8_t, CHUNK_AREA>	Chunk::getHeightMap() const noexcept {
-	std::array<uint8_t, CHUNK_AREA>	height_map{};
+// std::array<uint8_t, CHUNK_AREA>	Chunk::getHeightMap() const noexcept {
+const std::array<uint8_t, CHUNK_AREA>&	Chunk::getHeightMap() const noexcept {
+	// std::array<uint8_t, CHUNK_AREA>	height_map{};
 
-	for (uint8_t z = 0; z < CHUNK_SIZE; ++z) {
-		for (uint8_t x = 0; x < CHUNK_SIZE; ++x) {
+	// for (uint8_t z = 0; z < CHUNK_SIZE; ++z) {
+	// 	for (uint8_t x = 0; x < CHUNK_SIZE; ++x) {
 
-			for (uint8_t y = 0; y < CHUNK_SIZE; ++y) {
-				const Block& block = _blocks[z * CHUNK_SIZE + (y * CHUNK_SIZE + x)];
-				if (block.getType() != MaterialType::MATERIAL_AIR) {
-					height_map[z * CHUNK_SIZE + x] = y;
-					break;
-				}
-			}
+	// 		uint8_t height = 0;
+	// 		for (uint8_t y = 0; y < CHUNK_SIZE; ++y) {
+	// 			// const Block& block = _blocks[z * CHUNK_SIZE + (y * CHUNK_SIZE + x)];
+	// 			// if (block.getType() != MaterialType::MATERIAL_AIR) {
+	// 			// 	height_map[z * CHUNK_SIZE + x] = y;
+	// 			// 	break;
+	// 			// }
 
-		}
-	}
-	return height_map;
+	// 		}
+
+	// 	}
+	// }
+	// return height_map;
+	return _blocks;
 }
 
 /* ========================================================================== */
@@ -105,18 +109,20 @@ std::array<uint8_t, CHUNK_AREA>	Chunk::getHeightMap() const noexcept {
  * @brief Fills chunk volume data.
 */
 void	Chunk::_generateChunk(const PerlinNoise& perlin_noise) {
-	_blocks.resize(CHUNK_VOLUME);
+	// _blocks.resize(CHUNK_VOLUME);
 
 	for (uint8_t z = 0; z < CHUNK_SIZE; ++z) {
-		for (uint8_t x = 0; x < CHUNK_SIZE; ++x) {
+		// for (uint8_t x = 0; x < CHUNK_SIZE; ++x) {
+			uint8_t x = 0;
 			float y = perlin_noise.noiseAt(x, z);
-			Block& block = _blocks[z * CHUNK_SIZE + (y * CHUNK_SIZE + x)];
+			// Block& block = _blocks[z * CHUNK_SIZE + (y * CHUNK_SIZE + x)];
 
-			block.setType(MaterialType::MATERIAL_GRASS);
+			_blocks[z * CHUNK_SIZE + x] = y;
+			// block.setType(MaterialType::MATERIAL_GRASS);
 			// TODO
 			// _fillColumn(x, y);
 		}
-	}
+	// }
 }
 
 } // namespace vox

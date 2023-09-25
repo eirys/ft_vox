@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/18 17:42:36 by etran             #+#    #+#             */
-/*   Updated: 2023/09/18 17:44:12 by etran            ###   ########.fr       */
+/*   Updated: 2023/09/25 14:49:07 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,13 +39,17 @@ World::World(
 */
 std::vector<uint8_t>	World::generateHeightBuffer() const noexcept {
 	std::vector<uint8_t>	height_buffer;
-	height_buffer.reserve(WORLD_SIZE);
+
+	height_buffer.reserve(_chunks.size() * CHUNK_AREA);
 
 	std::size_t	offset = 0;
 	for (const Chunk& chunk: _chunks) {
-		auto chunk_map = chunk.getHeightMap();
-		memcpy(height_buffer.data() + offset, chunk_map.data(), chunk_map.size());
-		offset += chunk_map.size();
+		const auto& chunk_map = chunk.getHeightMap();
+		memcpy(
+			height_buffer.data() + offset,
+			chunk_map.data(),
+			chunk_map.size());
+		offset += chunk_map.size() * sizeof(uint8_t);
 	}
 
 	return height_buffer;

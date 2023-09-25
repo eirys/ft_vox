@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/05 09:55:33 by etran             #+#    #+#             */
-/*   Updated: 2023/09/22 16:45:56 by etran            ###   ########.fr       */
+/*   Updated: 2023/09/25 14:14:46 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,7 @@
 # else
 #  define VOX_CAMERA_SPEED		0.05f
 # endif
-# define VOX_DEFAULT_EYE_DIR	scop::Vect3(0.0f, 0.0f, -1.0f)
+# define VOX_DEFAULT_EYE_DIR	scop::Vect3(0.0f, 0.0f, 1.0f)
 
 namespace vox {
 

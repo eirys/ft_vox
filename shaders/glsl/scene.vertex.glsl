@@ -43,7 +43,7 @@ vec4	extractPos(int _data) {
 	int cube_id = gl_VertexIndex / 24; // cube id in chunk
 	ivec2 cube_pos = ivec2(cube_id & 0xF0, cube_id & 0x0F);
 
-	position.y += texelFetch(height_map, ivec3(cube_pos, gl_InstanceIndex), 0).r * 10.0;
+	position.y += texelFetch(height_map, ivec3(cube_pos, gl_InstanceIndex), 0).r * 255.0;
 
 	vec3 chunk = 16 * vec3(
 		gl_InstanceIndex % 5,
