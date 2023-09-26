@@ -11,5 +11,3 @@ C:\VulkanSDK\1.3.250.1\Bin\glslc.exe -fshader-stage=vertex shaders/glsl/shadow.v
 :: C:\VulkanSDK\1.3.250.1\Bin\dxc.exe -spirv -T vs_6_0 -E main "shaders\hlsl\shadow_vert.hlsl" -Fo "shaders\shadow_vert.spv"
 
 echo "Shaders compiled."
-
-pause

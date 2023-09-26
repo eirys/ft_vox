@@ -45,10 +45,9 @@ static ObjectDirection	opposite(ObjectDirection dir) noexcept {
 /* ========================================================================== */
 
 App::App(): _game(42) {
-	// _loadTerrain();
 	resetGame();
 	_window.init(this);
-	_engine.init(_window, _game);// _vertices, _indices);
+	_engine.init(_window, _game);
 }
 
 App::~App() {

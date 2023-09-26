@@ -11,7 +11,8 @@ layout(location = 2) out vec3 out_shadow;
 /* UNIFORMS ================================================================= */
 layout(binding = 0, set = 0) uniform Camera { mat4 vp; }	camera;
 layout(binding = 1, set = 0) uniform Projector { mat4 vp; }	projector;
-layout(binding = 5, set = 0) uniform sampler2DArray			height_map;
+layout(binding = 5, set = 0) uniform usampler2DArray		height_map;
+// layout(r8ui, binding = 5, set = 0) uniform readonly uimage2DArray			height_map;
 
 /* CONSTS =================================================================== */
 const vec3 normals[6] = {
@@ -33,19 +34,18 @@ const vec2 uvs[4] = {
 
 vec4	extractPos(int _data) {
 	vec3 position = vec3(
-		(_data >> 16) & 0xFF,
-		(_data >> 8) & 0xFF,
-		_data & 0xFF);
+		(_data >> 16)	& 0xFF,	// vertex x
+		(_data >> 8)	& 0xFF,	// y
+		_data 			& 0xFF);
 
-	// A layer of height_map = a chunk
-	// vec4 height = texture(height_map, vec3(position.xz, gl_InstanceIndex));
+	int cube_id = gl_VertexIndex / 24;
+	ivec2 cube_pos = ivec2(cube_id % 16, cube_id / 16);							// 0 to 255
+	vec2 cube_pos_remap = vec2(cube_pos) / vec2(textureSize(height_map, 0));	// Remap to 0 - 1
 
-	int cube_id = gl_VertexIndex / 24; // cube id in chunk
-	ivec2 cube_pos = ivec2(cube_id & 0xF0, cube_id & 0x0F);
+	position.y += texture(height_map, vec3(cube_pos_remap, gl_InstanceIndex)).r;
+	// position.y += texelFetch(height_map, ivec3(cube_pos, gl_InstanceIndex), 0).r;
 
-	position.y += texelFetch(height_map, ivec3(cube_pos, gl_InstanceIndex), 0).r * 255.0;
-
-	vec3 chunk = 16 * vec3(
+	vec3 chunk = 16.0 * vec3(
 		gl_InstanceIndex % 5,
 		0,
 		gl_InstanceIndex / 5);
@@ -60,8 +60,8 @@ void	main() {
 
 	int side = int(gl_VertexIndex / 4) % 6;
 	out_normal = normals[side];
-	out_uvw = vec3(uvs[int(gl_VertexIndex % 4)], side);
-	// out_shadow = vec3(shadow_coord.xy * 0.5f + 0.5f, shadow_coord.z);
+	out_uvw = vec3(uvs[gl_VertexIndex % 4], side);
+	out_shadow = vec3(shadow_coord.xy * 0.5f + 0.5f, shadow_coord.z);
 
 	gl_Position = camera.vp * position;
 }

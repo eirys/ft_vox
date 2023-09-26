@@ -55,7 +55,7 @@ void	HeightTextureHandler::copyData(
 
 	// Copy every chunk data
 	staging_buffer.map(device.getLogicalDevice());
-	staging_buffer.copyFrom(height_map.data(), static_cast<std::size_t>(layer_size) * CHUNK_SIZE);
+	staging_buffer.copyFrom(height_map.data(), static_cast<std::size_t>(layer_size) * super::_layer_count);
 	staging_buffer.unmap(device.getLogicalDevice());
 
 	// Setup copy command buffer
@@ -116,7 +116,7 @@ void	HeightTextureHandler::_createTextureImages(Device& device) {
 		device,
 		CHUNK_SIZE,
 		CHUNK_SIZE,
-		VK_FORMAT_R8_SNORM,
+		VK_FORMAT_R8_UINT,
 		VK_IMAGE_USAGE_TRANSFER_DST_BIT |	// For copy command
 		VK_IMAGE_USAGE_SAMPLED_BIT,
 		VK_SAMPLE_COUNT_1_BIT,
@@ -129,7 +129,7 @@ void	HeightTextureHandler::_createTextureImages(Device& device) {
 void	HeightTextureHandler::_createTextureImageView(Device& device) {
 	super::_texture_buffer.initView(
 		device,
-		VK_FORMAT_R8_SNORM,
+		VK_FORMAT_R8_UINT,
 		VK_IMAGE_ASPECT_COLOR_BIT,
 		VK_IMAGE_VIEW_TYPE_2D_ARRAY,
 		super::_mip_levels,
@@ -142,9 +142,9 @@ void	HeightTextureHandler::_createTextureSampler(Device& device) {
 	sampler.magFilter = VK_FILTER_NEAREST;
 	sampler.minFilter = VK_FILTER_NEAREST;
 	sampler.mipmapMode = VK_SAMPLER_MIPMAP_MODE_NEAREST;
-	sampler.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-	sampler.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-	sampler.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+	sampler.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+	sampler.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+	sampler.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
 	sampler.anisotropyEnable = VK_FALSE;
 	sampler.maxAnisotropy = 1.0;
 	sampler.compareEnable = VK_FALSE;

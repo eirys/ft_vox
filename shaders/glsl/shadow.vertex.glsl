@@ -5,7 +5,7 @@ layout(location = 0) in int in_position;
 
 // Constant buffers
 layout(binding = 0, set = 1) uniform Projector { mat4 vp; }	projector;
-layout(binding = 1, set = 1) uniform sampler2DArray			height_map;
+layout(binding = 1, set = 1) uniform usampler2DArray			height_map;
 
 vec4	extractPos(int _data) {
 	vec3 position = vec3(
@@ -13,20 +13,16 @@ vec4	extractPos(int _data) {
 		(_data >> 4) & 0xF,
 		(_data >> 8) & 0xF);
 
-	float alt = texture(height_map, vec3(position.xz, gl_InstanceIndex)).x;
-	vec3 chunk = 16 * vec3(
+	int cube_id = gl_VertexIndex / 24;
+	ivec2 cube_pos = ivec2(cube_id % 16, cube_id / 16);							// 0 to 255
+	vec2 cube_pos_remap = vec2(cube_pos) / vec2(textureSize(height_map, 0));	// Remap to 0 - 1
+
+	position.y += texture(height_map, vec3(cube_pos_remap, gl_InstanceIndex)).r;
+
+	vec3 chunk = 16.0 * vec3(
 		gl_InstanceIndex % 5,
 		0,
-		int(gl_InstanceIndex / 5));
-
-	// vec3 position = vec3(
-	// 	in_position & 0xF,
-	// 	(in_position >> 4) & 0xF,
-	// 	(in_position >> 8) & 0xF);
-	// vec3 chunk = 16 * vec3(
-	// 	(in_position >> 12) & 0xFF,
-	// 	(in_position >> 20) & 0xF,
-	// 	(in_position >> 24) & 0xFF);
+		gl_InstanceIndex / 5);
 
 	return vec4(chunk + position, 1.0);
 }

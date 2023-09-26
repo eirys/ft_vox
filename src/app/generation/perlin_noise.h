@@ -144,7 +144,7 @@ private:
 	std::vector<std::size_t>	permutation_table;
 	std::vector<float>			noise_map;
 
-	const float					scale = 20;
+	const float					scale = 16;
 	const float					shift = 0;
 
 	/* ========================================================================= */

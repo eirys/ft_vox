@@ -26,6 +26,8 @@ class PerlinNoise;
 
 /**
  * @brief World subdivision. A chunk size is 16 x 16 x 16.
+ *
+ * @note x, y and z represent the chunk's position in the world.
 */
 class Chunk final {
 public:

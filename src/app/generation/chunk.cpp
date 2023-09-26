@@ -112,17 +112,20 @@ void	Chunk::_generateChunk(const PerlinNoise& perlin_noise) {
 	// _blocks.resize(CHUNK_VOLUME);
 
 	for (uint8_t z = 0; z < CHUNK_SIZE; ++z) {
-		// for (uint8_t x = 0; x < CHUNK_SIZE; ++x) {
-			uint8_t x = 0;
-			float y = perlin_noise.noiseAt(x, z);
+		for (uint8_t x = 0; x < CHUNK_SIZE; ++x) {
+			float y = perlin_noise.noiseAt(_x * CHUNK_SIZE + x, _z * CHUNK_SIZE + z);
+			uint8_t height = (uint8_t)y;
+			_blocks[z * CHUNK_SIZE + x] = height;
+
+
 			// Block& block = _blocks[z * CHUNK_SIZE + (y * CHUNK_SIZE + x)];
 
-			_blocks[z * CHUNK_SIZE + x] = y;
+			//uint8_t height = static_cast<int32_t>((y / 16) & 0xFF);
 			// block.setType(MaterialType::MATERIAL_GRASS);
 			// TODO
 			// _fillColumn(x, y);
 		}
-	// }
+	}
 }
 
 } // namespace vox

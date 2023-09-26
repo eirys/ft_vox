@@ -43,7 +43,7 @@ const std::vector<const char*>	Engine::validation_layers = {
 };
 
 /* ========================================================================== */
-/*                                   PUBLIC                                   */
+/*                                   PUBLIC                                   */	
 /* ========================================================================== */
 
 void	Engine::init(::scop::Window& window, const GameState& game) {

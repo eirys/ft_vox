@@ -229,7 +229,7 @@ float	PerlinNoise::noiseAt(std::size_t x, std::size_t y) const noexcept {
 	assert(x < width);
 	assert(y < height);
 
-	float noise = noise_map[std::fma(y, width, x)];
+	float noise = noise_map[std::fma(y, width, x)]; // 0 to 1
 	return std::floor(std::fma(noise, scale, shift));
 }
 

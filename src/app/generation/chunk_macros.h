@@ -22,7 +22,7 @@
 # define BLOCK_FACES_COUNT			6
 
 // Number of vertices in a flat chunk mesh
-# define BLOCK_VERTICES_COUNT		BLOCK_FACES_COUNT * 4
+# define BLOCK_VERTICES_COUNT		BLOCK_FACES_COUNT * 4					// 24
 # define CHUNK_VERTICES_COUNT		CHUNK_AREA * BLOCK_VERTICES_COUNT
 
 // Number of indices in a flat chunk mesh
