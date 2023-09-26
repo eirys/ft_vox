@@ -12,11 +12,6 @@
 
 #pragma once
 
-// Graphics
-# ifndef GLFW_INCLUDE_VULKAN
-#  define GLFW_INCLUDE_VULKAN
-# endif
-
 # include "texture_handler.h"
 
 namespace scop::graphics {

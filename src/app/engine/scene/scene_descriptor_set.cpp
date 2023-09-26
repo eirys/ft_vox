@@ -63,12 +63,19 @@ void	SceneDescriptorSet::init(Device& device) {
 	depth.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 	depth.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 
-	std::array<VkDescriptorSetLayoutBinding, 5>	bindings = {
+	VkDescriptorSetLayoutBinding	height{};
+	height.binding = 5;
+	height.descriptorCount = 1;
+	height.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+	height.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+
+	std::array<VkDescriptorSetLayoutBinding, 6>	bindings = {
 		camera,
 		projector,
 		light,
 		texture,
-		depth };
+		depth,
+		height };
 
 	VkDescriptorSetLayoutCreateInfo	layout_info{};
 	layout_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
@@ -80,7 +87,7 @@ void	SceneDescriptorSet::init(Device& device) {
 	}
 
 	super::_writes_sizes.uniform_buffer = 3;
-	super::_writes_sizes.combined_image_sampler = 2;
+	super::_writes_sizes.combined_image_sampler = 3;
 }
 
 /**
@@ -92,7 +99,8 @@ void	SceneDescriptorSet::plug(
 	Device& device,
 	Buffer& buffer,
 	TextureHandlerPtr textures,
-	TextureHandlerPtr shadowmap
+	TextureHandlerPtr shadowmap,
+	TextureHandlerPtr heightmap
 ) {
 	VkDescriptorBufferInfo	camera_info{};
 	camera_info.buffer = buffer.getBuffer();
@@ -119,7 +127,12 @@ void	SceneDescriptorSet::plug(
 	depth_info.imageView = shadowmap->getTextureBuffer().getView();
 	depth_info.sampler = shadowmap->getTextureSampler();
 
-	std::array<VkWriteDescriptorSet, 5>	writes{};
+	VkDescriptorImageInfo	height_info{};
+	height_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+	height_info.imageView = heightmap->getTextureBuffer().getView();
+	height_info.sampler = heightmap->getTextureSampler();
+
+	std::array<VkWriteDescriptorSet, 6>	writes{};
 
 	// Camera UBO
 	writes[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
@@ -175,6 +188,17 @@ void	SceneDescriptorSet::plug(
 	writes[4].pBufferInfo = nullptr;
 	writes[4].pImageInfo = &depth_info;
 	writes[4].pTexelBufferView = nullptr;
+
+	// Height sampler
+	writes[5].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+	writes[5].dstSet = super::_set;
+	writes[5].dstBinding = 5;
+	writes[5].dstArrayElement = 0;
+	writes[5].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+	writes[5].descriptorCount = 1;
+	writes[5].pBufferInfo = nullptr;
+	writes[5].pImageInfo = &height_info;
+	writes[5].pTexelBufferView = nullptr;
 
 	vkUpdateDescriptorSets(
 		device.getLogicalDevice(),

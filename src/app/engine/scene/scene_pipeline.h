@@ -56,7 +56,10 @@ public:
 	void	assemble(
 		Device& device,
 		VkGraphicsPipelineCreateInfo& info) override;
-	void	plugDescriptor(Device& device, TextureHandlerPtr shadowmap);
+	void	plugDescriptor(
+		Device& device,
+		TextureHandlerPtr shadowmap,
+		TextureHandlerPtr heightmap);
 	void	destroy(Device& device) override;
 
 	void	draw(
@@ -90,7 +93,7 @@ private:
 	/*                               CLASS MEMBERS                               */
 	/* ========================================================================= */
 
-	Buffer	_ubo;
+	Buffer					_ubo;
 
 }; // class ScenePipeline
 

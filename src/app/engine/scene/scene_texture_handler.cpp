@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/10 22:32:26 by etran             #+#    #+#             */
-/*   Updated: 2023/09/18 10:27:08 by etran            ###   ########.fr       */
+/*   Updated: 2023/09/22 16:38:57 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -89,7 +89,7 @@ void	SceneTextureHandler::_createTextureImages(Device& device) {
 		VK_IMAGE_USAGE_TRANSFER_DST_BIT |	// For copy command
 		VK_IMAGE_USAGE_SAMPLED_BIT,			// For shader access
 		VK_SAMPLE_COUNT_1_BIT,
-		_mip_levels,
+		super::_mip_levels,
 		super::_texture_count,
 		0,
 		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
@@ -191,9 +191,8 @@ std::vector<Texture>	SceneTextureHandler::_loadTextures() const {
 	std::vector<Texture>	images;
 	const std::vector<std::string>	paths {
 		SCOP_TEXTURE_PATH "grass_top.ppm",
-		SCOP_TEXTURE_PATH "grass_side.ppm",
-		SCOP_TEXTURE_PATH "dirt.ppm"
-	};
+		SCOP_TEXTURE_PATH "dirt.ppm",
+		SCOP_TEXTURE_PATH "grass_side.ppm" };
 	images.reserve(paths.size());
 
 	assert(paths.size() < TEXTURE_SAMPLER_COUNT);

@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/06 20:50:48 by etran             #+#    #+#             */
-/*   Updated: 2023/09/15 16:28:07 by etran            ###   ########.fr       */
+/*   Updated: 2023/09/22 16:25:00 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,8 +21,17 @@
 #include "scene_render_pass.h"
 #include "scene_target.h"
 #include "scene_descriptor_set.h"
+#include "chunk_macros.h"
 
 #include <stdexcept> // std::runtime_error
+
+#if defined(__LINUX)
+# define SCENE_VERTEX_PATH "shaders/scene.vertex.spv"
+# define SCENE_FRAGMENT_PATH "shaders/scene.fragment.spv"
+#else
+# define SCENE_VERTEX_PATH "shaders/scene_vert.spv"
+# define SCENE_FRAGMENT_PATH "shaders/scene_frag.spv"
+#endif
 
 namespace scop::graphics {
 
@@ -63,9 +72,9 @@ void	ScenePipeline::assemble(
 ) {
 	/* SHADERS ================================================================= */
 	VkShaderModule	vert_module =
-		super::_createShaderModule(device, "shaders/scene.vertex.spv");
+		super::_createShaderModule(device, SCENE_VERTEX_PATH);
 	VkShaderModule	frag_module =
-		super::_createShaderModule(device, "shaders/scene.fragment.spv");
+		super::_createShaderModule(device, SCENE_FRAGMENT_PATH);
 
 	VkPipelineShaderStageCreateInfo	vert_info{};
 	vert_info.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -110,11 +119,17 @@ void	ScenePipeline::destroy(Device& device) {
 
 void	ScenePipeline::plugDescriptor(
 	Device& device,
-	TextureHandlerPtr shadowmap
+	TextureHandlerPtr shadowmap,
+	TextureHandlerPtr heightmap
 ) {
 	auto	scene_descriptors =
 		std::dynamic_pointer_cast<SceneDescriptorSet>(super::_descriptor);
-	scene_descriptors->plug(device, _ubo, super::_texture, shadowmap);
+	scene_descriptors->plug(
+		device,
+		_ubo,
+		super::_texture,
+		shadowmap,
+		heightmap);
 }
 
 /**
@@ -170,7 +185,7 @@ void	ScenePipeline::draw(
 	vkCmdDrawIndexed(
 		command_buffer.getBuffer(),
 		static_cast<uint32_t>(input.getIndicesCount()),
-		1, 0, 0, 0);
+		RENDER_DISTANCE * RENDER_DISTANCE, 0, 0, 0);
 
 	vkCmdEndRenderPass(command_buffer.getBuffer());
 }

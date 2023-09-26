@@ -27,7 +27,7 @@ namespace scop::graphics {
 
 void	InputHandler::init(
 	Device& device,
-	const std::vector<Vertex>& vertices,
+	const std::vector<vox::Vertex>& vertices,
 	const std::vector<uint32_t>& indices
 ) {
 	_indices_count = indices.size();
@@ -64,9 +64,9 @@ const Buffer&	InputHandler::getIndexBuffer() const noexcept {
 */
 void	InputHandler::_createVertexBuffer(
 	Device& device,
-	const std::vector<Vertex>& vertices
+	const std::vector<vox::Vertex>& vertices
 ) {
-	const VkDeviceSize	buffer_size = sizeof(Vertex) * vertices.size();
+	const VkDeviceSize	buffer_size = sizeof(vox::Vertex) * vertices.size();
 
 	// Create staging buffer to upload to from cpu
 	scop::graphics::Buffer	staging_buffer;

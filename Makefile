@@ -6,7 +6,7 @@
 #    By: etran <etran@student.42.fr>                +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/04/06 03:40:09 by eli               #+#    #+#              #
-#    Updated: 2023/09/18 17:44:33 by etran            ###   ########.fr        #
+#    Updated: 2023/09/22 11:20:01 by etran            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -58,6 +58,9 @@ SRC_FILES	:=	$(TOOLS_DIR)/matrix.cpp \
 				$(MODEL_DIR)/mtl_parser.cpp \
 				$(GEN_DIR)/perlin_noise.cpp \
 				$(GEN_DIR)/cube.cpp \
+				$(GEN_DIR)/packed_cube.cpp \
+				$(GEN_DIR)/block.cpp \
+				$(GEN_DIR)/chunk.cpp \
 				$(GEN_DIR)/world.cpp \
 				$(GEN_DIR)/world_generator.cpp \
 				$(IMG_DIR)/ppm_loader.cpp \
@@ -75,6 +78,7 @@ SRC_FILES	:=	$(TOOLS_DIR)/matrix.cpp \
 				$(ENG_DIR)/descriptor_set.cpp \
 				$(ENG_DIR)/command_pool.cpp \
 				$(ENG_DIR)/texture_handler.cpp \
+				$(ENG_DIR)/height_texture_handler.cpp \
 				$(ENG_DIR)/target.cpp \
 				$(ENG_DIR)/input_handler.cpp \
 				$(ENG_DIR)/engine.cpp \

@@ -24,11 +24,14 @@
 
 # include "buffer.h"
 
-namespace scop {
+namespace vox {
+
 struct Vertex;
+
 } // namespace scop
 
 namespace scop::graphics {
+
 class Device;
 
 class InputHandler {
@@ -49,7 +52,7 @@ public:
 
 	void			init(
 		Device& device,
-		const std::vector<Vertex>& vertices,
+		const std::vector<vox::Vertex>& vertices,
 		const std::vector<uint32_t>& indices
 	);
 	void			destroy(Device& device);
@@ -75,7 +78,7 @@ private:
 
 	void			_createVertexBuffer(
 		Device& device,
-		const std::vector<Vertex>& vertices
+		const std::vector<vox::Vertex>& vertices
 	);
 	void			_createIndexBuffer(
 		Device& device,

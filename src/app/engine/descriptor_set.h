@@ -20,6 +20,7 @@
 
 // Std
 # include <vector> // std::vector
+# include <memory> // std::shared_ptr
 
 namespace scop::graphics {
 
@@ -32,8 +33,10 @@ public:
 	/* ========================================================================= */
 
 	struct DescriptorSizes {
-		uint32_t	uniform_buffer;
-		uint32_t	combined_image_sampler;
+		uint32_t	uniform_buffer = 0;
+		uint32_t	combined_image_sampler = 0;
+		uint32_t	storage_image = 0;
+		uint32_t	storage_buffer = 0;
 	};
 
 	/* ========================================================================= */

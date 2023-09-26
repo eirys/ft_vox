@@ -1,32 +1,24 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   cube.h                                             :+:      :+:    :+:   */
+/*   packed_cube.h                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/06/04 17:19:11 by etran             #+#    #+#             */
-/*   Updated: 2023/09/18 17:38:34 by etran            ###   ########.fr       */
+/*   Created: 2023/09/20 15:10:33 by etran             #+#    #+#             */
+/*   Updated: 2023/09/22 11:20:19 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
-# include "vector.h"
+# include <cstdint>
+# include <array> // std::array
 
 namespace vox {
 
-enum class FaceType: uint8_t {
-	FACE_LEFT,
-	FACE_RIGHT,
-	FACE_FRONT,
-	FACE_BACK,
-	FACE_TOP,
-	FACE_BOTTOM
-};
-
 /**
- * @brief GFX Representation of a Block. Generates a cube from a position.
+ * @brief GFX Representation of a Block but with packed position data.
  *
  * @note Its position is represented by the bottom left corner of its lower face.
  *
@@ -36,47 +28,47 @@ enum class FaceType: uint8_t {
  * |/    |/     O___x
  * a_____b
 */
-struct Cube {
+struct PackedCube final {
 	/* ========================================================================= */
 	/*                                  TYPEDEFS                                 */
 	/* ========================================================================= */
 
+	struct UnpackedVertex {
+		uint8_t x;
+		uint8_t y;
+		uint8_t z;
+	};
+
 	/**
-	 * @brief Face handler. Contains the vertices of a face, counter clockwise order.
+	 * @brief Contains the vertices of a face, counter clockwise. (cf. drawing)
 	*/
 	struct Face {
-		scop::Vect3	vertices[4];
-		FaceType	side;
-
-		scop::Vect3	normal() const noexcept;
+		std::array<UnpackedVertex, 4>	vertices;
 	};
 
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
 
-	Cube(const scop::Vect3& pos);
+	PackedCube(uint8_t x, uint8_t z);
 
-	Cube() = default;
-	Cube(Cube&& x) = default;
-	Cube(const Cube& x) = default;
-	Cube& operator=(Cube&& x) = default;
-	Cube& operator=(const Cube& x) = default;
-	~Cube() = default;
+	PackedCube() = default;
+	PackedCube(PackedCube&& x) = default;
+	PackedCube(const PackedCube& x) = default;
+	PackedCube& operator=(PackedCube&& x) = default;
+	PackedCube& operator=(const PackedCube& x) = default;
+	~PackedCube() = default;
 
 	/* VERTICES ================================================================ */
 
-	scop::Vect3			lowerBottomLeft() const noexcept;
-	scop::Vect3			lowerBottomRight() const noexcept;
-	scop::Vect3			lowerTopLeft() const noexcept;
-	scop::Vect3			lowerTopRight() const noexcept;
-
-	scop::Vect3			upperBottomLeft() const noexcept;
-	scop::Vect3			upperBottomRight() const noexcept;
-	scop::Vect3			upperTopLeft() const noexcept;
-	scop::Vect3			upperTopRight() const noexcept;
-
-	scop::Vect3			center() const noexcept;
+	UnpackedVertex		a() const noexcept;
+	UnpackedVertex		b() const noexcept;
+	UnpackedVertex		c() const noexcept;
+	UnpackedVertex		d() const noexcept;
+	UnpackedVertex		e() const noexcept;
+	UnpackedVertex		f() const noexcept;
+	UnpackedVertex		g() const noexcept;
+	UnpackedVertex		h() const noexcept;
 
 	/* FACES =================================================================== */
 
@@ -91,8 +83,9 @@ struct Cube {
 	/*                               CLASS MEMBERS                               */
 	/* ========================================================================= */
 
-	scop::Vect3			pos;
+	uint8_t				x;
+	uint8_t				z;
 
-}; // class Cube
+}; // class PackedCube
 
 } // namespace vox

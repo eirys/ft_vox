@@ -64,26 +64,5 @@ inline std::vector<uint8_t>	readFile(const std::string& filename) {
 	return buffer;
 }
 
-/**
- * @brief Computes the barycenter of a list of vertices.
- *
- * @param vertices The list of vertices.
-*/
-inline Vect3	computeBarycenter(const std::vector<Vertex>& vertices) noexcept {
-	Vect3	barycenter{};
-
-	for (const Vertex& vertex : vertices) {
-		barycenter += scop::Vect3(
-			vertex.pos & 0xFF,
-			vertex.pos >> 8 & 0xFF,
-			vertex.pos >> 16 & 0xFF
-		);
-	}
-	if (vertices.size() > 0) {
-		barycenter /= static_cast<float>(vertices.size());
-	}
-	return barycenter;
-}
-
 } // namespace utils
 } // namespace scop

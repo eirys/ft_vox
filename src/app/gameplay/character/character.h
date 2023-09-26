@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/05 09:55:33 by etran             #+#    #+#             */
-/*   Updated: 2023/08/12 15:11:52 by etran            ###   ########.fr       */
+/*   Updated: 2023/09/25 14:14:46 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,13 @@
 
 # include "scop_math.h"
 # include "vector.h"
+
+# ifdef __LINUX
+#  define VOX_CAMERA_SPEED		0.15f
+# else
+#  define VOX_CAMERA_SPEED		0.05f
+# endif
+# define VOX_DEFAULT_EYE_DIR	scop::Vect3(0.0f, 0.0f, 1.0f)
 
 namespace vox {
 
@@ -48,15 +55,14 @@ public:
 	Character(
 		const scop::Vect3& position,
 		const scop::Vect3& eye_dir,
-		float speed
-	);
+		float speed);
 
+	Character() = default;
+	Character(Character&& other) = default;
+	Character& operator=(Character&& rhs) = default;
 	virtual ~Character() = default;
 
-	Character() = delete;
-	Character(Character&& other) = delete;
 	Character(const Character& other) = delete;
-	Character& operator=(Character&& rhs) = delete;
 	Character& operator=(const Character& rhs) = delete;
 
 	/* ========================================================================= */
@@ -82,10 +88,10 @@ protected:
 	/*                               CLASS MEMBERS                               */
 	/* ========================================================================= */
 
-	scop::Vect3			_position;
-	scop::Vect3			_eye_dir;
+	scop::Vect3			_position = {0.0f, 0.0f, 0.0f};
+	scop::Vect3			_eye_dir = {0.0f, 0.0f, 0.0f};
 	Character::Camera	_camera;
-	const float			_cam_speed;
+	float				_cam_speed = VOX_CAMERA_SPEED;
 
 }; // class Character
 

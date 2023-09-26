@@ -19,7 +19,6 @@
 # include <optional> // std::optional
 
 # include "vector.h"
-# include "vertex.h"
 
 namespace vox {
 
@@ -73,15 +72,15 @@ public:
 		float					amplitude_mult;
 	};
 
-	/**
-	 * @brief Contains the vertices, normals and vertex indices of a mesh,
-	 * generated from a perlin noise map.
-	*/
-	struct PerlinMesh {
-		Vect3						origin;
-		std::vector<scop::Vertex>	vertices;
-		std::vector<uint32_t>		indices;
-	};
+	// /**
+	//  * @brief Contains the vertices, normals and vertex indices of a mesh,
+	//  * generated from a perlin noise map.
+	// */
+	// struct PerlinMesh {
+	// 	Vect3						origin;
+	// 	std::vector<vox::Vertex>	vertices;
+	// 	std::vector<uint32_t>		indices;
+	// };
 
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
@@ -99,7 +98,7 @@ public:
 	/* ========================================================================= */
 
 	std::vector<uint32_t>		toPixels() const;
-	PerlinMesh					toMesh() const;
+	// PerlinMesh					toMesh() const;
 
 	float						noiseAt(std::size_t x) const noexcept;
 	float						noiseAt(
@@ -145,7 +144,7 @@ private:
 	std::vector<std::size_t>	permutation_table;
 	std::vector<float>			noise_map;
 
-	const float					scale = 20;
+	const float					scale = 16;
 	const float					shift = 0;
 
 	/* ========================================================================= */

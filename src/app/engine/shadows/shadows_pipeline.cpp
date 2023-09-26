@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/16 10:16:30 by etran             #+#    #+#             */
-/*   Updated: 2023/09/15 16:28:50 by etran            ###   ########.fr       */
+/*   Updated: 2023/09/22 16:25:12 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,8 +24,15 @@
 
 #include "image_buffer.h"
 #include "engine.h"
+#include "chunk_macros.h"
 
 #include <stdexcept> // std::runtime_error
+
+#if defined(__LINUX)
+# define SHADOW_VERTEX_PATH "shaders/shadow.vertex.spv"
+#else
+# define SHADOW_VERTEX_PATH "shaders/shadow_vert.spv"
+#endif
 
 namespace scop::graphics {
 
@@ -59,7 +66,7 @@ void	ShadowsPipeline::assemble(
 ) {
 	/* SHADERS ================================================================= */
 	VkShaderModule	vert_module =
-		super::_createShaderModule(device, "shaders/shadow.vertex.spv");
+		super::_createShaderModule(device, SHADOW_VERTEX_PATH);
 
 	VkPipelineShaderStageCreateInfo	vert_info{};
 	vert_info.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -81,10 +88,14 @@ void	ShadowsPipeline::assemble(
 		nullptr);
 }
 
-void	ShadowsPipeline::plugDescriptor(Device& device, Buffer& ubo) {
+void	ShadowsPipeline::plugDescriptor(
+	Device& device,
+	Buffer& ubo,
+	TextureHandlerPtr heightmap
+) {
 	auto	shadows_descriptor =
 		std::dynamic_pointer_cast<ShadowsDescriptorSet>(super::_descriptor);
-	shadows_descriptor->plug(device, ubo);
+	shadows_descriptor->plug(device, ubo, heightmap);
 }
 
 void	ShadowsPipeline::draw(
@@ -139,7 +150,7 @@ void	ShadowsPipeline::draw(
 	vkCmdDrawIndexed(
 		command_buffer.getBuffer(),
 		input.getIndicesCount(),
-		1, 0, 0, 0);
+		RENDER_DISTANCE * RENDER_DISTANCE, 0, 0, 0);
 
 	vkCmdEndRenderPass(command_buffer.getBuffer());
 }

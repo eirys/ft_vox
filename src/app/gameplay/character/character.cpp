@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/05 09:57:24 by etran             #+#    #+#             */
-/*   Updated: 2023/07/04 10:29:50 by etran            ###   ########.fr       */
+/*   Updated: 2023/09/22 16:58:00 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,7 +34,7 @@ Character::Character(
 
 /**
  * @brief Updates the position of the character.
- * 
+ *
  * @param input	The input vector, containing the movement on each axis.
 */
 void	Character::move(const scop::Vect3& input) noexcept {
@@ -45,12 +45,7 @@ void	Character::move(const scop::Vect3& input) noexcept {
 	_position = scop::fma(
 		_eye_dir,
 		input.z,
-		scop::fma(
-			y_axis,
-			input.y,
-			scop::fma(side, input.x, _position)
-		)
-	);
+		scop::fma(y_axis, input.y, scop::fma(side, input.x, _position)));
 }
 
 /**
@@ -64,10 +59,7 @@ void	Character::updateEyeDir(float yaw, float pitch) noexcept {
 
 	// Clamp to avoid camera flipping.
 	_camera.pitch = std::clamp(
-		std::fma(pitch, _cam_speed, _camera.pitch),
-		-89.0f,
-		89.0f
-	);
+		std::fma(pitch, _cam_speed, _camera.pitch), -89.0f, 89.0f);
 	_eye_dir = scop::normalize(_camera.toVector());
 }
 

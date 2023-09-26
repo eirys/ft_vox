@@ -44,11 +44,10 @@ static ObjectDirection	opposite(ObjectDirection dir) noexcept {
 /*                                   PUBLIC                                   */
 /* ========================================================================== */
 
-App::App() {
-	_loadTerrain();
+App::App(): _game(42) {
 	resetGame();
 	_window.init(this);
-	_engine.init(_window, _game, _vertices, _indices);
+	_engine.init(_window, _game);
 }
 
 App::~App() {
@@ -158,12 +157,12 @@ void	App::_loadTerrain() {
 	using namespace vox;
 	LOG("Loading terrain...");
 
-	WorldGenerator	generator(42);
-	World			world = generator.generate();
-	vox::PerlinNoise::PerlinMesh	mesh = generator.toPerlinMesh();
+	// WorldGenerator	generator(42);
+	// World			world = generator.generate();
+	// vox::PerlinNoise::PerlinMesh	mesh = generator.toPerlinMesh();
 
-	_vertices = std::move(mesh.vertices);
-	_indices = std::move(mesh.indices);
+	// _vertices = std::move(mesh.vertices);
+	// _indices = std::move(mesh.indices);
 	LOG("Terrain loaded.");
 }
 

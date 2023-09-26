@@ -12,11 +12,7 @@
 
 #pragma once
 
-# define __ALIGNMENT_MAT4 16
-# define __ALIGNMENT_VEC3 16
-# define __ALIGNMENT_SCAL 4
-# define __ALIGNMENT_BUFF 64
-
+# include "constant_buffer_macros.h"
 # include "matrix.h"
 
 namespace scop {
@@ -66,6 +62,6 @@ struct UniformBufferObject {
 	alignas(__ALIGNMENT_BUFF) Projector		projector;
 	alignas(__ALIGNMENT_BUFF) Light			light;
 
-};
+}; // struct UniformBufferObject
 
 } // namespace scop

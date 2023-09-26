@@ -1,83 +1,71 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   shadows_pipeline.h                                 :+:      :+:    :+:   */
+/*   height_texture_handler.h                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/08/16 09:24:16 by etran             #+#    #+#             */
-/*   Updated: 2023/08/22 22:12:19 by etran            ###   ########.fr       */
+/*   Created: 2023/09/21 11:11:02 by etran             #+#    #+#             */
+/*   Updated: 2023/09/21 11:11:02 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
-#include "pipeline.h"
+# include "texture_handler.h"
 
 namespace scop::graphics {
 
-class Buffer;
+class CommandBuffer;
 
-class ShadowsPipeline final: public Pipeline {
+/**
+ * @brief Contains data for each block for each chunk.
+*/
+class HeightTextureHandler final: public TextureHandler {
 public:
 	/* ========================================================================= */
 	/*                                  TYPEDEFS                                 */
 	/* ========================================================================= */
 
-	using super = Pipeline;
+	using super = TextureHandler;
 	using super::Texture;
-	using super::DescriptorSetPtr;
+	using super::TextureArray;
 
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
 
-	ShadowsPipeline();
-	~ShadowsPipeline() = default;
+	HeightTextureHandler() = default;
+	~HeightTextureHandler() = default;
 
-	ShadowsPipeline(ShadowsPipeline&& other) = delete;
-	ShadowsPipeline(const ShadowsPipeline& other) = delete;
-	ShadowsPipeline& operator=(ShadowsPipeline&& other) = delete;
-	ShadowsPipeline& operator=(const ShadowsPipeline& other) = delete;
+	HeightTextureHandler(HeightTextureHandler&& other) = delete;
+	HeightTextureHandler(const HeightTextureHandler& other) = delete;
+	HeightTextureHandler& operator=(HeightTextureHandler&& other) = delete;
+	HeightTextureHandler& operator=(const HeightTextureHandler& other) = delete;
 
 	/* ========================================================================= */
 
 	using super::destroy;
 
-	void	init(
+	void					init(Device& device) override;
+	void					copyData(
 		Device& device,
-		RenderPass::RenderPassInfo& rp_info,
-		Target::TargetInfo& tar_info) override;
-	void	assemble(
-		Device& device,
-		VkGraphicsPipelineCreateInfo& info) override;
-	void	plugDescriptor(
-		Device& device,
-		Buffer& ubo,
-		TextureHandlerPtr heightmap);
-	void	draw(
-		VkPipelineLayout layout,
-		CommandBuffer& command_buffer,
-		InputHandler& input,
-		int32_t image_index) override;
+		const std::vector<uint8_t>& height_map);
 
 	/* ========================================================================= */
 
-	using super::getPipeline;
-	using super::getRenderPass;
-	using super::getTextureHandler;
-	using super::getTarget;
-	using super::getDescriptor;
+	using super::getTextureSampler;
+	using super::getTextureBuffer;
 
 private:
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
 
-	void		_beginRenderPass(
-		CommandBuffer& command_buffer,
-		int32_t image_index = 0) override;
+	void					_createTextureImages(Device& device) override;
+	void					_createTextureImageView(Device& device) override;
+	void					_createTextureSampler(Device& device) override;
 
-}; // class ShadowsPipeline
+}; // class HeightTextureHandler
 
 } // namespace scop::graphics

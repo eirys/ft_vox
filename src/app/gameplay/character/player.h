@@ -6,24 +6,13 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/05 09:50:49 by etran             #+#    #+#             */
-/*   Updated: 2023/09/18 11:08:39 by etran            ###   ########.fr       */
+/*   Updated: 2023/09/22 16:24:29 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
 # include "character.h"
-
-# ifdef __LINUX
-#  define VOX_CAMERA_SPEED		0.1f
-# else
-#  define VOX_CAMERA_SPEED		0.05f
-# endif
-# define VOX_DEFAULT_EYE_DIR	scop::Vect3(0.0f, 0.0f, 1.0f)
-
-# define VOX_DEFAULT_POS_X		1.0f
-# define VOX_DEFAULT_POS_Y		2.0f
-# define VOX_DEFAULT_POS_Z		3.0f
 
 namespace vox {
 
@@ -39,14 +28,14 @@ public:
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
 
-	Player(const scop::Vect3& position, const scop::Vect3& eye_dir);
+	Player(const scop::Vect3& position);
 
+	Player() = default;
+	Player(Player&& other) = default;
+	Player&	operator=(Player&& other) = default;
 	~Player() = default;
 
-	Player() = delete;
-	Player(Player&& other) = delete;
 	Player(const Player& other) = delete;
-	Player&	operator=(Player&& other) = delete;
 	Player&	operator=(const Player& other) = delete;
 
 	/* INHERITED =============================================================== */
@@ -60,7 +49,7 @@ public:
 
 	/* ========================================================================= */
 
-	void	reset(const scop::Vect3& pos, const scop::Vect3& eye_dir);
+	void	reset(const scop::Vect3& pos);
 
 }; // class Player
 

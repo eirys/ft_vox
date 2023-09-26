@@ -93,9 +93,9 @@ private:
 	Timer						_timer;
 
 	// Resources
-	std::vector<scop::Vertex>	_vertices;
-	std::vector<uint32_t>		_indices;
-	std::vector<Texture>		_textures;
+	// std::vector<vox::Vertex>	_vertices;
+	// std::vector<uint32_t>		_indices;
+	// std::vector<Texture>		_textures;
 
 	// Camera input
 	bool						_keys_pressed_directions[6] = { false };

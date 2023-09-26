@@ -114,7 +114,7 @@ std::vector<uint32_t>	PerlinNoise::toPixels() const {
 // 				uint8_t	face_index =
 // 					face.side == FaceType::FACE_TOP ? 0 : (
 // 					face.side == FaceType::FACE_BOTTOM ? 2 : 1);
-// 				scop::Vertex	vertex(
+// 				vox::Vertex	vertex(
 // 					face.vertices[i],
 // 					static_cast<uint8_t>(face.side),
 // 					i,
@@ -229,7 +229,7 @@ float	PerlinNoise::noiseAt(std::size_t x, std::size_t y) const noexcept {
 	assert(x < width);
 	assert(y < height);
 
-	float noise = noise_map[std::fma(y, width, x)];
+	float noise = noise_map[std::fma(y, width, x)]; // 0 to 1
 	return std::floor(std::fma(noise, scale, shift));
 }
 

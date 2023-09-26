@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/02 16:09:44 by etran             #+#    #+#             */
-/*   Updated: 2023/09/18 11:37:56 by etran            ###   ########.fr       */
+/*   Updated: 2023/09/22 19:12:31 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,17 +18,21 @@
 #include "timer.h"
 #include "utils.h"
 
+#include "chunk.h"
 #include "game_state.h"
 #include "scene_pipeline.h"
 #include "shadows_pipeline.h"
 #include "shadows_texture_handler.h"
+#include "height_texture_handler.h"
 
 #include <cstring> // std::strcmp
 
 using UniformBufferObject = ::scop::UniformBufferObject;
 using GameState = ::vox::GameState;
 using Window = ::scop::Window;
+using Chunk = ::vox::Chunk;
 
+using Vertex = ::vox::Vertex;
 using Mat4 = ::scop::Mat4;
 using Camera = ::scop::Camera;
 
@@ -39,28 +43,33 @@ const std::vector<const char*>	Engine::validation_layers = {
 };
 
 /* ========================================================================== */
-/*                                   PUBLIC                                   */
+/*                                   PUBLIC                                   */	
 /* ========================================================================== */
 
-void	Engine::init(
-	::scop::Window& window,
-	const GameState& game,
-	const std::vector<Vertex>& vertices,
-	const std::vector<uint32_t>& indices
-) {
+void	Engine::init(::scop::Window& window, const GameState& game) {
 	_pipelines.scene = std::make_shared<ScenePipeline>();
 	_pipelines.shadows = std::make_shared<ShadowsPipeline>();
+	_height_map = std::make_shared<HeightTextureHandler>();
 
 	_createInstance();
 	_debug_module.init(_vk_instance);
 	_device.init(window, _vk_instance);
 	_swap_chain.init(_device, window);
 	_command_pool.init(_device);
+
+	std::shared_ptr<HeightTextureHandler>	height_map =
+		std::dynamic_pointer_cast<HeightTextureHandler>(_height_map);
+	height_map->init(_device);
+	height_map->copyData(_device, game.getWorld().generateHeightBuffer());
+
 	_createGraphicsPipelines();
 	_createGraphicsPipelineLayout();
 	_assembleGraphicsPipelines();
 	_createDescriptors();
-	_input_handler.init(_device, vertices, indices);
+
+	// _input_handler.init(_device, vertices, indices);
+	Chunk::ChunkMesh	mesh = Chunk::generateChunkMesh();
+	_input_handler.init(_device, mesh.vertices, mesh.indices);
 	_draw_buffer.init(_device, _command_pool, max_frames_in_flight);
 	_createSyncObjects();
 
@@ -71,6 +80,7 @@ void	Engine::destroy() {
 	_swap_chain.destroy(_device);
 	_pipelines.scene->destroy(_device);
 	_pipelines.shadows->destroy(_device);
+	_height_map->destroy(_device);
 
 	vkDestroyPipelineLayout(
 		_device.getLogicalDevice(),
@@ -300,8 +310,15 @@ void	Engine::_createDescriptors() {
 		std::dynamic_pointer_cast<ScenePipeline>(_pipelines.scene);
 	ShadowsPipelinePtr shadows_pipeline =
 		std::dynamic_pointer_cast<ShadowsPipeline>(_pipelines.shadows);
-	scene_pipeline->plugDescriptor(_device, shadows_pipeline->getTextureHandler());
-	shadows_pipeline->plugDescriptor(_device, scene_pipeline->getUbo());
+
+	scene_pipeline->plugDescriptor(
+		_device,
+		shadows_pipeline->getTextureHandler(),
+		_height_map);
+	shadows_pipeline->plugDescriptor(
+		_device,
+		scene_pipeline->getUbo(),
+		_height_map);
 }
 
 void	Engine::_createGraphicsPipelineLayout() {
@@ -311,7 +328,7 @@ void	Engine::_createGraphicsPipelineLayout() {
 	};
 	VkPipelineLayoutCreateInfo	pipeline_layout_info{};
 	pipeline_layout_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-	pipeline_layout_info.setLayoutCount = layouts.size();
+	pipeline_layout_info.setLayoutCount = static_cast<uint32_t>(layouts.size());
 	pipeline_layout_info.pSetLayouts = layouts.data();
 	pipeline_layout_info.pushConstantRangeCount = 0;
 	pipeline_layout_info.pPushConstantRanges = nullptr;
@@ -324,8 +341,8 @@ void	Engine::_createGraphicsPipelineLayout() {
 void	Engine::_assembleGraphicsPipelines() {
 	/* INPUT FORMAT ============================================================ */
 	VkPipelineVertexInputStateCreateInfo	vert_input{};
-	auto	binding_description = scop::Vertex::getBindingDescription();
-	auto	attribute_descriptions = ::scop::Vertex::getSceneAttributeDescriptions();
+	auto	binding_description = vox::Vertex::getBindingDescription();
+	auto	attribute_descriptions = ::vox::Vertex::getAttributeDescriptions();
 
 	vert_input.sType =
 		VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
@@ -446,10 +463,10 @@ void	Engine::_assembleGraphicsPipelines() {
 
 	_pipelines.scene->assemble(_device, pipeline_info);
 
-	attribute_descriptions = ::scop::Vertex::getShadowAttributeDescriptions();
-	vert_input.vertexAttributeDescriptionCount =
-		static_cast<uint32_t>(attribute_descriptions.size());
-	vert_input.pVertexAttributeDescriptions = attribute_descriptions.data();
+	// attribute_descriptions = ::vox::Vertex::getShadowAttributeDescriptions();
+	// vert_input.vertexAttributeDescriptionCount =
+	// 	static_cast<uint32_t>(attribute_descriptions.size());
+	// vert_input.pVertexAttributeDescriptions = attribute_descriptions.data();
 	color_blending.attachmentCount = 0;
 	rasterizing.cullMode = VK_CULL_MODE_NONE;
 	multisampling.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
@@ -500,16 +517,11 @@ void	Engine::_updatePresentation(::scop::Window& window) {
 void	Engine::_initDescriptors(const GameState& game) noexcept {
 	UniformBufferObject	ubo{};
 
-	// Camera
 	ubo.camera = _generateCameraMatrix(game);
-
-	// Light
 	ubo.light = {
 		.ambient_color = ::scop::Vect3(0.17f, 0.15f, 0.1f),
 		.light_vector = ::scop::normalize(::scop::Vect3(0.1f, 1.0f, 0.3f)),
 		.light_color = ::scop::Vect3(1.0f, 1.0f, 0.8f) };
-
-	// Projector
 	const Mat4	view = ::scop::lookAt(
 		ubo.light.light_vector*15.0f,
 		Vect3(0.0f, 0.0f, 0.0f),
