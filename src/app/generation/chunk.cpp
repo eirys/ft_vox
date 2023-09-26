@@ -106,7 +106,7 @@ const std::array<uint8_t, CHUNK_AREA>&	Chunk::getHeightMap() const noexcept {
 /* ========================================================================== */
 
 /**
- * @brief Fills chunk volume data.
+ * @brief Fills chunk volume data with blocks.
 */
 void	Chunk::_generateChunk(const PerlinNoise& perlin_noise) {
 	// _blocks.resize(CHUNK_VOLUME);
@@ -114,9 +114,7 @@ void	Chunk::_generateChunk(const PerlinNoise& perlin_noise) {
 	for (uint8_t z = 0; z < CHUNK_SIZE; ++z) {
 		for (uint8_t x = 0; x < CHUNK_SIZE; ++x) {
 			float y = perlin_noise.noiseAt(_x * CHUNK_SIZE + x, _z * CHUNK_SIZE + z);
-			uint8_t height = (uint8_t)y;
-			_blocks[z * CHUNK_SIZE + x] = height;
-
+			_blocks[z * CHUNK_SIZE + x] = static_cast<uint8_t>(y);
 
 			// Block& block = _blocks[z * CHUNK_SIZE + (y * CHUNK_SIZE + x)];
 

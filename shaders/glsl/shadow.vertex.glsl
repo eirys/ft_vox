@@ -1,5 +1,7 @@
 #version 450
 
+#include "../../src/app/generation/chunk_macros.h"
+
 // Input
 layout(location = 0) in int in_position;
 
@@ -20,9 +22,9 @@ vec4	extractPos(int _data) {
 	position.y += texture(height_map, vec3(cube_pos_remap, gl_InstanceIndex)).r;
 
 	vec3 chunk = 16.0 * vec3(
-		gl_InstanceIndex % 5,
+		gl_InstanceIndex % RENDER_DISTANCE,
 		0,
-		gl_InstanceIndex / 5);
+		gl_InstanceIndex / RENDER_DISTANCE);
 
 	return vec4(chunk + position, 1.0);
 }

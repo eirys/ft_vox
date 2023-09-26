@@ -38,7 +38,7 @@ void	ShadowsDescriptorSet::init(Device& device) {
 	VkDescriptorSetLayoutBinding	height{};
 	height.binding = 1;
 	height.descriptorCount = 1;
-	height.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
+	height.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 	height.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
 
 	std::array<VkDescriptorSetLayoutBinding, 2>	bindings = {
@@ -95,7 +95,7 @@ void	ShadowsDescriptorSet::plug(
 	writes[1].dstSet = super::_set;
 	writes[1].dstBinding = 1;
 	writes[1].dstArrayElement = 0;
-	writes[1].descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
+	writes[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 	writes[1].descriptorCount = 1;
 	writes[1].pBufferInfo = nullptr;
 	writes[1].pImageInfo = &height_info;

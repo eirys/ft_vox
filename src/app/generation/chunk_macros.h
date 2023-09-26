@@ -10,10 +10,11 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#pragma once
+#ifndef CHUNK_MACROS_H
+# define CHUNK_MACROS_H
 
 # define CHUNK_SIZE					16 // Number of blocks per chunk row
-# define RENDER_DISTANCE			5 // Number of chunks to render
+# define RENDER_DISTANCE			20 // Number of chunks to render
 # define RENDER_WIDTH				RENDER_DISTANCE * CHUNK_SIZE			// 256
 # define RENDER_DEPTH				RENDER_DISTANCE * CHUNK_SIZE			// 256
 # define CHUNK_AREA					CHUNK_SIZE * CHUNK_SIZE					// 256
@@ -29,3 +30,5 @@
 # define TRIANGLE_VERTICES_COUNT	3
 # define QUAD_VERTICES_COUNT		2 * TRIANGLE_VERTICES_COUNT
 # define CHUNK_INDICES_COUNT		CHUNK_AREA * BLOCK_FACES_COUNT * QUAD_VERTICES_COUNT
+
+#endif

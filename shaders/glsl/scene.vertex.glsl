@@ -1,5 +1,7 @@
 #version 450
 
+#include "../../src/app/generation/chunk_macros.h"
+
 // Input
 layout(location = 0) in int in_position;
 
@@ -34,8 +36,8 @@ const vec2 uvs[4] = {
 
 vec4	extractPos(int _data) {
 	vec3 position = vec3(
-		(_data >> 16)	& 0xFF,	// vertex x
-		(_data >> 8)	& 0xFF,	// y
+		(_data >> 16)	& 0xFF,
+		(_data >> 8)	& 0xFF,
 		_data 			& 0xFF);
 
 	int cube_id = gl_VertexIndex / 24;
@@ -46,9 +48,9 @@ vec4	extractPos(int _data) {
 	// position.y += texelFetch(height_map, ivec3(cube_pos, gl_InstanceIndex), 0).r;
 
 	vec3 chunk = 16.0 * vec3(
-		gl_InstanceIndex % 5,
+		gl_InstanceIndex % RENDER_DISTANCE,
 		0,
-		gl_InstanceIndex / 5);
+		gl_InstanceIndex / RENDER_DISTANCE);
 
 	return vec4(chunk + position, 1.0);
 }
