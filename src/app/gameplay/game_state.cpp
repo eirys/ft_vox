@@ -64,4 +64,8 @@ Player&	GameState::getPlayer() noexcept {
 	return _player;
 }
 
+float	GameState::getElapsedTime() const noexcept {
+	return _clock.get();
+}
+
 } // namespace vox

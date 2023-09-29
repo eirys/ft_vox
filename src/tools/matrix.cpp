@@ -21,7 +21,10 @@ namespace scop {
 /* ========================================================================== */
 
 Mat4::Mat4() {
-	memset(mat, 0, 16 * sizeof(float));
+	for (std::size_t i = 0; i < 16; ++i) {
+	// memset(mat, 0, 16 * sizeof(float));
+		mat[i] = 0.0f;
+	}
 }
 
 Mat4::Mat4(const Mat4& other) {
@@ -57,14 +60,14 @@ Mat4&	Mat4::operator=(const Mat4& rhs) noexcept {
 
 /* ACCESSORS =============================================================== */
 
-float&	Mat4::operator[](std::size_t index) {
+constexpr float&	Mat4::operator[](std::size_t index) {
 	if (index >= 16) {
 		throw std::out_of_range("Matrix index out of range");
 	}
 	return mat[index];
 }
 
-const float&	Mat4::operator[](std::size_t index) const {
+constexpr const float&	Mat4::operator[](std::size_t index) const {
 	if (index >= 16) {
 		throw std::out_of_range("Matrix index out of range");
 	}
@@ -371,11 +374,11 @@ Mat4	orthographic(
 		// Col 1
 		2 / width, 0, 0, 0,
 		// Col 2
-		0, 2 / height, 0, 0,
+		0, -2 / height, 0, 0,
 		// Col 3
-		0, 0, 1 / (2 * range), 0,
+		0, 0, 1.0f / (range), 0,
 		// Col 4
-		-(right + left) / width, -(top + bot) / height, near / range + 0.5f, 1 };
+		-(right + left) / width, -(top + bot) / height, near / range, 1 };
 }
 /**
  * @brief Scales the matrix by the given vector

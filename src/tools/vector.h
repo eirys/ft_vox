@@ -32,17 +32,17 @@ struct Vect3 {
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
 
-	Vect3(): x(0), y(0), z(0) {}
-	Vect3(float new_x, float new_y, float new_z): x(new_x), y(new_y), z(new_z) {}
+	constexpr Vect3(): x(0), y(0), z(0) {}
+	constexpr Vect3(float new_x, float new_y, float new_z): x(new_x), y(new_y), z(new_z) {}
 
-	Vect3(const Vect3& other) = default;
-	Vect3(Vect3&& other) = default;
-	Vect3& operator=(const Vect3& rhs) = default;
+	constexpr Vect3(const Vect3& other) = default;
+	constexpr Vect3(Vect3&& other) = default;
+	constexpr Vect3& operator=(const Vect3& rhs) = default;
 	~Vect3() = default;
 
 	/* ACCESSORS =============================================================== */
 
-	const float&	operator[](std::size_t index) const {
+	constexpr const float&	operator[](std::size_t index) const {
 		switch (index) {
 			case 0:
 				return x;
@@ -55,7 +55,7 @@ struct Vect3 {
 		}
 	}
 
-	float&	operator[](std::size_t index) {
+	constexpr float&	operator[](std::size_t index) {
 		switch (index) {
 			case 0:
 				return x;
@@ -70,65 +70,65 @@ struct Vect3 {
 
 	/* OPERATORS =============================================================== */
 
-	bool	operator!() const noexcept {
+	constexpr bool	operator!() const noexcept {
 		return !x && !y && !z;
 	}
 
-	Vect3	operator-() const noexcept {
+	constexpr Vect3	operator-() const noexcept {
 		return Vect3(-x, -y, -z);
 	}
 
-	Vect3&	operator+=(const Vect3& rhs) noexcept {
+	constexpr Vect3&	operator+=(const Vect3& rhs) noexcept {
 		x += rhs.x;
 		y += rhs.y;
 		z += rhs.z;
 		return *this;
 	}
 
-	Vect3	operator+(const Vect3& rhs) const noexcept {
+	constexpr Vect3	operator+(const Vect3& rhs) const noexcept {
 		Vect3	res(*this);
 		return res.operator+=(rhs);
 	}
 
-	Vect3&	operator-=(const Vect3& rhs) noexcept {
+	constexpr Vect3&	operator-=(const Vect3& rhs) noexcept {
 		x -= rhs.x;
 		y -= rhs.y;
 		z -= rhs.z;
 		return *this;
 	}
 
-	Vect3	operator-(const Vect3& rhs) const noexcept {
+	constexpr Vect3	operator-(const Vect3& rhs) const noexcept {
 		Vect3	res(*this);
 		return res.operator-=(rhs);
 	}
 
-	Vect3&	operator*=(float rhs) noexcept {
+	constexpr Vect3&	operator*=(float rhs) noexcept {
 		x *= rhs;
 		y *= rhs;
 		z *= rhs;
 		return *this;
 	}
 
-	Vect3	operator*(float rhs) const noexcept {
+	constexpr Vect3	operator*(float rhs) const noexcept {
 		Vect3	res(*this);
 		return res.operator*=(rhs);
 	}
 
-	Vect3&	operator/=(float rhs) noexcept {
+	constexpr Vect3&	operator/=(float rhs) noexcept {
 		x /= rhs;
 		y /= rhs;
 		z /= rhs;
 		return *this;
 	}
 
-	Vect3	operator/(float rhs) const noexcept {
+	constexpr Vect3	operator/(float rhs) const noexcept {
 		Vect3	res(*this);
 		return res.operator/=(rhs);
 	}
 
 	/* BOOLEAN COMPARISON ====================================================== */
 
-	bool	operator==(const Vect3& rhs) const noexcept {
+	constexpr bool	operator==(const Vect3& rhs) const noexcept {
 		return x == rhs.x && y == rhs.y && z == rhs.z;
 	}
 
@@ -267,7 +267,7 @@ struct Vect2 {
 
 /**
  * @brief Special fma for Vect3 and float: a * b + c.
- * 
+ *
  * @param a		The vector to multiply.
  * @param b		The scalar to multiply.
  * @param c		The vector to add.

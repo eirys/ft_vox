@@ -88,8 +88,6 @@ public:
 	/* ========================================================================= */
 
 	void						init(Window& window, const GameState& game);
-		// const std::vector<::vox::Vertex>& vertices,
-		// const std::vector<uint32_t>& indices);
 	void						destroy();
 
 	void						idle();
@@ -137,8 +135,7 @@ private:
 	void						_createSyncObjects();
 	void						_createDescriptors();
 
-	void						_initDescriptors(const GameState& game) noexcept;
-	Camera						_generateCameraMatrix(const GameState& game) const noexcept;
+	UniformBufferObject			_updateUbo(const GameState& game) const noexcept;
 
 	void						_updatePresentation(Window& window);
 

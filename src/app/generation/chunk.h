@@ -22,6 +22,7 @@
 namespace vox {
 
 struct Vertex;
+struct Mesh;
 class PerlinNoise;
 
 /**
@@ -39,15 +40,6 @@ public:
 	using ChunkRow = std::array<Block, CHUNK_SIZE>; // row x of slice y
 
 	/* ========================================================================= */
-	/*                                HELPER CLASS                               */
-	/* ========================================================================= */
-
-	struct ChunkMesh {
-		std::vector<Vertex>		vertices;
-		std::vector<uint32_t>	indices;
-	};
-
-	/* ========================================================================= */
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
 
@@ -63,7 +55,7 @@ public:
 
 	/* ========================================================================= */
 
-	static ChunkMesh	generateChunkMesh() noexcept;
+	static Mesh						generateChunkMesh() noexcept;
 
 	/* ========================================================================= */
 

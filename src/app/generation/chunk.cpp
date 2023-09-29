@@ -14,6 +14,7 @@
 #include "perlin_noise.h"
 #include "vertex.h"
 #include "packed_cube.h"
+#include "mesh.h"
 
 namespace vox {
 
@@ -33,45 +34,45 @@ Chunk::Chunk(const PerlinNoise& noise, uint8_t x, uint8_t y, uint8_t z):
  * @brief Generates a flat surface terrain mesh (z = 0) of size CHUNK_SIZE.
  * The chunk position is set to {0, 0, 0}.
 */
-Chunk::ChunkMesh	Chunk::generateChunkMesh() noexcept {
-	ChunkMesh	mesh;
+Mesh	Chunk::generateChunkMesh() noexcept {
+	Mesh	mesh;
 
 	mesh.vertices.reserve(CHUNK_VERTICES_COUNT);
 	mesh.indices.reserve(CHUNK_INDICES_COUNT);
 
-	auto	addFace =
-		[&mesh](const PackedCube::Face& face) -> void {
-			// Indices
-			uint32_t pos = mesh.vertices.size();
-			uint32_t e = pos;
-			uint32_t f = pos + 1;
-			uint32_t g = pos + 2;
-			uint32_t h = pos + 3;
+	// auto	addFace =
+	// 	[&mesh](const PackedCube::Face& face) -> void {
+	// 		// Indices
+	// 		uint32_t pos = mesh.vertices.size();
+	// 		uint32_t e = pos;
+	// 		uint32_t f = pos + 1;
+	// 		uint32_t g = pos + 2;
+	// 		uint32_t h = pos + 3;
 
-			mesh.indices.emplace_back(e);
-			mesh.indices.emplace_back(g);
-			mesh.indices.emplace_back(f);
+	// 		mesh.indices.emplace_back(e);
+	// 		mesh.indices.emplace_back(g);
+	// 		mesh.indices.emplace_back(f);
 
-			mesh.indices.emplace_back(e);
-			mesh.indices.emplace_back(h);
-			mesh.indices.emplace_back(g);
+	// 		mesh.indices.emplace_back(e);
+	// 		mesh.indices.emplace_back(h);
+	// 		mesh.indices.emplace_back(g);
 
-			for (auto& uvertex: face.vertices) {
-				// Vertices
-				mesh.vertices.emplace_back(Vertex(uvertex.x, uvertex.y, uvertex.z));
-			}
-		};
+	// 		for (auto& uvertex: face.vertices) {
+	// 			// Vertices
+	// 			mesh.vertices.emplace_back(Vertex(uvertex.x, uvertex.y, uvertex.z));
+	// 		}
+	// 	};
 
 	for (uint8_t z = 0; z < CHUNK_SIZE; ++z) {
 		for (uint8_t x = 0; x < CHUNK_SIZE; ++x) {
 			PackedCube	cube(x, z);
-
-			addFace(cube.top());
-			addFace(cube.bottom());
-			addFace(cube.left());
-			addFace(cube.right());
-			addFace(cube.front());
-			addFace(cube.back());
+			cube.addToMesh(mesh);
+			// addFace(cube.top());
+			// addFace(cube.bottom());
+			// addFace(cube.left());
+			// addFace(cube.right());
+			// addFace(cube.front());
+			// addFace(cube.back());
 		}
 	}
 

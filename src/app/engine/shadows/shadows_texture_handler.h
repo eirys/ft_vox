@@ -19,7 +19,7 @@
 
 # include "texture_handler.h"
 
-# define SHADOWMAP_SIZE 2048
+# define SHADOWMAP_SIZE 4096
 # define DEPTH_FORMAT VK_FORMAT_D16_UNORM
 
 namespace scop::graphics {

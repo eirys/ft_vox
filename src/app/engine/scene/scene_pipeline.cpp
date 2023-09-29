@@ -24,6 +24,8 @@
 #include "chunk_macros.h"
 
 #include <stdexcept> // std::runtime_error
+#include <chrono>
+#include "scop_math.h"
 
 #if defined(__LINUX)
 # define SCENE_VERTEX_PATH "shaders/scene.vertex.spv"

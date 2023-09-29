@@ -14,6 +14,7 @@
 
 # include "world.h"
 # include "player.h"
+# include "clock.h"
 
 namespace vox {
 
@@ -45,6 +46,7 @@ public:
 	World&			getWorld() noexcept;
 	const Player&	getPlayer() const noexcept;
 	Player&			getPlayer() noexcept;
+	float			getElapsedTime() const noexcept;
 
 private:
 	/* ========================================================================= */
@@ -53,6 +55,7 @@ private:
 
 	World			_world;
 	Player			_player;
+	Clock			_clock;
 
 }; // class GameState
 

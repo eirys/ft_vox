@@ -19,11 +19,14 @@
 #include "utils.h"
 
 #include "chunk.h"
+#include "mesh.h"
 #include "game_state.h"
 #include "scene_pipeline.h"
 #include "shadows_pipeline.h"
 #include "shadows_texture_handler.h"
 #include "height_texture_handler.h"
+
+#include <chrono>
 
 #include <cstring> // std::strcmp
 
@@ -31,6 +34,7 @@ using UniformBufferObject = ::scop::UniformBufferObject;
 using GameState = ::vox::GameState;
 using Window = ::scop::Window;
 using Chunk = ::vox::Chunk;
+using Mesh = ::vox::Mesh;
 
 using Vertex = ::vox::Vertex;
 using Mat4 = ::scop::Mat4;
@@ -43,7 +47,7 @@ const std::vector<const char*>	Engine::validation_layers = {
 };
 
 /* ========================================================================== */
-/*                                   PUBLIC                                   */	
+/*                                   PUBLIC                                   */
 /* ========================================================================== */
 
 void	Engine::init(::scop::Window& window, const GameState& game) {
@@ -68,12 +72,12 @@ void	Engine::init(::scop::Window& window, const GameState& game) {
 	_createDescriptors();
 
 	// _input_handler.init(_device, vertices, indices);
-	Chunk::ChunkMesh	mesh = Chunk::generateChunkMesh();
+	Mesh	mesh = Chunk::generateChunkMesh();
 	_input_handler.init(_device, mesh.vertices, mesh.indices);
 	_draw_buffer.init(_device, _command_pool, max_frames_in_flight);
 	_createSyncObjects();
 
-	_initDescriptors(game);
+	_pipelines.scene->update(_updateUbo(game));
 }
 
 void	Engine::destroy() {
@@ -165,7 +169,7 @@ void	Engine::render(
 		image_index);
 	_draw_buffer.end(_device, false);
 
-	_pipelines.scene->update(_generateCameraMatrix(game));
+	_pipelines.scene->update(_updateUbo(game));
 
 	// Set synchronization objects
 	std::array<VkSemaphore, 1>			wait_semaphores = { _image_available_semaphores };
@@ -433,16 +437,13 @@ void	Engine::_assembleGraphicsPipelines() {
 	depth_stencil.depthCompareOp = VK_COMPARE_OP_LESS;
 
 	/* DYNAMIC STATE =========================================================== */
-	std::vector<VkDynamicState>	dynamic_states = {
+	std::array<VkDynamicState, 2>	dynamic_states = {
 		VK_DYNAMIC_STATE_VIEWPORT,
-		VK_DYNAMIC_STATE_SCISSOR
-	};
+		VK_DYNAMIC_STATE_SCISSOR };
 
 	VkPipelineDynamicStateCreateInfo	dynamic_state{};
 	dynamic_state.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
-	dynamic_state.dynamicStateCount = static_cast<uint32_t>(
-		dynamic_states.size()
-	);
+	dynamic_state.dynamicStateCount = static_cast<uint32_t>(dynamic_states.size());
 	dynamic_state.pDynamicStates = dynamic_states.data();
 
 	/* PIPELINE ================================================================ */
@@ -463,10 +464,6 @@ void	Engine::_assembleGraphicsPipelines() {
 
 	_pipelines.scene->assemble(_device, pipeline_info);
 
-	// attribute_descriptions = ::vox::Vertex::getShadowAttributeDescriptions();
-	// vert_input.vertexAttributeDescriptionCount =
-	// 	static_cast<uint32_t>(attribute_descriptions.size());
-	// vert_input.pVertexAttributeDescriptions = attribute_descriptions.data();
 	color_blending.attachmentCount = 0;
 	rasterizing.cullMode = VK_CULL_MODE_NONE;
 	multisampling.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
@@ -514,45 +511,51 @@ void	Engine::_updatePresentation(::scop::Window& window) {
 	_pipelines.scene->getTarget()->update(_device, tar_info);
 }
 
-void	Engine::_initDescriptors(const GameState& game) noexcept {
+UniformBufferObject	Engine::_updateUbo(const GameState& game) const noexcept {
 	UniformBufferObject	ubo{};
 
-	ubo.camera = _generateCameraMatrix(game);
-	ubo.light = {
-		.ambient_color = ::scop::Vect3(0.17f, 0.15f, 0.1f),
-		.light_vector = ::scop::normalize(::scop::Vect3(0.1f, 1.0f, 0.3f)),
-		.light_color = ::scop::Vect3(1.0f, 1.0f, 0.8f) };
-	const Mat4	view = ::scop::lookAt(
-		ubo.light.light_vector*15.0f,
-		Vect3(0.0f, 0.0f, 0.0f),
-		Vect3(0.0f, 1.0f, 0.0f));
-	const Mat4	projection = ::scop::orthographic(
-		-150.0f, 150.0f,
-		-150.0f, 150.0f,
-		10.0f, 100.0f);
-	ubo.projector.vp = projection * view;
+	{	/* UPDATE CAMERA =========================================================== */
+		float window_ratio =
+			_swap_chain.getExtent().width /
+			static_cast<float>(_swap_chain.getExtent().height);
+		Mat4	view = ::scop::lookAtDir(
+			game.getPlayer().getPosition(),
+			game.getPlayer().getEyeDir(),
+			::scop::Vect3(0.0f, 1.0f, 0.0f));
+		Mat4	projection = ::scop::perspective(
+			::scop::math::radians(70.0f),
+			window_ratio,
+			0.1f,
+			1000.0f);
 
-	_pipelines.scene->update(ubo);
-}
+		ubo.camera.vp = projection * view;
+	}
+	{	/* UPDATE LIGHT AND PROJECTOR ============================================== */
+		constexpr const float	terrain_length = CHUNK_SIZE * RENDER_DISTANCE;
+		constexpr const float	terrain_length_half = terrain_length / 2.0f;
+		constexpr const float	light_distance = terrain_length_half;
 
-Camera	Engine::_generateCameraMatrix(const GameState& game) const noexcept {
-	float window_ratio =
-		_swap_chain.getExtent().width /
-		static_cast<float>(_swap_chain.getExtent().height);
-	Mat4	view = ::scop::lookAtDir(
-		game.getPlayer().getPosition(),
-		game.getPlayer().getEyeDir(),
-		::scop::Vect3(0.0f, 1.0f, 0.0f));
-	Mat4	projection = ::scop::perspective(
-		::scop::math::radians(70.0f),
-		window_ratio,
-		0.1f,
-		1000.0f);
+		static const Mat4		projection = ::scop::orthographic(
+			-terrain_length_half, terrain_length_half,
+			-terrain_length_half, terrain_length_half,
+			0.0f, terrain_length);
 
-	Camera	camera{};
-	camera.vp = projection * view;
+		float	period = game.getElapsedTime();
+		Vect3	light = Vect3(cos(period), sin(period), 0.0f);
 
-	return camera;
+		const Mat4	view = ::scop::lookAt(
+			light * light_distance + game.getWorld().getOrigin(),
+			game.getWorld().getOrigin(),
+			Vect3(0.0f, 1.0f, 0.0f));
+
+		ubo.projector.vp = projection * view;
+		ubo.light = {
+			.ambient_color = ::scop::Vect3(0.17f, 0.15f, 0.1f),
+			.light_vector = light,
+			.light_color = ::scop::Vect3(1.0f, 1.0f, 0.8f) };
+	}
+
+	return ubo;
 }
 
 /* ========================================================================== */

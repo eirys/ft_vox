@@ -478,7 +478,7 @@ std::vector<float>	PerlinNoise::generate2dNoiseMap() {
 	std::function<float(scop::Vect2, scop::Vect2, scop::Vect2)> lerpFn =
 		[&random_table, this]
 		(scop::Vect2 min, scop::Vect2 max, scop::Vect2 t) -> float {
-		// Retrieve corners.
+			// Retrieve corners.
 			float c00 = random_table[hash(min.x, min.y)];
 			float c10 = random_table[hash(max.x, min.y)];
 			float c01 = random_table[hash(min.x, max.y)];
@@ -487,15 +487,13 @@ std::vector<float>	PerlinNoise::generate2dNoiseMap() {
 			// Smoothen t.
 			scop::Vect2 s = scop::Vect2(
 				scop::math::smoothen(t.x),
-				scop::math::smoothen(t.y)
-			);
+				scop::math::smoothen(t.y));
 
 			// Interpolate between corners using s.
 			return scop::math::lerp(
 				scop::math::lerp(c00, c10, s.x),
 				scop::math::lerp(c01, c11, s.x),
-				s.y
-			);
+				s.y);
 		};
 
 	float	norm = 0;
@@ -504,19 +502,19 @@ std::vector<float>	PerlinNoise::generate2dNoiseMap() {
 			scop::Vect2	coord = scop::Vect2(x, y) * frequency;
 			float		amplitude = 1;	// Amplitude of the layer.
 
+			// Evaluate and stack up layers.
 			for (std::size_t layer = 0; layer < layers; ++layer) {
-				// Evaluate and stack up layers.
-				noise_map[y * width + x] = std::fma(
-					evaluateAt(
-						coord,
-						floorFn,
-						modFn,
-						lerpFn,
-						scop::Vect2(1.0f, 1.0f)
-					),
-					amplitude,
-					noise_map[y * width + x]
-				);
+				noise_map[y * width + x] =
+					std::fma(
+						evaluateAt(
+							coord,
+							floorFn,
+							modFn,
+							lerpFn,
+							scop::Vect2(1.0f, 1.0f)),
+						amplitude,
+						noise_map[y * width + x]);
+
 				coord *= frequency_mult;
 				amplitude *= amplitude_mult;
 			}

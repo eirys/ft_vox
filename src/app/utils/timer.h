@@ -24,6 +24,12 @@ namespace scop {
 class Timer {
 public:
 	/* ========================================================================= */
+	/*                                  TYPEDEF                                  */
+	/* ========================================================================= */
+
+	using clock = std::chrono::high_resolution_clock;
+
+	/* ========================================================================= */
 	/*                               CONST MEMBERS                               */
 	/* ========================================================================= */
 
@@ -46,8 +52,8 @@ public:
 	/**
 	 * @brief Starts the timer.
 	*/
-	void	start() noexcept {
-		_begin = clock::now();
+	void	start(clock::time_point now = clock::now()) noexcept {
+		_begin = now;
 		_frames = 0;
 	}
 
@@ -65,20 +71,13 @@ public:
 		clock::time_point	now = clock::now();
 
 		if (now - _begin >= std::chrono::seconds(log_interval)) {
-			float fps = _frames / log_interval;
-			_frames = 0;
-			_begin = now;
+			int fps = _frames / log_interval;
+			start(now);
 			std::cout << fps << " fps" << std::endl;
 		}
 	}
 
 private:
-	/* ========================================================================= */
-	/*                                  TYPEDEF                                  */
-	/* ========================================================================= */
-
-	typedef	std::chrono::high_resolution_clock	clock;
-
 	/* ========================================================================= */
 	/*                               CLASS MEMBERS                               */
 	/* ========================================================================= */

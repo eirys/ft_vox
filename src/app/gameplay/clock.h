@@ -1,62 +1,54 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   uniform_buffer_object.h                            :+:      :+:    :+:   */
+/*   clock.h                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/06/04 17:17:15 by etran             #+#    #+#             */
-/*   Updated: 2023/07/03 11:52:26 by etran            ###   ########.fr       */
+/*   Created: 2023/09/29 14:48:51 by etran             #+#    #+#             */
+/*   Updated: 2023/09/29 14:48:51 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
-# define __ALIGNMENT_MAT4 16
-# define __ALIGNMENT_VEC3 16
-# define __ALIGNMENT_SCAL 4
-# define __ALIGNMENT_BUFF 64
+# include <chrono> // std::chrono
 
-# include "matrix.h"
+namespace vox {
 
-namespace scop {
-
-struct UniformBufferObject {
+class Clock {
 public:
 	/* ========================================================================= */
-	/*                               HELPER OBJECTS                              */
+	/*                                  TYPEDEFS                                 */
 	/* ========================================================================= */
 
-	struct Camera {
-		alignas(__ALIGNMENT_MAT4) scop::Mat4	view;
-		alignas(__ALIGNMENT_MAT4) scop::Mat4	proj;
-	};
+	using clock = std::chrono::high_resolution_clock;
 
-	struct Light {
-		alignas(__ALIGNMENT_VEC3) scop::Vect3	ambient_color;
-		alignas(__ALIGNMENT_VEC3) scop::Vect3	light_vector;
-		alignas(__ALIGNMENT_VEC3) scop::Vect3	light_color;
-		alignas(__ALIGNMENT_SCAL) float			light_intensity;
-	};
+	template<typename T>
+	using duration = std::chrono::duration<T, std::chrono::seconds::period>;
 
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
 
-	UniformBufferObject() = default;
-	UniformBufferObject(UniformBufferObject&& other) = default;
-	UniformBufferObject(const UniformBufferObject& other) = default;
-	UniformBufferObject& operator=(UniformBufferObject&& other) = default;
-	UniformBufferObject& operator=(const UniformBufferObject& other) = default;
-	~UniformBufferObject() = default;
+	Clock() = default;
+	Clock(Clock&& other) = default;
+	Clock& operator=(Clock&& other) = default;
 
+	Clock(const Clock& other) = delete;
+	Clock& operator=(const Clock& other) = delete;
+
+	/* ========================================================================= */
+
+	float		get() const noexcept;
+
+private:
 	/* ========================================================================= */
 	/*                               CLASS MEMBERS                               */
 	/* ========================================================================= */
 
-	alignas(__ALIGNMENT_BUFF) Camera		camera;
-	alignas(__ALIGNMENT_BUFF) Light			light;
+	const clock::time_point		_begin = clock::now();
 
-};
+}; // class Clock
 
-} // namespace scop
+} // namespace vox

@@ -22,7 +22,7 @@ namespace scop {
 /* ========================================================================== */
 
 struct Camera {
-	alignas(__ALIGNMENT_MAT4) scop::Mat4	vp;
+	alignas(__ALIGNMENT_MAT4) scop::Mat4	vp; // view proj
 };
 
 struct Light {

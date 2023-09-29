@@ -17,6 +17,8 @@
 
 namespace vox {
 
+struct Mesh;
+
 /**
  * @brief GFX Representation of a Block but with packed position data.
  *
@@ -44,6 +46,8 @@ struct PackedCube final {
 	*/
 	struct Face {
 		std::array<UnpackedVertex, 4>	vertices;
+
+		void	addToMesh(Mesh& mesh) const;
 	};
 
 	/* ========================================================================= */
@@ -58,6 +62,10 @@ struct PackedCube final {
 	PackedCube& operator=(PackedCube&& x) = default;
 	PackedCube& operator=(const PackedCube& x) = default;
 	~PackedCube() = default;
+
+	/* ========================================================================= */
+
+	void				addToMesh(Mesh& mesh) const;
 
 	/* VERTICES ================================================================ */
 
@@ -86,6 +94,6 @@ struct PackedCube final {
 	uint8_t				x;
 	uint8_t				z;
 
-}; // class PackedCube
+}; // struct PackedCube
 
 } // namespace vox

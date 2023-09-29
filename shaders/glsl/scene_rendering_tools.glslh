@@ -1,0 +1,57 @@
+#ifndef SCENE_RENDERING_TOOLS_GLSLH
+# define SCENE_RENDERING_TOOLS_GLSLH
+
+/* ========================================================================== */
+/*                                  INCLUDES                                  */
+/* ========================================================================== */
+
+# include "../../src/app/generation/chunk_macros.h"
+
+/* ========================================================================== */
+/*                                  FUNCTIONS                                 */
+/* ========================================================================== */
+
+// Returns height value at uv, on [index] layer.
+float	getHeight(vec2 _cube_pos, uint _index) {
+	vec2	uv = vec2(_cube_pos) / vec2(textureSize(height_map, 0));
+	return texture(height_map, vec3(uv, _index)).r;
+}
+
+/* ========================================================================== */
+// Extracts position from _data.
+vec4	extractPos(int _data, float _height) {
+	vec3 position = vec3(
+		(_data >> 16)	& 0xFF,
+		(_data >> 8)	& 0xFF,
+		_data 			& 0xFF);
+	position.y += _height;
+
+	vec3 chunk = 16.0 * vec3(
+		gl_InstanceIndex % RENDER_DISTANCE,
+		0,
+		gl_InstanceIndex / RENDER_DISTANCE);
+
+	return vec4(chunk + position, 1.0);
+}
+
+/* ========================================================================== */
+bool	isOutsideTexture(ivec2 _pos) {
+	return _pos.x > CHUNK_SIZE || _pos.y > CHUNK_SIZE;
+}
+
+/* ========================================================================== */
+// //
+// bool cullVertex() {
+// 	int		cube_id = gl_VertexIndex / 24;
+
+// 	ivec2	cube_pos = ivec2(cube_id % 16, cube_id / 16);
+// 	ivec2	cube_pos_right = ivec2(cube_pos.x + 1, cube_pos.y);
+// 	ivec2	cube_pos_under = ivec2(cube_pos.x, cube_pos.y + 1);
+
+// 	float	height = getHeight(cube_pos, gl_InstanceIndex);
+// 	if (cube_pos == cube_pos_right)
+
+// 	return true;
+// }
+
+#endif // SCENE_RENDERING_TOOLS_GLSLH
