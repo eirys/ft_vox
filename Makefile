@@ -6,7 +6,7 @@
 #    By: etran <etran@student.42.fr>                +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/04/06 03:40:09 by eli               #+#    #+#              #
-#    Updated: 2023/09/22 11:20:01 by etran            ###   ########.fr        #
+#    Updated: 2023/09/29 16:51:01 by etran            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -66,6 +66,7 @@ SRC_FILES	:=	$(TOOLS_DIR)/matrix.cpp \
 				$(IMG_DIR)/ppm_loader.cpp \
 				$(IMG_DIR)/image_handler.cpp \
 				$(GAME_DIR)/game_state.cpp \
+				$(GAME_DIR)/clock.cpp \
 				$(CHAR_DIR)/character.cpp \
 				$(CHAR_DIR)/player.cpp \
 				$(ENG_DIR)/window.cpp \

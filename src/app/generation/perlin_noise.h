@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:13:52 by etran             #+#    #+#             */
-/*   Updated: 2023/08/12 15:12:01 by etran            ###   ########.fr       */
+/*   Updated: 2023/09/29 16:49:04 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -71,16 +71,6 @@ public:
 		float					frequency_mult;
 		float					amplitude_mult;
 	};
-
-	// /**
-	//  * @brief Contains the vertices, normals and vertex indices of a mesh,
-	//  * generated from a perlin noise map.
-	// */
-	// struct PerlinMesh {
-	// 	Vect3						origin;
-	// 	std::vector<vox::Vertex>	vertices;
-	// 	std::vector<uint32_t>		indices;
-	// };
 
 	/* ========================================================================= */
 	/*                                  METHODS                                  */

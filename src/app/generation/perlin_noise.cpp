@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/23 10:26:08 by etran             #+#    #+#             */
-/*   Updated: 2023/09/18 17:39:38 by etran            ###   ########.fr       */
+/*   Updated: 2023/09/29 16:48:57 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -89,134 +89,6 @@ std::vector<uint32_t>	PerlinNoise::toPixels() const {
 	}
 	return pixels;
 }
-
-/**
- * @brief Converts the noise map to a cube world.
-*/
-// PerlinNoise::PerlinMesh	PerlinNoise::toMesh() const {
-// 	PerlinMesh		mesh;
-
-// 	// Center the mesh
-// 	const float				half_width = width / 2;
-// 	const float				half_height = height / 2;
-
-// 	auto	noiseAt =
-// 		[this]
-// 		(std::size_t x, std::size_t y) -> float {
-// 			return std::floor(
-// 				std::fma(noise_map[std::fma(y, width, x)], scale, shift));
-// 		};
-
-// 	auto	addFace =
-// 		[&mesh]
-// 		(const Cube::Face& face) -> void {
-// 			for (std::size_t i = 0; i < 4; ++i) {
-// 				uint8_t	face_index =
-// 					face.side == FaceType::FACE_TOP ? 0 : (
-// 					face.side == FaceType::FACE_BOTTOM ? 2 : 1);
-// 				vox::Vertex	vertex(
-// 					face.vertices[i],
-// 					static_cast<uint8_t>(face.side),
-// 					i,
-// 					face_index);
-// 				mesh.vertices.emplace_back(vertex);
-// 			}
-// 		};
-
-// 	auto	addIndices =
-// 		[&mesh]
-// 		(uint32_t pos) -> void {
-// 			uint32_t e = pos;
-// 			uint32_t f = pos + 1;
-// 			uint32_t g = pos + 2;
-// 			uint32_t h = pos + 3;
-
-// 			// First triangle
-// 			mesh.indices.emplace_back(e);
-// 			mesh.indices.emplace_back(g);
-// 			mesh.indices.emplace_back(f);
-
-// 			// Second triangle
-// 			mesh.indices.emplace_back(e);
-// 			mesh.indices.emplace_back(h);
-// 			mesh.indices.emplace_back(g);
-// 		};
-
-// 	// TODO: Use a better algorithm
-// 	// TODO store map
-
-// 	for (std::size_t row = 0; row < height; ++row) {
-// 		for (std::size_t col = 0; col < width; ++col) {
-// 			// A pixel of the noise map will be a block.
-// 			//   h_____g    Frame of reference:
-// 			// e/|___f/|    y z
-// 			// | d---|-c    |/
-// 			// |/    |/     O___x
-// 			// a_____b
-
-// 			// Evaluate the current cube
-// 			const float	perlin = noiseAt(col, row);
-
-// 			const Cube	cube({
-// 				static_cast<float>(col),
-// 				perlin,
-// 				static_cast<float>(row)
-// 			});
-
-// 			// Add the top face
-// 			if (row != height - 1 && col != width - 1)
-// 				addIndices(mesh.vertices.size());
-// 			addFace(cube.top());
-
-// 			// Check Perlin noise on side blocks
-// 			// Add the south face
-// 			if (row != 0) {
-// 				const float	south = noiseAt(col, row - 1);
-// 				if (south < perlin) {
-// 					if (row != height - 1 && col != width - 1)
-// 						addIndices(mesh.vertices.size());
-// 					addFace(cube.back());
-// 				}
-// 			}
-// 			// Add the north face
-// 			if (row != height - 1) {
-// 				const float	north = noiseAt(col, row + 1);
-// 				if (north < perlin) {
-// 					if (col != width - 1)
-// 						addIndices(mesh.vertices.size());
-// 					addFace(cube.front());
-// 				}
-// 			}
-// 			// Add the west face
-// 			if (col != 0) {
-// 				const float	west = noiseAt(col - 1, row);
-// 				if (west < perlin) {
-// 					if (row != height - 1 && col != width - 1)
-// 						addIndices(mesh.vertices.size());
-// 					addFace(cube.left());
-// 				}
-// 			}
-// 			// Add the east face
-// 			if (col != width - 1) {
-// 				const float	east = noiseAt(col + 1, row);
-// 				if (east < perlin) {
-// 					if (row != height - 1)
-// 						addIndices(mesh.vertices.size());
-// 					addFace(cube.right());
-// 				}
-// 			}
-// 		}
-// 	}
-
-// 	// Set mesh origin
-// 	// Perlin noise at the center of the mesh:
-// 	mesh.origin = {
-// 		half_width,
-// 		noiseAt(half_height, half_width) + BLOCK_SIZE,
-// 		half_height
-// 	};
-// 	return mesh;
-// }
 
 float	PerlinNoise::noiseAt(std::size_t x) const noexcept {
 	assert(x < width);

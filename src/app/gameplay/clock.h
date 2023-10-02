@@ -1,3 +1,4 @@
+
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
@@ -32,10 +33,10 @@ public:
 	/* ========================================================================= */
 
 	Clock() = default;
-	Clock(Clock&& other) = default;
-	Clock& operator=(Clock&& other) = default;
 
+	Clock(Clock&& other) = delete;
 	Clock(const Clock& other) = delete;
+	Clock& operator=(Clock&& other) = delete;
 	Clock& operator=(const Clock& other) = delete;
 
 	/* ========================================================================= */
