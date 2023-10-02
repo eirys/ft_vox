@@ -1,7 +1,9 @@
+.vs*
 obj
 .vscode
 shaders/*.spv
 a.out
-ft_vox
+ft_vox*
 x64/
 ft_vox.vcxproj
+glfw3.dll

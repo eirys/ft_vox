@@ -18,6 +18,7 @@ float	getHeight(vec2 _cube_pos, uint _index) {
 }
 
 /* ========================================================================== */
+
 // Extracts position from _data.
 vec4	extractPos(int _data, float _height) {
 	vec3 position = vec3(
@@ -35,23 +36,20 @@ vec4	extractPos(int _data, float _height) {
 }
 
 /* ========================================================================== */
+
 bool	isOutsideTexture(ivec2 _pos) {
 	return _pos.x > CHUNK_SIZE || _pos.y > CHUNK_SIZE;
 }
 
 /* ========================================================================== */
-// //
-// bool cullVertex() {
-// 	int		cube_id = gl_VertexIndex / 24;
+bool cullVertex(ivec2 _cube_pos) {
+	ivec2	cube_pos_right = ivec2(_cube_pos.x + 1, _cube_pos.y);
+	ivec2	cube_pos_under = ivec2(_cube_pos.x, _cube_pos.y + 1);
 
-// 	ivec2	cube_pos = ivec2(cube_id % 16, cube_id / 16);
-// 	ivec2	cube_pos_right = ivec2(cube_pos.x + 1, cube_pos.y);
-// 	ivec2	cube_pos_under = ivec2(cube_pos.x, cube_pos.y + 1);
+	float	height = getHeight(cube_pos, gl_InstanceIndex);
+	if (cube_pos == cube_pos_right)
 
-// 	float	height = getHeight(cube_pos, gl_InstanceIndex);
-// 	if (cube_pos == cube_pos_right)
-
-// 	return true;
-// }
+	return true;
+}
 
 #endif // SCENE_RENDERING_TOOLS_GLSLH

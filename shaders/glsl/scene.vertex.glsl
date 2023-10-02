@@ -25,12 +25,12 @@ layout(binding = 5, set = 0) uniform usampler2DArray		height_map;
 
 /* CONSTS =================================================================== */
 const vec3 normals[6] = {
-	{  0.0f,  1.0f,  0.0f },	// top
-	{  0.0f, -1.0f,  0.0f },	// bottom
-	{ -1.0f,  0.0f,  0.0f },	// left
-	{  1.0f,  0.0f,  0.0f },	// right
-	{  0.0f,  0.0f,  1.0f },	// front
-	{  0.0f,  0.0f, -1.0f },	// back
+	{  0.0f,  1.0f,  0.0f },	// 0 top
+	{  0.0f, -1.0f,  0.0f },	// 1 bottom
+	{ -1.0f,  0.0f,  0.0f },	// 2 left
+	{  1.0f,  0.0f,  0.0f },	// 3 right
+	{  0.0f,  0.0f,  1.0f },	// 4 front
+	{  0.0f,  0.0f, -1.0f },	// 5 back
 };
 
 const vec2 uvs[4] = {
@@ -43,20 +43,25 @@ const vec2 uvs[4] = {
 /* MAIN ===================================================================== */
 void	main() {
 	int side = int(gl_VertexIndex / 4) % 6;
+	int cube_id = gl_VertexIndex / 24;
 
-	// cullVertex();
+	// Right or front: potential culling
+	if (side == 3) {
 
-	int		cube_id = gl_VertexIndex / 24;
-	ivec2	cube_pos = ivec2(cube_id % 16, cube_id / 16);
-	float	height = getHeight(cube_pos, gl_InstanceIndex);
+	} else if (side == 4) {
 
-	out_normal = normals[side];
-	out_uvw = vec3(uvs[gl_VertexIndex % 4], side);
+	} else {
+		ivec2	cube_pos = ivec2(cube_id % 16, cube_id / 16);
+		float	height = getHeight(cube_pos, gl_InstanceIndex);
 
-	vec4 position = extractPos(in_position, height);
-	vec3 shadow_coord = (projector.vp * position).xyz;
+		out_normal = normals[side];
+		out_uvw = vec3(uvs[gl_VertexIndex % 4], side);
 
-	out_shadow = vec3(shadow_coord.xy * 0.5f + 0.5f, shadow_coord.z);
+		vec4 position = extractPos(in_position, height);
+		vec3 shadow_coord = (projector.vp * position).xyz;
 
-	gl_Position = camera.vp * position;
+		out_shadow = vec3(shadow_coord.xy * 0.5f + 0.5f, shadow_coord.z);
+
+		gl_Position = camera.vp * position;
+	}
 }
