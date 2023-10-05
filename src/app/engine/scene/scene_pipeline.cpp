@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/06 20:50:48 by etran             #+#    #+#             */
-/*   Updated: 2023/09/22 16:25:00 by etran            ###   ########.fr       */
+/*   Updated: 2023/10/05 19:15:25 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -171,23 +171,28 @@ void	ScenePipeline::draw(
 		VK_PIPELINE_BIND_POINT_GRAPHICS,
 		super::_pipeline);
 
-	std::array<VkBuffer, 1>		vertex_buffers = { input.getVertexBuffer().getBuffer() };
-	std::array<VkDeviceSize, 1>	offsets = { 0 };
-	vkCmdBindVertexBuffers(
-		command_buffer.getBuffer(),
-		0,
-		static_cast<uint32_t>(vertex_buffers.size()), vertex_buffers.data(),
-		offsets.data());
-	vkCmdBindIndexBuffer(
-		command_buffer.getBuffer(),
-		input.getIndexBuffer().getBuffer(),
-		0,
-		VK_INDEX_TYPE_UINT32);
+	// std::array<VkBuffer, 1>		vertex_buffers = { input.getVertexBuffer().getBuffer() };
+	// std::array<VkDeviceSize, 1>	offsets = { 0 };
+	// vkCmdBindVertexBuffers(
+	// 	command_buffer.getBuffer(),
+	// 	0,
+	// 	static_cast<uint32_t>(vertex_buffers.size()), vertex_buffers.data(),
+	// 	offsets.data());
+	// vkCmdBindIndexBuffer(
+	// 	command_buffer.getBuffer(),
+	// 	input.getIndexBuffer().getBuffer(),
+	// 	0,
+	// 	VK_INDEX_TYPE_UINT32);
 
-	vkCmdDrawIndexed(
+	// vkCmdDrawIndexed(
+	// 	command_buffer.getBuffer(),
+	// 	static_cast<uint32_t>(input.getIndicesCount()),
+	// 	RENDER_DISTANCE * RENDER_DISTANCE, 0, 0, 0);
+	vkCmdDraw(
 		command_buffer.getBuffer(),
-		static_cast<uint32_t>(input.getIndicesCount()),
-		RENDER_DISTANCE * RENDER_DISTANCE, 0, 0, 0);
+		36,
+		CHUNK_AREA * RENDER_DISTANCE * RENDER_DISTANCE, 0, 0);
+		(void)input;
 
 	vkCmdEndRenderPass(command_buffer.getBuffer());
 }

@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:17:06 by etran             #+#    #+#             */
-/*   Updated: 2023/09/29 16:54:54 by etran            ###   ########.fr       */
+/*   Updated: 2023/10/02 16:50:54 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -92,11 +92,6 @@ private:
 	scop::graphics::Engine		_engine;
 	Timer						_timer;
 
-	// Resources
-	// std::vector<vox::Vertex>	_vertices;
-	// std::vector<uint32_t>		_indices;
-	// std::vector<Texture>		_textures;
-
 	// Camera input
 	bool						_keys_pressed_directions[6] = { false };
 	scop::Vect3					_movement{};
@@ -105,7 +100,6 @@ private:
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
 
-	//void						_loadModel(const std::string& path);
 	void						_loadTerrain();
 	void						_updateGame();
 

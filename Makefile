@@ -6,7 +6,7 @@
 #    By: etran <etran@student.42.fr>                +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/04/06 03:40:09 by eli               #+#    #+#              #
-#    Updated: 2023/09/29 16:51:01 by etran            ###   ########.fr        #
+#    Updated: 2023/10/05 17:59:24 by etran            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -166,6 +166,14 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
 $(SHD_DIR)/%.spv: $(SHD_DIR)/glsl/%.glsl
 	@echo "Compiling shader $<..."
 	@$(GLSLC) -fshader-stage=$(subst .,,$(suffix $(basename $<))) $< -o $@
+
+.PHONY: clean_shaders
+clean_shaders:
+	@${RM} $(SHD_BIN)
+	@echo "Removed shader binaries."
+
+.PHONY: shaders_re
+shaders_re: clean_shaders $(SHD_BIN)
 
 .PHONY: clean
 clean:
