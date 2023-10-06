@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/05 03:12:47 by etran             #+#    #+#             */
-/*   Updated: 2023/08/22 22:12:15 by etran            ###   ########.fr       */
+/*   Updated: 2023/10/06 12:39:09 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -73,7 +73,6 @@ public:
 	virtual void		draw(
 		VkPipelineLayout layout,
 		CommandBuffer& command_buffer,
-		InputHandler& input,
 		int32_t image_index) = 0;
 	virtual void		update(const UniformBufferObject& ubo) noexcept;
 	virtual void		update(const Camera& camera) noexcept;

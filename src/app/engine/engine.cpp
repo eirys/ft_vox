@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/02 16:09:44 by etran             #+#    #+#             */
-/*   Updated: 2023/10/05 18:07:30 by etran            ###   ########.fr       */
+/*   Updated: 2023/10/06 12:40:09 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -71,9 +71,6 @@ void	Engine::init(::scop::Window& window, const GameState& game) {
 	_assembleGraphicsPipelines();
 	_createDescriptors();
 
-	// _input_handler.init(_device, vertices, indices);
-	Mesh	mesh = Chunk::generateChunkMesh();
-	_input_handler.init(_device, mesh.vertices, mesh.indices);
 	_draw_buffer.init(_device, _command_pool, max_frames_in_flight);
 	_createSyncObjects();
 
@@ -92,7 +89,6 @@ void	Engine::destroy() {
 		nullptr);
 
 	_descriptor_pool.destroy(_device);
-	_input_handler.destroy(_device);
 
 	// Remove sync objects
 	vkDestroySemaphore(
@@ -160,12 +156,10 @@ void	Engine::render(
 	_pipelines.shadows->draw(
 		_pipeline_layout,
 		_draw_buffer,
-		_input_handler,
 		image_index);
 	_pipelines.scene->draw(
 		_pipeline_layout,
 		_draw_buffer,
-		_input_handler,
 		image_index);
 	_draw_buffer.end(_device, false);
 
@@ -345,21 +339,14 @@ void	Engine::_createGraphicsPipelineLayout() {
 void	Engine::_assembleGraphicsPipelines() {
 	/* INPUT FORMAT ============================================================ */
 	VkPipelineVertexInputStateCreateInfo	vert_input{};
-	// auto	binding_description = vox::Vertex::getBindingDescription();
-	// auto	attribute_descriptions = ::vox::Vertex::getAttributeDescriptions();
 
 	vert_input.sType =
 		VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
 
 	vert_input.vertexBindingDescriptionCount = 0;
-	vert_input.pVertexBindingDescriptions = nullptr;//&binding_description;
+	vert_input.pVertexBindingDescriptions = nullptr;
 	vert_input.vertexAttributeDescriptionCount = 0;
-	vert_input.pVertexAttributeDescriptions = nullptr;//attribute_descriptions.data();
-	// vert_input.vertexBindingDescriptionCount = 1;
-	// vert_input.pVertexBindingDescriptions = &binding_description;
-	// vert_input.vertexAttributeDescriptionCount =
-	// 	static_cast<uint32_t>(attribute_descriptions.size());
-	// vert_input.pVertexAttributeDescriptions = attribute_descriptions.data();
+	vert_input.pVertexAttributeDescriptions = nullptr;
 
 	/* INPUT ASSEMBLY ========================================================== */
 	VkPipelineInputAssemblyStateCreateInfo	input_assembly{};

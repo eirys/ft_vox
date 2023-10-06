@@ -5,18 +5,18 @@
 /*                                  INCLUDES                                  */
 /* ========================================================================== */
 
-# include "../../src/app/generation/chunk_macros.h"
+#include "../../src/app/generation/chunk_macros.h"
 
 /* ========================================================================== */
 /*                                  FUNCTIONS                                 */
 /* ========================================================================== */
 
-bool	isOutsideTexture(ivec2 _pos) {
-	return
-		_pos.x < 0 ||
-		_pos.y < 0 ||
-		_pos.x >= CHUNK_SIZE ||
-		_pos.y >= CHUNK_SIZE;
+int	isOutsideTexture(ivec2 _pos) {
+	if (_pos.x < 0 || _pos.y < 0)
+		return -1;
+	else if (_pos.x >= CHUNK_SIZE || _pos.y >= CHUNK_SIZE)
+		return 1;
+	return 0;
 }
 
 /* ========================================================================== */
@@ -24,7 +24,8 @@ bool	isOutsideTexture(ivec2 _pos) {
 // Returns height value at uv, on [index] layer.
 float	getHeight(ivec2 _cube_pos, uint _index) {
 	// TODO: select proper layer
-	if (isOutsideTexture(_cube_pos))
+	int isOutside = isOutsideTexture(_cube_pos);
+	if (isOutside != 0)
 		return 0.0;
 	vec2	uv = vec2(_cube_pos) / vec2(textureSize(height_map, 0));
 	return texture(height_map, vec3(uv, _index)).r;
@@ -38,7 +39,6 @@ const vec3 vertices[36] = {
 	vec3(0.0, 1.0, 0.0),
 	vec3(1.0, 1.0, 1.0),
 	vec3(1.0, 1.0, 0.0),
-
 	vec3(0.0, 1.0, 0.0),
 	vec3(0.0, 1.0, 1.0),
 	vec3(1.0, 1.0, 1.0),
@@ -47,7 +47,6 @@ const vec3 vertices[36] = {
 	vec3(1.0, 0.0, 0.0),
 	vec3(0.0, 0.0, 1.0),
 	vec3(0.0, 0.0, 0.0),
-
 	vec3(1.0, 0.0, 0.0),
 	vec3(1.0, 0.0, 1.0),
 	vec3(0.0, 0.0, 1.0),
@@ -56,7 +55,6 @@ const vec3 vertices[36] = {
 	vec3(0.0, 0.0, 1.0),
 	vec3(0.0, 1.0, 0.0),
 	vec3(0.0, 0.0, 0.0),
-
 	vec3(0.0, 0.0, 1.0),
 	vec3(0.0, 1.0, 1.0),
 	vec3(0.0, 1.0, 0.0),
@@ -65,7 +63,6 @@ const vec3 vertices[36] = {
 	vec3(1.0, 0.0, 0.0),
 	vec3(1.0, 1.0, 1.0),
 	vec3(1.0, 0.0, 1.0),
-
 	vec3(1.0, 0.0, 0.0),
 	vec3(1.0, 1.0, 0.0),
 	vec3(1.0, 1.0, 1.0),
@@ -74,7 +71,6 @@ const vec3 vertices[36] = {
 	vec3(0.0, 0.0, 0.0),
 	vec3(1.0, 1.0, 0.0),
 	vec3(1.0, 0.0, 0.0),
-
 	vec3(0.0, 0.0, 0.0),
 	vec3(0.0, 1.0, 0.0),
 	vec3(1.0, 1.0, 0.0),
@@ -83,7 +79,6 @@ const vec3 vertices[36] = {
 	vec3(1.0, 0.0, 1.0),
 	vec3(0.0, 1.0, 1.0),
 	vec3(0.0, 0.0, 1.0),
-
 	vec3(1.0, 0.0, 1.0),
 	vec3(1.0, 1.0, 1.0),
 	vec3(0.0, 1.0, 1.0)
@@ -95,12 +90,30 @@ vec4	extractPos(ivec2 _cubePos, float _height, int _chunkId) {
 	position.xz += _cubePos;
 	position.y += _height;
 
-	vec3 chunk = 16.0 * vec3(
+	vec3 chunkOffset = CHUNK_SIZE * vec3(
 		_chunkId % RENDER_DISTANCE,
 		0.0,
 		_chunkId / RENDER_DISTANCE);
 
-	return vec4(chunk + position, 1.0);
+	return vec4(chunkOffset + position, 1.0);
+}
+
+/* ========================================================================== */
+
+bool	cullUnseenFace(int _face, ivec2 _cubePos, int _chunkId, float _cubeHeight) {
+	ivec2	adjacentCubePos = ivec2(-1);
+	if (_face == 2) {
+		adjacentCubePos = ivec2(_cubePos.x - 1, _cubePos.y);
+	} else if (_face == 3) {
+		adjacentCubePos = ivec2(_cubePos.x + 1, _cubePos.y);
+	} else if (_face == 4) {
+		adjacentCubePos = ivec2(_cubePos.x, _cubePos.y - 1);
+	} else if (_face == 5) {
+		adjacentCubePos = ivec2(_cubePos.x, _cubePos.y + 1);
+	} else {
+		return false;
+	}
+	return getHeight(adjacentCubePos, _chunkId) >= _cubeHeight;
 }
 
 #endif // SCENE_RENDERING_TOOLS_GLSLH

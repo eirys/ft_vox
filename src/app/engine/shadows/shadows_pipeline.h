@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/16 09:24:16 by etran             #+#    #+#             */
-/*   Updated: 2023/08/22 22:12:19 by etran            ###   ########.fr       */
+/*   Updated: 2023/10/06 12:38:02 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,7 +58,6 @@ public:
 	void	draw(
 		VkPipelineLayout layout,
 		CommandBuffer& command_buffer,
-		InputHandler& input,
 		int32_t image_index) override;
 
 	/* ========================================================================= */

@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/16 10:16:30 by etran             #+#    #+#             */
-/*   Updated: 2023/10/05 17:27:22 by etran            ###   ########.fr       */
+/*   Updated: 2023/10/06 12:37:33 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -101,7 +101,6 @@ void	ShadowsPipeline::plugDescriptor(
 void	ShadowsPipeline::draw(
 	VkPipelineLayout layout,
 	CommandBuffer& command_buffer,
-	InputHandler& input,
 	int32_t image_index
 ) {
 	(void)image_index;
@@ -134,29 +133,11 @@ void	ShadowsPipeline::draw(
 		VK_PIPELINE_BIND_POINT_GRAPHICS,
 		super::_pipeline);
 
-	// std::array<VkBuffer, 1>		vertex_buffers = { input.getVertexBuffer().getBuffer() };
-	// std::array<VkDeviceSize, 1>	offsets = { 0 };
-	// vkCmdBindVertexBuffers(
-	// 	command_buffer.getBuffer(),
-	// 	0,
-	// 	static_cast<uint32_t>(vertex_buffers.size()), vertex_buffers.data(),
-	// 	offsets.data());
-	// vkCmdBindIndexBuffer(
-	// 	command_buffer.getBuffer(),
-	// 	input.getIndexBuffer().getBuffer(),
-	// 	0,
-	// 	VK_INDEX_TYPE_UINT32);
-
-	// vkCmdDrawIndexed(
-	// 	command_buffer.getBuffer(),
-	// 	input.getIndicesCount(),
-	// 	RENDER_DISTANCE * RENDER_DISTANCE, 0, 0, 0);
-
 	vkCmdDraw(
 		command_buffer.getBuffer(),
-		36 * 16 * 16,
-		RENDER_DISTANCE * RENDER_DISTANCE, 0, 0);
-		(void)input;
+		36,
+		CHUNK_AREA * RENDER_DISTANCE * RENDER_DISTANCE, 0, 0);
+
 	vkCmdEndRenderPass(command_buffer.getBuffer());
 }
 

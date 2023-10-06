@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/06 12:07:38 by etran             #+#    #+#             */
-/*   Updated: 2023/09/25 14:40:12 by etran            ###   ########.fr       */
+/*   Updated: 2023/10/06 12:52:32 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,8 +59,8 @@ public:
 
 	/* ========================================================================= */
 
-	const std::array<uint8_t, CHUNK_AREA>&	getHeightMap() const noexcept;
-	// std::array<uint8_t, CHUNK_AREA>	getHeightMap() const noexcept;
+	// const std::array<uint8_t, CHUNK_AREA>&	getHeightMap() const noexcept;
+	std::array<uint8_t, CHUNK_AREA>	getHeightMap() const noexcept;
 	uint32_t						getChunkCoordinates() const noexcept;
 
 	const Block&					getBlock(
@@ -78,8 +78,8 @@ private:
 	uint8_t							_x;
 	uint8_t							_y;
 	uint8_t							_z;
-	std::array<uint8_t, CHUNK_AREA>	_blocks{};
-	// std::vector<Block>				_blocks;
+	// std::array<uint8_t, CHUNK_AREA>	_blocks{};
+	std::vector<Block>				_blocks;
 
 	/* ========================================================================= */
 	/*                                  METHODS                                  */

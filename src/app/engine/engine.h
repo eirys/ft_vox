@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:14:35 by etran             #+#    #+#             */
-/*   Updated: 2023/08/15 19:34:30 by etran            ###   ########.fr       */
+/*   Updated: 2023/10/06 12:45:27 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -108,7 +108,6 @@ private:
 	SwapChain					_swap_chain;
 	DescriptorPool				_descriptor_pool;
 	CommandPool					_command_pool;
-	InputHandler				_input_handler;
 
 	CommandBuffer				_draw_buffer;
 
