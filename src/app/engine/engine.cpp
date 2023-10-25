@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/02 16:09:44 by etran             #+#    #+#             */
-/*   Updated: 2023/10/06 12:40:09 by etran            ###   ########.fr       */
+/*   Updated: 2023/10/25 17:39:58 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -518,8 +518,8 @@ UniformBufferObject	Engine::_updateUbo(const GameState& game) {
 		const Mat4	view = ::scop::lookAt(
 			player.getPosition(),
 			front,
-			right,
-			up);
+			up,
+			right);
 
 		ubo.camera.vp = projection * view;
 		ubo.chunks = _input_handler.updateVisibleChunks(

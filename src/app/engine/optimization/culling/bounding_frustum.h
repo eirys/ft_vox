@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/16 16:25:31 by etran             #+#    #+#             */
-/*   Updated: 2023/10/16 16:25:31 by etran            ###   ########.fr       */
+/*   Updated: 2023/10/25 17:32:05 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,9 +40,9 @@ struct BoundingFrustum {
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
 
+	BoundingFrustum();
 	BoundingFrustum(const Camera& cam);
 
-	BoundingFrustum() = default;
 	BoundingFrustum(BoundingFrustum&& other) = default;
 	BoundingFrustum(const BoundingFrustum& other) = default;
 	BoundingFrustum& operator=(BoundingFrustum&& other) = default;
@@ -62,7 +62,7 @@ struct BoundingFrustum {
 			Plane	far;
 			Plane	near;
 		};
-		Plane	planes[6] = {};
+		Plane	planes[6];
 	};
 
 }; // struct BoundingFrustum

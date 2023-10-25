@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/19 11:46:11 by etran             #+#    #+#             */
-/*   Updated: 2023/10/06 13:04:34 by etran            ###   ########.fr       */
+/*   Updated: 2023/10/25 17:35:00 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,8 +74,11 @@ IntersectionType	Chunk::checkIntersection(const scop::graphics::BoundingFrustum&
 }
 
 void	Chunk::updateActivity(const Player& player) {
-	// check if player in radius
-	// _isActive = true;
+	// check if player in RD radius
+	if (scop::norm(player.getPosition() - _center) < CHUNK_SIZE * 2.0f)
+		_isActive = true;
+	else
+		_isActive = false;
 }
 
 /* GETTER =================================================================== */

@@ -6,7 +6,7 @@
 #    By: etran <etran@student.42.fr>                +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/04/06 03:40:09 by eli               #+#    #+#              #
-#    Updated: 2023/10/05 17:59:24 by etran            ###   ########.fr        #
+#    Updated: 2023/10/25 17:37:04 by etran            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -42,6 +42,8 @@ SUBDIRS		:=	$(APP_DIR) \
 				$(GAME_DIR) \
 				$(CHAR_DIR) \
 				$(ENG_DIR) \
+				$(OPTIM_DIR) \
+				$(CULL_DIR) \
 				$(SCENE_DIR) \
 				$(SHADOW_DIR) \
 				$(MODEL_DIR) \
@@ -88,6 +90,8 @@ SRC_FILES	:=	$(TOOLS_DIR)/matrix.cpp \
 				$(ENG_DIR)/buffer.cpp \
 				$(ENG_DIR)/command_buffer.cpp \
 				$(ENG_DIR)/image_buffer.cpp \
+				$(CULL_DIR)/bounding_box.cpp \
+				$(CULL_DIR)/bounding_frustum.cpp \
 				$(SCENE_DIR)/scene_render_pass.cpp \
 				$(SCENE_DIR)/scene_descriptor_set.cpp \
 				$(SCENE_DIR)/scene_pipeline.cpp \

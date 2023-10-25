@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/18 17:42:36 by etran             #+#    #+#             */
-/*   Updated: 2023/10/06 12:58:17 by etran            ###   ########.fr       */
+/*   Updated: 2023/10/25 17:36:05 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -72,11 +72,13 @@ const std::vector<Chunk>&	World::getChunks() const noexcept {
 
 const Chunk&	World::getChunk(uint8_t x, uint8_t y, uint8_t z) const noexcept {
 	//TODO: replace by y
+	(void)y;
 	return _chunks[z * _world_depth + (0 * _world_width + x)];
 }
 
 Chunk&	World::getChunk(uint8_t x, uint8_t y, uint8_t z) noexcept {
 	//TODO
+	(void)y;
 	return _chunks[z * _world_depth + (0 * _world_width + x)];
 }
 

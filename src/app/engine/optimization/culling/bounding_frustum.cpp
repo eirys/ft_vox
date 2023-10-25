@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/17 12:16:44 by etran             #+#    #+#             */
-/*   Updated: 2023/10/17 12:16:44 by etran            ###   ########.fr       */
+/*   Updated: 2023/10/25 18:06:18 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,38 +32,32 @@ namespace scop::graphics {
 // 	near		= { 0.0f, 0.0f, 1.0f, znear };
 // }
 
-BoundingFrustum::BoundingFrustum(const Camera& cam) {
-	const float half_width = CAMERA_ZFAR * tanf(PLAYER_FOV * .5f);
-	const float half_height = half_width * WINDOW_RATIO;
+BoundingFrustum::BoundingFrustum(): planes{} {}
 
+BoundingFrustum::BoundingFrustum(const Camera& cam) {
+	const float half_height = CAMERA_ZFAR * tanf(PLAYER_FOV * .5f);
+	const float half_width = half_height * WINDOW_RATIO;
+
+	const scop::Vect3 near_front = CAMERA_ZNEAR * cam.front;
 	const scop::Vect3 far_front = CAMERA_ZFAR * cam.front;
 
-	auto computeDistanceFn = [](const Vect3& normal, const Vect3& point) -> float {
-		return - ((normal.x * point.x) +
-				  (normal.y * point.y) +
-				  (normal.z * point.z));
-	};
+	near.xyz = cam.front;
+	near.w = -scop::dot(near.xyz, cam.position + near_front);
 
-	near.xyz = { cam.position + CAMERA_ZNEAR * cam.front };
-	near.w = computeDistanceFn(near.xyz, cam.front);
+	far.xyz = -cam.front;
+	far.w = -scop::dot(far.xyz, cam.position + far_front);
 
-	far.xyz = { cam.position + far_front };
-	far.w = computeDistanceFn(far.xyz, -cam.front);
+	right.xyz = scop::normalize(scop::cross(far_front - cam.right * half_width, cam.up));
+	right.w = -scop::dot(right.xyz, cam.position);
 
-	right.xyz = { cam.position };
-	right.w = computeDistanceFn(right.xyz,  scop::cross(far_front - cam.right * half_width, cam.up));
+	left.xyz = scop::normalize(scop::cross(cam.up, far_front + cam.right * half_width));
+	left.w = -scop::dot(left.xyz, cam.position);
 
-	left.xyz = { cam.position };
-	left.w = computeDistanceFn(left.xyz, scop::cross(cam.up, far_front + cam.right * half_width));
+	top.xyz = scop::normalize(scop::cross(cam.right, far_front - cam.up * half_height));
+	top.w = -scop::dot(top.xyz, cam.position);
 
-	top.xyz = { cam.position };
-	top.w = computeDistanceFn(top.xyz, scop::cross(cam.right, far_front - cam.up * half_height));
-
-	bottom.xyz = { cam.position };
-	bottom.w = computeDistanceFn(bottom.xyz, scop::cross(far_front + cam.up * half_height, cam.right));
-
-	for (auto& plane: planes)
-		plane.xyz = scop::normalize(plane.xyz);
+	bottom.xyz = scop::normalize(scop::cross(far_front + cam.up * half_height, cam.right));
+	bottom.w = -scop::dot(bottom.xyz, cam.position);
 }
 
 } // namespace scop::graphics
