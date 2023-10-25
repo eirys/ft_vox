@@ -73,9 +73,9 @@ public:
 	virtual void		draw(
 		VkPipelineLayout layout,
 		CommandBuffer& command_buffer,
+		const InputHandler& input,
 		int32_t image_index) = 0;
 	virtual void		update(const UniformBufferObject& ubo) noexcept;
-	virtual void		update(const Camera& camera) noexcept;
 
 	/* ========================================================================= */
 

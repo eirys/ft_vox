@@ -15,13 +15,27 @@
 # ifndef GLFW_INCLUDE_VULKAN
 #  define GLFW_INCLUDE_VULKAN
 # endif
-
 # include <GLFW/glfw3.h>
+
+// Std
+# include <vector>
 
 namespace scop::graphics {
 
 class DebugModule {
 public:
+	/* ========================================================================= */
+	/*                               CONST MEMBERS                               */
+	/* ========================================================================= */
+
+	static const std::vector<const char*>	validation_layers;
+
+	#ifdef NDEBUG
+	static const constexpr bool			enable_validation_layers = true;
+	#else
+	static const constexpr bool			enable_validation_layers = false;
+	#endif
+
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
@@ -36,11 +50,9 @@ public:
 
 	/* ========================================================================= */
 
-	void							init(VkInstance vk_instance);
-	void							destroy(VkInstance vk_instance);
-	void							populate(
-		VkDebugUtilsMessengerCreateInfoEXT& create_info
-	);
+	void		init(VkInstance vk_instance);
+	void		destroy(VkInstance vk_instance);
+	void		populate(VkDebugUtilsMessengerCreateInfoEXT& create_info);
 
 private:
 	/* ========================================================================= */

@@ -33,17 +33,19 @@ void ImageBuffer::initImage(
 	VkFormat pixel_format,
 	VkImageUsageFlags usage,
 	VkSampleCountFlagBits sample_count,
-	uint32_t mip_count,
-	uint32_t layer_count,
-	VkImageCreateFlags flags,
-	VkMemoryPropertyFlags properties,
-	VkImageTiling tiling
+	uint32_t mip_count, /* = 1 */
+	uint32_t layer_count, /* = 1 */
+	VkImageCreateFlags flags, /* = 0 */
+	VkMemoryPropertyFlags properties, /* = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT */
+	VkImageTiling tiling, /* = VK_IMAGE_TILING_OPTIMAL */
+	uint32_t depth, /* = 1 */
+	VkImageType type /* = VK_IMAGE_TYPE_2D */
 ) {
 	// Create vkimage
 	VkImageCreateInfo	image_info{};
 	image_info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-	image_info.imageType = VK_IMAGE_TYPE_2D;
-	image_info.extent = { width, height, 1 };
+	image_info.imageType = type;
+	image_info.extent = { width, height, depth };
 	image_info.mipLevels = mip_count;
 	image_info.arrayLayers = layer_count;
 	image_info.format = pixel_format;
@@ -63,8 +65,7 @@ void ImageBuffer::initImage(
 	vkGetImageMemoryRequirements(
 		device.getLogicalDevice(),
 		_image,
-		&mem_requirements
-	);
+		&mem_requirements);
 
 	// Verify if memory type is compatible with properties
 	VkMemoryAllocateInfo	alloc_info{};
@@ -72,8 +73,7 @@ void ImageBuffer::initImage(
 	alloc_info.allocationSize = mem_requirements.size;
 	alloc_info.memoryTypeIndex = device.findMemoryType(
 		mem_requirements.memoryTypeBits,
-		properties
-	);
+		properties);
 
 	if (vkAllocateMemory(device.getLogicalDevice(), &alloc_info, nullptr, &_memory) != VK_SUCCESS) {
 		throw std::runtime_error("failed to allocate image memory");
@@ -96,9 +96,9 @@ void	ImageBuffer::initView(
 	Device& device,
 	VkFormat image_format,
 	VkImageAspectFlags aspect_flags,
-	VkImageViewType view_type,
-	uint32_t mip_count,
-	uint32_t layer_count
+	VkImageViewType view_type, /* = VK_IMAGE_VIEW_TYPE_2D */
+	uint32_t mip_count, /* = 1 */
+	uint32_t layer_count /* = 1 */
 ) {
 	VkImageViewCreateInfo	view_info{};
 	view_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;

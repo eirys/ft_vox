@@ -59,15 +59,15 @@ public:
 	void	plugDescriptor(
 		Device& device,
 		TextureHandlerPtr shadowmap,
-		TextureHandlerPtr heightmap);
+		const InputHandler& input);
 	void	destroy(Device& device) override;
 
 	void	draw(
 		VkPipelineLayout layout,
 		CommandBuffer& command_buffer,
+		const InputHandler& input,
 		int32_t image_index) override;
 	void	update(const UniformBufferObject& ubo) noexcept override;
-	void	update(const Camera& camera) noexcept override;
 
 	/* ========================================================================= */
 

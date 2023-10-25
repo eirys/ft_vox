@@ -11,13 +11,10 @@
 /* ************************************************************************** */
 
 #include "input_handler.h"
-#include "device.h"
-#include "vertex.h"
-#include "vector.h"
-#include "command_pool.h"
-#include "command_buffer.h"
-
-#include <cstring> // memcpy
+#include "game_state.h"
+#include "chunk.h"
+#include "matrix.h"
+#include "chunk_texture_handler.h"
 
 namespace scop::graphics {
 
@@ -25,130 +22,57 @@ namespace scop::graphics {
 /*                                   PUBLIC                                   */
 /* ========================================================================== */
 
-void	InputHandler::init(
-	Device& device,
-	const std::vector<vox::Vertex>& vertices,
-	const std::vector<uint32_t>& indices
-) {
-	_indices_count = indices.size();
-	_createVertexBuffer(device, vertices);
-	_createIndexBuffer(device, indices);
+void	InputHandler::init(Device& device, const ::vox::GameState& game) {
+	_height_map = std::make_shared<ChunkTextureHandler>();
+
+	std::shared_ptr<ChunkTextureHandler>	height_map =
+		std::dynamic_pointer_cast<ChunkTextureHandler>(_height_map);
+	height_map->init(device);
+	height_map->copyData(device, game.getWorld().generateHeightBuffer());
 }
 
 void	InputHandler::destroy(Device& device) {
-	_index_buffer.destroy(device.getLogicalDevice());
-	_vertex_buffer.destroy(device.getLogicalDevice());
+	_height_map->destroy(device);
 }
 
-/* ========================================================================== */
 
-uint32_t	InputHandler::getIndicesCount() const noexcept {
-	return _indices_count;
-}
-
-const Buffer&	InputHandler::getVertexBuffer() const noexcept {
-	return _vertex_buffer;
-}
-
-const Buffer&	InputHandler::getIndexBuffer() const noexcept {
-	return _index_buffer;
-}
-
-/* ========================================================================== */
-/*                                   PRIVATE                                  */
-/* ========================================================================== */
-
-/**
- * @brief Create the vertex buffer that'll be used to store
- * the vertices of the triangle.
-*/
-void	InputHandler::_createVertexBuffer(
-	Device& device,
-	const std::vector<vox::Vertex>& vertices
+uint32_t	InputHandler::updateVisibleChunks(
+	const BoundingFrustum::Camera& camera,
+	const ::vox::World& world
 ) {
-	const VkDeviceSize	buffer_size = sizeof(vox::Vertex) * vertices.size();
+	uint32_t	packed_visible_chunks = 0;
+	_instances_count = 0;
 
-	// Create staging buffer to upload to from cpu
-	scop::graphics::Buffer	staging_buffer;
-	staging_buffer.init(
-		device,
-		buffer_size,
-		VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-		VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+	_frustum = BoundingFrustum(camera);
+	for (uint32_t z = 0; z < world.getDepth(); ++z) {
+		for (uint32_t x = 0; x < world.getWidth(); ++x) {
 
-	// Fill staging buffer
-	staging_buffer.map(device.getLogicalDevice());
-	staging_buffer.copyFrom(
-		vertices.data(),
-		static_cast<std::size_t>(buffer_size));
-	staging_buffer.unmap(device.getLogicalDevice());
+			const IntersectionType chunkIntersection = world.getChunk(x, 0, z).checkIntersection(_frustum);
 
-	// Create vertex buffer
-	_vertex_buffer.init(
-		device,
-		buffer_size,
-		VK_BUFFER_USAGE_TRANSFER_DST_BIT |
-		VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
-		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-
-	// Transfer data from staging buffer to vertex buffer
-	CommandBuffer	command_buffer = CommandPool::createBuffer(device);
-	command_buffer.begin();
-	_vertex_buffer.copyBuffer(
-		command_buffer,
-		staging_buffer,
-		buffer_size);
-	command_buffer.end(device);
-	CommandPool::destroyBuffer(device, command_buffer);
-
-	// Cleanup staging buffer
-	staging_buffer.destroy(device.getLogicalDevice());
+			if (chunkIntersection == IntersectionType::Inside ||
+				chunkIntersection == IntersectionType::Intersecting) {
+				packed_visible_chunks |= 1 << (31-(z * world.getWidth() + x));
+				++_instances_count;
+			}
+		}
+	}
+	return packed_visible_chunks;
 }
 
-/**
- * @brief Create index buffer (pointers into the vertex buffer)
- */
-void	InputHandler::_createIndexBuffer(
-	Device& device,
-	const std::vector<uint32_t>& indices
-) {
-	const VkDeviceSize	buffer_size = sizeof(uint32_t) * indices.size();
+/* ========================================================================== */
 
-	scop::graphics::Buffer	staging_buffer;
-	staging_buffer.init(
-		device,
-		buffer_size,
-		VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-		VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
-		VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+// TODO
+uint32_t	InputHandler::getVerticesCount() const noexcept {
+	return _vertices_count;
+}
 
-	// Fill staging buffer with indices
-	staging_buffer.map(device.getLogicalDevice(), buffer_size);
-	staging_buffer.copyFrom(
-		indices.data(),
-		static_cast<std::size_t>(buffer_size));
-	staging_buffer.unmap(device.getLogicalDevice());
+//TODO
+uint32_t	InputHandler::getInstancesCount() const noexcept {
+	return CHUNK_SIZE * _instances_count;
+}
 
-	// Create index buffer
-	_index_buffer.init(
-		device,
-		buffer_size,
-		VK_BUFFER_USAGE_TRANSFER_DST_BIT |
-		VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
-		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-
-	// Transfer data from staging buffer to index buffer
-	CommandBuffer	command_buffer = CommandPool::createBuffer(device);
-	command_buffer.begin();
-	_index_buffer.copyBuffer(
-		command_buffer,
-		staging_buffer,
-		buffer_size);
-	command_buffer.end(device);
-	CommandPool::destroyBuffer(device, command_buffer);
-
-	// Cleanup staging buffer
-	staging_buffer.destroy(device.getLogicalDevice());
+InputHandler::TextureHandlerPtr	InputHandler::getHeightMap() const noexcept {
+	return _height_map;
 }
 
 } // namespace scop::graphics

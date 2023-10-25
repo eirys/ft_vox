@@ -5,7 +5,7 @@
 /* ========================================================================== */
 
 // Input
-// layout(location = 0) in int in_position;
+//  None
 
 // Output
 layout(location = 0) out vec3 out_normal;
@@ -16,6 +16,7 @@ layout(location = 2) out vec3 out_shadow;
 layout(binding = 0, set = 0) uniform Camera { mat4 vp; }	camera;
 layout(binding = 1, set = 0) uniform Projector { mat4 vp; }	projector;
 layout(binding = 5, set = 0) uniform usampler2DArray		height_map;
+layout(binding = 6, set = 0) uniform Packed { uint data; }	packed_position;
 
 /* ========================================================================== */
 /*                                  INCLUDES                                  */
@@ -45,7 +46,8 @@ const vec2 uvs[6] = {
 /* MAIN ===================================================================== */
 void	main() {
 	int		cubeId = gl_InstanceIndex % CHUNK_AREA;
-	int		chunkId = gl_InstanceIndex / CHUNK_AREA;
+	int		chunkId = extractChunkId(gl_InstanceIndex / CHUNK_AREA);
+	// int		chunkId = gl_InstanceIndex / CHUNK_AREA;
 
 	ivec2	cubePos = ivec2(cubeId % 16, cubeId / 16);
 	float	cubeHeight = getHeight(cubePos, chunkId);

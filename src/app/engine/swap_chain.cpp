@@ -52,8 +52,6 @@ void	SwapChain::update(
 
 	destroy(device);
 	init(device, window);
-	// recreate resources and fb
-	// initFrameBuffers(device, render_pass);
 }
 
 /* ========================================================================== */

@@ -10,8 +10,8 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "engine.h"
 #include "device.h"
+#include "debug_module.h"
 #include "window.h"
 #include "utils.h"
 #include "buffer.h"
@@ -208,11 +208,11 @@ void	Device::_createLogicalDevice() {
 	create_info.pEnabledFeatures = &device_features;
 
 	// Validation layers
-	if (Engine::enable_validation_layers) {
+	if (DebugModule::enable_validation_layers) {
 		create_info.enabledLayerCount = static_cast<uint32_t>(
-			Engine::validation_layers.size()
+			DebugModule::validation_layers.size()
 		);
-		create_info.ppEnabledLayerNames = Engine::validation_layers.data();
+		create_info.ppEnabledLayerNames = DebugModule::validation_layers.data();
 	} else {
 		create_info.enabledLayerCount = 0;
 	}

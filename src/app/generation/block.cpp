@@ -32,11 +32,7 @@ MaterialType	Block::getType() const noexcept {
 
 /* ========================================================================== */
 
-Block::operator bool() const noexcept {
-	return _type != MaterialType::MATERIAL_AIR;
-}
-
-bool	Block::operator!() const noexcept {
+bool	Block::isEmpty() const noexcept {
 	return _type == MaterialType::MATERIAL_AIR;
 }
 

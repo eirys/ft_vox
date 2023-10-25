@@ -15,4 +15,4 @@
 # define __ALIGNMENT_MAT4 16
 # define __ALIGNMENT_VEC3 16
 # define __ALIGNMENT_BUFF 64
-# define __ALIGNMENT_SCAL(X) sizeof(X)
+# define __ALIGNMENT(X) sizeof(X)

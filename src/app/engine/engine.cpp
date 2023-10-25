@@ -24,7 +24,6 @@
 #include "scene_pipeline.h"
 #include "shadows_pipeline.h"
 #include "shadows_texture_handler.h"
-#include "height_texture_handler.h"
 
 #include <chrono>
 
@@ -42,10 +41,6 @@ using Camera = ::scop::Camera;
 
 namespace scop::graphics {
 
-const std::vector<const char*>	Engine::validation_layers = {
-	"VK_LAYER_KHRONOS_validation"
-};
-
 /* ========================================================================== */
 /*                                   PUBLIC                                   */
 /* ========================================================================== */
@@ -53,7 +48,6 @@ const std::vector<const char*>	Engine::validation_layers = {
 void	Engine::init(::scop::Window& window, const GameState& game) {
 	_pipelines.scene = std::make_shared<ScenePipeline>();
 	_pipelines.shadows = std::make_shared<ShadowsPipeline>();
-	_height_map = std::make_shared<HeightTextureHandler>();
 
 	_createInstance();
 	_debug_module.init(_vk_instance);
@@ -61,10 +55,7 @@ void	Engine::init(::scop::Window& window, const GameState& game) {
 	_swap_chain.init(_device, window);
 	_command_pool.init(_device);
 
-	std::shared_ptr<HeightTextureHandler>	height_map =
-		std::dynamic_pointer_cast<HeightTextureHandler>(_height_map);
-	height_map->init(_device);
-	height_map->copyData(_device, game.getWorld().generateHeightBuffer());
+	_input_handler.init(_device, game);
 
 	_createGraphicsPipelines();
 	_createGraphicsPipelineLayout();
@@ -81,7 +72,8 @@ void	Engine::destroy() {
 	_swap_chain.destroy(_device);
 	_pipelines.scene->destroy(_device);
 	_pipelines.shadows->destroy(_device);
-	_height_map->destroy(_device);
+
+	_input_handler.destroy(_device);
 
 	vkDestroyPipelineLayout(
 		_device.getLogicalDevice(),
@@ -156,10 +148,12 @@ void	Engine::render(
 	_pipelines.shadows->draw(
 		_pipeline_layout,
 		_draw_buffer,
+		_input_handler,
 		image_index);
 	_pipelines.scene->draw(
 		_pipeline_layout,
 		_draw_buffer,
+		_input_handler,
 		image_index);
 	_draw_buffer.end(_device, false);
 
@@ -221,7 +215,7 @@ void	Engine::render(
 */
 void	Engine::_createInstance() {
 	// Check if validation layers are available
-	if (enable_validation_layers && !_checkValidationLayerSupport())
+	if (DebugModule::enable_validation_layers && !_checkValidationLayerSupport())
 		throw std::runtime_error("validation layers not available");
 
 	// Provides information to driver
@@ -247,11 +241,11 @@ void	Engine::_createInstance() {
 
 	// Setup debug messenger to go along with the instance
 	VkDebugUtilsMessengerCreateInfoEXT	debug_create_info{};
-	if (enable_validation_layers) {
+	if (DebugModule::enable_validation_layers) {
 		create_info.enabledLayerCount = static_cast<uint32_t>(
-			validation_layers.size()
+			DebugModule::validation_layers.size()
 		);
-		create_info.ppEnabledLayerNames = validation_layers.data();
+		create_info.ppEnabledLayerNames = DebugModule::validation_layers.data();
 		_debug_module.populate(debug_create_info);
 		create_info.pNext =
 			(VkDebugUtilsMessengerCreateInfoEXT*)&debug_create_info;
@@ -312,11 +306,11 @@ void	Engine::_createDescriptors() {
 	scene_pipeline->plugDescriptor(
 		_device,
 		shadows_pipeline->getTextureHandler(),
-		_height_map);
+		_input_handler);
 	shadows_pipeline->plugDescriptor(
 		_device,
 		scene_pipeline->getUbo(),
-		_height_map);
+		_input_handler);
 }
 
 void	Engine::_createGraphicsPipelineLayout() {
@@ -503,24 +497,34 @@ void	Engine::_updatePresentation(::scop::Window& window) {
 	_pipelines.scene->getTarget()->update(_device, tar_info);
 }
 
-UniformBufferObject	Engine::_updateUbo(const GameState& game) const noexcept {
+UniformBufferObject	Engine::_updateUbo(const GameState& game) {
 	UniformBufferObject	ubo{};
 
-	{	/* UPDATE CAMERA =========================================================== */
-		float window_ratio =
-			_swap_chain.getExtent().width /
-			static_cast<float>(_swap_chain.getExtent().height);
-		Mat4	view = ::scop::lookAtDir(
-			game.getPlayer().getPosition(),
-			game.getPlayer().getEyeDir(),
-			::scop::Vect3(0.0f, 1.0f, 0.0f));
-		Mat4	projection = ::scop::perspective(
-			::scop::math::radians(70.0f),
-			window_ratio,
-			0.1f,
-			1000.0f);
+	const ::vox::Player& player = game.getPlayer();
+
+	{	/* UPDATE CAMERA & CHUNK DATA ============================================= */
+		// const constexpr float window_ratio =
+			// _swap_chain.getExtent().width /
+			// static_cast<float>(_swap_chain.getExtent().height);
+		const Mat4	projection = ::scop::perspective(
+			PLAYER_FOV,
+			WINDOW_RATIO,
+			CAMERA_ZNEAR,
+			CAMERA_ZFAR);
+
+		const Vect3 front = player.getEyeDir();
+		const Vect3 right = scop::normalize(scop::cross(front, {0.0f, 1.0f, 0.0f}));
+		const Vect3 up = scop::cross(right, front);
+		const Mat4	view = ::scop::lookAt(
+			player.getPosition(),
+			front,
+			right,
+			up);
 
 		ubo.camera.vp = projection * view;
+		ubo.chunks = _input_handler.updateVisibleChunks(
+			BoundingFrustum::Camera{player.getPosition(), front, right, up},
+			game.getWorld());
 	}
 	{	/* UPDATE LIGHT AND PROJECTOR ============================================== */
 		constexpr const float	terrain_length = CHUNK_SIZE * RENDER_DISTANCE;
@@ -562,7 +566,7 @@ bool	Engine::_checkValidationLayerSupport() {
 	std::vector<VkLayerProperties>	available_layers(layer_count);
 	vkEnumerateInstanceLayerProperties(&layer_count, available_layers.data());
 
-	for (const char* layer_name: validation_layers) {
+	for (const char* layer_name: DebugModule::validation_layers) {
 		bool	found = false;
 		for (const VkLayerProperties& layer_properties: available_layers) {
 			if (!strcmp(layer_name, layer_properties.layerName)) {
@@ -589,7 +593,7 @@ std::vector<const char*>	Engine::_getRequiredExtensions() {
 		glfw_extensions + glfw_extension_count
 	);
 
-	if (enable_validation_layers) {
+	if (DebugModule::enable_validation_layers) {
 		extensions.emplace_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
 	}
 	return extensions;

@@ -122,7 +122,7 @@ void	ScenePipeline::destroy(Device& device) {
 void	ScenePipeline::plugDescriptor(
 	Device& device,
 	TextureHandlerPtr shadowmap,
-	TextureHandlerPtr heightmap
+	const InputHandler& input
 ) {
 	auto	scene_descriptors =
 		std::dynamic_pointer_cast<SceneDescriptorSet>(super::_descriptor);
@@ -131,7 +131,7 @@ void	ScenePipeline::plugDescriptor(
 		_ubo,
 		super::_texture,
 		shadowmap,
-		heightmap);
+		input);
 }
 
 /**
@@ -140,6 +140,7 @@ void	ScenePipeline::plugDescriptor(
 void	ScenePipeline::draw(
 	VkPipelineLayout layout,
 	CommandBuffer& command_buffer,
+	const InputHandler& input,
 	int32_t image_index
 ) {
 	_beginRenderPass(command_buffer, image_index);
@@ -172,8 +173,8 @@ void	ScenePipeline::draw(
 
 	vkCmdDraw(
 		command_buffer.getBuffer(),
-		36,
-		CHUNK_AREA * RENDER_DISTANCE * RENDER_DISTANCE, 0, 0);
+		input.getVerticesCount(),
+		input.getInstancesCount(), 0, 0);
 
 	vkCmdEndRenderPass(command_buffer.getBuffer());
 }
@@ -183,16 +184,6 @@ void	ScenePipeline::draw(
 */
 void	ScenePipeline::update(const UniformBufferObject& ubo) noexcept {
 	_ubo.copyFrom(&ubo, sizeof(UniformBufferObject));
-}
-
-/**
- * @brief Update the camera part of the ubo.
-*/
-void	ScenePipeline::update(const Camera& camera) noexcept {
-	_ubo.copyFrom(
-		&camera,
-		sizeof(Camera),
-		offsetof(UniformBufferObject, camera));
 }
 
 /* ========================================================================== */

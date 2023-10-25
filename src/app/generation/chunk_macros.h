@@ -14,7 +14,7 @@
 # define CHUNK_MACROS_H
 
 # define CHUNK_SIZE					16 // Number of blocks per chunk row
-# define RENDER_DISTANCE			20 // Number of chunks to render
+# define RENDER_DISTANCE			7  // Number of chunks to render
 # define RENDER_WIDTH				(RENDER_DISTANCE * CHUNK_SIZE)			// 256
 # define RENDER_DEPTH				(RENDER_DISTANCE * CHUNK_SIZE)			// 256
 # define CHUNK_AREA					(CHUNK_SIZE * CHUNK_SIZE)				// 256

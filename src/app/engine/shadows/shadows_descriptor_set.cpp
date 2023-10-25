@@ -15,6 +15,7 @@
 #include "buffer.h"
 #include "uniform_buffer_object.h"
 #include "texture_handler.h"
+#include "input_handler.h"
 
 #include <stdexcept> // std:runtime_error
 #include <array> // std::array
@@ -34,16 +35,26 @@ void	ShadowsDescriptorSet::init(Device& device) {
 	projector.descriptorCount = 1;
 	projector.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 	projector.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+	++super::_writes_sizes.uniform_buffer;
 
 	VkDescriptorSetLayoutBinding	height{};
 	height.binding = 1;
 	height.descriptorCount = 1;
 	height.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 	height.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+	++super::_writes_sizes.combined_image_sampler;
 
-	std::array<VkDescriptorSetLayoutBinding, 2>	bindings = {
+	VkDescriptorSetLayoutBinding	culling{};
+	culling.binding = 2;
+	culling.descriptorCount = 1;
+	culling.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	culling.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+	++super::_writes_sizes.uniform_buffer;
+
+	std::array<VkDescriptorSetLayoutBinding, 3>	bindings = {
 		projector,
-		height };
+		height,
+		culling };
 
 	VkDescriptorSetLayoutCreateInfo	layout_info{};
 	layout_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
@@ -53,9 +64,6 @@ void	ShadowsDescriptorSet::init(Device& device) {
 	if (vkCreateDescriptorSetLayout(device.getLogicalDevice(), &layout_info, nullptr, &(super::_layout)) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create descriptor set layout");
 	}
-
-	super::_writes_sizes.uniform_buffer = 1;
-	super::_writes_sizes.combined_image_sampler = 1;
 }
 
 /**
@@ -66,10 +74,8 @@ void	ShadowsDescriptorSet::init(Device& device) {
 void	ShadowsDescriptorSet::plug(
 	Device& device,
 	Buffer& buffer,
-	TextureHandlerPtr heightmap
+	const InputHandler& input
 ) {
-	std::array<VkWriteDescriptorSet, 2> writes{};
-
 	VkDescriptorBufferInfo	projector_info{};
 	projector_info.buffer = buffer.getBuffer();
 	projector_info.offset = offsetof(UniformBufferObject, projector);
@@ -77,9 +83,17 @@ void	ShadowsDescriptorSet::plug(
 
 	VkDescriptorImageInfo	height_info{};
 	height_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-	height_info.imageView = heightmap->getTextureBuffer().getView();
-	height_info.sampler = heightmap->getTextureSampler();
+	height_info.imageView = input.getHeightMap()->getTextureBuffer().getView();
+	height_info.sampler = input.getHeightMap()->getTextureSampler();
 
+	VkDescriptorBufferInfo	cull_info{};
+	cull_info.buffer = buffer.getBuffer();
+	cull_info.offset = offsetof(UniformBufferObject, chunks);
+	cull_info.range = sizeof(uint32_t);
+
+	std::array<VkWriteDescriptorSet, 3> writes{};
+
+	// Projector UBO
 	writes[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 	writes[0].dstSet = super::_set;
 	writes[0].dstBinding = 0;
@@ -100,6 +114,16 @@ void	ShadowsDescriptorSet::plug(
 	writes[1].pBufferInfo = nullptr;
 	writes[1].pImageInfo = &height_info;
 	writes[1].pTexelBufferView = nullptr;
+
+	writes[2].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+	writes[2].dstSet = super::_set;
+	writes[2].dstBinding = 2;
+	writes[2].dstArrayElement = 0;
+	writes[2].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	writes[2].descriptorCount = 1;
+	writes[2].pBufferInfo = &cull_info;
+	writes[2].pImageInfo = nullptr;
+	writes[2].pTexelBufferView = nullptr;
 
 	vkUpdateDescriptorSets(
 		device.getLogicalDevice(),

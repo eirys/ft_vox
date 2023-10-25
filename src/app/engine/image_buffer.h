@@ -55,8 +55,9 @@ public:
 		uint32_t layers = 1,
 		VkImageCreateFlags flags = 0,
 		VkMemoryPropertyFlags properties = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-		VkImageTiling tiling = VK_IMAGE_TILING_OPTIMAL
-	);
+		VkImageTiling tiling = VK_IMAGE_TILING_OPTIMAL,
+		uint32_t depth = 1,
+		VkImageType type = VK_IMAGE_TYPE_2D);
 
 	void				initView(
 		Device& device,
@@ -64,8 +65,7 @@ public:
 		VkImageAspectFlags aspect_flags,
 		VkImageViewType view_type = VK_IMAGE_VIEW_TYPE_2D,
 		uint32_t mip_count = 1,
-		uint32_t layer_count = 1
-	);
+		uint32_t layer_count = 1);
 
 	void				destroy(Device& device);
 

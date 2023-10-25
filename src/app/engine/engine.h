@@ -19,10 +19,6 @@
 
 # include <GLFW/glfw3.h>
 
-// Std
-# include <optional>	// std::optional
-# include <vector>		// std::vector
-
 # include "debug_module.h"
 # include "device.h"
 # include "swap_chain.h"
@@ -34,6 +30,9 @@
 # include "texture_handler.h"
 # include "pipeline.h"
 
+namespace std {
+class Vector;
+}
 
 namespace vox {
 class GameState;
@@ -64,14 +63,7 @@ public:
 	/*                               CONST MEMBERS                               */
 	/* ========================================================================= */
 
-	static const std::vector<const char*>	validation_layers;
 	static constexpr std::size_t	max_frames_in_flight = 1;
-
-	#ifdef NDEBUG
-	static constexpr bool			enable_validation_layers = true;
-	#else
-	static constexpr bool			enable_validation_layers = false;
-	#endif
 
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
@@ -101,6 +93,7 @@ private:
 	/*                               CLASS MEMBERS                               */
 	/* ========================================================================= */
 
+	// Core
 	VkInstance					_vk_instance;
 	DebugModule					_debug_module;
 
@@ -108,9 +101,7 @@ private:
 	SwapChain					_swap_chain;
 	DescriptorPool				_descriptor_pool;
 	CommandPool					_command_pool;
-
 	CommandBuffer				_draw_buffer;
-
 	VkSemaphore					_image_available_semaphores;
 	VkSemaphore					_render_finished_semaphores;
 	VkFence						_in_flight_fences;
@@ -121,7 +112,7 @@ private:
 		PipelinePtr				shadows;
 	}							_pipelines;
 
-	TextureHandlerPtr			_height_map;
+	InputHandler				_input_handler;
 
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
@@ -134,7 +125,7 @@ private:
 	void						_createSyncObjects();
 	void						_createDescriptors();
 
-	UniformBufferObject			_updateUbo(const GameState& game) const noexcept;
+	UniformBufferObject			_updateUbo(const GameState& game);
 
 	void						_updatePresentation(Window& window);
 

@@ -12,78 +12,70 @@
 
 #pragma once
 
-// Graphics
-# ifndef GLFW_INCLUDE_VULKAN
-#  define GLFW_INCLUDE_VULKAN
-# endif
-
-# include <GLFW/glfw3.h>
-
 // Std
-# include <vector>
+# include <memory>
 
-# include "buffer.h"
+# include "bounding_frustum.h"
 
 namespace vox {
-
-struct Vertex;
-
-} // namespace scop
+class GameState;
+class World;
+}
 
 namespace scop::graphics {
 
 class Device;
+class TextureHandler;
 
 class InputHandler {
 public:
+	/* ========================================================================= */
+	/*                                  TYPEDEFS                                 */
+	/* ========================================================================= */
+
+	using TextureHandlerPtr = std::shared_ptr<TextureHandler>;
+
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
 
 	InputHandler() = default;
-	~InputHandler() = default;
 	InputHandler(InputHandler&& x) = default;
 	InputHandler&	operator=(InputHandler&& x) = default;
+	~InputHandler() = default;
 
 	InputHandler(const InputHandler& x) = delete;
 	InputHandler&	operator=(const InputHandler& x) = delete;
 
 	/* ========================================================================= */
 
-	void			init(
-		Device& device,
-		const std::vector<vox::Vertex>& vertices,
-		const std::vector<uint32_t>& indices
-	);
-	void			destroy(Device& device);
+	void				init(Device& device, const ::vox::GameState& game);
+	void				destroy(Device& device);
+
+	uint32_t			updateVisibleChunks(
+		const BoundingFrustum::Camera& camera,
+		const ::vox::World& world);
 
 	/* ========================================================================= */
 
-	uint32_t		getIndicesCount() const noexcept;
-	const Buffer&	getVertexBuffer() const noexcept;
-	const Buffer&	getIndexBuffer() const noexcept;
+	uint32_t			getVerticesCount() const noexcept;
+	uint32_t			getInstancesCount() const noexcept;
+	TextureHandlerPtr	getHeightMap() const noexcept;
 
 private:
 	/* ========================================================================= */
 	/*                               CLASS MEMBERS                               */
 	/* ========================================================================= */
 
-	uint32_t		_indices_count;
-	Buffer			_vertex_buffer;
-	Buffer			_index_buffer;
+	TextureHandlerPtr	_height_map;
+
+	BoundingFrustum		_frustum;
+	uint32_t			_instances_count = 0;
+	uint32_t			_vertices_count = 36;
 
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
-
-	void			_createVertexBuffer(
-		Device& device,
-		const std::vector<vox::Vertex>& vertices
-	);
-	void			_createIndexBuffer(
-		Device& device,
-		const std::vector<uint32_t>& indices
-	);
 
 }; // class InputHandler
 

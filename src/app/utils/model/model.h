@@ -23,8 +23,6 @@
 
 namespace scop {
 class Image;
-struct Vect2;
-struct Vect3;
 struct Vertex;
 
 namespace obj {

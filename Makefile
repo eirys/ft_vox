@@ -26,8 +26,10 @@ SHD_DIR		:=	shaders
 TOOLS_DIR	:=	tools
 APP_DIR		:=	app
 ENG_DIR		:=	$(APP_DIR)/engine
+OPTIM_DIR	:=	$(ENG_DIR)/optimization
 SCENE_DIR	:=	$(ENG_DIR)/scene
 SHADOW_DIR	:=	$(ENG_DIR)/shadows
+CULL_DIR	:=	$(OPTIM_DIR)/culling
 UTILS_DIR	:=	$(APP_DIR)/utils
 GAME_DIR	:=	$(APP_DIR)/gameplay
 GEN_DIR		:=	$(APP_DIR)/generation
@@ -79,7 +81,7 @@ SRC_FILES	:=	$(TOOLS_DIR)/matrix.cpp \
 				$(ENG_DIR)/descriptor_set.cpp \
 				$(ENG_DIR)/command_pool.cpp \
 				$(ENG_DIR)/texture_handler.cpp \
-				$(ENG_DIR)/height_texture_handler.cpp \
+				$(ENG_DIR)/chunk_texture_handler.cpp \
 				$(ENG_DIR)/target.cpp \
 				$(ENG_DIR)/input_handler.cpp \
 				$(ENG_DIR)/engine.cpp \

@@ -15,6 +15,7 @@
 #include "buffer.h"
 #include "uniform_buffer_object.h"
 #include "texture_handler.h"
+#include "input_handler.h"
 
 #include <array> // std::array
 #include <stdexcept> // std::runtime_error
@@ -38,44 +39,58 @@ void	SceneDescriptorSet::init(Device& device) {
 	camera.descriptorCount = 1;
 	camera.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 	camera.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+	++super::_writes_sizes.uniform_buffer;
 
 	VkDescriptorSetLayoutBinding	projector{};
 	projector.binding = 1;
 	projector.descriptorCount = 1;
 	projector.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 	projector.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+	++super::_writes_sizes.uniform_buffer;
 
 	VkDescriptorSetLayoutBinding	light{};
 	light.binding = 2;
 	light.descriptorCount = 1;
 	light.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 	light.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+	++super::_writes_sizes.uniform_buffer;
 
 	VkDescriptorSetLayoutBinding	texture{};
 	texture.binding = 3;
 	texture.descriptorCount = 1;
 	texture.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 	texture.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+	++super::_writes_sizes.combined_image_sampler;
 
 	VkDescriptorSetLayoutBinding	depth{};
 	depth.binding = 4;
 	depth.descriptorCount = 1;
 	depth.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 	depth.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+	++super::_writes_sizes.combined_image_sampler;
 
 	VkDescriptorSetLayoutBinding	height{};
 	height.binding = 5;
 	height.descriptorCount = 1;
 	height.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 	height.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+	++super::_writes_sizes.combined_image_sampler;
 
-	std::array<VkDescriptorSetLayoutBinding, 6>	bindings = {
+	VkDescriptorSetLayoutBinding	culling{};
+	culling.binding = 6;
+	culling.descriptorCount = 1;
+	culling.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	culling.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+	++super::_writes_sizes.uniform_buffer;
+
+	std::array<VkDescriptorSetLayoutBinding, 7>	bindings = {
 		camera,
 		projector,
 		light,
 		texture,
 		depth,
-		height };
+		height,
+		culling };
 
 	VkDescriptorSetLayoutCreateInfo	layout_info{};
 	layout_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
@@ -85,9 +100,6 @@ void	SceneDescriptorSet::init(Device& device) {
 	if (vkCreateDescriptorSetLayout(device.getLogicalDevice(), &layout_info, nullptr, &(super::_layout)) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create descriptor set layout");
 	}
-
-	super::_writes_sizes.uniform_buffer = 3;
-	super::_writes_sizes.combined_image_sampler = 3;
 }
 
 /**
@@ -100,7 +112,7 @@ void	SceneDescriptorSet::plug(
 	Buffer& buffer,
 	TextureHandlerPtr textures,
 	TextureHandlerPtr shadowmap,
-	TextureHandlerPtr heightmap
+	const InputHandler& input
 ) {
 	VkDescriptorBufferInfo	camera_info{};
 	camera_info.buffer = buffer.getBuffer();
@@ -129,10 +141,15 @@ void	SceneDescriptorSet::plug(
 
 	VkDescriptorImageInfo	height_info{};
 	height_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-	height_info.imageView = heightmap->getTextureBuffer().getView();
-	height_info.sampler = heightmap->getTextureSampler();
+	height_info.imageView = input.getHeightMap()->getTextureBuffer().getView();
+	height_info.sampler = input.getHeightMap()->getTextureSampler();
 
-	std::array<VkWriteDescriptorSet, 6>	writes{};
+	VkDescriptorBufferInfo	cull_info{};
+	cull_info.buffer = buffer.getBuffer();
+	cull_info.offset = offsetof(UniformBufferObject, chunks);
+	cull_info.range = sizeof(uint32_t);
+
+	std::array<VkWriteDescriptorSet, 7>	writes{};
 
 	// Camera UBO
 	writes[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
@@ -199,6 +216,17 @@ void	SceneDescriptorSet::plug(
 	writes[5].pBufferInfo = nullptr;
 	writes[5].pImageInfo = &height_info;
 	writes[5].pTexelBufferView = nullptr;
+
+	// Height sampler
+	writes[6].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+	writes[6].dstSet = super::_set;
+	writes[6].dstBinding = 6;
+	writes[6].dstArrayElement = 0;
+	writes[6].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	writes[6].descriptorCount = 1;
+	writes[6].pBufferInfo = &cull_info;
+	writes[6].pImageInfo = nullptr;
+	writes[6].pTexelBufferView = nullptr;
 
 	vkUpdateDescriptorSets(
 		device.getLogicalDevice(),

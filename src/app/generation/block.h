@@ -37,7 +37,7 @@ enum class MaterialType: uint8_t {
 	Last				= 255
 };
 
-class Block final {
+class Block {
 public:
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
@@ -55,14 +55,12 @@ public:
 
 	/* ========================================================================= */
 
-	// uint32_t		packCoordinates() const noexcept;
 	void			setType(MaterialType block_type) noexcept;
 	MaterialType	getType() const noexcept;
 
 	/* ========================================================================= */
 
-	bool				operator!() const noexcept;
-	explicit operator	bool() const noexcept;
+	bool			isEmpty() const noexcept;
 
 private:
 	/* ========================================================================= */

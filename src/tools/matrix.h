@@ -68,8 +68,13 @@ struct Mat4 {
 
 }; // struct Mat4
 
-Mat4	lookAt(const Vect3& eye, const Vect3& center, const Vect3& up) noexcept;
-Mat4	lookAtDir(const Vect3& eye, const Vect3& dir, const Vect3& up) noexcept;
+Mat4	lookAt(const Vect3& eye, const Vect3& center, const Vect3& world_up) noexcept;
+Mat4	lookAt(
+	const Vect3& eye,
+	const Vect3& cam_front,
+	const Vect3& cam_up,
+	const Vect3& cam_right) noexcept;
+Mat4	lookAtDir(const Vect3& eye, const Vect3& dir, const Vect3& world_up) noexcept;
 Mat4	perspective(float fov, float aspect_ratio, float near, float far) noexcept;
 Mat4	orthographic(
 			float bot,

@@ -7,6 +7,7 @@
 // Constant buffers
 layout(binding = 0, set = 1) uniform Projector { mat4 vp; }	projector;
 layout(binding = 1, set = 1) uniform usampler2DArray		height_map;
+layout(binding = 2, set = 1) uniform Packed { uint data; }	packed_position;
 
 /* ========================================================================== */
 /*                                  INCLUDES                                  */
@@ -17,7 +18,7 @@ layout(binding = 1, set = 1) uniform usampler2DArray		height_map;
 /* MAIN ===================================================================== */
 void	main() {
 	int		cubeId = gl_InstanceIndex % CHUNK_AREA;
-	int		chunkId = gl_InstanceIndex / CHUNK_AREA;
+	int		chunkId = extractChunkId(gl_InstanceIndex / CHUNK_AREA);
 
 	ivec2	cubePos = ivec2(cubeId % 16, cubeId / 16);
 	float	cubeHeight = getHeight(cubePos, chunkId);

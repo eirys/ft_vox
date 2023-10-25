@@ -11,12 +11,15 @@
 /* ************************************************************************** */
 
 #include "debug_module.h"
-#include "engine.h"
 
 #include <stdexcept> // std::runtime_error
 #include <iostream> // std::cerr
 
 namespace scop::graphics {
+
+const std::vector<const char*>	DebugModule::validation_layers = {
+	"VK_LAYER_KHRONOS_validation"
+};
 
 /* ========================================================================== */
 /*                                   PUBLIC                                   */
@@ -28,7 +31,7 @@ namespace scop::graphics {
 void	DebugModule::init(
 	VkInstance vk_instance
 ) {
-	if (!Engine::enable_validation_layers) return;
+	if (!enable_validation_layers) return;
 
 	VkDebugUtilsMessengerCreateInfoEXT	create_info{};
 	populate(create_info);
@@ -41,7 +44,7 @@ void	DebugModule::init(
 void	DebugModule::destroy(
 	VkInstance vk_instance
 ) {
-	if (!Engine::enable_validation_layers) return;
+	if (!enable_validation_layers) return;
 	DestroyDebugUtilsMessengerEXT(vk_instance, debug_messenger, nullptr);
 }
 

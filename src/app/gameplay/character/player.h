@@ -14,6 +14,11 @@
 
 # include "character.h"
 
+# define PLAYER_FOV		::scop::math::radians(70.0f)
+# define CAMERA_ZNEAR	0.1f
+# define CAMERA_ZFAR	1000.0f
+# define WINDOW_RATIO	(1200.0f / 600.0f)
+
 namespace vox {
 
 class Player: public Character {

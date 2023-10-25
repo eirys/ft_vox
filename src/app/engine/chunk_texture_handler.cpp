@@ -1,16 +1,16 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   height_texture_handler.cpp                         :+:      :+:    :+:   */
+/*   chunk_texture_handler.cpp                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/09/21 11:15:00 by etran             #+#    #+#             */
-/*   Updated: 2023/09/22 17:00:36 by etran            ###   ########.fr       */
+/*   Created: 2023/10/24 14:32:26 by etran             #+#    #+#             */
+/*   Updated: 2023/10/24 14:32:26 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "height_texture_handler.h"
+#include "chunk_texture_handler.h"
 #include "device.h"
 #include "chunk_macros.h"
 #include "command_buffer.h"
@@ -25,7 +25,7 @@ namespace scop::graphics {
 /*                                   PUBLIC                                   */
 /* ========================================================================== */
 
-void	HeightTextureHandler::init(Device& device) {
+void	ChunkTextureHandler::init(Device& device) {
 	super::_layer_count = RENDER_DISTANCE * RENDER_DISTANCE;
 	super::_texture_count = 1;
 
@@ -37,11 +37,11 @@ void	HeightTextureHandler::init(Device& device) {
 /**
  * @brief Copies the height map data to the VkImage.
 */
-void	HeightTextureHandler::copyData(
+void	ChunkTextureHandler::copyData(
 	Device& device,
 	const std::vector<uint8_t>& height_map
 ) {
-	constexpr const VkDeviceSize	layer_size = CHUNK_SIZE * CHUNK_SIZE * sizeof(uint8_t);
+	constexpr const VkDeviceSize	layer_size = CHUNK_AREA * sizeof(uint8_t);
 	const VkDeviceSize				image_size = layer_size * super::_layer_count;
 
 	// Create staging buffer to copy images data to (cpu->gpu)
@@ -67,7 +67,7 @@ void	HeightTextureHandler::copyData(
 	transfer_barrier.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 	transfer_barrier.baseMipLevel = 0;
 	transfer_barrier.baseArrayLayer = 0;
-	transfer_barrier.levelCount = _mip_levels;
+	transfer_barrier.levelCount = super::_mip_levels;
 	transfer_barrier.layerCount = super::_layer_count;
 
 	super::_texture_buffer.setLayout(
@@ -111,7 +111,7 @@ void	HeightTextureHandler::copyData(
 /*                                   PRIVATE                                  */
 /* ========================================================================== */
 
-void	HeightTextureHandler::_createTextureImages(Device& device) {
+void	ChunkTextureHandler::_createTextureImages(Device& device) {
 	super::_texture_buffer.initImage(
 		device,
 		CHUNK_SIZE,
@@ -126,7 +126,7 @@ void	HeightTextureHandler::_createTextureImages(Device& device) {
 		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 }
 
-void	HeightTextureHandler::_createTextureImageView(Device& device) {
+void	ChunkTextureHandler::_createTextureImageView(Device& device) {
 	super::_texture_buffer.initView(
 		device,
 		VK_FORMAT_R8_UINT,
@@ -136,7 +136,7 @@ void	HeightTextureHandler::_createTextureImageView(Device& device) {
 		super::_layer_count);
 }
 
-void	HeightTextureHandler::_createTextureSampler(Device& device) {
+void	ChunkTextureHandler::_createTextureSampler(Device& device) {
 	VkSamplerCreateInfo	sampler{};
 	sampler.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
 	sampler.magFilter = VK_FILTER_NEAREST;

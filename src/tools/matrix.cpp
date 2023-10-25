@@ -245,21 +245,20 @@ Mat4	Mat4::transpose() const {
  * @param axis:		axis of rotation
  *
  * @details Result:
- * [[u.x * u.x * (1 - c) + c,			row 0
+ * [[u.x * u.x * (1 - c) + c,			col 0
  *	 u.x * u.y * (1 - c) - u.z * s,
  *	 u.x * u.z * (1 - c) + u.y * s,
  *	 0],
- *  [u.y * u.x * (1 - c) + u.z * s,		row 1
+ *  [u.y * u.x * (1 - c) + u.z * s,		col 1
  *	 u.y * u.y * (1 - c) + c,
  *	 u.y * u.z * (1 - c) - u.x * s,
  *	 0],
- *  [u.z * u.x * (1 - c) - u.y * s,		row 2
+ *  [u.z * u.x * (1 - c) - u.y * s,		col 2
  *	 u.z * u.y * (1 - c) + u.x * s,
  *	 u.z * u.z * (1 - c) + c,
  *	 0],
- *	[0, 0, 0, 1]]						row 3
+ *	[0, 0, 0, 1]]						col 3
 */
-// TODO FIX
 Mat4	rotate(const Mat4& mat, float angle, const Vect3& axis) noexcept {
 	const float	c = std::cos(angle);
 	const float	s = std::sin(angle);
@@ -291,24 +290,42 @@ Mat4	rotate(const Mat4& mat, float angle, const Vect3& axis) noexcept {
  *
  * @param eye:		position of the camera
  * @param center:	position of the object to look at
- * @param up:		up vector, usually (0, 0, 1). Used to determine
+ * @param world_up:	world up vector, usually (0, 0, 1). Used to determine
  * 					orientation of the camera. Should not be parallel
  * 					to the vector from eye to center.
 */
-Mat4	lookAt(const Vect3& eye, const Vect3& center, const Vect3& up) noexcept {
-	const Vect3	f = scop::normalize(center - eye);			// forward
-	const Vect3	s = scop::normalize(scop::cross(f, up));	// side
-	const Vect3	u = scop::cross(s, f);						// up
+Mat4	lookAt(const Vect3& eye, const Vect3& center, const Vect3& world_up) noexcept {
+	const Vect3	forward = scop::normalize(center - eye);
+	const Vect3	right = scop::normalize(scop::cross(forward, world_up));
+	const Vect3	up = scop::cross(right, forward);
 
 	return Mat4{
 		// Col 1
-		s.x, u.x, -f.x, 0,
+		right.x, up.x, -forward.x, 0,
 		// Col 2
-		s.y, u.y, -f.y, 0,
+		right.y, up.y, -forward.y, 0,
 		// Col 3
-		s.z, u.z, -f.z, 0,
+		right.z, up.z, -forward.z, 0,
 		// Col 4
-		scop::dot(-s, eye), scop::dot(-u, eye), scop::dot(f, eye), 1
+		scop::dot(-right, eye), scop::dot(-up, eye), scop::dot(forward, eye), 1
+	};
+}
+
+Mat4	lookAt(
+	const Vect3& eye,
+	const Vect3& cam_front,
+	const Vect3& cam_up,
+	const Vect3& cam_right
+) noexcept {
+	return Mat4 {
+		// Col 1
+		cam_right.x, cam_up.x, -cam_front.x, 0,
+		// Col 2
+		cam_right.y, cam_up.y, -cam_front.y, 0,
+		// Col 3
+		cam_right.z, cam_up.z, -cam_front.z, 0,
+		// Col 4
+		scop::dot(-cam_right, eye), scop::dot(-cam_up, eye), scop::dot(cam_front, eye), 1
 	};
 }
 
@@ -317,21 +334,21 @@ Mat4	lookAt(const Vect3& eye, const Vect3& center, const Vect3& up) noexcept {
  *
  * @param eye:		position of the camera
  * @param dir:		direction of the camera. It must be normalized.
- * @param up:		up vector, usually (0, 0, 1).
+ * @param world_up:	up vector, usually (0, 0, 1).
 */
-Mat4	lookAtDir(const Vect3& eye, const Vect3& dir, const Vect3& up) noexcept {
-	const Vect3 s = scop::normalize(scop::cross(dir, up));
-	const Vect3 u = scop::cross(s, dir);
+Mat4	lookAtDir(const Vect3& eye, const Vect3& dir, const Vect3& world_up) noexcept {
+	const Vect3 right = scop::normalize(scop::cross(dir, world_up));
+	const Vect3 up = scop::cross(right, dir);
 
 	return Mat4 {
 		// Col 1
-		s.x, u.x, -dir.x, 0,
+		right.x, up.x, -dir.x, 0,
 		// Col 2
-		s.y, u.y, -dir.y, 0,
+		right.y, up.y, -dir.y, 0,
 		// Col 3
-		s.z, u.z, -dir.z, 0,
+		right.z, up.z, -dir.z, 0,
 		// Col 4
-		scop::dot(-s, eye), scop::dot(-u, eye), scop::dot(dir, eye), 1
+		scop::dot(-right, eye), scop::dot(-up, eye), scop::dot(dir, eye), 1
 	};
 }
 

@@ -35,9 +35,6 @@ void	Pipeline::update(const UniformBufferObject& ubo) noexcept {
 	(void)ubo;
 }
 
-void	Pipeline::update(const Camera& camera) noexcept {
-	(void)camera;
-}
 /* ========================================================================== */
 
 VkPipeline	Pipeline::getPipeline() const noexcept {

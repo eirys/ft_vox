@@ -1,68 +1,70 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   scene_descriptor_set.h                             :+:      :+:    :+:   */
+/*   bounding_frustum.h                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/08/31 11:08:15 by etran             #+#    #+#             */
-/*   Updated: 2023/09/01 15:30:34 by etran            ###   ########.fr       */
+/*   Created: 2023/10/16 16:25:31 by etran             #+#    #+#             */
+/*   Updated: 2023/10/16 16:25:31 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
-# include <memory> // std::shared_ptr
-
-# include "descriptor_set.h"
+# include "vector.h"
 
 namespace scop::graphics {
 
-class Buffer;
-class TextureHandler;
-class InputHandler;
+// Resource:
+// https://iquilezles.org/articles/frustum/
+// https://iquilezles.org/articles/frustumcorrect/
 
-class SceneDescriptorSet final: public DescriptorSet {
-public:
+struct BoundingFrustum {
 	/* ========================================================================= */
-	/*                                  TYPEDEFS                                 */
+	/*                                HELPER CLASS                               */
 	/* ========================================================================= */
 
-	using super = DescriptorSet;
-	using TextureHandlerPtr = std::shared_ptr<TextureHandler>;
+	// xyz: normal
+	// w:   d (ax+by+cz+d)
+	using Plane = ::scop::Vect4;
+
+	struct Camera {
+		const scop::Vect3&	position;
+		const scop::Vect3&	front;
+		const scop::Vect3&	right;
+		const scop::Vect3&	up;
+	};
 
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
 
-	SceneDescriptorSet() = default;
-	~SceneDescriptorSet() = default;
+	BoundingFrustum(const Camera& cam);
 
-	SceneDescriptorSet(SceneDescriptorSet&& other) = delete;
-	SceneDescriptorSet(const SceneDescriptorSet& other) = delete;
-	SceneDescriptorSet& operator=(SceneDescriptorSet&& rhs) = delete;
-	SceneDescriptorSet& operator=(const SceneDescriptorSet& rhs) = delete;
-
-	/* ========================================================================= */
-
-	using super::destroy;
-	using super::setDescriptors;
-
-	void	init(Device& device) override;
-	void	plug(
-		Device& device,
-		Buffer& buffer,
-		TextureHandlerPtr textures,
-		TextureHandlerPtr shadowmap,
-		const InputHandler& input);
+	BoundingFrustum() = default;
+	BoundingFrustum(BoundingFrustum&& other) = default;
+	BoundingFrustum(const BoundingFrustum& other) = default;
+	BoundingFrustum& operator=(BoundingFrustum&& other) = default;
+	BoundingFrustum& operator=(const BoundingFrustum& other) = default;
+	~BoundingFrustum() = default;
 
 	/* ========================================================================= */
+	/*                               CLASS MEMBERS                               */
+	/* ========================================================================= */
 
-	using super::getLayout;
-	using super::getPoolSizes;
-	using super::getSet;
-	using super::getSetIndex;
+	union {
+		struct {
+			Plane	top;
+			Plane	bottom;
+			Plane	left;
+			Plane	right;
+			Plane	far;
+			Plane	near;
+		};
+		Plane	planes[6] = {};
+	};
 
-}; // class SceneDescriptorSet
+}; // struct BoundingFrustum
 
 } // namespace scop::graphics

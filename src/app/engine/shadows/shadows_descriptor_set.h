@@ -18,6 +18,7 @@ namespace scop::graphics {
 
 class Buffer;
 class TextureHandler;
+class InputHandler;
 
 class ShadowsDescriptorSet final: public DescriptorSet {
 public:
@@ -50,7 +51,7 @@ public:
 	void	plug(
 		Device& device,
 		Buffer& buffer,
-		TextureHandlerPtr heightmap);
+		const InputHandler& input);
 
 	/* ========================================================================= */
 

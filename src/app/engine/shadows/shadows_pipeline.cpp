@@ -91,16 +91,17 @@ void	ShadowsPipeline::assemble(
 void	ShadowsPipeline::plugDescriptor(
 	Device& device,
 	Buffer& ubo,
-	TextureHandlerPtr heightmap
+	const InputHandler& input
 ) {
 	auto	shadows_descriptor =
 		std::dynamic_pointer_cast<ShadowsDescriptorSet>(super::_descriptor);
-	shadows_descriptor->plug(device, ubo, heightmap);
+	shadows_descriptor->plug(device, ubo, input);
 }
 
 void	ShadowsPipeline::draw(
 	VkPipelineLayout layout,
 	CommandBuffer& command_buffer,
+	const InputHandler& input,
 	int32_t image_index
 ) {
 	(void)image_index;
@@ -135,8 +136,8 @@ void	ShadowsPipeline::draw(
 
 	vkCmdDraw(
 		command_buffer.getBuffer(),
-		36,
-		CHUNK_AREA * RENDER_DISTANCE * RENDER_DISTANCE, 0, 0);
+		input.getVerticesCount(),
+		input.getInstancesCount(), 0, 0);
 
 	vkCmdEndRenderPass(command_buffer.getBuffer());
 }
