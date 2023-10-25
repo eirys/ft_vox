@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/16 13:03:48 by etran             #+#    #+#             */
-/*   Updated: 2023/08/15 19:25:57 by etran            ###   ########.fr       */
+/*   Updated: 2023/10/25 21:04:31 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,6 +40,12 @@ uint32_t	InputHandler::updateVisibleChunks(
 	const BoundingFrustum::Camera& camera,
 	const ::vox::World& world
 ) {
+
+	return 0xFFFFFF80;
+	return 0x01FFFFFF;
+	return 0xFFFFFFFF;
+
+
 	uint32_t	packed_visible_chunks = 0;
 	_instances_count = 0;
 
@@ -68,7 +74,7 @@ uint32_t	InputHandler::getVerticesCount() const noexcept {
 
 //TODO
 uint32_t	InputHandler::getInstancesCount() const noexcept {
-	return CHUNK_SIZE * _instances_count;
+	return CHUNK_AREA * _instances_count;
 }
 
 InputHandler::TextureHandlerPtr	InputHandler::getHeightMap() const noexcept {

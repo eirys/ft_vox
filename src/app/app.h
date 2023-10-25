@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:17:06 by etran             #+#    #+#             */
-/*   Updated: 2023/10/02 16:50:54 by etran            ###   ########.fr       */
+/*   Updated: 2023/10/25 20:54:31 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,15 +20,9 @@
 // Window handler
 # include <GLFW/glfw3.h>
 
-// Std
-# include <memory> // std::unique_ptr
-# include <map> // std::map
-
-# include "window.h"
-# include "vertex.h"
-# include "engine.h"
 # include "game_state.h"
-# include "material.h"
+# include "window.h"
+# include "engine.h"
 # include "timer.h"
 
 # ifdef __LINUX

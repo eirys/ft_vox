@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:15:01 by etran             #+#    #+#             */
-/*   Updated: 2023/08/15 19:25:26 by etran            ###   ########.fr       */
+/*   Updated: 2023/10/25 20:51:47 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,7 @@
 # include <memory>
 
 # include "bounding_frustum.h"
+# include "chunk_macros.h"
 
 namespace vox {
 class GameState;
@@ -70,7 +71,7 @@ private:
 	TextureHandlerPtr	_height_map;
 
 	BoundingFrustum		_frustum;
-	uint32_t			_instances_count = 0;
+	uint32_t			_instances_count = RENDER_DISTANCE * RENDER_DISTANCE;//0;
 	uint32_t			_vertices_count = 36;
 
 	/* ========================================================================= */

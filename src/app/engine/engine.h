@@ -6,33 +6,26 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:14:35 by etran             #+#    #+#             */
-/*   Updated: 2023/10/06 12:45:27 by etran            ###   ########.fr       */
+/*   Updated: 2023/10/25 20:59:58 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
 // Graphics
-# ifndef GLFW_INCLUDE_VULKAN
-#  define GLFW_INCLUDE_VULKAN
-# endif
-
-# include <GLFW/glfw3.h>
+# include <vulkan/vulkan.h>
 
 # include "debug_module.h"
 # include "device.h"
 # include "swap_chain.h"
-# include "scene_render_pass.h"
-# include "descriptor_pool.h"
-# include "command_pool.h"
-# include "input_handler.h"
-# include "command_buffer.h"
 # include "texture_handler.h"
 # include "pipeline.h"
 
-namespace std {
-class Vector;
-}
+# include "descriptor_pool.h"
+# include "command_pool.h"
+# include "command_buffer.h"
+
+# include "input_handler.h"
 
 namespace vox {
 class GameState;
@@ -126,7 +119,6 @@ private:
 	void						_createDescriptors();
 
 	UniformBufferObject			_updateUbo(const GameState& game);
-
 	void						_updatePresentation(Window& window);
 
 	bool						_checkValidationLayerSupport();

@@ -42,7 +42,7 @@ int extractChunkId(int _instanceID) {
 			++oneCount;
 		}
 	}
-	return 0;
+	return RENDER_DISTANCE * RENDER_DISTANCE - 1;
 }
 
 /* ========================================================================== */
