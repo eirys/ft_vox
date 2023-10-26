@@ -14,6 +14,7 @@
 #include "perlin_noise.h"
 
 #include <cstring> // memcpy
+#include <cassert> // assert
 
 namespace vox {
 
@@ -26,10 +27,27 @@ World::World(
 	std::size_t width,
 	std::size_t height
 ) {
-	_origin.x = width / 2;
-	_origin.z = height / 2;
-	_origin.y = noise.noiseAt(_origin.x, _origin.z) + BLOCK_SIZE;
+	_origin.x = static_cast<float>(width) / 2;
+	_origin.z = static_cast<float>(height) / 2;
+
+	float noise_value = noise.noiseAt(
+		static_cast<std::size_t>(_origin.x),
+		static_cast<std::size_t>(_origin.z));
+	_origin.y = noise_value + BLOCK_SIZE;
+
 	_generateChunks(noise);
+}
+
+World::World(World&& other) {
+	*this = std::move(other);
+}
+
+World& World::operator=(World&& other) {
+	if (this == &other)
+		return *this;
+	_origin = std::move(other._origin);
+	_chunks = std::move(other._chunks);
+	return *this;
 }
 
 /* ========================================================================== */
@@ -56,7 +74,7 @@ std::vector<uint8_t>	World::generateHeightBuffer() const noexcept {
 	return height_buffer;
 }
 
-/* ========================================================================== */
+/* SETTER/GETTER ============================================================ */
 
 void	World::setOrigin(const scop::Vect3& origin) noexcept {
 	_origin = origin;
@@ -66,28 +84,114 @@ const scop::Vect3&	World::getOrigin() const noexcept {
 	return _origin;
 }
 
+/* ========================================================================== */
+
 const std::vector<Chunk>&	World::getChunks() const noexcept {
 	return _chunks;
 }
 
-const Chunk&	World::getChunk(uint8_t x, uint8_t y, uint8_t z) const noexcept {
+/* ========================================================================== */
+
+const Chunk&	World::getChunk(uint8_t x, uint8_t y, uint8_t z) const {
 	//TODO: replace by y
 	(void)y;
-	return _chunks[z * _world_depth + (0 * _world_width + x)];
+	return _chunks[z * _chunk_count_depth + (0 * _chunk_count_width + x)];
 }
 
-Chunk&	World::getChunk(uint8_t x, uint8_t y, uint8_t z) noexcept {
+Chunk&	World::getChunk(uint8_t x, uint8_t y, uint8_t z) {
 	//TODO
 	(void)y;
-	return _chunks[z * _world_depth + (0 * _world_width + x)];
+	return _chunks[z * _chunk_count_depth + (0 * _chunk_count_width + x)];
 }
 
-uint32_t	World::getWidth() const noexcept {
+/* ========================================================================== */
+
+static std::array<uint8_t, 3>	_extractChunkIndex(float x, float y, float z) {
+	std::array<uint8_t, 3>	chunk_index;
+
+	chunk_index[0] = (int)x / CHUNK_SIZE;
+	chunk_index[1] = (int)y / CHUNK_SIZE;
+	chunk_index[2] = (int)z / CHUNK_SIZE;
+
+	return chunk_index;
+}
+
+static std::array<uint8_t, 3>	_extractBlockIndex(float x, float y, float z) {
+	std::array<uint8_t, 3>	block_pos;
+
+	block_pos[0] = (int)x % CHUNK_SIZE;
+	block_pos[1] = (int)y % CHUNK_SIZE;
+	block_pos[2] = (int)z % CHUNK_SIZE;
+
+	return block_pos;
+}
+
+/**
+ * @brief Get block at world position.
+ * Note: prefer using getChunk(index[3]).getBlock(x,y,z).
+*/
+const Block&	World::getBlock(float x, float y, float z) const {
+	assert(x < _world_width && z < _world_depth && y < WORLD_HEIGHT);
+
+	auto chunk_index = _extractChunkIndex(x, y, z);
+	const Chunk& chunk = getChunk(chunk_index[0], chunk_index[1], chunk_index[2]);
+
+	auto block_pos = _extractBlockIndex(x, y, z);
+	return chunk.getBlock(block_pos[0], block_pos[1], block_pos[2]);
+}
+
+/**
+ * @brief Get block at world position.
+ * Note: prefer using getChunk(index[3]).getBlock(x,y,z).
+*/
+Block&	World::getBlock(float x, float y, float z) {
+	assert(x < _world_width && z < _world_depth && y < WORLD_HEIGHT);
+
+	auto chunk_index = _extractChunkIndex(x, y, z);
+	Chunk& chunk = getChunk(chunk_index[0], chunk_index[1], chunk_index[2]);
+
+	auto block_pos = _extractBlockIndex(x, y, z);
+	return chunk.getBlock(block_pos[0], block_pos[1], block_pos[2]);
+}
+
+/**
+ * @brief Get block at world position.
+ * Note: prefer using getChunk(index[3]).getBlock(x,y,z).
+*/
+const Block&	World::getBlock(const scop::Vect3& pos) const {
+	return getBlock(pos.x, pos.y, pos.z);
+}
+
+/**
+ * @brief Get block at world position.
+ * Note: prefer using getChunk(index[3]).getBlock(x,y,z).
+*/
+Block&	World::getBlock(const scop::Vect3& pos) {
+	return getBlock(pos.x, pos.y, pos.z);
+}
+
+/* ========================================================================== */
+
+float	World::getWidth() const noexcept {
 	return _world_width;
 }
 
-uint32_t	World::getDepth() const noexcept {
+float	World::getDepth() const noexcept {
 	return _world_depth;
+}
+
+/**
+ * @brief Returns number of chunks, on x axis.
+*/
+uint32_t	World::getChunkCoundWidth() const noexcept {
+	return _chunk_count_width;
+}
+
+/**
+ * @brief Return number of chunks, on z axis.
+*/
+uint32_t	World::getChunkCoundDepth() const noexcept {
+	return _chunk_count_depth;
 }
 
 /* ========================================================================== */
@@ -95,10 +199,10 @@ uint32_t	World::getDepth() const noexcept {
 /* ========================================================================== */
 
 void	World::_generateChunks(const PerlinNoise& noise) {
-	_chunks.reserve(_world_width * _world_depth);
+	_chunks.reserve(_chunk_count_width * _chunk_count_depth);
 
-	for (uint32_t z = 0; z < _world_depth; ++z) {
-		for (uint32_t x = 0; x < _world_width; ++x) {
+	for (uint32_t z = 0; z < _chunk_count_depth; ++z) {
+		for (uint32_t x = 0; x < _chunk_count_width; ++x) {
 			_chunks.emplace_back(Chunk(noise, x, 0, z));
 		}
 	}

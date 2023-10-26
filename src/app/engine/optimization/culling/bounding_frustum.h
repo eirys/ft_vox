@@ -55,12 +55,12 @@ struct BoundingFrustum {
 
 	union {
 		struct {
+			Plane	far;
+			Plane	near;
 			Plane	top;
 			Plane	bottom;
 			Plane	left;
 			Plane	right;
-			Plane	far;
-			Plane	near;
 		};
 		Plane	planes[6];
 	};

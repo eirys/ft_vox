@@ -35,31 +35,23 @@ void	InputHandler::destroy(Device& device) {
 	_height_map->destroy(device);
 }
 
-
 uint32_t	InputHandler::updateVisibleChunks(
 	const BoundingFrustum::Camera& camera,
 	const ::vox::World& world
 ) {
-
-	return 0xFFFFFF80;
-	return 0x01FFFFFF;
-	return 0xFFFFFFFF;
-
-
 	uint32_t	packed_visible_chunks = 0;
 	_instances_count = 0;
 
 	_frustum = BoundingFrustum(camera);
-	for (uint32_t z = 0; z < world.getDepth(); ++z) {
-		for (uint32_t x = 0; x < world.getWidth(); ++x) {
 
-			const IntersectionType chunkIntersection = world.getChunk(x, 0, z).checkIntersection(_frustum);
+	for (uint32_t z = 0; z < world.getChunkCoundDepth(); ++z) {
+		for (uint32_t x = 0; x < world.getChunkCoundWidth(); ++x) {
 
-			if (chunkIntersection == IntersectionType::Inside ||
-				chunkIntersection == IntersectionType::Intersecting) {
-				packed_visible_chunks |= 1 << (31-(z * world.getWidth() + x));
+			if (world.getChunk(x, 0, z).isVisible(_frustum)) {
+				packed_visible_chunks |= 1 << (32-(z * world.getChunkCoundWidth() + x));
 				++_instances_count;
 			}
+
 		}
 	}
 	return packed_visible_chunks;

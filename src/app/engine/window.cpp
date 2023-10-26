@@ -107,8 +107,8 @@ static void cursorPositionCallback(
 	double xpos,
 	double ypos
 ) {
-	static float last_x = xpos;
-	static float last_y = ypos;
+	static float last_x = static_cast<float>(xpos);
+	static float last_y = static_cast<float>(ypos);
 
 	Window* win = reinterpret_cast<Window*>(
 		glfwGetWindowUserPointer(window)
@@ -118,9 +118,12 @@ static void cursorPositionCallback(
 		return;
 	}
 
-	win->getApp()->updateCameraDir(xpos - last_x, last_y - ypos);
-	last_x = xpos;
-	last_y = ypos;
+	win->getApp()->updateCameraDir(
+		static_cast<float>(xpos) - last_x,
+		last_y - static_cast<float>(ypos));
+
+	last_x = static_cast<float>(xpos);
+	last_y = static_cast<float>(ypos);
 }
 
 /* ========================================================================== */

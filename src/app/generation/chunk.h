@@ -38,11 +38,10 @@ public:
 	/*                                  TYPEDEFS                                 */
 	/* ========================================================================= */
 
-	using super = scop::graphics::BoundingBox;
-	using Plane = super::Plane;
-
-	using ChunkSlice = std::array<Block, CHUNK_AREA>; // slice y
-	using ChunkRow = std::array<Block, CHUNK_SIZE>; // row x of slice y
+	using BoundingFrustum	= scop::graphics::BoundingFrustum;
+	using IntersectionType	= scop::graphics::IntersectionType;
+	using BoundingBox		= scop::graphics::BoundingBox;
+	using Plane				= BoundingBox::Plane;
 
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
@@ -58,38 +57,46 @@ public:
 	Chunk(const Chunk &src) = delete;
 	Chunk &operator=(const Chunk &rhs) = delete;
 
-	/* ========================================================================= */
+	/* GFX ===================================================================== */
 
 	std::array<uint8_t, CHUNK_AREA>		generateHeightMap() const noexcept;
-	// Rename to isVisible* ?
-	scop::graphics::IntersectionType	checkIntersection(
-		const scop::graphics::BoundingFrustum& frustum) const override;
+	bool								isVisible(const BoundingFrustum& frustum) const;
 
-	void								updateActivity(const Player& player);
+	/* GAMEPLAY ================================================================ */
+
+	void			updateActivity(const Player& player);
 
 	/* GETTERS ================================================================= */
-	uint32_t		getChunkCoordinates() const noexcept;
-	const Block&	getBlock(uint8_t x, uint8_t y, uint8_t z) const noexcept;
-	Block&			getBlock(uint8_t x, uint8_t y, uint8_t z)  noexcept;
+
+	scop::Vect3		getCoordinates() const noexcept;
+	scop::Vect3		getCenterCoordinates() const noexcept;
+	const Block&	getBlock(uint8_t x, uint8_t y, uint8_t z) const;
+	Block&			getBlock(uint8_t x, uint8_t y, uint8_t z);
+	bool			isActive() const noexcept;
 
 private:
 	/* ========================================================================= */
 	/*                               CLASS MEMBERS                               */
 	/* ========================================================================= */
 
-	uint8_t							_x;
-	uint8_t							_y;
-	uint8_t							_z;
-	std::vector<Block>				_blocks;
+	std::vector<Block>		_blocks;
+	bool					_isActive = false;
 
-	bool							_isActive = false;
+	// World index
+	uint8_t					_x;
+	uint8_t					_y;
+	uint8_t					_z;
 
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
 
-	void		_generateChunk(const PerlinNoise& noise);
-	void		_fillColumn(std::size_t x, std::size_t max_height, std::size_t z) noexcept;
+	IntersectionType	checkIntersection(const BoundingFrustum& frustum) const override;
+
+	/* ========================================================================= */
+
+	void				_generateChunk(const PerlinNoise& noise);
+	void				_fillColumn(uint8_t x, uint8_t max_height, uint8_t z) noexcept;
 
 }; // class Chunk
 

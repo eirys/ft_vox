@@ -71,7 +71,7 @@ public:
 		clock::time_point	now = clock::now();
 
 		if (now - _begin >= std::chrono::seconds(log_interval)) {
-			int fps = _frames / log_interval;
+			std::size_t fps = _frames / log_interval;
 			start(now);
 			std::cout << fps << " fps" << std::endl;
 		}

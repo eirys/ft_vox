@@ -11,6 +11,7 @@
 /* ************************************************************************** */
 
 #include "character.h"
+#include "world_macros.h"
 
 namespace vox {
 
@@ -38,7 +39,7 @@ Character::Character(
  * @param input	The input vector, containing the movement on each axis.
 */
 void	Character::move(const scop::Vect3& input) noexcept {
-	static const scop::Vect3	y_axis = scop::Vect3(0.0f, 1.0f, 0.0f);
+	static const scop::Vect3	y_axis = scop::Vect3(VOX_UP_VECTOR);
 	const scop::Vect3	side = scop::normalize(
 		scop::cross(_eye_dir, y_axis)
 	);

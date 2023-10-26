@@ -16,22 +16,6 @@
 
 namespace scop::graphics {
 
-// BoundingFrustum::BoundingFrustum(float fov, float ratio, float znear, float zfar) {
-// 	const float angle = scop::math::radians(fov);
-// 	const float si = sinf(angle);
-// 	const float co = cosf(angle);
-
-// 	// Planes pass through origin. Just update normal vectors.
-// 	top.xyz		= { 0.0f, -co, -si };
-// 	bottom.xyz	= { 0.0f, co, -si };
-
-// 	left.xyz	= scop::normalize({ co, 0.0f, -si * ratio });
-// 	right.xyz	= scop::normalize({ -co, 0.0f, -si * ratio });
-
-// 	far			= { 0.0f, 0.0f, -1.0f, -zfar };
-// 	near		= { 0.0f, 0.0f, 1.0f, znear };
-// }
-
 BoundingFrustum::BoundingFrustum(): planes{} {}
 
 BoundingFrustum::BoundingFrustum(const Camera& cam) {
@@ -47,16 +31,16 @@ BoundingFrustum::BoundingFrustum(const Camera& cam) {
 	far.xyz = -cam.front;
 	far.w = -scop::dot(far.xyz, cam.position + far_front);
 
-	right.xyz = scop::normalize(scop::cross(far_front - cam.right * half_width, cam.up));
+	right.xyz = scop::normalize(scop::cross(cam.up, far_front + (cam.right * half_width)));
 	right.w = -scop::dot(right.xyz, cam.position);
 
-	left.xyz = scop::normalize(scop::cross(cam.up, far_front + cam.right * half_width));
+	left.xyz = scop::normalize(scop::cross(far_front - (cam.right * half_width), cam.up));
 	left.w = -scop::dot(left.xyz, cam.position);
 
-	top.xyz = scop::normalize(scop::cross(cam.right, far_front - cam.up * half_height));
+	top.xyz = scop::normalize(scop::cross(cam.right, far_front - (cam.up * half_height)));
 	top.w = -scop::dot(top.xyz, cam.position);
 
-	bottom.xyz = scop::normalize(scop::cross(far_front + cam.up * half_height, cam.right));
+	bottom.xyz = scop::normalize(scop::cross(far_front + (cam.up * half_height), cam.right));
 	bottom.w = -scop::dot(bottom.xyz, cam.position);
 }
 

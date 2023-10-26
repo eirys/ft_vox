@@ -22,7 +22,9 @@
 
 namespace vox {
 
-using IntersectionType = scop::graphics::IntersectionType;
+using IntersectionType = Chunk::IntersectionType;
+using BoundingFrustum = Chunk::BoundingFrustum;
+using Vect3 = ::scop::Vect3;
 
 /* ========================================================================== */
 /*                                   PUBLIC                                   */
@@ -30,14 +32,18 @@ using IntersectionType = scop::graphics::IntersectionType;
 
 Chunk::Chunk(const PerlinNoise& noise, uint8_t x, uint8_t y, uint8_t z):
 	BoundingBox(
-		Vect3{x + (CHUNK_SIZE / 2.0f), y + (CHUNK_SIZE / 2.0f), z + (CHUNK_SIZE / 2.0f)},
-		Vect3{CHUNK_SIZE / 2.0f}
-	), _x(x), _y(y), _z(z) {
-		_generateChunk(noise);
+		CHUNK_SIZE * Vect3((float)x, (float)y, (float)z) + Vect3(CHUNK_SIZE / 2.0f),
+		Vect3(CHUNK_SIZE / 2.0f)),
+	_x(x),
+	_y(y),
+	_z(z)
+{
+	_generateChunk(noise);
 }
 
-/* ========================================================================== */
+/* GFX ====================================================================== */
 
+// TODO Update
 std::array<uint8_t, CHUNK_AREA>	Chunk::generateHeightMap() const noexcept {
 	std::array<uint8_t, CHUNK_AREA>	height_map{};
 
@@ -57,7 +63,58 @@ std::array<uint8_t, CHUNK_AREA>	Chunk::generateHeightMap() const noexcept {
 	return height_map;
 }
 
-IntersectionType	Chunk::checkIntersection(const scop::graphics::BoundingFrustum& frustum) const {
+bool	Chunk::isVisible(const BoundingFrustum& frustum) const {
+	return checkIntersection(frustum) != IntersectionType::Outside;
+}
+
+/* GAMEPLAY ================================================================= */
+
+void	Chunk::updateActivity(const Player& player) {
+	// check if player in RD radius
+	if (scop::norm(player.getPosition() - _center) < CHUNK_SIZE * 2.0f)
+		_isActive = true;
+	else
+		_isActive = false;
+}
+
+/* GETTER =================================================================== */
+
+/**
+ * @brief Upper left hand coordinates.
+*/
+Vect3	Chunk::getCoordinates() const noexcept {
+	return CHUNK_SIZE * Vect3(static_cast<float>(_x), static_cast<float>(_y), static_cast<float>(_z));
+}
+
+Vect3	Chunk::getCenterCoordinates() const noexcept {
+	return BoundingBox::_center;
+}
+
+/**
+ * @brief Return block's local to chunk coordinates.
+*/
+const Block&	Chunk::getBlock(uint8_t x, uint8_t y, uint8_t z) const {
+	assert(x < CHUNK_SIZE && y < CHUNK_SIZE && z < CHUNK_SIZE);
+	return _blocks[z * CHUNK_AREA + (y * CHUNK_SIZE + x)];
+}
+
+/**
+ * @brief Return block's local to chunk coordinates.
+*/
+Block&	Chunk::getBlock(uint8_t x, uint8_t y, uint8_t z) {
+	assert(x < CHUNK_SIZE && y < CHUNK_SIZE && z < CHUNK_SIZE);
+	return _blocks[z * CHUNK_AREA + (y * CHUNK_SIZE + x)];
+}
+
+bool	Chunk::isActive() const noexcept {
+	return _isActive;
+}
+
+/* ========================================================================== */
+/*                                   PRIVATE                                  */
+/* ========================================================================== */
+
+IntersectionType	Chunk::checkIntersection(const BoundingFrustum& frustum) const {
 	bool isIntersecting = false;
 	for (const Plane& plane: frustum.planes) {
 		IntersectionType planeIntersection = checkPlaneIntersection(plane);
@@ -73,32 +130,6 @@ IntersectionType	Chunk::checkIntersection(const scop::graphics::BoundingFrustum&
 	return IntersectionType::Inside;
 }
 
-void	Chunk::updateActivity(const Player& player) {
-	// check if player in RD radius
-	if (scop::norm(player.getPosition() - _center) < CHUNK_SIZE * 2.0f)
-		_isActive = true;
-	else
-		_isActive = false;
-}
-
-/* GETTER =================================================================== */
-
-uint32_t	Chunk::getChunkCoordinates() const noexcept {
-	return (_x << 16) | (_y << 8) | _z;
-}
-
-Block&	Chunk::getBlock(uint8_t x, uint8_t y, uint8_t z) noexcept {
-	assert(x < CHUNK_SIZE && y < CHUNK_SIZE && z < CHUNK_SIZE);
-	return _blocks[z * CHUNK_AREA + (y * CHUNK_SIZE + x)];
-}
-
-const Block&	Chunk::getBlock(uint8_t x, uint8_t y, uint8_t z) const noexcept {
-	assert(x < CHUNK_SIZE && y < CHUNK_SIZE && z < CHUNK_SIZE);
-	return _blocks[z * CHUNK_AREA + (y * CHUNK_SIZE + x)];
-}
-
-/* ========================================================================== */
-/*                                   PRIVATE                                  */
 /* ========================================================================== */
 
 /**
@@ -110,14 +141,14 @@ void	Chunk::_generateChunk(const PerlinNoise& perlin_noise) {
 	for (uint8_t z = 0; z < CHUNK_SIZE; ++z) {
 		for (uint8_t x = 0; x < CHUNK_SIZE; ++x) {
 			float y = perlin_noise.noiseAt(_x * CHUNK_SIZE + x, _z * CHUNK_SIZE + z);
-			Block& block = getBlock(x, y, z);
+			Block& block = getBlock(x, static_cast<uint8_t>(y), z);
 			block.setType(MaterialType::MATERIAL_GRASS);
-			_fillColumn(x, y, z);
+			_fillColumn(x, static_cast<uint8_t>(y), z);
 		}
 	}
 }
 
-void	Chunk::_fillColumn(std::size_t x, std::size_t max_height, std::size_t z) noexcept {
+void	Chunk::_fillColumn(uint8_t x, uint8_t max_height, uint8_t z) noexcept {
 	for (uint8_t y = 0; y < max_height; ++y) {
 		Block& block = getBlock(x, y, z);
 		block.setType(MaterialType::MATERIAL_DIRT);

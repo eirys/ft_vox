@@ -19,16 +19,6 @@
 
 namespace scop {
 
-template <class Vector>
-Vector	operator*(float lhs, const Vector& rhs) noexcept {
-	return rhs.operator*(lhs);
-}
-
-template <class Vector>
-Vector	operator/(float lhs, const Vector& rhs) noexcept {
-	return rhs.operator/(lhs);
-}
-
 struct Vect2 {
 	/* ========================================================================= */
 	/*                               CLASS MEMBERS                               */
@@ -38,6 +28,7 @@ struct Vect2 {
 		struct { float x, y; };
 		struct { float r, g; };
 		struct { float u, v; };
+		float elem[2];
 	};
 
 	/* ========================================================================= */
@@ -89,6 +80,7 @@ struct Vect3 {
 		struct { float u, v, w; };
 		Vect2 xy;
 		Vect2 uv;
+		float elem[3];
 	};
 
 	/* ========================================================================= */
@@ -142,6 +134,7 @@ struct Vect4 {
 		Vect3 rgb;
 		Vect2 xy;
 		Vect2 rg;
+		float elem[4];
 	};
 
 	/* ========================================================================= */
@@ -292,10 +285,7 @@ bool	Vect2::operator==(const Vect2& rhs) const noexcept {
  * @brief Returns the dot product of the vector with another vector
  */
 inline float	dot(const Vect2& lhs, const Vect2& rhs) noexcept {
-	return std::fma(
-		lhs.x,
-		rhs.x,
-		std::fma(lhs.y, rhs.y, 0.0f));
+	return std::fma(lhs.x, rhs.x, lhs.y * rhs.y);
 }
 
 /**
@@ -430,11 +420,7 @@ bool	Vect3::operator==(const Vect3& rhs) const noexcept {
  * @brief Returns the dot product of the vector with another vector
  */
 inline float	dot(const Vect3& lhs, const Vect3& rhs) noexcept {
-	return std::fma(
-		lhs.x,
-		rhs.x,
-		std::fma(lhs.y, rhs.y, std::fma(lhs.z, rhs.z, 0.0f))
-	);
+	return std::fma(lhs.x, rhs.x, std::fma(lhs.y, rhs.y, lhs.z * rhs.z));
 }
 
 /**
@@ -457,9 +443,9 @@ inline Vect3	normalize(const Vect3& vec) noexcept {
  */
 inline Vect3	cross(const Vect3& lhs, const Vect3& rhs) noexcept {
 	return Vect3(
-		std::fma(lhs.y, rhs.z, std::fma(-lhs.z, rhs.y, 0.0f)),
-		std::fma(lhs.z, rhs.x, std::fma(-lhs.x, rhs.z, 0.0f)),
-		std::fma(lhs.x, rhs.y, std::fma(-lhs.y, rhs.x, 0.0f))
+		std::fma(lhs.y, rhs.z, -lhs.z * rhs.y),
+		std::fma(lhs.z, rhs.x, -lhs.x * rhs.z),
+		std::fma(lhs.x, rhs.y, -lhs.y * rhs.x)
 	);
 }
 
@@ -649,6 +635,27 @@ inline Vect4	fma(const Vect4& a, float b, const Vect4& c) noexcept {
 /* ========================================================================== */
 /*                                    OTHER                                   */
 /* ========================================================================== */
+
+/* OPERATIONS =============================================================== */
+
+template <class Vector>
+Vector	operator*(float lhs, const Vector& rhs) noexcept {
+	return rhs.operator*(lhs);
+}
+
+template <class Vector>
+Vector	operator/(float lhs, const Vector& rhs) noexcept {
+	return rhs.operator/(lhs);
+}
+
+template <class Vector>
+Vector	abs(const Vector& vect) noexcept {
+	Vector	copy;
+	int i = 0;
+	for (float elem: vect.elem)
+		copy.elem[i++] = std::abs(elem);
+	return copy;
+}
 
 /* HASH FUNCTIONS =========================================================== */
 

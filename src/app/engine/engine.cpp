@@ -19,13 +19,13 @@
 #include "utils.h"
 
 #include "chunk.h"
-#include "mesh.h"
 #include "game_state.h"
+
 #include "scene_pipeline.h"
 #include "shadows_pipeline.h"
 #include "shadows_texture_handler.h"
 
-#include <chrono>
+#include "world_macros.h"
 
 #include <cstring> // std::strcmp
 
@@ -513,7 +513,7 @@ UniformBufferObject	Engine::_updateUbo(const GameState& game) {
 			CAMERA_ZFAR);
 
 		const Vect3 front = player.getEyeDir();
-		const Vect3 right = scop::normalize(scop::cross(front, {0.0f, 1.0f, 0.0f}));
+		const Vect3 right = scop::normalize(scop::cross(front, {VOX_UP_VECTOR}));
 		const Vect3 up = scop::cross(right, front);
 		const Mat4	view = ::scop::lookAt(
 			player.getPosition(),
@@ -542,7 +542,7 @@ UniformBufferObject	Engine::_updateUbo(const GameState& game) {
 		const Mat4	view = ::scop::lookAt(
 			light * light_distance + game.getWorld().getOrigin(),
 			game.getWorld().getOrigin(),
-			Vect3(0.0f, 1.0f, 0.0f));
+			Vect3(VOX_UP_VECTOR));
 
 		ubo.projector.vp = projection * view;
 		ubo.light = {

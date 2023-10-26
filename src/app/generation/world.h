@@ -37,14 +37,11 @@ public:
 	/*                                   PUBLIC                                  */
 	/* ========================================================================= */
 
-	World(
-		const PerlinNoise& noise,
-		std::size_t width,
-		std::size_t height);
+	World(const PerlinNoise& noise, std::size_t width, std::size_t height);
+	World(World &&src);
+	World &operator=(World &&rhs);
 
 	World() = default;
-	World(World &&src) = default;
-	World &operator=(World &&rhs) = default;
 	~World() = default;
 
 	World(const World &src) = delete;
@@ -60,12 +57,18 @@ public:
 	const scop::Vect3&			getOrigin() const noexcept;
 
 	const std::vector<Chunk>&	getChunks() const noexcept;
-	const Chunk&				getChunk(uint8_t x, uint8_t y, uint8_t z) const noexcept;
-	Chunk&						getChunk(uint8_t x, uint8_t y, uint8_t z) noexcept;
+	const Chunk&				getChunk(uint8_t x, uint8_t y, uint8_t z) const;
+	Chunk&						getChunk(uint8_t x, uint8_t y, uint8_t z);
 
-	uint32_t					getWidth() const noexcept;
-	uint32_t					getDepth() const noexcept;
+	const Block&				getBlock(float x, float y, float z) const;
+	Block&						getBlock(float x, float y, float z);
+	const Block&				getBlock(const scop::Vect3& pos) const;
+	Block&						getBlock(const scop::Vect3& pos);
 
+	float						getWidth() const noexcept;
+	float						getDepth() const noexcept;
+	uint32_t					getChunkCoundWidth() const noexcept;
+	uint32_t					getChunkCoundDepth() const noexcept;
 
 private:
 	/* ========================================================================= */
@@ -76,14 +79,16 @@ private:
 	std::vector<Chunk>				_chunks;
 
 	// For now, only render distance is rendered
-	static constexpr const uint32_t	_world_width = RENDER_DISTANCE;
-	static constexpr const uint32_t	_world_depth = RENDER_DISTANCE;
+	static constexpr const uint32_t	_chunk_count_width = RENDER_DISTANCE;
+	static constexpr const uint32_t	_chunk_count_depth = RENDER_DISTANCE;
+	static constexpr const float	_world_width = _chunk_count_width * CHUNK_SIZE;
+	static constexpr const float	_world_depth = _chunk_count_depth * CHUNK_SIZE;
 
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
 
-	void					_generateChunks(const PerlinNoise& noise);
+	void							_generateChunks(const PerlinNoise& noise);
 
 }; // class World
 

@@ -19,14 +19,13 @@ namespace scop::graphics {
 /* ========================================================================== */
 
 BoundingBox::BoundingBox(Vect3 center, Vect3 half_diag):
+	IBoundingObject(),
 	_half_diag(half_diag),
 	_center(center) {}
 
 IntersectionType	BoundingBox::checkPlaneIntersection(const Plane& plane) const {
 	// Length of diag projected on plane normal
-	float extent = _half_diag.x * std::abs(plane.x) +
-				   _half_diag.y * std::abs(plane.y) +
-				   _half_diag.z * std::abs(plane.z);
+	float extent = scop::dot(_half_diag, abs(plane.xyz));
 	float signedDistance = scop::dot(_center, plane.xyz) + plane.w;
 
 	if (signedDistance + extent < 0)

@@ -32,11 +32,6 @@ public:
 
 	virtual ~IBoundingObject() = default;
 
-	/* ========================================================================= */
-
-	virtual IntersectionType	checkIntersection(
-		const BoundingFrustum& frustum) const = 0;
-
 protected:
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
@@ -47,6 +42,11 @@ protected:
 	IBoundingObject(IBoundingObject&& other) = default;
 	IBoundingObject& operator=(const IBoundingObject& other) = default;
 	IBoundingObject& operator=(IBoundingObject&& other) = default;
+
+	/* ========================================================================= */
+
+	virtual IntersectionType	checkIntersection(
+		const BoundingFrustum& frustum) const = 0;
 
 };
 
