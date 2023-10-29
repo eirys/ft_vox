@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/31 11:34:47 by etran             #+#    #+#             */
-/*   Updated: 2023/09/01 17:22:34 by etran            ###   ########.fr       */
+/*   Updated: 2023/10/29 02:36:43 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -89,7 +89,7 @@ void	ShadowsDescriptorSet::plug(
 	VkDescriptorBufferInfo	cull_info{};
 	cull_info.buffer = buffer.getBuffer();
 	cull_info.offset = offsetof(UniformBufferObject, chunks);
-	cull_info.range = sizeof(uint32_t);
+	cull_info.range = sizeof(uint32_t) * PACKED_DATA_COUNT;
 
 	std::array<VkWriteDescriptorSet, 3> writes{};
 

@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/02 16:09:44 by etran             #+#    #+#             */
-/*   Updated: 2023/10/25 20:31:01 by etran            ###   ########.fr       */
+/*   Updated: 2023/10/29 02:35:40 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -522,9 +522,12 @@ UniformBufferObject	Engine::_updateUbo(const GameState& game) {
 			right);
 
 		ubo.camera.vp = projection * view;
-		ubo.chunks = _input_handler.updateVisibleChunks(
+		std::array<uint32_t, PACKED_DATA_COUNT>	chunks = {};
+		_input_handler.updateVisibleChunks(
+			chunks,
 			BoundingFrustum::Camera{player.getPosition(), front, right, up},
 			game.getWorld());
+		memcpy(ubo.chunks, chunks.data(), chunks.size() * sizeof(uint32_t));
 	}
 	{	/* UPDATE LIGHT AND PROJECTOR ============================================== */
 		constexpr const float	terrain_length = CHUNK_SIZE * RENDER_DISTANCE;
@@ -537,17 +540,17 @@ UniformBufferObject	Engine::_updateUbo(const GameState& game) {
 			0.0f, terrain_length);
 
 		float	period = game.getElapsedTime();
-		Vect3	light = Vect3(cos(period), sin(period), 0.0f);
+		Vect3	sun_pos = Vect3(cos(period), sin(period), 0.0f);
 
 		const Mat4	view = ::scop::lookAt(
-			light * light_distance + game.getWorld().getOrigin(),
+			sun_pos * light_distance + game.getWorld().getOrigin(),
 			game.getWorld().getOrigin(),
 			Vect3(VOX_UP_VECTOR));
 
 		ubo.projector.vp = projection * view;
 		ubo.light = {
 			.ambient_color = ::scop::Vect3(0.17f, 0.15f, 0.1f),
-			.light_vector = light,
+			.light_vector = sun_pos,
 			.light_color = ::scop::Vect3(1.0f, 1.0f, 0.8f) };
 	}
 

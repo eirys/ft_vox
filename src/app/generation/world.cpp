@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/18 17:42:36 by etran             #+#    #+#             */
-/*   Updated: 2023/10/25 17:36:05 by etran            ###   ########.fr       */
+/*   Updated: 2023/10/28 12:58:05 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -95,13 +95,13 @@ const std::vector<Chunk>&	World::getChunks() const noexcept {
 const Chunk&	World::getChunk(uint8_t x, uint8_t y, uint8_t z) const {
 	//TODO: replace by y
 	(void)y;
-	return _chunks[z * _chunk_count_depth + (0 * _chunk_count_width + x)];
+	return _chunks[z * _render_distance + (0 * _render_distance + x)];
 }
 
 Chunk&	World::getChunk(uint8_t x, uint8_t y, uint8_t z) {
 	//TODO
 	(void)y;
-	return _chunks[z * _chunk_count_depth + (0 * _chunk_count_width + x)];
+	return _chunks[z * _render_distance + (0 * _render_distance + x)];
 }
 
 /* ========================================================================== */
@@ -181,17 +181,10 @@ float	World::getDepth() const noexcept {
 }
 
 /**
- * @brief Returns number of chunks, on x axis.
+ * @brief Returns number of chunks.
 */
-uint32_t	World::getChunkCoundWidth() const noexcept {
-	return _chunk_count_width;
-}
-
-/**
- * @brief Return number of chunks, on z axis.
-*/
-uint32_t	World::getChunkCoundDepth() const noexcept {
-	return _chunk_count_depth;
+uint16_t	World::getRenderDistance() const noexcept {
+	return _render_distance;
 }
 
 /* ========================================================================== */
@@ -199,10 +192,10 @@ uint32_t	World::getChunkCoundDepth() const noexcept {
 /* ========================================================================== */
 
 void	World::_generateChunks(const PerlinNoise& noise) {
-	_chunks.reserve(_chunk_count_width * _chunk_count_depth);
+	_chunks.reserve(_render_distance * _render_distance);
 
-	for (uint32_t z = 0; z < _chunk_count_depth; ++z) {
-		for (uint32_t x = 0; x < _chunk_count_width; ++x) {
+	for (uint32_t z = 0; z < _render_distance; ++z) {
+		for (uint32_t x = 0; x < _render_distance; ++x) {
 			_chunks.emplace_back(Chunk(noise, x, 0, z));
 		}
 	}

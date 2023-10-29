@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/21 10:42:08 by etran             #+#    #+#             */
-/*   Updated: 2023/10/05 19:10:18 by etran            ###   ########.fr       */
+/*   Updated: 2023/10/28 18:13:07 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,13 +22,10 @@
 
 # define BLOCK_FACES_COUNT			6
 
-// Number of vertices in a flat chunk mesh
-# define BLOCK_VERTICES_COUNT		BLOCK_FACES_COUNT * 4					// 24
-# define CHUNK_VERTICES_COUNT		CHUNK_AREA * BLOCK_VERTICES_COUNT
-
-// Number of indices in a flat chunk mesh
-# define TRIANGLE_VERTICES_COUNT	3
-# define QUAD_VERTICES_COUNT		(2 * TRIANGLE_VERTICES_COUNT)
-# define CHUNK_INDICES_COUNT		(CHUNK_AREA * BLOCK_FACES_COUNT * QUAD_VERTICES_COUNT)
+// 144 * uint32_t -> 288 * uint16_t -> Half of 576 chunks (max render distance: 24)
+// At most 288 chunks can be rendered at once.
+# define MAXIMUM_ACTIVE_CHUNKS		576
+# define PACKED_DATA_SIZE			288
+# define PACKED_DATA_COUNT			144 // (PACKED_DATA_SIZE / 2)
 
 #endif

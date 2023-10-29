@@ -1,6 +1,12 @@
 #version 450
 
 /* ========================================================================== */
+/*                                   MACROS                                   */
+/* ========================================================================== */
+
+#include "../../src/app/generation/chunk_macros.h"
+
+/* ========================================================================== */
 /*                                 SHADER I/O                                 */
 /* ========================================================================== */
 
@@ -13,10 +19,12 @@ layout(location = 1) out vec3 out_uvw;
 layout(location = 2) out vec3 out_shadow;
 
 /* UNIFORMS ================================================================= */
-layout(binding = 0, set = 0) uniform Camera { mat4 vp; }	camera;
-layout(binding = 1, set = 0) uniform Projector { mat4 vp; }	projector;
-layout(binding = 5, set = 0) uniform usampler2DArray		height_map;
-layout(binding = 6, set = 0) uniform Packed { uint data; }	packed_position;
+layout(binding = 0, set = 0) uniform Camera { mat4 vp; }		camera;
+layout(binding = 1, set = 0) uniform Projector { mat4 vp; }		projector;
+layout(binding = 5, set = 0) uniform usampler2DArray			height_map;
+layout(binding = 6, set = 0) uniform Packed {
+	uint data[PACKED_DATA_COUNT];
+}	packed_position;
 
 /* ========================================================================== */
 /*                                  INCLUDES                                  */

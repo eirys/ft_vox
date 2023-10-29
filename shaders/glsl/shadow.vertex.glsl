@@ -1,13 +1,21 @@
 #version 450
 
 /* ========================================================================== */
+/*                                   MACROS                                   */
+/* ========================================================================== */
+
+#include "../../src/app/generation/chunk_macros.h"
+
+/* ========================================================================== */
 /*                                 SHADER I/O                                 */
 /* ========================================================================== */
 
 // Constant buffers
 layout(binding = 0, set = 1) uniform Projector { mat4 vp; }	projector;
 layout(binding = 1, set = 1) uniform usampler2DArray		height_map;
-layout(binding = 2, set = 1) uniform Packed { uint data; }	packed_position;
+layout(binding = 2, set = 1) uniform Packed {
+	uint data[PACKED_DATA_COUNT];
+}	packed_position;
 
 /* ========================================================================== */
 /*                                  INCLUDES                                  */

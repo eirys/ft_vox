@@ -6,13 +6,14 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:17:15 by etran             #+#    #+#             */
-/*   Updated: 2023/09/01 16:13:21 by etran            ###   ########.fr       */
+/*   Updated: 2023/10/29 02:38:28 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
 # include "constant_buffer_macros.h"
+# include "chunk_macros.h"
 # include "matrix.h"
 
 namespace scop {
@@ -61,8 +62,14 @@ struct UniformBufferObject {
 	alignas(__ALIGNMENT_BUFF) Camera		camera;
 	alignas(__ALIGNMENT_BUFF) Projector		projector;
 	alignas(__ALIGNMENT_BUFF) Light			light;
-	alignas(__ALIGNMENT_BUFF) uint32_t		chunks;
+	alignas(__ALIGNMENT_BUFF) uint32_t		chunks[PACKED_DATA_COUNT];
 
 }; // struct UniformBufferObject
+
+	// static const constexpr offset0 = offsetof(UniformBufferObject, camera);
+	// static const constexpr offset1 = offsetof(UniformBufferObject, projector);
+	// static const constexpr offset2 = offsetof(UniformBufferObject, light);
+	// static const constexpr offset3 = offsetof(UniformBufferObject, chunks);
+
 
 } // namespace scop

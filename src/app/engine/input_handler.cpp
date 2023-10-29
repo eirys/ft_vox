@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/16 13:03:48 by etran             #+#    #+#             */
-/*   Updated: 2023/10/25 21:04:31 by etran            ###   ########.fr       */
+/*   Updated: 2023/10/29 02:33:25 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,8 @@
 #include "chunk.h"
 #include "matrix.h"
 #include "chunk_texture_handler.h"
+
+#include "utils.h"
 
 namespace scop::graphics {
 
@@ -35,36 +37,36 @@ void	InputHandler::destroy(Device& device) {
 	_height_map->destroy(device);
 }
 
-uint32_t	InputHandler::updateVisibleChunks(
+void	InputHandler::updateVisibleChunks(
+	std::array<uint32_t, PACKED_DATA_COUNT>& packed_visible_chunks,
 	const BoundingFrustum::Camera& camera,
 	const ::vox::World& world
 ) {
-	uint32_t	packed_visible_chunks = 0;
+	_frustum = BoundingFrustum(camera);
 	_instances_count = 0;
 
-	_frustum = BoundingFrustum(camera);
-
-	for (uint32_t z = 0; z < world.getChunkCoundDepth(); ++z) {
-		for (uint32_t x = 0; x < world.getChunkCoundWidth(); ++x) {
+	for (uint16_t z = 0; z < world.getRenderDistance(); ++z) {
+		for (uint16_t x = 0; x < world.getRenderDistance(); ++x) {
 
 			if (world.getChunk(x, 0, z).isVisible(_frustum)) {
-				packed_visible_chunks |= 1 << (32-(z * world.getChunkCoundWidth() + x));
+
+				uint32_t value = static_cast<uint32_t>(z * world.getRenderDistance() + x);
+				if (_instances_count % 2 == 0)
+					value >>= 16;
+
+				packed_visible_chunks[_instances_count / 2] |= value;
 				++_instances_count;
 			}
-
 		}
 	}
-	return packed_visible_chunks;
 }
 
 /* ========================================================================== */
 
-// TODO
 uint32_t	InputHandler::getVerticesCount() const noexcept {
 	return _vertices_count;
 }
 
-//TODO
 uint32_t	InputHandler::getInstancesCount() const noexcept {
 	return CHUNK_AREA * _instances_count;
 }

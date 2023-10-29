@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:15:01 by etran             #+#    #+#             */
-/*   Updated: 2023/10/25 20:51:47 by etran            ###   ########.fr       */
+/*   Updated: 2023/10/28 21:41:28 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,7 +53,8 @@ public:
 	void				init(Device& device, const ::vox::GameState& game);
 	void				destroy(Device& device);
 
-	uint32_t			updateVisibleChunks(
+	void				updateVisibleChunks(
+		std::array<uint32_t, PACKED_DATA_COUNT>& packed_visible_chunks,
 		const BoundingFrustum::Camera& camera,
 		const ::vox::World& world);
 
@@ -71,7 +72,7 @@ private:
 	TextureHandlerPtr	_height_map;
 
 	BoundingFrustum		_frustum;
-	uint32_t			_instances_count = RENDER_DISTANCE * RENDER_DISTANCE;//0;
+	uint32_t			_instances_count = 25;
 	uint32_t			_vertices_count = 36;
 
 	/* ========================================================================= */

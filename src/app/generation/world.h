@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 22:53:11 by etran             #+#    #+#             */
-/*   Updated: 2023/09/25 14:42:37 by etran            ###   ########.fr       */
+/*   Updated: 2023/10/28 12:41:43 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,8 +67,7 @@ public:
 
 	float						getWidth() const noexcept;
 	float						getDepth() const noexcept;
-	uint32_t					getChunkCoundWidth() const noexcept;
-	uint32_t					getChunkCoundDepth() const noexcept;
+	uint16_t					getRenderDistance() const noexcept;
 
 private:
 	/* ========================================================================= */
@@ -79,10 +78,9 @@ private:
 	std::vector<Chunk>				_chunks;
 
 	// For now, only render distance is rendered
-	static constexpr const uint32_t	_chunk_count_width = RENDER_DISTANCE;
-	static constexpr const uint32_t	_chunk_count_depth = RENDER_DISTANCE;
-	static constexpr const float	_world_width = _chunk_count_width * CHUNK_SIZE;
-	static constexpr const float	_world_depth = _chunk_count_depth * CHUNK_SIZE;
+	static constexpr const uint16_t	_render_distance = RENDER_DISTANCE;
+	static constexpr const float	_world_width = _render_distance * CHUNK_SIZE;
+	static constexpr const float	_world_depth = _render_distance * CHUNK_SIZE;
 
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
