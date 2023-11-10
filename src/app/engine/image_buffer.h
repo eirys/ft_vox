@@ -32,6 +32,27 @@ class Device;
 class ImageBuffer final {
 public:
 	/* ========================================================================= */
+	/*                                HELPER CLASS                               */
+	/* ========================================================================= */
+
+	struct ImageMetaData {
+		VkFormat			format;
+		uint32_t			layer_count;
+		uint32_t			width;
+		uint32_t			height;
+		uint32_t			depth = 1;
+		uint32_t			mip_count = 1;
+
+
+		VkFormat			getFormat() const noexcept { return format; }
+		uint32_t			getWidth() const noexcept { return width; }
+		uint32_t			getHeight() const noexcept { return height; }
+		uint32_t			getDepth() const noexcept { return depth; }
+		uint32_t			getLayerCount() const noexcept { return layer_count; }
+		uint32_t			getMipCount() const noexcept { return mip_count; }
+	};
+
+	/* ========================================================================= */
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
 
@@ -46,26 +67,17 @@ public:
 
 	void				initImage(
 		Device& device,
-		uint32_t width,
-		uint32_t height,
-		VkFormat format,
 		VkImageUsageFlags usage,
 		VkSampleCountFlagBits sample_count,
-		uint32_t mip_level = 1,
-		uint32_t layers = 1,
 		VkImageCreateFlags flags = 0,
 		VkMemoryPropertyFlags properties = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
 		VkImageTiling tiling = VK_IMAGE_TILING_OPTIMAL,
-		uint32_t depth = 1,
 		VkImageType type = VK_IMAGE_TYPE_2D);
 
 	void				initView(
 		Device& device,
-		VkFormat image_format,
 		VkImageAspectFlags aspect_flags,
-		VkImageViewType view_type = VK_IMAGE_VIEW_TYPE_2D,
-		uint32_t mip_count = 1,
-		uint32_t layer_count = 1);
+		VkImageViewType view_type = VK_IMAGE_VIEW_TYPE_2D);
 
 	void				destroy(Device& device);
 
@@ -79,34 +91,26 @@ public:
 		VkAccessFlags dst_access_mask,
 		VkPipelineStageFlags src_stage_mask,
 		VkPipelineStageFlags dst_stage_mask,
-		const VkImageSubresourceRange& subresource_range
-	);
+		const VkImageSubresourceRange& subresource_range);
 
 	void				copyFrom(
 		VkCommandBuffer command_buffer,
 		VkBuffer src_buffer,
-		uint32_t image_width,
-		uint32_t image_height,
-		uint32_t image_count = 1,
-		uint32_t layer_count = 1,
-		uint32_t layer_size = 0,
-		uint32_t pixel_size = sizeof(uint32_t)
-	);
+		uint32_t layer_size = 0);
 
 	void				generateMipmap(
 		VkCommandBuffer command_buffer,
-		Device& device,
-		uint32_t image_width,
-		uint32_t image_height,
-		VkFormat image_format,
-		uint32_t mip_count,
-		uint32_t layer_count
-	);
+		Device& device);
 
 	/* ========================================================================= */
 
-	VkImage				getImage() const noexcept;
-	VkImageView			getView() const noexcept;
+	void					setMetaData(const ImageMetaData& metadata);
+
+	/* ========================================================================= */
+
+	VkImage					getImage() const noexcept;
+	VkImageView				getView() const noexcept;
+	const ImageMetaData&	getMetaData() const noexcept;
 
 private:
 	/* ========================================================================= */
@@ -116,6 +120,8 @@ private:
 	VkImage				_image;
 	VkDeviceMemory		_memory;
 	VkImageView			_view;
+
+	ImageMetaData		_metadata;
 
 }; // class ImageBuffer
 

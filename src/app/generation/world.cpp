@@ -183,7 +183,7 @@ float	World::getDepth() const noexcept {
 /**
  * @brief Returns number of chunks.
 */
-uint16_t	World::getRenderDistance() const noexcept {
+uint8_t	World::getRenderDistance() const noexcept {
 	return _render_distance;
 }
 

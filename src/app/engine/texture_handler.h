@@ -54,21 +54,21 @@ public:
 	/* ========================================================================= */
 
 	virtual void			init(Device& device) = 0;
-	void					destroy(Device& device);
+	virtual void			destroy(Device& device);
 
 	/* ========================================================================= */
 
 	VkSampler				getTextureSampler() const noexcept;
 	const ImageBuffer&		getTextureBuffer() const noexcept;
 
+	/* ========================================================================= */
+
+	void					setTextureSampler(VkSampler sampler);
+
 protected:
 	/* ========================================================================= */
 	/*                               CLASS MEMBERS                               */
 	/* ========================================================================= */
-
-	uint32_t				_texture_count;
-	uint32_t				_layer_count;
-	uint32_t				_mip_levels = 1;
 
 	ImageBuffer				_texture_buffer;
 	VkSampler				_texture_sampler;
@@ -88,7 +88,6 @@ protected:
 
 	virtual void			_createTextureImages(Device& device) = 0;
 	virtual void			_createTextureImageView(Device& device) = 0;
-	virtual void			_createTextureSampler(Device& device) = 0;
 
 	uint32_t				_getMipLevelCount(uint32_t image_width) const;
 

@@ -22,7 +22,14 @@ namespace scop::graphics {
 /* ========================================================================== */
 
 void	ShadowsTextureHandler::init(Device& device) {
-	super::_layer_count = 1;
+	ImageBuffer::ImageMetaData	data{};
+	data.format = DEPTH_FORMAT;
+	data.layer_count = 1;
+	data.width = SHADOWMAP_SIZE;
+	data.height = SHADOWMAP_SIZE;
+
+	super::_texture_buffer.setMetaData(data);
+
 	_createTextureImages(device);
 	_createTextureImageView(device);
 	_createTextureSampler(device);
@@ -33,12 +40,8 @@ void	ShadowsTextureHandler::init(Device& device) {
 /* ========================================================================== */
 
 void	ShadowsTextureHandler::_createTextureImages(Device& device) {
-	super::_texture_count = 1;
 	super::_texture_buffer.initImage(
 		device,
-		SHADOWMAP_SIZE,
-		SHADOWMAP_SIZE,
-		DEPTH_FORMAT,
 		VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT |
 		VK_IMAGE_USAGE_SAMPLED_BIT,
 		VK_SAMPLE_COUNT_1_BIT);
@@ -47,7 +50,6 @@ void	ShadowsTextureHandler::_createTextureImages(Device& device) {
 void	ShadowsTextureHandler::_createTextureImageView(Device& device) {
 	super::_texture_buffer.initView(
 		device,
-		DEPTH_FORMAT,
 		VK_IMAGE_ASPECT_DEPTH_BIT);
 }
 

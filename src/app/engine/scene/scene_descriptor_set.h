@@ -51,7 +51,7 @@ public:
 	void	init(Device& device) override;
 	void	plug(
 		Device& device,
-		Buffer& buffer,
+		const Buffer& buffer,
 		TextureHandlerPtr textures,
 		TextureHandlerPtr shadowmap,
 		const InputHandler& input);

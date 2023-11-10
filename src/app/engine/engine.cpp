@@ -522,12 +522,10 @@ UniformBufferObject	Engine::_updateUbo(const GameState& game) {
 			right);
 
 		ubo.camera.vp = projection * view;
-		std::array<uint32_t, PACKED_DATA_COUNT>	chunks = {};
 		_input_handler.updateVisibleChunks(
-			chunks,
+			_device,
 			BoundingFrustum::Camera{player.getPosition(), front, right, up},
 			game.getWorld());
-		memcpy(ubo.chunks, chunks.data(), chunks.size() * sizeof(uint32_t));
 	}
 	{	/* UPDATE LIGHT AND PROJECTOR ============================================== */
 		constexpr const float	terrain_length = CHUNK_SIZE * RENDER_DISTANCE;

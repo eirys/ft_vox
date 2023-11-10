@@ -15,6 +15,7 @@
 #include "chunk.h"
 #include "matrix.h"
 #include "chunk_texture_handler.h"
+#include "map_texture_handler.h"
 
 #include "utils.h"
 
@@ -26,39 +27,56 @@ namespace scop::graphics {
 
 void	InputHandler::init(Device& device, const ::vox::GameState& game) {
 	_height_map = std::make_shared<ChunkTextureHandler>();
+	_chunk_map = std::make_shared<MapTextureHandler>();
 
 	std::shared_ptr<ChunkTextureHandler>	height_map =
 		std::dynamic_pointer_cast<ChunkTextureHandler>(_height_map);
 	height_map->init(device);
 	height_map->copyData(device, game.getWorld().generateHeightBuffer());
+
+	std::shared_ptr<MapTextureHandler>	chunk_map =
+		std::dynamic_pointer_cast<MapTextureHandler>(_chunk_map);
+	chunk_map->init(device);
+	chunk_map->setTextureSampler(height_map->getTextureSampler());
 }
 
 void	InputHandler::destroy(Device& device) {
 	_height_map->destroy(device);
+	_chunk_map->destroy(device);
 }
 
+/* ========================================================================== */
+
 void	InputHandler::updateVisibleChunks(
-	std::array<uint32_t, PACKED_DATA_COUNT>& packed_visible_chunks,
+	Device& device,
 	const BoundingFrustum::Camera& camera,
 	const ::vox::World& world
 ) {
+	static bool done = false;
+
+	if (done)
+		return;
+
+	std::array<uint16_t, RENDER_DISTANCE2> packed_visible_chunks{};
 	_frustum = BoundingFrustum(camera);
 	_instances_count = 0;
 
-	for (uint16_t z = 0; z < world.getRenderDistance(); ++z) {
-		for (uint16_t x = 0; x < world.getRenderDistance(); ++x) {
+	const uint16_t render_distance = static_cast<uint16_t>(world.getRenderDistance());
 
-			if (world.getChunk(x, 0, z).isVisible(_frustum)) {
-
-				uint32_t value = static_cast<uint32_t>(z * world.getRenderDistance() + x);
-				if (_instances_count % 2 == 0)
-					value >>= 16;
-
-				packed_visible_chunks[_instances_count / 2] |= value;
+	for (uint16_t z = 0; z < render_distance; ++z) {
+		for (uint16_t x = 0; x < render_distance; ++x) {
+			// if (world.getChunk(x, 0, z).isVisible(_frustum)) {
+				uint16_t value = z * render_distance + x;
+				packed_visible_chunks[_instances_count] = value;
 				++_instances_count;
-			}
+			// }
 		}
 	}
+
+	std::shared_ptr<MapTextureHandler>	chunk_map =
+		std::dynamic_pointer_cast<MapTextureHandler>(_chunk_map);
+	chunk_map->copyData(device, packed_visible_chunks);
+	done = true;
 }
 
 /* ========================================================================== */
@@ -68,11 +86,15 @@ uint32_t	InputHandler::getVerticesCount() const noexcept {
 }
 
 uint32_t	InputHandler::getInstancesCount() const noexcept {
-	return CHUNK_AREA * _instances_count;
+	return _instances_count;
 }
 
 InputHandler::TextureHandlerPtr	InputHandler::getHeightMap() const noexcept {
 	return _height_map;
+}
+
+InputHandler::TextureHandlerPtr	InputHandler::getChunkMap() const noexcept {
+	return _chunk_map;
 }
 
 } // namespace scop::graphics

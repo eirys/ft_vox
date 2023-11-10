@@ -62,7 +62,6 @@ struct UniformBufferObject {
 	alignas(__ALIGNMENT_BUFF) Camera		camera;
 	alignas(__ALIGNMENT_BUFF) Projector		projector;
 	alignas(__ALIGNMENT_BUFF) Light			light;
-	alignas(__ALIGNMENT_BUFF) uint32_t		chunks[PACKED_DATA_COUNT];
 
 }; // struct UniformBufferObject
 

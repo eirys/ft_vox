@@ -67,7 +67,7 @@ public:
 
 	float						getWidth() const noexcept;
 	float						getDepth() const noexcept;
-	uint16_t					getRenderDistance() const noexcept;
+	uint8_t						getRenderDistance() const noexcept;
 
 private:
 	/* ========================================================================= */
@@ -78,7 +78,7 @@ private:
 	std::vector<Chunk>				_chunks;
 
 	// For now, only render distance is rendered
-	static constexpr const uint16_t	_render_distance = RENDER_DISTANCE;
+	static constexpr const uint8_t	_render_distance = RENDER_DISTANCE;
 	static constexpr const float	_world_width = _render_distance * CHUNK_SIZE;
 	static constexpr const float	_world_depth = _render_distance * CHUNK_SIZE;
 

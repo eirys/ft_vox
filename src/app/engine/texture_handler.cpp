@@ -37,6 +37,12 @@ const ImageBuffer&	TextureHandler::getTextureBuffer() const noexcept {
 }
 
 /* ========================================================================== */
+
+void	TextureHandler::setTextureSampler(VkSampler sampler) {
+	_texture_sampler = sampler;
+}
+
+/* ========================================================================== */
 /*                                  PROTECTED                                 */
 /* ========================================================================== */
 

@@ -34,7 +34,6 @@ using Texture = SceneTextureHandler::Texture;
 /* ========================================================================== */
 
 void	SceneTextureHandler::init(Device& device) {
-	super::_layer_count = 1;
 	_createTextureImages(device);
 	_createTextureImageView(device);
 	_createTextureSampler(device);
@@ -51,14 +50,20 @@ void	SceneTextureHandler::init(Device& device) {
 void	SceneTextureHandler::_createTextureImages(Device& device) {
 	std::vector<Texture>	images = _loadTextures();
 
-	super::_texture_count = static_cast<uint32_t>(images.size());
 	const uint32_t	image_width = static_cast<uint32_t>(images[0].getWidth());
+	ImageBuffer::ImageMetaData	data{};
+	data.format = VK_FORMAT_R8G8B8A8_SRGB;
+	data.layer_count = static_cast<uint32_t>(images.size());
+	data.width = image_width;
+	data.height = image_width;
+	data.mip_count = super::_getMipLevelCount(image_width);
+
+	super::_texture_buffer.setMetaData(data);
+
 	// A layer is an image.
 	const VkDeviceSize	layer_size = image_width * image_width * sizeof(uint32_t);
 	// Size of the VkImage, including all layers.
-	const VkDeviceSize	image_size = layer_size * super::_texture_count;
-
-	_mip_levels = super::_getMipLevelCount(image_width);
+	const VkDeviceSize	image_size = layer_size * data.getLayerCount();
 
 	// Create staging buffer to copy images data to
 	scop::graphics::Buffer	staging_buffer;
@@ -71,7 +76,7 @@ void	SceneTextureHandler::_createTextureImages(Device& device) {
 
 	// Copy every face of every image data to staging buffer
 	staging_buffer.map(device.getLogicalDevice());
-	for (uint32_t i = 0; i < super::_texture_count; ++i) {
+	for (uint32_t i = 0; i < data.getLayerCount(); ++i) {
 		staging_buffer.copyFrom(
 			images[i].getPixels(),
 			static_cast<std::size_t>(layer_size),
@@ -82,17 +87,11 @@ void	SceneTextureHandler::_createTextureImages(Device& device) {
 	// Create texture image to be filled
 	super::_texture_buffer.initImage(
 		device,
-		image_width,
-		image_width,
-		VK_FORMAT_R8G8B8A8_SRGB,
 		VK_IMAGE_USAGE_TRANSFER_SRC_BIT |	// For mipmaps generation
 		VK_IMAGE_USAGE_TRANSFER_DST_BIT |	// For copy command
 		VK_IMAGE_USAGE_SAMPLED_BIT,			// For shader access
 		VK_SAMPLE_COUNT_1_BIT,
-		super::_mip_levels,
-		super::_texture_count,
-		0,
-		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+		0);
 
 	// Setup copy command buffer
 	CommandBuffer	command_buffer = CommandPool::createBuffer(device);
@@ -103,8 +102,8 @@ void	SceneTextureHandler::_createTextureImages(Device& device) {
 	transfer_barrier.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 	transfer_barrier.baseMipLevel = 0;
 	transfer_barrier.baseArrayLayer = 0;
-	transfer_barrier.levelCount = _mip_levels;
-	transfer_barrier.layerCount = super::_texture_count;
+	transfer_barrier.levelCount = data.getMipCount();
+	transfer_barrier.layerCount = data.getLayerCount();
 
 	super::_texture_buffer.setLayout(
 		command_buffer,
@@ -120,21 +119,12 @@ void	SceneTextureHandler::_createTextureImages(Device& device) {
 	super::_texture_buffer.copyFrom(
 		command_buffer,
 		staging_buffer.getBuffer(),
-		image_width,
-		image_width,
-		super::_texture_count,
-		super::_layer_count,
 		static_cast<uint32_t>(layer_size));
 
 	// Dynamically generate mipmaps
 	super::_texture_buffer.generateMipmap(
 		command_buffer,
-		device,
-		image_width,
-		image_width,
-		VK_FORMAT_R8G8B8A8_SRGB,
-		_mip_levels,
-		super::_layer_count * super::_texture_count);
+		device);
 
 	// Submit commands
 	command_buffer.end(device);
@@ -148,17 +138,17 @@ void	SceneTextureHandler::_createTextureImages(Device& device) {
 void	SceneTextureHandler::_createTextureImageView(Device& device) {
 	super::_texture_buffer.initView(
 		device,
-		VK_FORMAT_R8G8B8A8_SRGB,
 		VK_IMAGE_ASPECT_COLOR_BIT,
-		VK_IMAGE_VIEW_TYPE_2D_ARRAY,
-		_mip_levels,
-		super::_layer_count * super::_texture_count);
+		VK_IMAGE_VIEW_TYPE_2D_ARRAY);
 }
 
 /**
  * @brief Create sampler for texture sampling in shaders.
 */
 void	SceneTextureHandler::_createTextureSampler(Device& device) {
+	const float mip_count = static_cast<float>(
+		super::_texture_buffer.getMetaData().getMipCount());
+
 	VkSamplerCreateInfo	sampler_info{};
 	sampler_info.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
 	sampler_info.magFilter = VK_FILTER_NEAREST;
@@ -175,7 +165,7 @@ void	SceneTextureHandler::_createTextureSampler(Device& device) {
 	sampler_info.mipLodBias = 0.0f;
 	sampler_info.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
 	sampler_info.minLod = 0.0f;
-	sampler_info.maxLod = static_cast<float>(_mip_levels);
+	sampler_info.maxLod = mip_count;
 
 	if (vkCreateSampler(device.getLogicalDevice(), &sampler_info, nullptr, &(super::_texture_sampler)) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create texture sampler");

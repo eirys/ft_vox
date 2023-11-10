@@ -16,8 +16,6 @@
 
 namespace scop::graphics {
 
-class CommandBuffer;
-
 /**
  * @brief Contains data for each block for each chunk.
 */
@@ -64,7 +62,7 @@ private:
 
 	void					_createTextureImages(Device& device) override;
 	void					_createTextureImageView(Device& device) override;
-	void					_createTextureSampler(Device& device) override;
+	void					_createTextureSampler(Device& device);
 
 }; // class ChunkTextureHandler
 

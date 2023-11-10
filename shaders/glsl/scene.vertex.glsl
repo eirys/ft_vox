@@ -19,12 +19,10 @@ layout(location = 1) out vec3 out_uvw;
 layout(location = 2) out vec3 out_shadow;
 
 /* UNIFORMS ================================================================= */
-layout(binding = 0, set = 0) uniform Camera { mat4 vp; }		camera;
-layout(binding = 1, set = 0) uniform Projector { mat4 vp; }		projector;
-layout(binding = 5, set = 0) uniform usampler2DArray			height_map;
-layout(binding = 6, set = 0) uniform Packed {
-	uint data[PACKED_DATA_COUNT];
-}	packed_position;
+layout(binding = 0, set = 0) uniform Camera { mat4 vp; }	camera;
+layout(binding = 1, set = 0) uniform Projector { mat4 vp; }	projector;
+layout(binding = 5, set = 0) uniform usampler2DArray		height_map;
+layout(binding = 6, set = 0) uniform usampler1D				chunk_map;
 
 /* ========================================================================== */
 /*                                  INCLUDES                                  */
@@ -53,24 +51,27 @@ const vec2 uvs[6] = {
 
 /* MAIN ===================================================================== */
 void	main() {
-	int		cubeId = gl_InstanceIndex % CHUNK_AREA;
-	int		chunkId = extractChunkId(gl_InstanceIndex / CHUNK_AREA);
-	// int		chunkId = gl_InstanceIndex / CHUNK_AREA;
+	// Get actual vertexId and instanceId
+	uint	vertexId = gl_VertexIndex % 36;
+	uint	instanceId = texture(chunk_map, float(gl_InstanceIndex) / textureSize(chunk_map, 0)).r;
 
-	ivec2	cubePos = ivec2(cubeId % 16, cubeId / 16);
-	float	cubeHeight = getHeight(cubePos, chunkId);
-	int		face = gl_VertexIndex / 6;
+	// Get cube in chunk
+	uint	cubeId = gl_VertexIndex / 36;
+	ivec2	cubePos = ivec2(cubeId % CHUNK_SIZE, cubeId / CHUNK_SIZE);	// (x, y) in [0, 15]
+	float	cubeHeight = getHeight(cubePos, instanceId);
+	uint	face = vertexId / 6;
 
-	if (cullUnseenFace(face, cubePos, chunkId, cubeHeight)) {
-		gl_Position = vec4(0.0f, 0.0f, 0.0f, 1.0f);
-		return;
-	}
+	// if (cullUnseenFace(face, cubePos, instanceId, cubeHeight)) {
+	// 	gl_Position = vec4(0.0f, 0.0f, 0.0f, 1.0f);
+	// 	return;
+	// }
 
-	vec4 position = extractPos(cubePos, cubeHeight, chunkId);
-	vec3 shadow_coord = (projector.vp * position).xyz;
+	ivec2	chunkPos = ivec2(instanceId % RENDER_DISTANCE, instanceId / RENDER_DISTANCE);	// (x, y) in [0, 5]
+	vec4	position = extractPos(vertexId, cubePos, cubeHeight, chunkPos);
+	vec3	shadow_coord = (projector.vp * position).xyz;
 
 	out_shadow = vec3(shadow_coord.xy * 0.5f + 0.5f, shadow_coord.z);
 	out_normal = normals[face];
-	out_uvw = vec3(uvs[gl_VertexIndex % 6], face);
+	out_uvw = vec3(uvs[vertexId % 6], face);
 	gl_Position = camera.vp * position;
 }

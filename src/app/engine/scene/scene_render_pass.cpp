@@ -160,29 +160,32 @@ void	SceneRenderPass::_createResources(
 	super::_width = rp_info.width;
 	super::_height = rp_info.height;
 
+	ImageBuffer::ImageMetaData	data{};
+	data.layer_count = 1;
+	data.width = super::_width;
+	data.height = super::_height;
+
+	// Color pass -----
+	data.format = rp_info.color_format;
+	_color_image.setMetaData(data);
 	_color_image.initImage(
 		device,
-		super::_width,
-		super::_height,
-		rp_info.color_format,
 		VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT |
 		VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
 		device.getMsaaSamples());
 	_color_image.initView(
 		device,
-		rp_info.color_format,
 		VK_IMAGE_ASPECT_COLOR_BIT);
 
+	// Depth pass -----
+	data.format = rp_info.depth_format;
+	_depth_image.setMetaData(data);
 	_depth_image.initImage(
 		device,
-		super::_width,
-		super::_height,
-		rp_info.depth_format,
 		VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
 		device.getMsaaSamples());
 	_depth_image.initView(
 		device,
-		rp_info.depth_format,
 		VK_IMAGE_ASPECT_DEPTH_BIT);
 }
 

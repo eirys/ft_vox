@@ -1,82 +1,73 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   input_handler.h                                    :+:      :+:    :+:   */
+/*   map_texture_handler.h                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/06/04 17:15:01 by etran             #+#    #+#             */
-/*   Updated: 2023/10/28 21:41:28 by etran            ###   ########.fr       */
+/*   Created: 2023/11/02 17:10:13 by etran             #+#    #+#             */
+/*   Updated: 2023/11/02 17:10:13 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
-// Std
-# include <memory>
-
-# include "bounding_frustum.h"
+# include "texture_handler.h"
 # include "chunk_macros.h"
-
-namespace vox {
-class GameState;
-class World;
-}
 
 namespace scop::graphics {
 
-class Device;
-class TextureHandler;
-
-class InputHandler {
+/**
+ * @brief Contains data for chunk presence.
+*/
+class MapTextureHandler final: public TextureHandler {
 public:
 	/* ========================================================================= */
 	/*                                  TYPEDEFS                                 */
 	/* ========================================================================= */
 
-	using TextureHandlerPtr = std::shared_ptr<TextureHandler>;
+	using super = TextureHandler;
+	using super::Texture;
+	using super::TextureArray;
 
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
 
-	InputHandler() = default;
-	InputHandler(InputHandler&& x) = default;
-	InputHandler&	operator=(InputHandler&& x) = default;
-	~InputHandler() = default;
+	MapTextureHandler() = default;
+	~MapTextureHandler() = default;
 
-	InputHandler(const InputHandler& x) = delete;
-	InputHandler&	operator=(const InputHandler& x) = delete;
+	MapTextureHandler(MapTextureHandler&& other) = delete;
+	MapTextureHandler(const MapTextureHandler& other) = delete;
+	MapTextureHandler& operator=(MapTextureHandler&& other) = delete;
+	MapTextureHandler& operator=(const MapTextureHandler& other) = delete;
 
 	/* ========================================================================= */
 
-	void				init(Device& device, const ::vox::GameState& game);
-	void				destroy(Device& device);
-
-	void				updateVisibleChunks(
+	void					init(Device& device) override;
+	void					destroy(Device& device) override;
+	void					copyData(
 		Device& device,
-		const BoundingFrustum::Camera& camera,
-		const ::vox::World& world);
+		const std::array<uint16_t, RENDER_DISTANCE2>& chunk_map);
+
 
 	/* ========================================================================= */
 
-	uint32_t			getVerticesCount() const noexcept;
-	uint32_t			getInstancesCount() const noexcept;
-	TextureHandlerPtr	getHeightMap() const noexcept;
-	TextureHandlerPtr	getChunkMap() const noexcept;
+	using super::getTextureSampler;
+	using super::getTextureBuffer;
+
+	/* ========================================================================= */
+
+	using super::setTextureSampler;
 
 private:
 	/* ========================================================================= */
-	/*                               CLASS MEMBERS                               */
+	/*                                  METHODS                                  */
 	/* ========================================================================= */
 
-	TextureHandlerPtr	_height_map;
-	TextureHandlerPtr	_chunk_map;
+	void					_createTextureImages(Device& device) override;
+	void					_createTextureImageView(Device& device) override;
 
-	BoundingFrustum		_frustum;
-	uint32_t			_instances_count = 25;
-	uint32_t			_vertices_count = CHUNK_AREA * 36;
-
-}; // class InputHandler
+}; // class MapTextureHandler
 
 } // namespace scop::graphics

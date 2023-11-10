@@ -50,7 +50,7 @@ public:
 
 	void	plug(
 		Device& device,
-		Buffer& buffer,
+		const Buffer& buffer,
 		const InputHandler& input);
 
 	/* ========================================================================= */

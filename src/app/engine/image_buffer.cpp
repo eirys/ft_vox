@@ -28,27 +28,21 @@ namespace scop::graphics {
 */
 void ImageBuffer::initImage(
 	Device& device,
-	uint32_t width,
-	uint32_t height,
-	VkFormat pixel_format,
 	VkImageUsageFlags usage,
 	VkSampleCountFlagBits sample_count,
-	uint32_t mip_count, /* = 1 */
-	uint32_t layer_count, /* = 1 */
 	VkImageCreateFlags flags, /* = 0 */
 	VkMemoryPropertyFlags properties, /* = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT */
 	VkImageTiling tiling, /* = VK_IMAGE_TILING_OPTIMAL */
-	uint32_t depth, /* = 1 */
 	VkImageType type /* = VK_IMAGE_TYPE_2D */
 ) {
 	// Create vkimage
 	VkImageCreateInfo	image_info{};
 	image_info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
 	image_info.imageType = type;
-	image_info.extent = { width, height, depth };
-	image_info.mipLevels = mip_count;
-	image_info.arrayLayers = layer_count;
-	image_info.format = pixel_format;
+	image_info.extent = { _metadata.width, _metadata.height, _metadata.depth };
+	image_info.mipLevels = _metadata.mip_count;
+	image_info.arrayLayers = _metadata.layer_count;
+	image_info.format = _metadata.format;
 	image_info.tiling = tiling;
 	image_info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 	image_info.usage = usage;
@@ -86,30 +80,24 @@ void ImageBuffer::initImage(
  * @brief Create associated image view.
  *
  * @param device Engine device.
- * @param image_format Format of the image.
  * @param aspect_flags Aspect flags for the image.
  * @param view_type View type (2D, Cube map).
- * @param mip_count Number of mip levels.
- * @param layer_count Number of layers * textures.
 */
 void	ImageBuffer::initView(
 	Device& device,
-	VkFormat image_format,
 	VkImageAspectFlags aspect_flags,
-	VkImageViewType view_type, /* = VK_IMAGE_VIEW_TYPE_2D */
-	uint32_t mip_count, /* = 1 */
-	uint32_t layer_count /* = 1 */
+	VkImageViewType view_type /* = VK_IMAGE_VIEW_TYPE_2D */
 ) {
 	VkImageViewCreateInfo	view_info{};
 	view_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
 	view_info.image = _image;
 	view_info.viewType = view_type;
-	view_info.format = image_format;
+	view_info.format = _metadata.format;
 	view_info.subresourceRange.aspectMask = aspect_flags;
 	view_info.subresourceRange.baseMipLevel = 0;
-	view_info.subresourceRange.levelCount = mip_count;
+	view_info.subresourceRange.levelCount = _metadata.mip_count;
 	view_info.subresourceRange.baseArrayLayer = 0;
-	view_info.subresourceRange.layerCount = layer_count;
+	view_info.subresourceRange.layerCount = _metadata.layer_count;
 
 	if (vkCreateImageView(device.getLogicalDevice(), &view_info, nullptr, &_view) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create texture image view");
@@ -164,51 +152,30 @@ void	ImageBuffer::setLayout(
  *
  * @note Assuming that all images have the same size
  * @note Assuming there are no mipmaps.
- * @note Assuming all images have the same number of layers.
  *
  * @param command_buffer Command buffer to send the copy command.
  * @param src_buffer Staging buffer containing the data to copy.
- * @param image_width Width of the VkImage.
- * @param image_height Height of the VkImage.
- * @param image_count Number of image files. Default is 1.
- * @param layer_count Number of layers. 6 for cube maps. Default is 1.
  * @param layer_size Size of a layer in bytes. Default is 0.
- * @param pixel_size Size of a pixel in bytes. Default is sizeof(uint32_t).
 */
 void	ImageBuffer::copyFrom(
 	VkCommandBuffer command_buffer,
 	VkBuffer src_buffer,
-	uint32_t image_width,
-	uint32_t image_height,
-	uint32_t image_count,
-	uint32_t layer_count,
-	uint32_t layer_size,
-	uint32_t pixel_size
+	uint32_t layer_size
 ) {
-	// Create regions for transfer operation (define layout)
-	VkDeviceSize	image_size = image_width * image_height * pixel_size;
-
+	// Create regions for transfer operation (define data layout in dst)
 	std::vector<VkBufferImageCopy>	regions;
-	regions.reserve(image_count * layer_count);
+	regions.reserve(_metadata.layer_count);
 
-	VkDeviceSize	layer_offset = 0;
-	for (uint32_t layer = 0; layer < layer_count; layer++) {
-		for (uint32_t image = 0; image < image_count; image++) {
-			VkBufferImageCopy	region{};
-			region.bufferOffset =
-				image_size * layer_count * image +	// offset for image
-				layer_offset;						// offset for layer
-			region.imageExtent = { image_width, image_height, 1 };
-			region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-			region.imageSubresource.mipLevel = 0;
-			region.imageSubresource.layerCount = 1;
-			region.imageSubresource.baseArrayLayer =
-				image * layer_count +
-				layer;
+	for (uint32_t layer = 0; layer < _metadata.layer_count; ++layer) {
+		VkBufferImageCopy	region{};
+		region.bufferOffset = layer_size * layer;
+		region.imageExtent = { _metadata.width, _metadata.height, _metadata.depth };
+		region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		region.imageSubresource.mipLevel = 0;
+		region.imageSubresource.layerCount = 1;
+		region.imageSubresource.baseArrayLayer = layer;
 
-			regions.emplace_back(region);
-		}
-		layer_offset += layer_size;
+		regions.emplace_back(region);
 	}
 
 	// Send copy command
@@ -218,8 +185,7 @@ void	ImageBuffer::copyFrom(
 		_image,
 		VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
 		static_cast<uint32_t>(regions.size()),
-		regions.data()
-	);
+		regions.data());
 }
 
 /**
@@ -229,28 +195,17 @@ void	ImageBuffer::copyFrom(
  *
  * @param command_buffer Command buffer to send the copy command.
  * @param device Device used to create the image.
- * @param image_width Width of the VkImage.
- * @param image_height Height of the VkImage.
- * @param image_format Format of the VkImage.
- * @param mip_count Number of mipmaps.
- * @param layer_count Number of layers. 6 for cube maps.
 */
 void				ImageBuffer::generateMipmap(
 	VkCommandBuffer command_buffer,
-	Device& device,
-	uint32_t image_width,
-	uint32_t image_height,
-	VkFormat image_format,
-	uint32_t mip_count,
-	uint32_t layer_count
+	Device& device
 ) {
 	// Check if support blitting
 	VkFormatProperties	properties;
 	vkGetPhysicalDeviceFormatProperties(
 		device.getPhysicalDevice(),
-		image_format,
-		&properties
-	);
+		_metadata.format,
+		&properties);
 
 	if (!(properties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT)) {
 		throw std::runtime_error("texture image format doesn't support linear blitting");
@@ -259,8 +214,8 @@ void				ImageBuffer::generateMipmap(
 	VkImageSubresourceRange	range{};
 	range.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 
-	for (uint32_t layer = 0; layer < layer_count; ++layer) {
-		for (uint32_t level = 1; level < mip_count; ++level) {
+	for (uint32_t layer = 0; layer < _metadata.layer_count; ++layer) {
+		for (uint32_t level = 1; level < _metadata.mip_count; ++level) {
 			// Define blitting regions
 			VkImageBlit	blit{};
 
@@ -270,8 +225,8 @@ void				ImageBuffer::generateMipmap(
 			blit.srcSubresource.mipLevel = level - 1;
 			blit.srcSubresource.layerCount = 1;
 			blit.srcOffsets[0] = { 0, 0, 0 };
-			blit.srcOffsets[1].x = image_width >> (level - 1);
-			blit.srcOffsets[1].y = image_height >> (level - 1);
+			blit.srcOffsets[1].x = _metadata.width >> (level - 1);
+			blit.srcOffsets[1].y = _metadata.height >> (level - 1);
 			blit.srcOffsets[1].z = 1;
 
 			// Destination
@@ -280,8 +235,8 @@ void				ImageBuffer::generateMipmap(
 			blit.dstSubresource.mipLevel = level;
 			blit.dstSubresource.layerCount = 1;
 			blit.dstOffsets[0] = { 0, 0, 0 };
-			blit.dstOffsets[1].x = image_width >> level;
-			blit.dstOffsets[1].y = image_height >> level;
+			blit.dstOffsets[1].x = _metadata.width >> level;
+			blit.dstOffsets[1].y = _metadata.height >> level;
 			blit.dstOffsets[1].z = 1;
 
 			// Set range for layout transition
@@ -299,8 +254,7 @@ void				ImageBuffer::generateMipmap(
 				VK_ACCESS_TRANSFER_READ_BIT,
 				VK_PIPELINE_STAGE_TRANSFER_BIT,
 				VK_PIPELINE_STAGE_TRANSFER_BIT,
-				range
-			);
+				range);
 
 			// Perform blit
 			vkCmdBlitImage(
@@ -308,8 +262,7 @@ void				ImageBuffer::generateMipmap(
 				_image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
 				_image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
 				1, &blit,
-				VK_FILTER_LINEAR
-			);
+				VK_FILTER_LINEAR);
 
 			// Transition back to destination layout
 			setLayout(
@@ -320,16 +273,15 @@ void				ImageBuffer::generateMipmap(
 				VK_ACCESS_TRANSFER_WRITE_BIT,
 				VK_PIPELINE_STAGE_TRANSFER_BIT,
 				VK_PIPELINE_STAGE_TRANSFER_BIT,
-				range
-			);
+				range);
 		}
 	}
 
 	// Revert layout of all level to shader read
 	range.baseMipLevel = 0;
 	range.baseArrayLayer = 0;
-	range.layerCount = layer_count;
-	range.levelCount = mip_count;
+	range.layerCount = _metadata.layer_count;
+	range.levelCount = _metadata.mip_count;
 
 	setLayout(
 		command_buffer,
@@ -339,8 +291,13 @@ void				ImageBuffer::generateMipmap(
 		VK_ACCESS_SHADER_READ_BIT,
 		VK_PIPELINE_STAGE_TRANSFER_BIT,
 		VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-		range
-	);
+		range);
+}
+
+/* ========================================================================== */
+
+void	ImageBuffer::setMetaData(const ImageBuffer::ImageMetaData& metadata) {
+	_metadata = metadata;
 }
 
 /* ========================================================================== */
@@ -351,6 +308,10 @@ VkImage	ImageBuffer::getImage() const noexcept {
 
 VkImageView	ImageBuffer::getView() const noexcept {
 	return _view;
+}
+
+const ImageBuffer::ImageMetaData&	ImageBuffer::getMetaData() const noexcept {
+	return _metadata;
 }
 
 } // namespace vox

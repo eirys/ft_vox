@@ -58,7 +58,7 @@ private:
 
 	void					_createTextureImages(Device& device) override;
 	void					_createTextureImageView(Device& device) override;
-	void					_createTextureSampler(Device& device) override;
+	void					_createTextureSampler(Device& device);
 	std::vector<Texture>	_loadTextures() const;
 
 }; // class SceneTextureHandler

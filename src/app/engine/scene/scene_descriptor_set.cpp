@@ -79,9 +79,9 @@ void	SceneDescriptorSet::init(Device& device) {
 	VkDescriptorSetLayoutBinding	culling{};
 	culling.binding = 6;
 	culling.descriptorCount = 1;
-	culling.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	culling.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 	culling.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-	++super::_writes_sizes.uniform_buffer;
+	++super::_writes_sizes.combined_image_sampler;
 
 	std::array<VkDescriptorSetLayoutBinding, 7>	bindings = {
 		camera,
@@ -109,7 +109,7 @@ void	SceneDescriptorSet::init(Device& device) {
 */
 void	SceneDescriptorSet::plug(
 	Device& device,
-	Buffer& buffer,
+	const Buffer& buffer,
 	TextureHandlerPtr textures,
 	TextureHandlerPtr shadowmap,
 	const InputHandler& input
@@ -144,10 +144,10 @@ void	SceneDescriptorSet::plug(
 	height_info.imageView = input.getHeightMap()->getTextureBuffer().getView();
 	height_info.sampler = input.getHeightMap()->getTextureSampler();
 
-	VkDescriptorBufferInfo	cull_info{};
-	cull_info.buffer = buffer.getBuffer();
-	cull_info.offset = offsetof(UniformBufferObject, chunks);
-	cull_info.range = sizeof(uint32_t) * PACKED_DATA_COUNT;
+	VkDescriptorImageInfo	cull_info{};
+	cull_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+	cull_info.imageView = input.getChunkMap()->getTextureBuffer().getView();
+	cull_info.sampler = input.getChunkMap()->getTextureSampler();
 
 	std::array<VkWriteDescriptorSet, 7>	writes{};
 
@@ -222,10 +222,10 @@ void	SceneDescriptorSet::plug(
 	writes[6].dstSet = super::_set;
 	writes[6].dstBinding = 6;
 	writes[6].dstArrayElement = 0;
-	writes[6].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	writes[6].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 	writes[6].descriptorCount = 1;
-	writes[6].pBufferInfo = &cull_info;
-	writes[6].pImageInfo = nullptr;
+	writes[6].pBufferInfo = nullptr;
+	writes[6].pImageInfo =  &cull_info;
 	writes[6].pTexelBufferView = nullptr;
 
 	vkUpdateDescriptorSets(
