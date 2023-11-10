@@ -13,7 +13,7 @@
 // Constant buffers
 layout(binding = 0, set = 1) uniform Projector { mat4 vp; }	projector;
 layout(binding = 1, set = 1) uniform usampler2DArray		height_map;
-layout(binding = 2, set = 1) uniform usampler1D				chunk_map;
+layout(binding = 2, set = 1) uniform usampler2D				chunk_map;
 
 /* ========================================================================== */
 /*                                  INCLUDES                                  */

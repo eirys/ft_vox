@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/05 15:35:50 by etran             #+#    #+#             */
-/*   Updated: 2023/09/22 16:19:17 by etran            ###   ########.fr       */
+/*   Updated: 2023/11/10 15:54:36 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,8 +64,14 @@ Player&	GameState::getPlayer() noexcept {
 	return _player;
 }
 
+#define CLOCK_ENABLED 0
+
 float	GameState::getElapsedTime() const noexcept {
+#if CLOCK_ENABLED
 	return _clock.get();
+#else
+	return M_PI / 4.0f;
+#endif
 }
 
 } // namespace vox

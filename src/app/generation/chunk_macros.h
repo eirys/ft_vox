@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/21 10:42:08 by etran             #+#    #+#             */
-/*   Updated: 2023/10/28 18:13:07 by etran            ###   ########.fr       */
+/*   Updated: 2023/11/10 14:47:50 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,7 @@
 
 # define CHUNK_SIZE					16 // Number of blocks per chunk row
 # define RENDER_DISTANCE			5  // Number of chunks to render
-# define RENDER_DISTANCE2			(RENDER_DISTANCE * RENDER_DISTANCE + 1)
+# define RENDER_DISTANCE2			(RENDER_DISTANCE * RENDER_DISTANCE)
 # define RENDER_WIDTH				(RENDER_DISTANCE * CHUNK_SIZE)			// 256
 # define RENDER_DEPTH				(RENDER_DISTANCE * CHUNK_SIZE)			// 256
 # define CHUNK_AREA					(CHUNK_SIZE * CHUNK_SIZE)				// 256

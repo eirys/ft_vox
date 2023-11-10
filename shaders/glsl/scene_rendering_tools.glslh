@@ -17,7 +17,6 @@ int	isOutsideTexture(ivec2 _pos) {
 
 float	getHeight(ivec2 _cubePos, uint _layer) {
 	// TODO: select proper layer
-	return 0.0;
 	int isOutside = isOutsideTexture(_cubePos);
 	if (isOutside != 0)
 		return 0.0;
@@ -90,7 +89,7 @@ vec4	extractPos(uint _vertexId, ivec2 _cubePos, float _height, ivec2 _chunkPos) 
 
 /* ========================================================================== */
 
-bool	cullUnseenFace(int _face, ivec2 _cubePos, int _chunkId, float _cubeHeight) {
+bool	cullUnseenFace(uint _face, ivec2 _cubePos, uint _instanceId, float _cubeHeight) {
 	ivec2	adjacentCubePos = ivec2(-1);
 	if (_face == 2) {
 		adjacentCubePos = ivec2(_cubePos.x - 1, _cubePos.y);
@@ -103,7 +102,7 @@ bool	cullUnseenFace(int _face, ivec2 _cubePos, int _chunkId, float _cubeHeight) 
 	} else {
 		return false;
 	}
-	return getHeight(adjacentCubePos, _chunkId) >= _cubeHeight;
+	return getHeight(adjacentCubePos, _instanceId) >= _cubeHeight;
 }
 
 #endif // SCENE_RENDERING_TOOLS_GLSLH

@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/16 13:03:48 by etran             #+#    #+#             */
-/*   Updated: 2023/10/29 02:33:25 by etran            ###   ########.fr       */
+/*   Updated: 2023/11/10 16:52:06 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,11 +52,6 @@ void	InputHandler::updateVisibleChunks(
 	const BoundingFrustum::Camera& camera,
 	const ::vox::World& world
 ) {
-	static bool done = false;
-
-	if (done)
-		return;
-
 	std::array<uint16_t, RENDER_DISTANCE2> packed_visible_chunks{};
 	_frustum = BoundingFrustum(camera);
 	_instances_count = 0;
@@ -65,18 +60,18 @@ void	InputHandler::updateVisibleChunks(
 
 	for (uint16_t z = 0; z < render_distance; ++z) {
 		for (uint16_t x = 0; x < render_distance; ++x) {
-			// if (world.getChunk(x, 0, z).isVisible(_frustum)) {
+			if (world.getChunk(x, 0, z).isVisible(_frustum)) {
 				uint16_t value = z * render_distance + x;
 				packed_visible_chunks[_instances_count] = value;
 				++_instances_count;
-			// }
+			}
 		}
 	}
+	++_instances_count;
 
 	std::shared_ptr<MapTextureHandler>	chunk_map =
 		std::dynamic_pointer_cast<MapTextureHandler>(_chunk_map);
 	chunk_map->copyData(device, packed_visible_chunks);
-	done = true;
 }
 
 /* ========================================================================== */

@@ -6,7 +6,7 @@
 #    By: etran <etran@student.42.fr>                +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/04/06 03:40:09 by eli               #+#    #+#              #
-#    Updated: 2023/10/25 17:37:04 by etran            ###   ########.fr        #
+#    Updated: 2023/11/10 14:47:16 by etran            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -83,6 +83,7 @@ SRC_FILES	:=	$(TOOLS_DIR)/matrix.cpp \
 				$(ENG_DIR)/descriptor_set.cpp \
 				$(ENG_DIR)/command_pool.cpp \
 				$(ENG_DIR)/texture_handler.cpp \
+				$(ENG_DIR)/map_texture_handler.cpp \
 				$(ENG_DIR)/chunk_texture_handler.cpp \
 				$(ENG_DIR)/target.cpp \
 				$(ENG_DIR)/input_handler.cpp \

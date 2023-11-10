@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/02 17:13:30 by etran             #+#    #+#             */
-/*   Updated: 2023/11/02 17:13:30 by etran            ###   ########.fr       */
+/*   Updated: 2023/11/10 15:58:38 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,8 +28,9 @@ void	MapTextureHandler::init(Device& device) {
 	ImageBuffer::ImageMetaData	data{};
 	data.format = VK_FORMAT_R16_UINT;
 	data.layer_count = 1;
-	data.width = RENDER_DISTANCE2;
-	data.height = 1;
+	data.width = RENDER_DISTANCE;
+	data.height = RENDER_DISTANCE;
+	// data.height = 1;
 
 	super::_texture_buffer.setMetaData(data);
 
@@ -142,14 +143,14 @@ void	MapTextureHandler::_createTextureImages(Device& device) {
 		flags,
 		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
 		VK_IMAGE_TILING_OPTIMAL,
-		VK_IMAGE_TYPE_1D);
+		VK_IMAGE_TYPE_2D);
 }
 
 void	MapTextureHandler::_createTextureImageView(Device& device) {
 	super::_texture_buffer.initView(
 		device,
 		VK_IMAGE_ASPECT_COLOR_BIT,
-		VK_IMAGE_VIEW_TYPE_1D);
+		VK_IMAGE_VIEW_TYPE_2D);
 }
 
 } // namespace scop::graphics
