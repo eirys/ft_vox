@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:14:08 by etran             #+#    #+#             */
-/*   Updated: 2023/10/25 20:57:58 by etran            ###   ########.fr       */
+/*   Updated: 2023/11/10 17:36:15 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,7 @@
 // Std
 # include <vector>
 
-namespace scop::graphics {
+namespace scop::core {
 
 class DebugModule {
 public:
@@ -84,4 +84,4 @@ VKAPI_ATTR	VkBool32 VKAPI_CALL	debugCallback(
 	void* p_user_data
 );
 
-} // namespace scop::graphics
+} // namespace scop::core

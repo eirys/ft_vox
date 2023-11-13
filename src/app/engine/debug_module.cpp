@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/16 15:07:01 by etran             #+#    #+#             */
-/*   Updated: 2023/08/10 22:11:58 by etran            ###   ########.fr       */
+/*   Updated: 2023/11/10 17:36:30 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,7 @@
 #include <stdexcept> // std::runtime_error
 #include <iostream> // std::cerr
 
-namespace scop::graphics {
+namespace scop::core {
 
 const std::vector<const char*>	DebugModule::validation_layers = {
 	"VK_LAYER_KHRONOS_validation"
@@ -130,4 +130,4 @@ VKAPI_ATTR VkBool32 VKAPI_CALL	debugCallback(
 	return VK_FALSE;
 }
 
-} // namespace scop::graphics
+} // namespace scop::core

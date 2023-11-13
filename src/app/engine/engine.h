@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:14:35 by etran             #+#    #+#             */
-/*   Updated: 2023/10/25 20:59:58 by etran            ###   ########.fr       */
+/*   Updated: 2023/11/10 17:30:55 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,7 +56,7 @@ public:
 	/*                               CONST MEMBERS                               */
 	/* ========================================================================= */
 
-	static constexpr std::size_t	max_frames_in_flight = 1;
+	static constexpr const std::size_t	max_frames_in_flight = 1;
 
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
@@ -92,9 +92,12 @@ private:
 
 	Device						_device;
 	SwapChain					_swap_chain;
+
 	DescriptorPool				_descriptor_pool;
 	CommandPool					_command_pool;
+
 	CommandBuffer				_draw_buffer;
+
 	VkSemaphore					_image_available_semaphores;
 	VkSemaphore					_render_finished_semaphores;
 	VkFence						_in_flight_fences;
@@ -120,9 +123,6 @@ private:
 
 	UniformBufferObject			_updateUbo(const GameState& game);
 	void						_updatePresentation(Window& window);
-
-	bool						_checkValidationLayerSupport();
-	std::vector<const char*>	_getRequiredExtensions();
 
 }; // class Engine
 

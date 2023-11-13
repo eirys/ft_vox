@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/02 16:09:44 by etran             #+#    #+#             */
-/*   Updated: 2023/10/29 02:35:40 by etran            ###   ########.fr       */
+/*   Updated: 2023/11/10 17:34:26 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -97,10 +97,9 @@ void	Engine::destroy() {
 		nullptr);
 
 	_command_pool.destroy(_device);
+
 	_device.destroy(_vk_instance);
 	_debug_module.destroy(_vk_instance);
-
-	// Remove instance
 	vkDestroyInstance(_vk_instance, nullptr);
 }
 
@@ -553,51 +552,6 @@ UniformBufferObject	Engine::_updateUbo(const GameState& game) {
 	}
 
 	return ubo;
-}
-
-/* ========================================================================== */
-
-/**
- * Check if all required extensions are available for validation layers
-*/
-bool	Engine::_checkValidationLayerSupport() {
-	uint32_t	layer_count;
-	vkEnumerateInstanceLayerProperties(&layer_count, nullptr);
-
-	std::vector<VkLayerProperties>	available_layers(layer_count);
-	vkEnumerateInstanceLayerProperties(&layer_count, available_layers.data());
-
-	for (const char* layer_name: DebugModule::validation_layers) {
-		bool	found = false;
-		for (const VkLayerProperties& layer_properties: available_layers) {
-			if (!strcmp(layer_name, layer_properties.layerName)) {
-				found = true;
-				break;
-			}
-		}
-		if (!found)
-			return false;
-	}
-	return true;
-}
-
-/**
- *  Retrieve list of extensions if validation layers enabled
- */
-std::vector<const char*>	Engine::_getRequiredExtensions() {
-	uint32_t		glfw_extension_count = 0;
-	const char**	glfw_extensions;
-	glfw_extensions = glfwGetRequiredInstanceExtensions(&glfw_extension_count);
-
-	std::vector<const char*>	extensions(
-		glfw_extensions,
-		glfw_extensions + glfw_extension_count
-	);
-
-	if (DebugModule::enable_validation_layers) {
-		extensions.emplace_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
-	}
-	return extensions;
 }
 
 } // namespace scop::graphics
