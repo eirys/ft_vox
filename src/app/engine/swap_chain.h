@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/02 16:27:11 by etran             #+#    #+#             */
-/*   Updated: 2023/08/11 23:14:00 by etran            ###   ########.fr       */
+/*   Updated: 2023/11/16 23:07:58 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,16 +18,17 @@
 // Std
 # include <vector> // std::vector
 
-namespace scop {
-class Window;
-} // namespace scop
-
 namespace scop::core {
 class Device;
-class RenderPass;
 }
 
 namespace scop::gfx {
+class RenderPass;
+}
+
+namespace scop {
+
+class Window;
 
 /**
  * @brief Wrapper class for swap chain.
@@ -50,16 +51,16 @@ public:
 	/* ========================================================================= */
 
 	void								init(
-		scop::core::Device& device,
-		scop::Window& window);
-	void								destroy(scop::core::Device& device);
+		core::Device& device,
+		Window& window);
+	void								destroy(core::Device& device);
 	void								update(
-		scop::core::Device& device,
-		scop::Window& window);
+		core::Device& device,
+		Window& window);
 
 	/* ========================================================================= */
 
-	VkFormat							findDepthFormat(scop::core::Device& device);
+	VkFormat							findDepthFormat(core::Device& device);
 
 	/* ========================================================================= */
 
@@ -85,10 +86,10 @@ private:
 	/* ========================================================================= */
 
 	void								_createSwapChain(
-		scop::core::Device& device,
-		scop::Window& window);
+		core::Device& device,
+		Window& window);
 	void								_createImages(
-		scop::core::Device& device,
+		core::Device& device,
 		uint32_t& image_count);
 
 	VkSurfaceFormatKHR					_chooseSwapSurfaceFormat(
@@ -97,8 +98,8 @@ private:
 		const std::vector<VkPresentModeKHR>& available_present_modes) const noexcept;
 	VkExtent2D							_chooseSwapExtent(
 		VkSurfaceCapabilitiesKHR capabilities,
-		scop::Window& window) const;
+		Window& window) const;
 
 }; // class SwapChain
 
-} // namespace scop::gfx
+} // namespace scop

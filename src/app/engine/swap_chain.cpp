@@ -6,33 +6,31 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/02 19:40:11 by etran             #+#    #+#             */
-/*   Updated: 2023/08/11 23:09:42 by etran            ###   ########.fr       */
+/*   Updated: 2023/11/16 23:09:02 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "swap_chain.h"
 #include "window.h"
 #include "device.h"
-#include "render_pass.h"
 
 #include <algorithm> // std::clamp
 #include <stdexcept> // std::runtime_error
-#include <array> // std::array
 
-namespace scop::gfx {
+namespace scop {
 
 /* ========================================================================== */
 /*                                   PUBLIC                                   */
 /* ========================================================================== */
 
 void	SwapChain::init(
-	scop::core::Device& device,
-	scop::Window& window
+	core::Device& device,
+	Window& window
 ) {
 	_createSwapChain(device, window);
 }
 
-void	SwapChain::destroy(scop::core::Device& device) {
+void	SwapChain::destroy(core::Device& device) {
 	for (std::size_t i = 0; i < _image_views.size(); ++i) {
 		vkDestroyImageView(
 			device.getLogicalDevice(),
@@ -44,8 +42,8 @@ void	SwapChain::destroy(scop::core::Device& device) {
 }
 
 void	SwapChain::update(
-	scop::core::Device& device,
-	scop::Window& window
+	core::Device& device,
+	Window& window
 ) {
 	window.pause();
 	device.idle();
@@ -59,7 +57,7 @@ void	SwapChain::update(
 /**
  * @brief Find a depth format for the wanted features.
 */
-VkFormat	SwapChain::findDepthFormat(scop::core::Device& device) {
+VkFormat	SwapChain::findDepthFormat(core::Device& device) {
 	return device.findSupportedFormat({
 			VK_FORMAT_D32_SFLOAT,
 			VK_FORMAT_D32_SFLOAT_S8_UINT,
@@ -96,10 +94,10 @@ const std::vector<VkImageView>&	SwapChain::getImageViews() const noexcept {
 /* ========================================================================== */
 
 void	SwapChain::_createSwapChain(
-	scop::core::Device& device,
-	scop::Window& window
+	core::Device& device,
+	Window& window
 ) {
-	scop::core::Device::SwapChainSupportDetails	swap_chain_support =
+	core::Device::SwapChainSupportDetails	swap_chain_support =
 		device.querySwapChainSupport();
 
 	// Setup options for functionning swap chain
@@ -135,7 +133,7 @@ void	SwapChain::_createSwapChain(
 	// Queue family swap handling:
 	// - gfx queue -> drawing to swap chain
 	// - present queue -> get passed the swap chain to be submitted
-	scop::core::Device::QueueFamilyIndices	indices = device.findQueueFamilies();
+	core::Device::QueueFamilyIndices	indices = device.findQueueFamilies();
 	uint32_t			queue_family_indices[] = {
 		indices.graphics_family.value(),
 		indices.present_family.value()
@@ -172,7 +170,7 @@ void	SwapChain::_createSwapChain(
 /**
  * @brief Retrieve VkImage handles from the swap chain and create image views.
 */
-void	SwapChain::_createImages(scop::core::Device& device, uint32_t& image_count) {
+void	SwapChain::_createImages(core::Device& device, uint32_t& image_count) {
 	// Retrieve VkImage handles
 	vkGetSwapchainImagesKHR(
 		device.getLogicalDevice(),
@@ -249,7 +247,7 @@ VkPresentModeKHR	SwapChain::_chooseSwapPresentMode(
 */
 VkExtent2D	SwapChain::_chooseSwapExtent(
 	VkSurfaceCapabilitiesKHR capabilities,
-	scop::Window& window
+	Window& window
 ) const {
 	// Pick swap extent (~ resolution of the window, in px)
 	if (capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max()) {
@@ -277,4 +275,4 @@ VkExtent2D	SwapChain::_chooseSwapExtent(
 	}
 }
 
-} // namespace scop::gfx
+} // namespace scop

@@ -1,87 +1,81 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   input_handler.h                                    :+:      :+:    :+:   */
+/*   descriptor_pool.h                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/06/04 17:15:01 by etran             #+#    #+#             */
-/*   Updated: 2023/11/16 22:54:06 by etran            ###   ########.fr       */
+/*   Created: 2023/06/04 17:14:18 by etran             #+#    #+#             */
+/*   Updated: 2023/11/16 22:05:23 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
+// Graphics
+# include <vulkan/vulkan.h>
+
 // Std
-# include <memory>
-
-# include "bounding_frustum.h"
-# include "chunk_macros.h"
-
-namespace vox {
-class GameState;
-class World;
-}
+# include <vector> // std::vector
+# include <memory> // std::shared_ptr
 
 namespace scop::core {
 class Device;
 }
 
 namespace scop::gfx {
-class TextureHandler;
-}
 
-namespace scop {
+class DescriptorSet;
 
-class InputHandler {
+class DescriptorPool final {
 public:
 	/* ========================================================================= */
 	/*                                  TYPEDEFS                                 */
 	/* ========================================================================= */
 
-	using TextureHandlerPtr = std::shared_ptr<gfx::TextureHandler>;
+	using DescriptorSetPtr = std::shared_ptr<DescriptorSet>;
 
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
 
-	InputHandler() = default;
-	InputHandler(InputHandler&& x) = default;
-	InputHandler&	operator=(InputHandler&& x) = default;
-	~InputHandler() = default;
+	DescriptorPool() = default;
+	~DescriptorPool() = default;
 
-	InputHandler(const InputHandler& x) = delete;
-	InputHandler&	operator=(const InputHandler& x) = delete;
-
-	/* ========================================================================= */
-
-	void				init(core::Device& device, const vox::GameState& game);
-	void				destroy(core::Device& device);
-
-	void				updateVisibleChunks(
-		core::Device& device,
-		const gfx::BoundingFrustum::Camera& camera,
-		const vox::World& world);
+	DescriptorPool(DescriptorPool&& other) = delete;
+	DescriptorPool(const DescriptorPool& other) = delete;
+	DescriptorPool&	operator=(DescriptorPool&& other) = delete;
+	DescriptorPool&	operator=(const DescriptorPool& other) = delete;
 
 	/* ========================================================================= */
 
-	uint32_t			getVerticesCount() const noexcept;
-	uint32_t			getInstancesCount() const noexcept;
-	TextureHandlerPtr	getHeightMap() const noexcept;
-	TextureHandlerPtr	getChunkMap() const noexcept;
+	void				init(
+		scop::core::Device& device,
+		const std::vector<DescriptorSetPtr>& sets);
+	void				destroy(scop::core::Device& device);
+
+	/* ========================================================================= */
+
+	static VkDescriptorPool	getPool() noexcept;
 
 private:
 	/* ========================================================================= */
 	/*                               CLASS MEMBERS                               */
 	/* ========================================================================= */
 
-	TextureHandlerPtr		_height_map;
-	TextureHandlerPtr		_chunk_map;
+	static VkDescriptorPool	_pool;
 
-	gfx::BoundingFrustum	_frustum;
-	uint32_t				_instances_count = 25;
-	uint32_t				_vertices_count = CHUNK_AREA * 36;
+	/* ========================================================================= */
+	/*                                  METHODS                                  */
+	/* ========================================================================= */
 
-}; // class InputHandler
+	void				_createDescriptorPool(
+		scop::core::Device& device,
+		const std::vector<DescriptorSetPtr>& sets);
+	void				_allocateSets(
+		scop::core::Device& device,
+		const std::vector<DescriptorSetPtr>& sets);
 
-} // namespace scop
+}; // class DescriptorPool
+
+} // namespace scop::gfx

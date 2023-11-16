@@ -6,34 +6,32 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/02 16:09:44 by etran             #+#    #+#             */
-/*   Updated: 2023/11/10 17:34:26 by etran            ###   ########.fr       */
+/*   Updated: 2023/11/16 23:40:57 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "engine.h"
 #include "window.h"
 #include "uniform_buffer_object.h"
-#include "descriptor_set.h"
-#include "image_handler.h"
 #include "timer.h"
 #include "utils.h"
+#include "world_macros.h"
+#include "shadowmap_consts.h"
 
+// Vox
 #include "chunk.h"
 #include "game_state.h"
 
+// Gfx
+#include "texture_handler.h"
+#include "target.h"
+#include "descriptor_set.h"
+#include "render_pass.h"
+// Renderer
 #include "scene_pipeline.h"
 #include "shadows_pipeline.h"
-#include "shadows_texture_handler.h"
-
-#include "world_macros.h"
 
 #include <cstring> // std::strcmp
-
-using UniformBufferObject = ::scop::UniformBufferObject;
-using GameState = ::vox::GameState;
-using Window = scop::Window;
-using Chunk = ::vox::Chunk;
-using Mesh = ::vox::Mesh;
 
 using Vertex = ::vox::Vertex;
 using Mat4 = ::scop::Mat4;
@@ -50,7 +48,7 @@ using gfx::TargetInfo;
 /*                                   PUBLIC                                   */
 /* ========================================================================== */
 
-void	Engine::init(scop::Window& window, const GameState& game) {
+void	Engine::init(Window& window, const vox::GameState& game) {
 	_pipelines.scene = std::make_shared<ScenePipeline>();
 	_pipelines.shadows = std::make_shared<ShadowsPipeline>();
 
@@ -123,7 +121,7 @@ void	Engine::idle() {
 }
 
 void	Engine::render(
-	scop::Window& window,
+	Window& window,
 	const vox::GameState& game,
 	Timer& timer
 ) {
@@ -242,7 +240,7 @@ void	Engine::_createGraphicsPipelines() {
 
 	rp_info.width = SHADOWMAP_SIZE;
 	rp_info.height = SHADOWMAP_SIZE;
-	rp_info.depth_format = DEPTH_FORMAT;
+	rp_info.depth_format = SHADOWMAP_DEPTH_FORMAT;
 	rp_info.depth_samples = VK_SAMPLE_COUNT_1_BIT;
 
 	_pipelines.shadows->init(
@@ -444,7 +442,7 @@ void	Engine::_createSyncObjects() {
 /**
  * @brief Update presentation objects to match window size.
 */
-void	Engine::_updatePresentation(scop::Window& window) {
+void	Engine::_updatePresentation(Window& window) {
 	_swap_chain.update(_core.getDevice(), window);
 
 	RenderPassInfo	rp_info {
@@ -460,7 +458,7 @@ void	Engine::_updatePresentation(scop::Window& window) {
 	_pipelines.scene->getTarget()->update(_core.getDevice(), tar_info);
 }
 
-UniformBufferObject	Engine::_updateUbo(const GameState& game) {
+UniformBufferObject	Engine::_updateUbo(const vox::GameState& game) {
 	UniformBufferObject	ubo{};
 
 	const ::vox::Player& player = game.getPlayer();
@@ -487,7 +485,7 @@ UniformBufferObject	Engine::_updateUbo(const GameState& game) {
 		ubo.camera.vp = projection * view;
 		_input_handler.updateVisibleChunks(
 			_core.getDevice(),
-			BoundingFrustum::Camera{player.getPosition(), front, right, up},
+			gfx::BoundingFrustum::Camera{player.getPosition(), front, right, up},
 			game.getWorld());
 	}
 	{	/* UPDATE LIGHT AND PROJECTOR ============================================== */

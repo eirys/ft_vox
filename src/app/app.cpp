@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/28 11:12:12 by eli               #+#    #+#             */
-/*   Updated: 2023/09/15 16:12:36 by etran            ###   ########.fr       */
+/*   Updated: 2023/11/16 23:25:50 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -151,19 +151,6 @@ void	App::updateCameraDir(float x, float y) noexcept {
 */
 void	App::_updateGame() {
 	_game.setCameraPos(_movement);
-}
-
-void	App::_loadTerrain() {
-	using namespace vox;
-	LOG("Loading terrain...");
-
-	// WorldGenerator	generator(42);
-	// World			world = generator.generate();
-	// vox::PerlinNoise::PerlinMesh	mesh = generator.toPerlinMesh();
-
-	// _vertices = std::move(mesh.vertices);
-	// _indices = std::move(mesh.indices);
-	LOG("Terrain loaded.");
 }
 
 } // namespace scop

@@ -6,12 +6,13 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/18 17:42:36 by etran             #+#    #+#             */
-/*   Updated: 2023/10/28 12:58:05 by etran            ###   ########.fr       */
+/*   Updated: 2023/11/16 23:26:44 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "world.h"
 #include "perlin_noise.h"
+#include "utils.h"
 
 #include <cstring> // memcpy
 #include <cassert> // assert
@@ -27,6 +28,7 @@ World::World(
 	std::size_t width,
 	std::size_t height
 ) {
+	LOG("Generating world...");
 	_origin.x = static_cast<float>(width) / 2;
 	_origin.z = static_cast<float>(height) / 2;
 
@@ -36,6 +38,7 @@ World::World(
 	_origin.y = noise_value + BLOCK_SIZE;
 
 	_generateChunks(noise);
+	LOG("World generated.");
 }
 
 World::World(World&& other) {

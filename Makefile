@@ -6,7 +6,7 @@
 #    By: etran <etran@student.42.fr>                +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/04/06 03:40:09 by eli               #+#    #+#              #
-#    Updated: 2023/11/10 14:47:16 by etran            ###   ########.fr        #
+#    Updated: 2023/11/16 22:56:32 by etran            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -14,47 +14,63 @@
 #                                    TARGETS                                   #
 # ============================================================================ #
 
-# final binary
+# ---------------- FINAL BINARY ---------------- #
 NAME		:=	ft_vox
 
-# directory names
+# --------------- DIRECTORY NAMES -------------- #
 SRC_DIR		:=	src
 OBJ_DIR		:=	obj
 SHD_DIR		:=	shaders
 
-# subdirectories
-TOOLS_DIR	:=	tools
+# main
 APP_DIR		:=	app
+
+# engine
 ENG_DIR		:=	$(APP_DIR)/engine
+CORE_DIR	:=	$(ENG_DIR)/core
+GFX_DIR		:=	$(ENG_DIR)/gfx
 OPTIM_DIR	:=	$(ENG_DIR)/optimization
-SCENE_DIR	:=	$(ENG_DIR)/scene
-SHADOW_DIR	:=	$(ENG_DIR)/shadows
+
+# renderers
+REN_DIR		:=	$(GFX_DIR)/renderers
+SCENE_DIR	:=	$(REN_DIR)/scene
+SHADOW_DIR	:=	$(REN_DIR)/shadows
+
 CULL_DIR	:=	$(OPTIM_DIR)/culling
-UTILS_DIR	:=	$(APP_DIR)/utils
+
+# gameplay
 GAME_DIR	:=	$(APP_DIR)/gameplay
 GEN_DIR		:=	$(APP_DIR)/generation
 CHAR_DIR	:=	$(GAME_DIR)/character
+
+# other
+UTILS_DIR	:=	$(APP_DIR)/utils
 IMG_DIR		:=	$(UTILS_DIR)/img
 MODEL_DIR	:=	$(UTILS_DIR)/model
+TOOLS_DIR	:=	tools
 
-SUBDIRS		:=	$(APP_DIR) \
-				$(TOOLS_DIR) \
-				$(GAME_DIR) \
-				$(CHAR_DIR) \
-				$(ENG_DIR) \
-				$(OPTIM_DIR) \
-				$(CULL_DIR) \
-				$(SCENE_DIR) \
-				$(SHADOW_DIR) \
-				$(MODEL_DIR) \
-				$(UTILS_DIR) \
-				$(GEN_DIR) \
-				$(IMG_DIR)
+# ---------------- SUBDIRECTORIES -------------- #
+SUBDIRS		:=	$(APP_DIR)		\
+				$(ENG_DIR)		\
+				$(CORE_DIR)		\
+				$(GFX_DIR)		\
+				$(OPTIM_DIR)	\
+				$(REN_DIR)		\
+				$(SCENE_DIR)	\
+				$(SHADOW_DIR)	\
+				$(CULL_DIR)		\
+				$(GAME_DIR)		\
+				$(GEN_DIR)		\
+				$(CHAR_DIR)		\
+				$(UTILS_DIR)	\
+				$(IMG_DIR)		\
+				$(MODEL_DIR)	\
+				$(TOOLS_DIR)
 
 OBJ_SUBDIRS	:=	$(addprefix $(OBJ_DIR)/,$(SUBDIRS))
 INC_SUBDIRS	:=	$(addprefix $(SRC_DIR)/,$(SUBDIRS))
 
-# cpp files
+# ---------------- SOURCE FILES ---------------- #
 SRC_FILES	:=	$(TOOLS_DIR)/matrix.cpp \
 				$(MODEL_DIR)/model.cpp \
 				$(MODEL_DIR)/parser.cpp \
@@ -74,23 +90,24 @@ SRC_FILES	:=	$(TOOLS_DIR)/matrix.cpp \
 				$(CHAR_DIR)/character.cpp \
 				$(CHAR_DIR)/player.cpp \
 				$(ENG_DIR)/window.cpp \
-				$(ENG_DIR)/debug_module.cpp \
-				$(ENG_DIR)/device.cpp \
-				$(ENG_DIR)/pipeline.cpp \
 				$(ENG_DIR)/swap_chain.cpp \
-				$(ENG_DIR)/render_pass.cpp \
-				$(ENG_DIR)/descriptor_pool.cpp \
-				$(ENG_DIR)/descriptor_set.cpp \
-				$(ENG_DIR)/command_pool.cpp \
-				$(ENG_DIR)/texture_handler.cpp \
-				$(ENG_DIR)/map_texture_handler.cpp \
-				$(ENG_DIR)/chunk_texture_handler.cpp \
-				$(ENG_DIR)/target.cpp \
 				$(ENG_DIR)/input_handler.cpp \
 				$(ENG_DIR)/engine.cpp \
-				$(ENG_DIR)/buffer.cpp \
-				$(ENG_DIR)/command_buffer.cpp \
-				$(ENG_DIR)/image_buffer.cpp \
+				$(CORE_DIR)/debug_module.cpp \
+				$(CORE_DIR)/device.cpp \
+				$(CORE_DIR)/core.cpp \
+				$(GFX_DIR)/pipeline.cpp \
+				$(GFX_DIR)/descriptor_pool.cpp \
+				$(GFX_DIR)/descriptor_set.cpp \
+				$(GFX_DIR)/command_pool.cpp \
+				$(GFX_DIR)/render_pass.cpp \
+				$(GFX_DIR)/target.cpp \
+				$(GFX_DIR)/buffer.cpp \
+				$(GFX_DIR)/command_buffer.cpp \
+				$(GFX_DIR)/image_buffer.cpp \
+				$(GFX_DIR)/texture_handler.cpp \
+				$(GFX_DIR)/map_texture_handler.cpp \
+				$(GFX_DIR)/chunk_texture_handler.cpp \
 				$(CULL_DIR)/bounding_box.cpp \
 				$(CULL_DIR)/bounding_frustum.cpp \
 				$(SCENE_DIR)/scene_render_pass.cpp \
@@ -110,15 +127,6 @@ SRC			:=	$(addprefix $(SRC_DIR)/,$(SRC_FILES))
 OBJ			:=	$(addprefix $(OBJ_DIR)/,$(SRC_FILES:.cpp=.o))
 DEP			:=	$(addprefix $(OBJ_DIR)/,$(SRC_FILES:.cpp=.d))
 
-# shaders
-SHD_FILES	:=	scene.fragment \
-				scene.vertex \
-				shadow.vertex
-
-SHD			:=	$(addprefix $(SHD_DIR)/,$(SHD_FILES))
-SHD_BIN		:=	$(addsuffix .spv,$(SHD))
-
-# compiler
 CXX			:=	clang++
 EXTRA		:=	-Wall -Werror -Wextra
 INCLUDES	:=	$(addprefix -I./,$(INC_SUBDIRS))
@@ -145,7 +153,15 @@ LDFLAGS		:=	-lglfw \
 				-lXrandr \
 				-lXi
 
-# misc
+# ------------------- SHADERS ------------------ #
+SHD_FILES	:=	scene.fragment \
+				scene.vertex \
+				shadow.vertex
+
+SHD			:=	$(addprefix $(SHD_DIR)/,$(SHD_FILES))
+SHD_BIN		:=	$(addsuffix .spv,$(SHD))
+
+# -------------------- MISC -------------------- #
 GLSLC		:=	glslc
 RM			:=	rm -rf
 

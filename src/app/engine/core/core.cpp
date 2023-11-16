@@ -6,12 +6,18 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/10 17:27:51 by etran             #+#    #+#             */
-/*   Updated: 2023/11/10 17:29:52 by etran            ###   ########.fr       */
+/*   Updated: 2023/11/16 23:47:11 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "core.h"
 
+#ifndef GLFW_INCLUDE_VULKAN
+# define GLFW_INCLUDE_VULKAN
+#endif
+#include <GLFW/glfw3.h>
+
+#include <cstring>
 #include <stdexcept> // std::runtime_error
 
 namespace scop::core {

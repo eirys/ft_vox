@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:14:35 by etran             #+#    #+#             */
-/*   Updated: 2023/11/10 17:30:55 by etran            ###   ########.fr       */
+/*   Updated: 2023/11/16 23:46:15 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,8 +19,8 @@
 // # include "device.h"
 # include "core.h"
 # include "swap_chain.h"
-# include "texture_handler.h"
-# include "pipeline.h"
+// # include "texture_handler.h"
+// # include "pipeline.h"
 
 # include "descriptor_pool.h"
 # include "command_pool.h"
@@ -32,8 +32,13 @@ namespace vox {
 class GameState;
 }
 
+namespace scop::gfx {
+class Pipeline;
+}
 namespace scop {
+
 class Timer;
+struct UniformBufferObject;
 
 class Engine {
 public:
@@ -41,13 +46,10 @@ public:
 	/*                                  TYPEDEFS                                 */
 	/* ========================================================================= */
 
-	using Texture = gfx::TextureHandler::Texture;
 	using PipelinePtr = std::shared_ptr<gfx::Pipeline>;
 	using TextureHandlerPtr = std::shared_ptr<gfx::TextureHandler>;
 
 	using UniformBufferObject = scop::UniformBufferObject;
-	using GameState = vox::GameState;
-	using Window = scop::Window;
 
 	/* ========================================================================= */
 	/*                               CONST MEMBERS                               */
@@ -69,7 +71,7 @@ public:
 
 	/* ========================================================================= */
 
-	void						init(Window& window, const GameState& game);
+	void						init(Window& window, const vox::GameState& game);
 	void						destroy();
 
 	void						idle();
@@ -84,15 +86,13 @@ private:
 	/* ========================================================================= */
 
 	core::Core					_core;
-	gfx::SwapChain				_swap_chain;
-	core::CommandBuffer			_draw_buffer;
 
-	core::DescriptorPool		_descriptor_pool;
-	core::CommandPool			_command_pool;
+	SwapChain					_swap_chain;
+	InputHandler				_input_handler;
 
-	VkSemaphore					_image_available_semaphores;
-	VkSemaphore					_render_finished_semaphores;
-	VkFence						_in_flight_fences;
+	gfx::CommandBuffer			_draw_buffer;
+	gfx::DescriptorPool			_descriptor_pool;
+	gfx::CommandPool			_command_pool;
 
 	VkPipelineLayout			_pipeline_layout;
 	struct {
@@ -100,7 +100,9 @@ private:
 		PipelinePtr				shadows;
 	}							_pipelines;
 
-	gfx::InputHandler			_input_handler;
+	VkSemaphore					_image_available_semaphores;
+	VkSemaphore					_render_finished_semaphores;
+	VkFence						_in_flight_fences;
 
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
@@ -113,7 +115,7 @@ private:
 	void						_createSyncObjects();
 	void						_createDescriptors();
 
-	UniformBufferObject			_updateUbo(const GameState& game);
+	UniformBufferObject			_updateUbo(const vox::GameState& game);
 	void						_updatePresentation(Window& window);
 
 }; // class Engine

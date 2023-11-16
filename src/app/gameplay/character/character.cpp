@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/05 09:57:24 by etran             #+#    #+#             */
-/*   Updated: 2023/09/22 16:58:00 by etran            ###   ########.fr       */
+/*   Updated: 2023/11/17 00:09:23 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,14 +39,15 @@ Character::Character(
  * @param input	The input vector, containing the movement on each axis.
 */
 void	Character::move(const scop::Vect3& input) noexcept {
-	static const scop::Vect3	y_axis = scop::Vect3(VOX_UP_VECTOR);
-	const scop::Vect3	side = scop::normalize(
-		scop::cross(_eye_dir, y_axis)
-	);
-	_position = scop::fma(
-		_eye_dir,
-		input.z,
-		scop::fma(y_axis, input.y, scop::fma(side, input.x, _position)));
+	static const scop::Vect3	world_up = scop::Vect3(VOX_UP_VECTOR);
+	const scop::Vect3			right = scop::normalize(scop::cross(_eye_dir, world_up));
+	// const scop::Vect3			up = scop::cross(right, _eye_dir);
+
+	const scop::Vect3 moveRight = scop::fma(right, input.x, std::move(_position));
+	const scop::Vect3 moveUp = scop::fma(world_up, input.y, std::move(moveRight));
+	const scop::Vect3 moveForward = scop::fma(_eye_dir, input.z, std::move(moveUp));
+
+	_position = std::move(moveForward);
 }
 
 /**
@@ -59,8 +60,8 @@ void	Character::updateEyeDir(float yaw, float pitch) noexcept {
 	_camera.yaw = std::fma(yaw, _cam_speed, _camera.yaw);
 
 	// Clamp to avoid camera flipping.
-	_camera.pitch = std::clamp(
-		std::fma(pitch, _cam_speed, _camera.pitch), -89.0f, 89.0f);
+	const float cam_angle = std::fma(pitch, _cam_speed, _camera.pitch);
+	_camera.pitch = std::clamp(std::move(cam_angle) , -89.0f, 89.0f);
 	_eye_dir = scop::normalize(_camera.toVector());
 }
 

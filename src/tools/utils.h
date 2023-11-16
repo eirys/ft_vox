@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:16:25 by etran             #+#    #+#             */
-/*   Updated: 2023/07/05 22:10:14 by etran            ###   ########.fr       */
+/*   Updated: 2023/11/16 22:30:48 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,36 +14,23 @@
 
 // Std
 # include <cmath>
-# include <random>
 # include <fstream>
 # include <vector>
-# include <iostream>
-# include <cstring>
 
-# define __NL std::endl
+# ifdef __LINUX
+# define __NL "\n"
+# else
+# define __NL "\r\n"
+# endif
 
 # ifdef __DEBUG
+#  include <iostream>
 #  define LOG(X) std::cerr << X << __NL
 # else
 #  define LOG(X)
 # endif
 
-# include "vector.h"
-# include "vertex.h"
-
-namespace scop {
-namespace utils {
-
-/**
- * @brief If true, the system is big endian.
-*/
-const bool	big_endian = []() -> bool {
-	const int	value = 0x01;
-	const void*	address = static_cast<const void *>(&value);
-	const unsigned char*	least_significant_address =
-		static_cast<const unsigned char*>(address);
-	return *least_significant_address != 0x01;
-}();
+namespace scop::utils {
 
 /**
  * Read binary file and return in vector of char format.
@@ -64,5 +51,4 @@ inline std::vector<uint8_t>	readFile(const std::string& filename) {
 	return buffer;
 }
 
-} // namespace utils
-} // namespace scop
+} // namespace scop::utils

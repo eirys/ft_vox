@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/05 09:55:33 by etran             #+#    #+#             */
-/*   Updated: 2023/09/25 14:14:46 by etran            ###   ########.fr       */
+/*   Updated: 2023/11/17 00:01:25 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -89,7 +89,7 @@ protected:
 	/* ========================================================================= */
 
 	scop::Vect3			_position = {0.0f, 0.0f, 0.0f};
-	scop::Vect3			_eye_dir = {0.0f, 0.0f, 0.0f};
+	scop::Vect3			_eye_dir = {0.0f, 0.0f, 1.0f};
 	Character::Camera	_camera;
 	float				_cam_speed = VOX_CAMERA_SPEED;
 
