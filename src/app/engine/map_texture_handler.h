@@ -15,7 +15,7 @@
 # include "texture_handler.h"
 # include "chunk_macros.h"
 
-namespace scop::graphics {
+namespace scop::gfx {
 
 /**
  * @brief Contains data for chunk presence.
@@ -70,4 +70,4 @@ private:
 
 }; // class MapTextureHandler
 
-} // namespace scop::graphics
+} // namespace scop::gfx

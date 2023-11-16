@@ -13,39 +13,38 @@
 #pragma once
 
 // Graphics
-# ifndef GLFW_INCLUDE_VULKAN
-#  define GLFW_INCLUDE_VULKAN
-# endif
+# include <vulkan/vulkan.h>
 
-# include <GLFW/glfw3.h>
-
-namespace scop::graphics {
-
+namespace scop::core {
 class Device;
 class Pipeline;
+}
+
+namespace scop::gfx {
+
 class SwapChain;
 class ImageBuffer;
 
+/* ========================================================================= */
+/*                               HELPER OBJECTS                              */
+/* ========================================================================= */
+
+/**
+ * @brief Render pass creation info.
+*/
+struct RenderPassInfo {
+	uint32_t width;
+	uint32_t height;
+	VkFormat depth_format;
+	VkSampleCountFlagBits depth_samples;
+	VkFormat color_format;
+	VkSampleCountFlagBits color_samples;
+
+	const ImageBuffer*	texture_buffer;
+};
+
 class RenderPass {
 public:
-	/* ========================================================================= */
-	/*                               HELPER OBJECTS                              */
-	/* ========================================================================= */
-
-	/**
-	 * @brief Render pass creation info.
-	*/
-	struct RenderPassInfo {
-		uint32_t width;
-		uint32_t height;
-		VkFormat depth_format;
-		VkSampleCountFlagBits depth_samples;
-		VkFormat color_format;
-		VkSampleCountFlagBits color_samples;
-
-		const ImageBuffer*	texture_buffer;
-	};
-
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
@@ -55,11 +54,11 @@ public:
 	/* ========================================================================= */
 
 	virtual void	init(
-		Device& device,
+		scop::core::Device& device,
 		const RenderPassInfo& rp_info) = 0;
-	virtual void	destroy(Device& device);
+	virtual void	destroy(scop::core::Device& device);
 	virtual void	updateResources(
-		Device& device,
+		scop::core::Device& device,
 		const RenderPassInfo& rp_info) = 0;
 
 	/* ========================================================================= */
@@ -92,9 +91,9 @@ protected:
 	/* ========================================================================= */
 
 	virtual void	_createRenderPass(
-		Device& device,
+		scop::core::Device& device,
 		const RenderPassInfo& create_info) = 0;
 
 }; // class RenderPass
 
-} // namespace scop::graphics
+} // namespace scop::gfx

@@ -34,7 +34,7 @@
 # define SHADOW_VERTEX_PATH "shaders/shadow_vert.spv"
 #endif
 
-namespace scop::graphics {
+namespace scop::gfx {
 
 /* ========================================================================== */
 /*                                   PUBLIC                                   */
@@ -49,8 +49,8 @@ ShadowsPipeline::ShadowsPipeline() {
 
 void	ShadowsPipeline::init(
 	Device& device,
-	RenderPass::RenderPassInfo& rp_info,
-	Target::TargetInfo& tar_info
+	RenderPassInfo& rp_info,
+	TargetInfo& tar_info
 ) {
 	super::_texture->init(device);
 	rp_info.texture_buffer = &(super::_texture->getTextureBuffer());
@@ -79,7 +79,7 @@ void	ShadowsPipeline::assemble(
 	info.renderPass = super::_render_pass->getRenderPass();
 
 	if (vkCreateGraphicsPipelines(device.getLogicalDevice(), VK_NULL_HANDLE, 1, &info, nullptr, &(super::_pipeline)) != VK_SUCCESS) {
-		throw std::runtime_error("failed to create shadow graphics pipeline");
+		throw std::runtime_error("failed to create shadow gfx pipeline");
 	}
 
 	vkDestroyShaderModule(
@@ -169,4 +169,4 @@ void	ShadowsPipeline::_beginRenderPass(
 		VK_SUBPASS_CONTENTS_INLINE);
 }
 
-} // namespace scop::graphics
+} // namespace scop::gfx

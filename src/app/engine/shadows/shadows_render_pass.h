@@ -15,7 +15,7 @@
 # include "render_pass.h"
 # include "image_buffer.h"
 
-namespace scop::graphics {
+namespace scop::gfx {
 
 class Device;
 class SwapChain;
@@ -77,4 +77,4 @@ private:
 
 }; // class ShadowsRenderPass
 
-} // namespace scop::graphics
+} // namespace scop::gfx

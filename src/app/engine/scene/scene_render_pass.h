@@ -15,9 +15,12 @@
 # include "render_pass.h"
 # include "image_buffer.h"
 
-namespace scop::graphics {
-
+namespace scop::core {
 class Device;
+}
+
+namespace scop::gfx {
+
 class SwapChain;
 
 class SceneRenderPass final: public RenderPass {
@@ -43,12 +46,12 @@ public:
 	/* ========================================================================= */
 
 	void		init(
-		Device& device,
-		const super::RenderPassInfo& rp_info) override;
-	void		destroy(Device& device) override;
+		scop::core::Device& device,
+		const RenderPassInfo& rp_info) override;
+	void		destroy(scop::core::Device& device) override;
 	void		updateResources(
-		Device& device,
-		const super::RenderPassInfo& rp_info) override;
+		scop::core::Device& device,
+		const RenderPassInfo& rp_info) override;
 
 	/* ========================================================================= */
 
@@ -56,32 +59,32 @@ public:
 	using super::getWidth;
 	using super::getHeight;
 
-	const ImageBuffer&	getColorResource() const noexcept;
-	ImageBuffer&		getColorResource() noexcept;
-	const ImageBuffer&	getDepthResource() const noexcept;
-	ImageBuffer&		getDepthResource() noexcept;
+	const scop::core::ImageBuffer&	getColorResource() const noexcept;
+	scop::core::ImageBuffer&		getColorResource() noexcept;
+	const scop::core::ImageBuffer&	getDepthResource() const noexcept;
+	scop::core::ImageBuffer&		getDepthResource() noexcept;
 
 private:
 	/* ========================================================================= */
 	/*                               CLASS MEMBERS                               */
 	/* ========================================================================= */
 
-	ImageBuffer	_color_image;
-	ImageBuffer	_depth_image;
+	scop::core::ImageBuffer			_color_image;
+	scop::core::ImageBuffer			_depth_image;
 
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
 
 	void		_createRenderPass(
-		Device& device,
-		const super::RenderPassInfo& create_info) override;
+		scop::core::Device& device,
+		const RenderPassInfo& create_info) override;
 	void		_createResources(
-		Device& device,
-		const super::RenderPassInfo& create_info);
+		scop::core::Device& device,
+		const RenderPassInfo& create_info);
 
-	void		_destroyResources(Device& device);
+	void		_destroyResources(scop::core::Device& device);
 
 }; // class SceneRenderPass
 
-} // namespace scop::graphics
+} // namespace scop::gfx

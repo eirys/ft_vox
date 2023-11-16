@@ -31,7 +31,7 @@
 
 using UniformBufferObject = ::scop::UniformBufferObject;
 using GameState = ::vox::GameState;
-using Window = ::scop::Window;
+using Window = scop::Window;
 using Chunk = ::vox::Chunk;
 using Mesh = ::vox::Mesh;
 
@@ -39,84 +39,97 @@ using Vertex = ::vox::Vertex;
 using Mat4 = ::scop::Mat4;
 using Camera = ::scop::Camera;
 
-namespace scop::graphics {
+namespace scop {
+
+using gfx::ScenePipeline;
+using gfx::ShadowsPipeline;
+using gfx::RenderPassInfo;
+using gfx::TargetInfo;
 
 /* ========================================================================== */
 /*                                   PUBLIC                                   */
 /* ========================================================================== */
 
-void	Engine::init(::scop::Window& window, const GameState& game) {
+void	Engine::init(scop::Window& window, const GameState& game) {
 	_pipelines.scene = std::make_shared<ScenePipeline>();
 	_pipelines.shadows = std::make_shared<ShadowsPipeline>();
 
-	_createInstance();
-	_debug_module.init(_vk_instance);
-	_device.init(window, _vk_instance);
-	_swap_chain.init(_device, window);
-	_command_pool.init(_device);
+	// _createInstance();
+	// _debug_module.init(_vk_instance);
+	// _core.getDevice().init(window, _vk_instance);
 
-	_input_handler.init(_device, game);
+	_core.init(window);
+
+	core::Device&	device = _core.getDevice();
+
+	_swap_chain.init(device, window);
+	_command_pool.init(device);
+
+	_input_handler.init(device, game);
 
 	_createGraphicsPipelines();
 	_createGraphicsPipelineLayout();
 	_assembleGraphicsPipelines();
 	_createDescriptors();
 
-	_draw_buffer.init(_device, _command_pool, max_frames_in_flight);
+	_draw_buffer.init(device, _command_pool, max_frames_in_flight);
 	_createSyncObjects();
 
 	_pipelines.scene->update(_updateUbo(game));
 }
 
 void	Engine::destroy() {
-	_swap_chain.destroy(_device);
-	_pipelines.scene->destroy(_device);
-	_pipelines.shadows->destroy(_device);
+	core::Device&	device = _core.getDevice();
 
-	_input_handler.destroy(_device);
+	_swap_chain.destroy(device);
+	_pipelines.scene->destroy(device);
+	_pipelines.shadows->destroy(device);
+
+	_input_handler.destroy(device);
 
 	vkDestroyPipelineLayout(
-		_device.getLogicalDevice(),
+		device.getLogicalDevice(),
 		_pipeline_layout,
 		nullptr);
 
-	_descriptor_pool.destroy(_device);
+	_descriptor_pool.destroy(device);
 
 	// Remove sync objects
 	vkDestroySemaphore(
-		_device.getLogicalDevice(),
+		device.getLogicalDevice(),
 		_image_available_semaphores,
 		nullptr);
 	vkDestroySemaphore(
-		_device.getLogicalDevice(),
+		device.getLogicalDevice(),
 		_render_finished_semaphores,
 		nullptr);
 	vkDestroyFence(
-		_device.getLogicalDevice(),
+		device.getLogicalDevice(),
 		_in_flight_fences,
 		nullptr);
 
-	_command_pool.destroy(_device);
+	_command_pool.destroy(device);
 
-	_device.destroy(_vk_instance);
-	_debug_module.destroy(_vk_instance);
-	vkDestroyInstance(_vk_instance, nullptr);
+	_core.destroy();
+	// _core.getDevice().destroy(_vk_instance);
+	// _debug_module.destroy(_vk_instance);
+	// vkDestroyInstance(_vk_instance, nullptr);
 }
 
 /* ========================================================================== */
 
 void	Engine::idle() {
-	_device.idle();
+	_core.getDevice().idle();
 }
 
 void	Engine::render(
-	::scop::Window& window,
+	scop::Window& window,
 	const vox::GameState& game,
 	Timer& timer
 ) {
 	// Wait fence available, lock it
 	vkWaitForFences(
-		_device.getLogicalDevice(),
+		_core.getDevice().getLogicalDevice(),
 		1, &_in_flight_fences,
 		VK_TRUE,
 		UINT64_MAX
@@ -125,7 +138,7 @@ void	Engine::render(
 	// Next available image from swap chain
 	uint32_t	image_index;
 	VkResult	result = vkAcquireNextImageKHR(
-		_device.getLogicalDevice(),
+		_core.getDevice().getLogicalDevice(),
 		_swap_chain.getSwapChain(),
 		UINT64_MAX,
 		_image_available_semaphores,
@@ -139,7 +152,7 @@ void	Engine::render(
 	}
 
 	// Work is done, unlock fence
-	vkResetFences(_device.getLogicalDevice(), 1, &_in_flight_fences);
+	vkResetFences(_core.getDevice().getLogicalDevice(), 1, &_in_flight_fences);
 
 	// Record buffer
 	_draw_buffer.reset();
@@ -154,7 +167,7 @@ void	Engine::render(
 		_draw_buffer,
 		_input_handler,
 		image_index);
-	_draw_buffer.end(_device, false);
+	_draw_buffer.end(_core.getDevice(), false);
 
 	_pipelines.scene->update(_updateUbo(game));
 
@@ -173,8 +186,8 @@ void	Engine::render(
 	submit_info.commandBufferCount = 1;
 	submit_info.pCommandBuffers = reinterpret_cast<VkCommandBuffer*>(&_draw_buffer);
 
-	// Submit command buffer to be processed by graphics queue
-	if (vkQueueSubmit(_device.getGraphicsQueue(), 1, &submit_info, _in_flight_fences) != VK_SUCCESS) {
+	// Submit command buffer to be processed by gfx queue
+	if (vkQueueSubmit(_core.getDevice().getGraphicsQueue(), 1, &submit_info, _in_flight_fences) != VK_SUCCESS) {
 		throw std::runtime_error("failed to submit draw command buffer");
 	}
 
@@ -190,7 +203,7 @@ void	Engine::render(
 	present_info.pResults = nullptr;
 
 	// Submit to swap chain, check if swap chain is still compatible
-	result = vkQueuePresentKHR(_device.getPresentQueue(), &present_info);
+	result = vkQueuePresentKHR(_core.getDevice().getPresentQueue(), &present_info);
 	timer.update();
 
 	if (
@@ -210,69 +223,20 @@ void	Engine::render(
 /* ========================================================================== */
 
 /**
- * Create a Vulkan instance
-*/
-void	Engine::_createInstance() {
-	// Check if validation layers are available
-	if (DebugModule::enable_validation_layers && !_checkValidationLayerSupport())
-		throw std::runtime_error("validation layers not available");
-
-	// Provides information to driver
-	VkApplicationInfo	app_info{};
-
-	app_info.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-	app_info.pApplicationName = "Ft_Vox";
-	app_info.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
-	app_info.pEngineName = "No engine";
-	app_info.engineVersion = VK_MAKE_VERSION(1, 0, 0);
-	app_info.apiVersion = VK_API_VERSION_1_0;
-
-	// Pass those informations to the Vulkan driver
-	VkInstanceCreateInfo	create_info{};
-	create_info.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
-	create_info.pApplicationInfo = &app_info;
-
-	std::vector<const char*>	extensions = _getRequiredExtensions();
-	create_info.enabledExtensionCount = static_cast<uint32_t>(
-		extensions.size()
-	);
-	create_info.ppEnabledExtensionNames = extensions.data();
-
-	// Setup debug messenger to go along with the instance
-	VkDebugUtilsMessengerCreateInfoEXT	debug_create_info{};
-	if (DebugModule::enable_validation_layers) {
-		create_info.enabledLayerCount = static_cast<uint32_t>(
-			DebugModule::validation_layers.size()
-		);
-		create_info.ppEnabledLayerNames = DebugModule::validation_layers.data();
-		_debug_module.populate(debug_create_info);
-		create_info.pNext =
-			(VkDebugUtilsMessengerCreateInfoEXT*)&debug_create_info;
-	} else {
-		create_info.enabledLayerCount = 0;
-		create_info.pNext = nullptr;
-	}
-
-	// Create the instance
-	if (vkCreateInstance(&create_info, nullptr, &_vk_instance) != VK_SUCCESS)
-		throw std::runtime_error("failed to create _vk_instance");
-}
-
-/**
  * @brief Create generic pipeline createinfo
 */
 void	Engine::_createGraphicsPipelines() {
-	RenderPass::RenderPassInfo	rp_info {
+	RenderPassInfo	rp_info {
 		.width = _swap_chain.getExtent().width,
 		.height = _swap_chain.getExtent().height,
-		.depth_format = _swap_chain.findDepthFormat(_device),
-		.depth_samples = _device.getMsaaSamples(),
+		.depth_format = _swap_chain.findDepthFormat(_core.getDevice()),
+		.depth_samples = _core.getDevice().getMsaaSamples(),
 		.color_format = _swap_chain.getImageFormat(),
-		.color_samples = _device.getMsaaSamples() };
-	Target::TargetInfo	tar_info { .swap_chain = &_swap_chain };
+		.color_samples = _core.getDevice().getMsaaSamples() };
+	TargetInfo	tar_info { .swap_chain = &_swap_chain };
 
 	_pipelines.scene->init(
-		_device,
+		_core.getDevice(),
 		rp_info,
 		tar_info);
 
@@ -282,20 +246,20 @@ void	Engine::_createGraphicsPipelines() {
 	rp_info.depth_samples = VK_SAMPLE_COUNT_1_BIT;
 
 	_pipelines.shadows->init(
-		_device,
+		_core.getDevice(),
 		rp_info,
 		tar_info);
 }
 
 void	Engine::_createDescriptors() {
-	using DescriptorSetPtr = std::shared_ptr<DescriptorSet>;
+	using DescriptorSetPtr = std::shared_ptr<scop::gfx::DescriptorSet>;
 	using ScenePipelinePtr = std::shared_ptr<ScenePipeline>;
 	using ShadowsPipelinePtr = std::shared_ptr<ShadowsPipeline>;
 
 	std::vector<DescriptorSetPtr>	descriptors = {
 		_pipelines.scene->getDescriptor(),
 		_pipelines.shadows->getDescriptor() };
-	_descriptor_pool.init(_device, descriptors);
+	_descriptor_pool.init(_core.getDevice(), descriptors);
 
 	ScenePipelinePtr scene_pipeline =
 		std::dynamic_pointer_cast<ScenePipeline>(_pipelines.scene);
@@ -303,11 +267,11 @@ void	Engine::_createDescriptors() {
 		std::dynamic_pointer_cast<ShadowsPipeline>(_pipelines.shadows);
 
 	scene_pipeline->plugDescriptor(
-		_device,
+		_core.getDevice(),
 		shadows_pipeline->getTextureHandler(),
 		_input_handler);
 	shadows_pipeline->plugDescriptor(
-		_device,
+		_core.getDevice(),
 		scene_pipeline->getUbo(),
 		_input_handler);
 }
@@ -324,7 +288,7 @@ void	Engine::_createGraphicsPipelineLayout() {
 	pipeline_layout_info.pushConstantRangeCount = 0;
 	pipeline_layout_info.pPushConstantRanges = nullptr;
 
-	if (vkCreatePipelineLayout(_device.getLogicalDevice(), &pipeline_layout_info, nullptr, &_pipeline_layout) != VK_SUCCESS) {
+	if (vkCreatePipelineLayout(_core.getDevice().getLogicalDevice(), &pipeline_layout_info, nullptr, &_pipeline_layout) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create _pipeline layout");
 	}
 }
@@ -379,7 +343,7 @@ void	Engine::_assembleGraphicsPipelines() {
 	multisampling.pSampleMask = nullptr;
 	multisampling.alphaToCoverageEnable = VK_FALSE;
 	multisampling.alphaToOneEnable = VK_FALSE;
-	multisampling.rasterizationSamples = _device.getMsaaSamples();
+	multisampling.rasterizationSamples = _core.getDevice().getMsaaSamples();
 
 	/* COLOR BLENDING ========================================================== */
 	VkPipelineColorBlendAttachmentState	color_blend_attachment{};
@@ -447,14 +411,14 @@ void	Engine::_assembleGraphicsPipelines() {
 	pipeline_info.basePipelineHandle = VK_NULL_HANDLE;
 	pipeline_info.basePipelineIndex = -1;
 
-	_pipelines.scene->assemble(_device, pipeline_info);
+	_pipelines.scene->assemble(_core.getDevice(), pipeline_info);
 
 	color_blending.attachmentCount = 0;
 	rasterizing.cullMode = VK_CULL_MODE_NONE;
 	multisampling.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
 	depth_stencil.depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
 
-	_pipelines.shadows->assemble(_device, pipeline_info);
+	_pipelines.shadows->assemble(_core.getDevice(), pipeline_info);
 }
 
 /**
@@ -468,9 +432,9 @@ void	Engine::_createSyncObjects() {
 	fence_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
 	fence_info.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
-	if (vkCreateSemaphore(_device.getLogicalDevice(), &semaphore_info, nullptr, &_image_available_semaphores) != VK_SUCCESS ||
-		vkCreateSemaphore(_device.getLogicalDevice(), &semaphore_info, nullptr, &_render_finished_semaphores) != VK_SUCCESS ||
-		vkCreateFence(_device.getLogicalDevice(), &fence_info, nullptr, &_in_flight_fences) != VK_SUCCESS) {
+	if (vkCreateSemaphore(_core.getDevice().getLogicalDevice(), &semaphore_info, nullptr, &_image_available_semaphores) != VK_SUCCESS ||
+		vkCreateSemaphore(_core.getDevice().getLogicalDevice(), &semaphore_info, nullptr, &_render_finished_semaphores) != VK_SUCCESS ||
+		vkCreateFence(_core.getDevice().getLogicalDevice(), &fence_info, nullptr, &_in_flight_fences) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create semaphore");
 	}
 }
@@ -480,20 +444,20 @@ void	Engine::_createSyncObjects() {
 /**
  * @brief Update presentation objects to match window size.
 */
-void	Engine::_updatePresentation(::scop::Window& window) {
-	_swap_chain.update(_device, window);
+void	Engine::_updatePresentation(scop::Window& window) {
+	_swap_chain.update(_core.getDevice(), window);
 
-	RenderPass::RenderPassInfo	rp_info {
+	RenderPassInfo	rp_info {
 		.width = _swap_chain.getExtent().width,
 		.height = _swap_chain.getExtent().height,
-		.depth_format = _swap_chain.findDepthFormat(_device),
+		.depth_format = _swap_chain.findDepthFormat(_core.getDevice()),
 		.color_format = _swap_chain.getImageFormat() };
-	Target::TargetInfo	tar_info {
+	TargetInfo	tar_info {
 		.swap_chain = &_swap_chain,
 		.render_pass = _pipelines.scene->getRenderPass() };
 
-	_pipelines.scene->getRenderPass()->updateResources(_device, rp_info);
-	_pipelines.scene->getTarget()->update(_device, tar_info);
+	_pipelines.scene->getRenderPass()->updateResources(_core.getDevice(), rp_info);
+	_pipelines.scene->getTarget()->update(_core.getDevice(), tar_info);
 }
 
 UniformBufferObject	Engine::_updateUbo(const GameState& game) {
@@ -522,7 +486,7 @@ UniformBufferObject	Engine::_updateUbo(const GameState& game) {
 
 		ubo.camera.vp = projection * view;
 		_input_handler.updateVisibleChunks(
-			_device,
+			_core.getDevice(),
 			BoundingFrustum::Camera{player.getPosition(), front, right, up},
 			game.getWorld());
 	}
@@ -554,4 +518,4 @@ UniformBufferObject	Engine::_updateUbo(const GameState& game) {
 	return ubo;
 }
 
-} // namespace scop::graphics
+} // namespace scop

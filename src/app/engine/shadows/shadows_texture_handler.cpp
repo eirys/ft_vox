@@ -15,7 +15,7 @@
 
 #include <stdexcept> // std::invalid_argument
 
-namespace scop::graphics {
+namespace scop::gfx {
 
 /* ========================================================================== */
 /*                                   PUBLIC                                   */
@@ -76,4 +76,4 @@ void	ShadowsTextureHandler::_createTextureSampler(Device& device) {
 	}
 }
 
-} // namespace scop::graphics
+} // namespace scop::gfx

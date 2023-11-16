@@ -20,7 +20,7 @@
 #include <stdexcept> // std:runtime_error
 #include <array> // std::array
 
-namespace scop::graphics {
+namespace scop::gfx {
 
 /* ========================================================================== */
 /*                                   PUBLIC                                   */
@@ -132,4 +132,4 @@ void	ShadowsDescriptorSet::plug(
 	);
 }
 
-} // namespace scop::graphics
+} // namespace scop::gfx

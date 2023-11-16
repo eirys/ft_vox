@@ -13,12 +13,7 @@
 #pragma once
 
 // Graphics
-# ifndef GLFW_INCLUDE_VULKAN
-#  define GLFW_INCLUDE_VULKAN
-# endif
-
-// Window handler
-# include <GLFW/glfw3.h>
+# include <vulkan/vulkan.h>
 
 # include "game_state.h"
 # include "window.h"
@@ -51,7 +46,7 @@ public:
 	/*                                  TYPEDEFS                                 */
 	/* ========================================================================= */
 
-	typedef	graphics::TextureHandler::Texture	Texture;
+	typedef	gfx::TextureHandler::Texture	Texture;
 
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
@@ -83,7 +78,7 @@ private:
 
 	vox::GameState				_game;
 	scop::Window				_window;
-	scop::graphics::Engine		_engine;
+	scop::Engine				_engine;
 	Timer						_timer;
 
 	// Camera input

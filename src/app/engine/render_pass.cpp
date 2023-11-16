@@ -13,13 +13,13 @@
 #include "render_pass.h"
 #include "device.h"
 
-namespace scop::graphics {
+namespace scop::gfx {
 
 /* ========================================================================== */
 /*                                   PUBLIC                                   */
 /* ========================================================================== */
 
-void	RenderPass::destroy(Device& device) {
+void	RenderPass::destroy(scop::core::Device& device) {
 	vkDestroyRenderPass(device.getLogicalDevice(), _render_pass, nullptr);
 }
 
@@ -37,4 +37,4 @@ uint32_t	RenderPass::getHeight() const noexcept {
 	return _height;
 }
 
-} // namespace scop::graphics
+} // namespace scop::gfx

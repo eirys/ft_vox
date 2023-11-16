@@ -13,20 +13,19 @@
 #pragma once
 
 // Graphics
-# ifndef GLFW_INCLUDE_VULKAN
-#  define GLFW_INCLUDE_VULKAN
-# endif
-
-# include <GLFW/glfw3.h>
+# include <vulkan/vulkan.h>
 
 // Std
 # include <vector> // std::vector
 # include <memory> // std::shared_ptr
 
-namespace scop::graphics {
+namespace scop::gfx {
+class DescriptorSet;
+}
+
+namespace scop::core {
 
 class Device;
-class DescriptorSet;
 
 class DescriptorPool {
 public:
@@ -34,7 +33,7 @@ public:
 	/*                                  TYPEDEFS                                 */
 	/* ========================================================================= */
 
-	using DescriptorSetPtr = std::shared_ptr<DescriptorSet>;
+	using DescriptorSetPtr = std::shared_ptr<scop::gfx::DescriptorSet>;
 
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
@@ -77,4 +76,4 @@ private:
 
 }; // class DescriptorPool
 
-} // namespace scop::graphics
+} // namespace scop::gfx

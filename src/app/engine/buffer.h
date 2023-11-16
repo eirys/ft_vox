@@ -13,16 +13,12 @@
 #pragma once
 
 // Graphics
-# ifndef GLFW_INCLUDE_VULKAN
-#  define GLFW_INCLUDE_VULKAN
-# endif
-
-# include <GLFW/glfw3.h>
+# include <vulkan/vulkan.h>
 
 // Std
 # include <cstddef> // std::size_t
 
-namespace scop::graphics {
+namespace scop::core {
 
 class Device;
 
@@ -87,4 +83,4 @@ private:
 
 }; // class Buffer
 
-} // namespace scop::graphics
+} // namespace scop::core

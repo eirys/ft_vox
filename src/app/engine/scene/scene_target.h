@@ -14,7 +14,7 @@
 
 #include "target.h"
 
-namespace scop::graphics {
+namespace scop::gfx {
 
 class SceneTarget final: public Target {
 public:
@@ -41,11 +41,11 @@ public:
 	using super::destroy;
 
 	void				init(
-		Device& device,
-		const super::TargetInfo& info) override;
+		scop::core::Device& device,
+		const TargetInfo& info) override;
 	void				update(
-		Device& device,
-		const super::TargetInfo& info) override;
+		scop::core::Device& device,
+		const TargetInfo& info) override;
 
 	/* ========================================================================= */
 
@@ -53,4 +53,4 @@ public:
 
 }; // class SceneTarget
 
-} // namespace scop::graphics
+} // namespace scop::gfx

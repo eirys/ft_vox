@@ -18,9 +18,7 @@
 # include "pipeline.h"
 # include "buffer.h"
 
-namespace scop::graphics {
-
-class Device;
+namespace scop::gfx {
 
 class ScenePipeline final: public Pipeline {
 public:
@@ -50,21 +48,21 @@ public:
 	/* ========================================================================= */
 
 	void	init(
-		Device& device,
-		RenderPass::RenderPassInfo& rp_info,
-		Target::TargetInfo& tar_info) override;
+		scop::core::Device& device,
+		RenderPassInfo& rp_info,
+		TargetInfo& tar_info) override;
 	void	assemble(
-		Device& device,
+		scop::core::Device& device,
 		VkGraphicsPipelineCreateInfo& info) override;
 	void	plugDescriptor(
-		Device& device,
+		scop::core::Device& device,
 		TextureHandlerPtr shadowmap,
 		const InputHandler& input);
-	void	destroy(Device& device) override;
+	void	destroy(scop::core::Device& device) override;
 
 	void	draw(
 		VkPipelineLayout layout,
-		CommandBuffer& command_buffer,
+		scop::core::CommandBuffer& command_buffer,
 		const InputHandler& input,
 		int32_t image_index) override;
 	void	update(const UniformBufferObject& ubo) noexcept override;
@@ -77,7 +75,7 @@ public:
 	using super::getTarget;
 	using super::getDescriptor;
 
-	Buffer&	getUbo() noexcept;
+	scop::core::Buffer&	getUbo() noexcept;
 
 private:
 	/* ========================================================================= */
@@ -85,15 +83,15 @@ private:
 	/* ========================================================================= */
 
 	void	_beginRenderPass(
-		CommandBuffer& command_buffer,
+		scop::core::CommandBuffer& command_buffer,
 		int32_t image_index = 0) override;
 
 	/* ========================================================================= */
 	/*                               CLASS MEMBERS                               */
 	/* ========================================================================= */
 
-	Buffer					_ubo;
+	scop::core::Buffer	_ubo;
 
 }; // class ScenePipeline
 
-} // namespace scop::graphics
+} // namespace scop::gfx

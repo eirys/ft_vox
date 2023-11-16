@@ -19,7 +19,7 @@
 
 #include <stdexcept> // std::runtime_error
 
-namespace scop::graphics {
+namespace scop::gfx {
 
 /* ========================================================================== */
 /*                                   PUBLIC                                   */
@@ -51,7 +51,7 @@ void	ChunkTextureHandler::copyData(
 	const VkDeviceSize					image_size = layer_size * image_data.getLayerCount();
 
 	// Create staging buffer to copy images data to (cpu->gpu)
-	scop::graphics::Buffer	staging_buffer;
+	scop::gfx::Buffer	staging_buffer;
 	staging_buffer.init(
 		device,
 		image_size,
@@ -155,4 +155,4 @@ void	ChunkTextureHandler::_createTextureSampler(Device& device) {
 	}
 }
 
-} // namespace scop::graphics
+} // namespace scop::gfx

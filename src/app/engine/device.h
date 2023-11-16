@@ -13,10 +13,7 @@
 #pragma once
 
 // Graphics
-# ifndef GLFW_INCLUDE_VULKAN
-#  define GLFW_INCLUDE_VULKAN
-# endif
-# include <GLFW/glfw3.h>
+# include <vulkan/vulkan.h>
 
 // Std
 # include <vector> // std::vector
@@ -26,7 +23,7 @@ namespace scop {
 class Window;
 } // namespace scop
 
-namespace scop::graphics {
+namespace scop::core {
 
 /**
  * @brief Wrapper class for Vulkan device.
@@ -67,7 +64,7 @@ public:
 	/* ========================================================================= */
 
 	void					init(
-		::scop::Window& window,
+		scop::Window& window,
 		VkInstance instance
 	);
 	void					destroy(VkInstance instance);
@@ -115,6 +112,7 @@ private:
 
 	VkQueue					_graphics_queue;
 	VkQueue					_present_queue;
+	// VkQueue					_compute_queue; // TODO
 
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
@@ -122,7 +120,7 @@ private:
 
 	void					_createSurface(
 		VkInstance instance,
-		::scop::Window& window
+		scop::Window& window
 	);
 	void					_pickPhysicalDevice(VkInstance vk_instance);
 	void					_createLogicalDevice();
@@ -137,4 +135,4 @@ private:
 
 }; // class Device
 
-} // namespace scop::graphics
+} // namespace scop::core

@@ -18,7 +18,7 @@
 #include <array> // std::array
 #include <stdexcept> // std::runtime_error
 
-namespace scop::graphics {
+namespace scop::gfx {
 
 /* ========================================================================== */
 /*                                   PUBLIC                                   */
@@ -28,8 +28,8 @@ namespace scop::graphics {
  * @brief Create frame buffers wrapping each swap chain image view.
 */
 void	SceneTarget::init(
-	Device& device,
-	const Target::TargetInfo& tar_info
+	scop::core::Device& device,
+	const TargetInfo& tar_info
 ) {
 	const auto& image_views = tar_info.swap_chain->getImageViews();
 	auto render_pass =
@@ -58,11 +58,11 @@ void	SceneTarget::init(
 }
 
 void	SceneTarget::update(
-	Device& device,
-	const Target::TargetInfo& info
+	scop::core::Device& device,
+	const TargetInfo& info
 ) {
 	destroy(device);
 	init(device, info);
 }
 
-} // namespace scop::graphics
+} // namespace scop::gfx

@@ -15,8 +15,9 @@
 // Graphics
 # include <vulkan/vulkan.h>
 
-# include "debug_module.h"
-# include "device.h"
+// # include "debug_module.h"
+// # include "device.h"
+# include "core.h"
 # include "swap_chain.h"
 # include "texture_handler.h"
 # include "pipeline.h"
@@ -33,10 +34,6 @@ class GameState;
 
 namespace scop {
 class Timer;
-struct Camera;
-}
-
-namespace scop::graphics {
 
 class Engine {
 public:
@@ -44,13 +41,13 @@ public:
 	/*                                  TYPEDEFS                                 */
 	/* ========================================================================= */
 
-	using Texture = TextureHandler::Texture;
-	using PipelinePtr = std::shared_ptr<Pipeline>;
-	using TextureHandlerPtr = std::shared_ptr<TextureHandler>;
+	using Texture = gfx::TextureHandler::Texture;
+	using PipelinePtr = std::shared_ptr<gfx::Pipeline>;
+	using TextureHandlerPtr = std::shared_ptr<gfx::TextureHandler>;
 
-	using UniformBufferObject = ::scop::UniformBufferObject;
-	using GameState = ::vox::GameState;
-	using Window = ::scop::Window;
+	using UniformBufferObject = scop::UniformBufferObject;
+	using GameState = vox::GameState;
+	using Window = scop::Window;
 
 	/* ========================================================================= */
 	/*                               CONST MEMBERS                               */
@@ -86,17 +83,12 @@ private:
 	/*                               CLASS MEMBERS                               */
 	/* ========================================================================= */
 
-	// Core
-	VkInstance					_vk_instance;
-	DebugModule					_debug_module;
+	core::Core					_core;
+	gfx::SwapChain				_swap_chain;
+	core::CommandBuffer			_draw_buffer;
 
-	Device						_device;
-	SwapChain					_swap_chain;
-
-	DescriptorPool				_descriptor_pool;
-	CommandPool					_command_pool;
-
-	CommandBuffer				_draw_buffer;
+	core::DescriptorPool		_descriptor_pool;
+	core::CommandPool			_command_pool;
 
 	VkSemaphore					_image_available_semaphores;
 	VkSemaphore					_render_finished_semaphores;
@@ -108,7 +100,7 @@ private:
 		PipelinePtr				shadows;
 	}							_pipelines;
 
-	InputHandler				_input_handler;
+	gfx::InputHandler			_input_handler;
 
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
@@ -126,4 +118,4 @@ private:
 
 }; // class Engine
 
-} // namespace scop::graphics
+} // namespace scop

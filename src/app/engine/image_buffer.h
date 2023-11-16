@@ -13,45 +13,41 @@
 #pragma once
 
 // Graphics
-# ifndef GLFW_INCLUDE_VULKAN
-#  define GLFW_INCLUDE_VULKAN
-# endif
-
-# include <GLFW/glfw3.h>
+# include <vulkan/vulkan.h>
 
 // Std
 # include <cstddef> // std::size_t
 
-namespace scop::graphics {
+namespace scop::core {
 
 class Device;
+
+/* ========================================================================== */
+/*                                HELPER CLASS                                */
+/* ========================================================================== */
+
+struct ImageMetaData {
+	VkFormat			format;
+	uint32_t			layer_count;
+	uint32_t			width;
+	uint32_t			height;
+	uint32_t			depth = 1;
+	uint32_t			mip_count = 1;
+
+
+	VkFormat			getFormat() const noexcept { return format; }
+	uint32_t			getWidth() const noexcept { return width; }
+	uint32_t			getHeight() const noexcept { return height; }
+	uint32_t			getDepth() const noexcept { return depth; }
+	uint32_t			getLayerCount() const noexcept { return layer_count; }
+	uint32_t			getMipCount() const noexcept { return mip_count; }
+};
 
 /**
  * @brief Wrapper class for VkImage, VkDeviceMemory and VkImageView
 */
 class ImageBuffer final {
 public:
-	/* ========================================================================= */
-	/*                                HELPER CLASS                               */
-	/* ========================================================================= */
-
-	struct ImageMetaData {
-		VkFormat			format;
-		uint32_t			layer_count;
-		uint32_t			width;
-		uint32_t			height;
-		uint32_t			depth = 1;
-		uint32_t			mip_count = 1;
-
-
-		VkFormat			getFormat() const noexcept { return format; }
-		uint32_t			getWidth() const noexcept { return width; }
-		uint32_t			getHeight() const noexcept { return height; }
-		uint32_t			getDepth() const noexcept { return depth; }
-		uint32_t			getLayerCount() const noexcept { return layer_count; }
-		uint32_t			getMipCount() const noexcept { return mip_count; }
-	};
-
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
@@ -125,5 +121,4 @@ private:
 
 }; // class ImageBuffer
 
-
-} // namespace vox
+} // namespace scop::core

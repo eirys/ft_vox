@@ -17,7 +17,7 @@
 
 #include <stdexcept> // std::runtime_error
 
-namespace scop::graphics {
+namespace scop::gfx {
 
 /* ========================================================================== */
 /*                                   PUBLIC                                   */
@@ -83,4 +83,4 @@ VkShaderModule	Pipeline::_createShaderModule(
 	return shader_module;
 }
 
-} // namespace scop::graphics
+} // namespace scop::gfx

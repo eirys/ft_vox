@@ -20,13 +20,13 @@
 #include <set> // std::set
 #include <stdexcept> // std::runtime_error
 
-namespace scop::graphics {
+namespace scop::core {
 
 /* ========================================================================== */
 /*                                   PUBLIC                                   */
 /* ========================================================================== */
 
-void	Device::init(::scop::Window& window, VkInstance instance) {
+void	Device::init(scop::Window& window, VkInstance instance) {
 	_createSurface(instance, window);
 	_pickPhysicalDevice(instance);
 	_createLogicalDevice();
@@ -140,7 +140,7 @@ VkQueue	Device::getPresentQueue() const noexcept {
 */
 void	Device::_createSurface(
 	VkInstance instance,
-	::scop::Window& window
+	scop::Window& window
 ) {
 	if (glfwCreateWindowSurface(instance, window.getWindow(), nullptr, &_vk_surface) != VK_SUCCESS)
 		throw std::runtime_error("failed to create window surface");
@@ -175,7 +175,7 @@ void	Device::_pickPhysicalDevice(VkInstance instance) {
  * Setup logical device, the interface between the app and the physical device (GPU).
 */
 void	Device::_createLogicalDevice() {
-	// Indicate that we want to create a single queue, with graphics capabilities
+	// Indicate that we want to create a single queue, with gfx capabilities
 	QueueFamilyIndices	indices = findQueueFamilies();
 
 	std::vector<VkDeviceQueueCreateInfo>	queue_create_infos;
@@ -390,7 +390,7 @@ Device::QueueFamilyIndices	Device::_findQueueFamilies(
 
 	int	i = 0;
 	for (const auto& queue_family: queue_families) {
-		// Looking for queue family that supports the graphics bit flag
+		// Looking for queue family that supports the gfx bit flag
 		if (queue_family.queueFlags & VK_QUEUE_GRAPHICS_BIT)
 			indices.graphics_family = i;
 
@@ -412,4 +412,4 @@ Device::QueueFamilyIndices	Device::_findQueueFamilies(
 	return indices;
 }
 
-} // namespace scop::graphics
+} // namespace scop::core

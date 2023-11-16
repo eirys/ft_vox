@@ -13,13 +13,9 @@
 #pragma once
 
 // Graphics
-# ifndef GLFW_INCLUDE_VULKAN
-#  define GLFW_INCLUDE_VULKAN
-# endif
-# include <GLFW/glfw3.h>
+# include <vulkan/vulkan.h>
 
-namespace scop::graphics {
-
+namespace scop::core {
 class Device;
 class CommandBuffer;
 
@@ -58,8 +54,8 @@ private:
 	/*                               CLASS MEMBERS                               */
 	/* ========================================================================= */
 
-	static VkCommandPool		_pool;
+	static VkCommandPool	_pool;
 
 }; // class CommandPool
 
-} // namespace scop::graphics
+} // namespace scop::core

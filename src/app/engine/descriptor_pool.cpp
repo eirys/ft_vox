@@ -18,7 +18,7 @@
 #include <list> // std::list
 #include <stdexcept> // std::runtime_error
 
-namespace scop::graphics {
+namespace scop::gfx {
 
 using DescriptorSetPtr = DescriptorPool::DescriptorSetPtr;
 
@@ -112,4 +112,4 @@ void	DescriptorPool::_allocateSets(
 	}
 }
 
-} // namespace scop::graphics
+} // namespace scop::gfx

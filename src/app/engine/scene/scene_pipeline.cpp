@@ -35,7 +35,7 @@
 # define SCENE_FRAGMENT_PATH "shaders/scene_frag.spv"
 #endif
 
-namespace scop::graphics {
+namespace scop::gfx {
 
 /* ========================================================================== */
 /*                                   PUBLIC                                   */
@@ -49,9 +49,9 @@ ScenePipeline::ScenePipeline() {
 }
 
 void	ScenePipeline::init(
-	Device& device,
-	RenderPass::RenderPassInfo& rp_info,
-	Target::TargetInfo& tar_info
+	scop::core::Device& device,
+	RenderPassInfo& rp_info,
+	TargetInfo& tar_info
 ) {
 	super::_texture->init(device);
 	super::_render_pass->init(device, rp_info);
@@ -69,7 +69,7 @@ void	ScenePipeline::init(
 }
 
 void	ScenePipeline::assemble(
-	Device& device,
+	scop::core::Device& device,
 	VkGraphicsPipelineCreateInfo& info
 ) {
 	/* SHADERS ================================================================= */
@@ -99,7 +99,7 @@ void	ScenePipeline::assemble(
 	info.renderPass = _render_pass->getRenderPass();
 
 	if (vkCreateGraphicsPipelines(device.getLogicalDevice(), VK_NULL_HANDLE, 1, &info, nullptr, &(super::_pipeline)) != VK_SUCCESS) {
-		throw std::runtime_error("failed to create scene graphics pipeline");
+		throw std::runtime_error("failed to create scene gfx pipeline");
 	}
 
 	vkDestroyShaderModule(
@@ -112,7 +112,7 @@ void	ScenePipeline::assemble(
 		nullptr);
 }
 
-void	ScenePipeline::destroy(Device& device) {
+void	ScenePipeline::destroy(scop::core::Device& device) {
 	_ubo.unmap(device.getLogicalDevice());
 	_ubo.destroy(device.getLogicalDevice());
 
@@ -120,7 +120,7 @@ void	ScenePipeline::destroy(Device& device) {
 }
 
 void	ScenePipeline::plugDescriptor(
-	Device& device,
+	scop::core::Device& device,
 	TextureHandlerPtr shadowmap,
 	const InputHandler& input
 ) {
@@ -139,7 +139,7 @@ void	ScenePipeline::plugDescriptor(
 */
 void	ScenePipeline::draw(
 	VkPipelineLayout layout,
-	CommandBuffer& command_buffer,
+	scop::core::CommandBuffer& command_buffer,
 	const InputHandler& input,
 	int32_t image_index
 ) {
@@ -188,7 +188,7 @@ void	ScenePipeline::update(const UniformBufferObject& ubo) noexcept {
 
 /* ========================================================================== */
 
-Buffer&	ScenePipeline::getUbo() noexcept {
+scop::core::Buffer&	ScenePipeline::getUbo() noexcept {
 	return _ubo;
 }
 
@@ -197,7 +197,7 @@ Buffer&	ScenePipeline::getUbo() noexcept {
 /* ========================================================================== */
 
 void	ScenePipeline::_beginRenderPass(
-	CommandBuffer& command_buffer,
+	scop::core::CommandBuffer& command_buffer,
 	int32_t image_index
 ) {
 	std::array<VkClearValue, 2>	clear_values{};
@@ -220,4 +220,4 @@ void	ScenePipeline::_beginRenderPass(
 		VK_SUBPASS_CONTENTS_INLINE);
 }
 
-} // namespace scop::graphics
+} // namespace scop::gfx

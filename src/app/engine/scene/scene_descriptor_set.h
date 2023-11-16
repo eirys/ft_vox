@@ -16,9 +16,12 @@
 
 # include "descriptor_set.h"
 
-namespace scop::graphics {
-
+namespace scop::core {
 class Buffer;
+}
+
+namespace scop::gfx {
+
 class TextureHandler;
 class InputHandler;
 
@@ -48,10 +51,10 @@ public:
 	using super::destroy;
 	using super::setDescriptors;
 
-	void	init(Device& device) override;
+	void	init(scop::core::Device& device) override;
 	void	plug(
-		Device& device,
-		const Buffer& buffer,
+		scop::core::Device& device,
+		const scop::core::Buffer& buffer,
 		TextureHandlerPtr textures,
 		TextureHandlerPtr shadowmap,
 		const InputHandler& input);
@@ -65,4 +68,4 @@ public:
 
 }; // class SceneDescriptorSet
 
-} // namespace scop::graphics
+} // namespace scop::gfx

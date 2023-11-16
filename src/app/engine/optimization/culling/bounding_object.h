@@ -14,7 +14,7 @@
 
 # include "vector.h"
 
-namespace scop::graphics {
+namespace scop::gfx {
 
 struct BoundingFrustum;
 
@@ -50,4 +50,4 @@ protected:
 
 };
 
-} // namespace scop::graphics
+} // namespace scop::gfx

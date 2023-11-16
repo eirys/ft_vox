@@ -18,7 +18,7 @@
 
 #include "chunk_macros.h"
 
-namespace scop::graphics {
+namespace scop::gfx {
 
 /* ========================================================================== */
 /*                                   PUBLIC                                   */
@@ -75,7 +75,7 @@ void	MapTextureHandler::copyData(
 	constexpr const VkDeviceSize		layer_size = RENDER_DISTANCE2 * sizeof(uint16_t);
 	const VkDeviceSize					image_size = layer_size * image_data.getLayerCount();
 
-	scop::graphics::Buffer	staging_buffer;
+	scop::gfx::Buffer	staging_buffer;
 	staging_buffer.init(
 		device,
 		image_size,
@@ -152,4 +152,4 @@ void	MapTextureHandler::_createTextureImageView(Device& device) {
 		VK_IMAGE_VIEW_TYPE_2D);
 }
 
-} // namespace scop::graphics
+} // namespace scop::gfx

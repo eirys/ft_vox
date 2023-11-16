@@ -14,7 +14,7 @@
 
 #include "target.h"
 
-namespace scop::graphics {
+namespace scop::gfx {
 
 class ShadowsTarget final: public Target {
 public:
@@ -53,4 +53,4 @@ public:
 
 }; // class ShadowsTarget
 
-} // namespace scop::graphics
+} // namespace scop::gfx

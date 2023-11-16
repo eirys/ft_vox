@@ -16,7 +16,7 @@
 
 #include <stdexcept> // std::runtime_error
 
-namespace scop::graphics {
+namespace scop::gfx {
 
 /* ========================================================================== */
 /*                                   PUBLIC                                   */
@@ -139,4 +139,4 @@ CommandBuffer::operator VkCommandBuffer() const noexcept {
 	return _buffer;
 }
 
-} // namespace scop::graphics
+} // namespace scop::gfx

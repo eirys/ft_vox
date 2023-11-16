@@ -15,7 +15,7 @@
 #include <stdexcept> // std::runtime_error
 #include <cstring> // memcpy
 
-namespace scop::graphics {
+namespace scop::core {
 
 /* ========================================================================== */
 /*                                   PUBLIC                                   */
@@ -154,4 +154,4 @@ void	Buffer::unmap(VkDevice device) noexcept {
 	vkUnmapMemory(device, _memory);
 }
 
-} // namespace scop::graphics
+} // namespace scop::core

@@ -13,13 +13,13 @@
 #include "target.h"
 #include "device.h"
 
-namespace scop::graphics {
+namespace scop::gfx {
 
 /* ========================================================================== */
 /*                                   PUBLIC                                   */
 /* ========================================================================== */
 
-void	Target::destroy(Device& device) {
+void	Target::destroy(scop::core::Device& device) {
 	for (auto& frame_buffer: _frame_buffers) {
 		vkDestroyFramebuffer(
 			device.getLogicalDevice(),
@@ -34,4 +34,4 @@ const std::vector<VkFramebuffer>&	Target::getFrameBuffers() const noexcept {
 	return _frame_buffers;
 }
 
-} // namespace scop::graphics
+} // namespace scop::gfx

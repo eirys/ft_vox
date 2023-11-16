@@ -20,12 +20,10 @@
 #include "ppm_loader.h"
 #include "mtl_parser.h"
 
-#include <stdexcept> // std::invalid_argument
-#include <algorithm> // std::max
 #include <stdexcept> // std::runtime_error
 #include <cassert> // assert
 
-namespace scop::graphics {
+namespace scop::gfx {
 
 using Texture = SceneTextureHandler::Texture;
 
@@ -33,7 +31,7 @@ using Texture = SceneTextureHandler::Texture;
 /*                                   PUBLIC                                   */
 /* ========================================================================== */
 
-void	SceneTextureHandler::init(Device& device) {
+void	SceneTextureHandler::init(scop::core::Device& device) {
 	_createTextureImages(device);
 	_createTextureImageView(device);
 	_createTextureSampler(device);
@@ -47,11 +45,11 @@ void	SceneTextureHandler::init(Device& device) {
  * @brief Create texture images (VkImage).
  * @note All textures will be stored in the same VkImage, as layers.
 */
-void	SceneTextureHandler::_createTextureImages(Device& device) {
+void	SceneTextureHandler::_createTextureImages(scop::core::Device& device) {
 	std::vector<Texture>	images = _loadTextures();
 
 	const uint32_t	image_width = static_cast<uint32_t>(images[0].getWidth());
-	ImageBuffer::ImageMetaData	data{};
+	scop::core::ImageMetaData	data{};
 	data.format = VK_FORMAT_R8G8B8A8_SRGB;
 	data.layer_count = static_cast<uint32_t>(images.size());
 	data.width = image_width;
@@ -66,7 +64,7 @@ void	SceneTextureHandler::_createTextureImages(Device& device) {
 	const VkDeviceSize	image_size = layer_size * data.getLayerCount();
 
 	// Create staging buffer to copy images data to
-	scop::graphics::Buffer	staging_buffer;
+	scop::core::Buffer	staging_buffer;
 	staging_buffer.init(
 		device,
 		image_size,
@@ -94,7 +92,7 @@ void	SceneTextureHandler::_createTextureImages(Device& device) {
 		0);
 
 	// Setup copy command buffer
-	CommandBuffer	command_buffer = CommandPool::createBuffer(device);
+	scop::core::CommandBuffer	command_buffer = scop::core::CommandPool::createBuffer(device);
 	command_buffer.begin();
 
 	// Transition to transfer destination layout
@@ -128,14 +126,14 @@ void	SceneTextureHandler::_createTextureImages(Device& device) {
 
 	// Submit commands
 	command_buffer.end(device);
-	CommandPool::destroyBuffer(device, command_buffer);
+	scop::core::CommandPool::destroyBuffer(device, command_buffer);
 	staging_buffer.destroy(device.getLogicalDevice());
 }
 
 /**
  * @brief Create image view for sampler.
 */
-void	SceneTextureHandler::_createTextureImageView(Device& device) {
+void	SceneTextureHandler::_createTextureImageView(scop::core::Device& device) {
 	super::_texture_buffer.initView(
 		device,
 		VK_IMAGE_ASPECT_COLOR_BIT,
@@ -145,7 +143,7 @@ void	SceneTextureHandler::_createTextureImageView(Device& device) {
 /**
  * @brief Create sampler for texture sampling in shaders.
 */
-void	SceneTextureHandler::_createTextureSampler(Device& device) {
+void	SceneTextureHandler::_createTextureSampler(scop::core::Device& device) {
 	const float mip_count = static_cast<float>(
 		super::_texture_buffer.getMetaData().getMipCount());
 
@@ -210,4 +208,4 @@ std::vector<Texture>	SceneTextureHandler::_loadTextures() const {
 	return images;
 }
 
-} // namespace scop::graphics
+} // namespace scop::gfx

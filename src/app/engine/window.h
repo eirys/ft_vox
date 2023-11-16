@@ -88,4 +88,4 @@ private:
 
 }; // class Window
 
-} // namespace scop::graphics
+} // namespace scop::gfx

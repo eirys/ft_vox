@@ -13,16 +13,14 @@
 #pragma once
 
 // Graphics
-# ifndef GLFW_INCLUDE_VULKAN
-#  define GLFW_INCLUDE_VULKAN
-# endif
+# include <vulkan/vulkan.h>
 
 # include "texture_handler.h"
 
 # define SHADOWMAP_SIZE 4096
 # define DEPTH_FORMAT VK_FORMAT_D16_UNORM
 
-namespace scop::graphics {
+namespace scop::gfx {
 
 class CommandBuffer;
 
@@ -70,4 +68,4 @@ private:
 
 }; // class ShadowsTextureHandler
 
-} // namespace scop::graphics
+} // namespace scop::gfx

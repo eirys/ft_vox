@@ -14,7 +14,7 @@
 #include "scop_math.h"
 #include "player.h"
 
-namespace scop::graphics {
+namespace scop::gfx {
 
 BoundingFrustum::BoundingFrustum(): planes{} {}
 
@@ -44,4 +44,4 @@ BoundingFrustum::BoundingFrustum(const Camera& cam) {
 	bottom.w = -scop::dot(bottom.xyz, cam.position);
 }
 
-} // namespace scop::graphics
+} // namespace scop::gfx

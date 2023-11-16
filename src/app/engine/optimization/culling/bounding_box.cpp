@@ -12,7 +12,7 @@
 
 #include "bounding_box.h"
 
-namespace scop::graphics {
+namespace scop::gfx {
 
 /* ========================================================================== */
 /*                                  PROTECTED                                 */
@@ -35,4 +35,4 @@ IntersectionType	BoundingBox::checkPlaneIntersection(const Plane& plane) const {
 	return IntersectionType::Intersecting;
 }
 
-} // namespace scop::graphics
+} // namespace scop::gfx

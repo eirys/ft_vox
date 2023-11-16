@@ -14,7 +14,7 @@
 
 # include "descriptor_set.h"
 
-namespace scop::graphics {
+namespace scop::gfx {
 
 class Buffer;
 class TextureHandler;
@@ -62,4 +62,4 @@ public:
 
 }; // class ShadowsDescriptorSet
 
-} // namespace scop::graphics
+} // namespace scop::gfx

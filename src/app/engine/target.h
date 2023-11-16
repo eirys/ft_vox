@@ -13,10 +13,7 @@
 #pragma once
 
 // Graphics
-# ifndef GLFW_INCLUDE_VULKAN
-#  define GLFW_INCLUDE_VULKAN
-# endif
-# include <GLFW/glfw3.h>
+# include <vulkan/vulkan.h>
 
 # include <vector> // std::vector
 # include <memory>
@@ -27,29 +24,32 @@ namespace scop {
 class Window;
 }
 
-namespace scop::graphics {
-
+namespace scop::core {
 class Device;
+}
+
+namespace scop::gfx {
+
 class RenderPass;
 class SwapChain;
+
+/* ========================================================================= */
+/*                               HELPER OBJECTS                              */
+/* ========================================================================= */
+
+/**
+ * @brief Target creation info.
+*/
+struct TargetInfo {
+	SwapChain*					swap_chain;
+	std::shared_ptr<RenderPass>	render_pass;
+};
 
 /**
  * @brief Wrapper class for target framebuffers.
 */
 class Target {
 public:
-	/* ========================================================================= */
-	/*                               HELPER OBJECTS                              */
-	/* ========================================================================= */
-
-	/**
-	 * @brief Target creation info.
-	*/
-	struct TargetInfo {
-		SwapChain*					swap_chain;
-		std::shared_ptr<RenderPass>	render_pass;
-	};
-
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
@@ -59,11 +59,11 @@ public:
 	/* ========================================================================= */
 
 	virtual void		init(
-		Device& device,
+		scop::core::Device& device,
 		const TargetInfo& info) = 0;
-	void				destroy(Device& device);
+	void				destroy(scop::core::Device& device);
 	virtual void		update(
-		Device& device,
+		scop::core::Device& device,
 		const TargetInfo& info) = 0;
 
 	/* ========================================================================= */
@@ -90,4 +90,4 @@ protected:
 
 }; // class Target
 
-} // namespace scop::graphics
+} // namespace scop::gfx

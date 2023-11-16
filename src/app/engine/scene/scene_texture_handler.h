@@ -14,9 +14,7 @@
 
 # include "texture_handler.h"
 
-namespace scop::graphics {
-
-class CommandBuffer;
+namespace scop::gfx {
 
 class SceneTextureHandler final: public TextureHandler {
 public:
@@ -44,7 +42,7 @@ public:
 
 	using super::destroy;
 
-	void					init(Device& device) override;
+	void					init(scop::core::Device& device) override;
 
 	/* ========================================================================= */
 
@@ -56,11 +54,11 @@ private:
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
 
-	void					_createTextureImages(Device& device) override;
-	void					_createTextureImageView(Device& device) override;
-	void					_createTextureSampler(Device& device);
+	void					_createTextureImages(scop::core::Device& device) override;
+	void					_createTextureImageView(scop::core::Device& device) override;
+	void					_createTextureSampler(scop::core::Device& device);
 	std::vector<Texture>	_loadTextures() const;
 
 }; // class SceneTextureHandler
 
-} // namespace scop::graphics
+} // namespace scop::gfx

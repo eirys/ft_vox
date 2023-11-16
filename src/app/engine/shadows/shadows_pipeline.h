@@ -14,7 +14,7 @@
 
 #include "pipeline.h"
 
-namespace scop::graphics {
+namespace scop::gfx {
 
 class Buffer;
 
@@ -46,8 +46,8 @@ public:
 
 	void	init(
 		Device& device,
-		RenderPass::RenderPassInfo& rp_info,
-		Target::TargetInfo& tar_info) override;
+		RenderPassInfo& rp_info,
+		TargetInfo& tar_info) override;
 	void	assemble(
 		Device& device,
 		VkGraphicsPipelineCreateInfo& info) override;
@@ -80,4 +80,4 @@ private:
 
 }; // class ShadowsPipeline
 
-} // namespace scop::graphics
+} // namespace scop::gfx

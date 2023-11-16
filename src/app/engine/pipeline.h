@@ -13,10 +13,7 @@
 #pragma once
 
 // Graphics
-# ifndef GLFW_INCLUDE_VULKAN
-#  define GLFW_INCLUDE_VULKAN
-# endif
-# include <GLFW/glfw3.h>
+# include <vulkan/vulkan.h>
 
 # include "render_pass.h"
 # include "texture_handler.h"
@@ -32,12 +29,15 @@ struct UniformBufferObject;
 struct Camera;
 }
 
-namespace scop::graphics {
-
+namespace scop::core {
 class Device;
+class CommandBuffer;
+}
+
+namespace scop::gfx {
+
 class InputHandler;
 class DescriptorSet;
-class CommandBuffer;
 
 class Pipeline {
 public:
@@ -50,9 +50,9 @@ public:
 	using TargetPtr = std::shared_ptr<Target>;
 	using DescriptorSetPtr = std::shared_ptr<DescriptorSet>;
 
-	using Texture = ::scop::Image;
-	using UniformBufferObject = ::scop::UniformBufferObject;
-	using Camera = ::scop::Camera;
+	using Texture = scop::Image;
+	using UniformBufferObject = scop::UniformBufferObject;
+	using Camera = scop::Camera;
 
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
@@ -63,16 +63,16 @@ public:
 	/* ========================================================================= */
 
 	virtual void		init(
-		Device& device,
-		RenderPass::RenderPassInfo& rp_info,
-		Target::TargetInfo& tar_info) = 0;
+		scop::core::Device& device,
+		RenderPassInfo& rp_info,
+		TargetInfo& tar_info) = 0;
 	virtual void		assemble(
-		Device& device,
+		scop::core::Device& device,
 		VkGraphicsPipelineCreateInfo& info) = 0;
-	virtual void		destroy(Device& device);
+	virtual void		destroy(scop::core::Device& device);
 	virtual void		draw(
 		VkPipelineLayout layout,
-		CommandBuffer& command_buffer,
+		scop::core::CommandBuffer& command_buffer,
 		const InputHandler& input,
 		int32_t image_index) = 0;
 	virtual void		update(const UniformBufferObject& ubo) noexcept;
@@ -111,15 +111,15 @@ protected:
 	/* ========================================================================= */
 
 	virtual void		_beginRenderPass(
-		CommandBuffer& command_buffer,
+		scop::core::CommandBuffer& command_buffer,
 		int32_t image_index = 0) = 0;
 
 	/* UTILS =================================================================== */
 
 	VkShaderModule		_createShaderModule(
-		Device& device,
+		scop::core::Device& device,
 		const std::string& path);
 
 }; // class Pipeline
 
-} // namespace scop::graphics
+} // namespace scop::gfx

@@ -257,4 +257,4 @@ App const*	Window::getApp() const noexcept {
 	return _app;
 }
 
-} // namespace scop::graphics
+} // namespace scop::gfx

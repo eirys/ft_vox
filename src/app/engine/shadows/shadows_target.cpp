@@ -17,7 +17,7 @@
 
 #include <stdexcept> // std::runtime_error
 
-namespace scop::graphics {
+namespace scop::gfx {
 
 /* ========================================================================== */
 /*                                   PUBLIC                                   */
@@ -25,7 +25,7 @@ namespace scop::graphics {
 
 void	ShadowsTarget::init(
 	Device& device,
-	const Target::TargetInfo& tar_info
+	const TargetInfo& tar_info
 ) {
 	auto render_pass =
 		std::dynamic_pointer_cast<ShadowsRenderPass>(tar_info.render_pass);
@@ -52,10 +52,10 @@ void	ShadowsTarget::init(
 */
 void	ShadowsTarget::update(
 	Device& device,
-	const Target::TargetInfo& info
+	const TargetInfo& info
 ) {
 	(void)device;
 	(void)info;
 }
 
-} // namespace scop::graphics
+} // namespace scop::gfx

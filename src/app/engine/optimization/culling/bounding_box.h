@@ -15,7 +15,7 @@
 # include "bounding_object.h"
 # include "bounding_frustum.h"
 
-namespace scop::graphics {
+namespace scop::gfx {
 
 class BoundingBox: public IBoundingObject {
 public:
@@ -57,4 +57,4 @@ protected:
 
 }; // class BoundingBox
 
-} // namespace scop::graphics
+} // namespace scop::gfx

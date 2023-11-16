@@ -17,7 +17,7 @@
 #include <array> // std::array
 #include <cassert> // static_assert
 
-namespace scop::graphics {
+namespace scop::gfx {
 
 /* ========================================================================== */
 /*                                   PUBLIC                                   */
@@ -25,7 +25,7 @@ namespace scop::graphics {
 
 void	ShadowsRenderPass::init(
 	Device& device,
-	const RenderPass::RenderPassInfo& rp_info
+	const RenderPassInfo& rp_info
 ) {
 	_createRenderPass(device, rp_info);
 	_importResources(rp_info);
@@ -41,7 +41,7 @@ void	ShadowsRenderPass::destroy(Device& device) {
 */
 void	ShadowsRenderPass::updateResources(
 	Device& device,
-	const RenderPass::RenderPassInfo& rp_info
+	const RenderPassInfo& rp_info
 ) {
 	assert(false);
 	(void)device;
@@ -64,7 +64,7 @@ ImageBuffer&	ShadowsRenderPass::getDepthResource() noexcept {
 
 void	ShadowsRenderPass::_createRenderPass(
 	Device& device,
-	const RenderPass::RenderPassInfo& rp_info
+	const RenderPassInfo& rp_info
 ) {
 	// Attachments
 	VkAttachmentDescription	depth_attachment{};
@@ -119,10 +119,10 @@ void	ShadowsRenderPass::_createRenderPass(
 	}
 }
 
-void	ShadowsRenderPass::_importResources(const RenderPass::RenderPassInfo& rp_info) {
+void	ShadowsRenderPass::_importResources(const RenderPassInfo& rp_info) {
 	_depth_image = *rp_info.texture_buffer;
 	super::_width = rp_info.width;
 	super::_height = rp_info.height;
 }
 
-} // namespace scop::graphics
+} // namespace scop::gfx

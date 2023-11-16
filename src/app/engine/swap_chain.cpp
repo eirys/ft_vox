@@ -19,20 +19,20 @@
 #include <stdexcept> // std::runtime_error
 #include <array> // std::array
 
-namespace scop::graphics {
+namespace scop::gfx {
 
 /* ========================================================================== */
 /*                                   PUBLIC                                   */
 /* ========================================================================== */
 
 void	SwapChain::init(
-	Device& device,
-	::scop::Window& window
+	scop::core::Device& device,
+	scop::Window& window
 ) {
 	_createSwapChain(device, window);
 }
 
-void	SwapChain::destroy(Device& device) {
+void	SwapChain::destroy(scop::core::Device& device) {
 	for (std::size_t i = 0; i < _image_views.size(); ++i) {
 		vkDestroyImageView(
 			device.getLogicalDevice(),
@@ -44,8 +44,8 @@ void	SwapChain::destroy(Device& device) {
 }
 
 void	SwapChain::update(
-	Device& device,
-	::scop::Window& window
+	scop::core::Device& device,
+	scop::Window& window
 ) {
 	window.pause();
 	device.idle();
@@ -59,7 +59,7 @@ void	SwapChain::update(
 /**
  * @brief Find a depth format for the wanted features.
 */
-VkFormat	SwapChain::findDepthFormat(Device& device) {
+VkFormat	SwapChain::findDepthFormat(scop::core::Device& device) {
 	return device.findSupportedFormat({
 			VK_FORMAT_D32_SFLOAT,
 			VK_FORMAT_D32_SFLOAT_S8_UINT,
@@ -96,10 +96,10 @@ const std::vector<VkImageView>&	SwapChain::getImageViews() const noexcept {
 /* ========================================================================== */
 
 void	SwapChain::_createSwapChain(
-	Device& device,
-	::scop::Window& window
+	scop::core::Device& device,
+	scop::Window& window
 ) {
-	Device::SwapChainSupportDetails	swap_chain_support =
+	scop::core::Device::SwapChainSupportDetails	swap_chain_support =
 		device.querySwapChainSupport();
 
 	// Setup options for functionning swap chain
@@ -133,9 +133,9 @@ void	SwapChain::_createSwapChain(
 	create_info.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
 	// Queue family swap handling:
-	// - graphics queue -> drawing to swap chain
+	// - gfx queue -> drawing to swap chain
 	// - present queue -> get passed the swap chain to be submitted
-	Device::QueueFamilyIndices	indices = device.findQueueFamilies();
+	scop::core::Device::QueueFamilyIndices	indices = device.findQueueFamilies();
 	uint32_t			queue_family_indices[] = {
 		indices.graphics_family.value(),
 		indices.present_family.value()
@@ -172,7 +172,7 @@ void	SwapChain::_createSwapChain(
 /**
  * @brief Retrieve VkImage handles from the swap chain and create image views.
 */
-void	SwapChain::_createImages(Device& device, uint32_t& image_count) {
+void	SwapChain::_createImages(scop::core::Device& device, uint32_t& image_count) {
 	// Retrieve VkImage handles
 	vkGetSwapchainImagesKHR(
 		device.getLogicalDevice(),
@@ -249,7 +249,7 @@ VkPresentModeKHR	SwapChain::_chooseSwapPresentMode(
 */
 VkExtent2D	SwapChain::_chooseSwapExtent(
 	VkSurfaceCapabilitiesKHR capabilities,
-	::scop::Window& window
+	scop::Window& window
 ) const {
 	// Pick swap extent (~ resolution of the window, in px)
 	if (capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max()) {
@@ -277,4 +277,4 @@ VkExtent2D	SwapChain::_chooseSwapExtent(
 	}
 }
 
-} // namespace scop::graphics
+} // namespace scop::gfx

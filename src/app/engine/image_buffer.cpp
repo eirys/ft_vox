@@ -17,7 +17,7 @@
 #include <stdexcept> // std::runtime_error
 #include <functional> // std::function
 
-namespace scop::graphics {
+namespace scop::gfx {
 
 /* ========================================================================== */
 /*                                   PUBLIC                                   */

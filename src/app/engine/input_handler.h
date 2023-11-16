@@ -23,9 +23,12 @@ class GameState;
 class World;
 }
 
-namespace scop::graphics {
-
+namespace scop::core {
 class Device;
+}
+
+namespace scop::gfx {
+
 class TextureHandler;
 
 class InputHandler {
@@ -50,13 +53,13 @@ public:
 
 	/* ========================================================================= */
 
-	void				init(Device& device, const ::vox::GameState& game);
-	void				destroy(Device& device);
+	void				init(scop::core::Device& device, const vox::GameState& game);
+	void				destroy(scop::core::Device& device);
 
 	void				updateVisibleChunks(
-		Device& device,
+		scop::core::Device& device,
 		const BoundingFrustum::Camera& camera,
-		const ::vox::World& world);
+		const vox::World& world);
 
 	/* ========================================================================= */
 
@@ -79,4 +82,4 @@ private:
 
 }; // class InputHandler
 
-} // namespace scop::graphics
+} // namespace scop::gfx

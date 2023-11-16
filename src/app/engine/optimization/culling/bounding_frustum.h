@@ -14,7 +14,7 @@
 
 # include "vector.h"
 
-namespace scop::graphics {
+namespace scop::gfx {
 
 // Resource:
 // https://iquilezles.org/articles/frustum/
@@ -67,4 +67,4 @@ struct BoundingFrustum {
 
 }; // struct BoundingFrustum
 
-} // namespace scop::graphics
+} // namespace scop::gfx

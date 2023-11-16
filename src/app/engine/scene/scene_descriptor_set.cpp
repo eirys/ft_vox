@@ -20,11 +20,7 @@
 #include <array> // std::array
 #include <stdexcept> // std::runtime_error
 
-#include "utils.h"
-
-#include <cassert>
-
-namespace scop::graphics {
+namespace scop::gfx {
 
 /* ========================================================================== */
 /*                                   PUBLIC                                   */
@@ -33,7 +29,7 @@ namespace scop::graphics {
 /**
  * @brief Setup descriptor layout
 */
-void	SceneDescriptorSet::init(Device& device) {
+void	SceneDescriptorSet::init(scop::core::Device& device) {
 	VkDescriptorSetLayoutBinding	camera{};
 	camera.binding = 0;
 	camera.descriptorCount = 1;
@@ -108,8 +104,8 @@ void	SceneDescriptorSet::init(Device& device) {
  * @note Should be called after the set has been allocated.
 */
 void	SceneDescriptorSet::plug(
-	Device& device,
-	const Buffer& buffer,
+	scop::core::Device& device,
+	const scop::core::Buffer& buffer,
 	TextureHandlerPtr textures,
 	TextureHandlerPtr shadowmap,
 	const InputHandler& input
@@ -234,4 +230,4 @@ void	SceneDescriptorSet::plug(
 		0, nullptr);
 }
 
-} // namespace scop::graphics
+} // namespace scop::gfx

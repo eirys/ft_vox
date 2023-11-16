@@ -13,10 +13,7 @@
 #pragma once
 
 // Graphics
-# ifndef GLFW_INCLUDE_VULKAN
-#  define GLFW_INCLUDE_VULKAN
-# endif
-# include <GLFW/glfw3.h>
+# include <vulkan/vulkan.h>
 
 // Std
 # include <vector> // std::vector
@@ -28,12 +25,14 @@
 
 namespace scop {
 class Image;
-} // namespace scop
+}
 
-namespace scop::graphics {
-
+namespace scop::core {
 class Device;
 class CommandPool;
+}
+
+namespace scop::gfx {
 
 class TextureHandler {
 public:
@@ -53,13 +52,13 @@ public:
 
 	/* ========================================================================= */
 
-	virtual void			init(Device& device) = 0;
-	virtual void			destroy(Device& device);
+	virtual void			init(scop::core::Device& device) = 0;
+	virtual void			destroy(scop::core::Device& device);
 
 	/* ========================================================================= */
 
-	VkSampler				getTextureSampler() const noexcept;
-	const ImageBuffer&		getTextureBuffer() const noexcept;
+	VkSampler						getTextureSampler() const noexcept;
+	const scop::core::ImageBuffer&	getTextureBuffer() const noexcept;
 
 	/* ========================================================================= */
 
@@ -70,7 +69,7 @@ protected:
 	/*                               CLASS MEMBERS                               */
 	/* ========================================================================= */
 
-	ImageBuffer				_texture_buffer;
+	scop::core::ImageBuffer	_texture_buffer;
 	VkSampler				_texture_sampler;
 
 	/* ========================================================================= */
@@ -86,11 +85,11 @@ protected:
 
 	/* ========================================================================= */
 
-	virtual void			_createTextureImages(Device& device) = 0;
-	virtual void			_createTextureImageView(Device& device) = 0;
+	virtual void			_createTextureImages(scop::core::Device& device) = 0;
+	virtual void			_createTextureImageView(scop::core::Device& device) = 0;
 
 	uint32_t				_getMipLevelCount(uint32_t image_width) const;
 
 }; // class TextureHandler
 
-} // namespace scop::graphics
+} // namespace scop::gfx

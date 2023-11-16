@@ -13,11 +13,7 @@
 #pragma once
 
 // Graphics
-# ifndef GLFW_INCLUDE_VULKAN
-#  define GLFW_INCLUDE_VULKAN
-# endif
-
-# include <GLFW/glfw3.h>
+# include <vulkan/vulkan.h>
 
 // Std
 # include <vector> // std::vector
@@ -26,10 +22,12 @@ namespace scop {
 class Window;
 } // namespace scop
 
-namespace scop::graphics {
-
+namespace scop::core {
 class Device;
 class RenderPass;
+}
+
+namespace scop::gfx {
 
 /**
  * @brief Wrapper class for swap chain.
@@ -52,16 +50,16 @@ public:
 	/* ========================================================================= */
 
 	void								init(
-		Device& device,
-		::scop::Window& window);
-	void								destroy(Device& device);
+		scop::core::Device& device,
+		scop::Window& window);
+	void								destroy(scop::core::Device& device);
 	void								update(
-		Device& device,
-		::scop::Window& window);
+		scop::core::Device& device,
+		scop::Window& window);
 
 	/* ========================================================================= */
 
-	VkFormat							findDepthFormat(Device& device);
+	VkFormat							findDepthFormat(scop::core::Device& device);
 
 	/* ========================================================================= */
 
@@ -87,10 +85,10 @@ private:
 	/* ========================================================================= */
 
 	void								_createSwapChain(
-		Device& device,
-		::scop::Window& window);
+		scop::core::Device& device,
+		scop::Window& window);
 	void								_createImages(
-		Device& device,
+		scop::core::Device& device,
 		uint32_t& image_count);
 
 	VkSurfaceFormatKHR					_chooseSwapSurfaceFormat(
@@ -99,8 +97,8 @@ private:
 		const std::vector<VkPresentModeKHR>& available_present_modes) const noexcept;
 	VkExtent2D							_chooseSwapExtent(
 		VkSurfaceCapabilitiesKHR capabilities,
-		::scop::Window& window) const;
+		scop::Window& window) const;
 
 }; // class SwapChain
 
-} // namespace scop::graphics
+} // namespace scop::gfx

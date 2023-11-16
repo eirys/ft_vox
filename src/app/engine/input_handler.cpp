@@ -19,7 +19,7 @@
 
 #include "utils.h"
 
-namespace scop::graphics {
+namespace scop::gfx {
 
 /* ========================================================================== */
 /*                                   PUBLIC                                   */
@@ -92,4 +92,4 @@ InputHandler::TextureHandlerPtr	InputHandler::getChunkMap() const noexcept {
 	return _chunk_map;
 }
 
-} // namespace scop::graphics
+} // namespace scop::gfx

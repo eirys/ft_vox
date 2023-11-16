@@ -17,28 +17,28 @@
 #include <stdexcept> // std::runtime_error
 #include <array> // std::array
 
-namespace scop::graphics {
+namespace scop::gfx {
 
 /* ========================================================================== */
 /*                                   PUBLIC                                   */
 /* ========================================================================== */
 
 void	SceneRenderPass::init(
-	Device& device,
-	const RenderPass::RenderPassInfo& rp_info
+	scop::core::Device& device,
+	const RenderPassInfo& rp_info
 ) {
 	_createRenderPass(device, rp_info);
 	_createResources(device, rp_info);
 }
 
-void	SceneRenderPass::destroy(Device& device) {
+void	SceneRenderPass::destroy(scop::core::Device& device) {
 	_destroyResources(device);
 	super::destroy(device);
 }
 
 void	SceneRenderPass::updateResources(
-	Device& device,
-	const RenderPass::RenderPassInfo& rp_info
+	scop::core::Device& device,
+	const RenderPassInfo& rp_info
 ) {
 	_destroyResources(device);
 	_createResources(device, rp_info);
@@ -46,19 +46,19 @@ void	SceneRenderPass::updateResources(
 
 /* ========================================================================== */
 
-ImageBuffer&	SceneRenderPass::getColorResource() noexcept {
+scop::core::ImageBuffer&	SceneRenderPass::getColorResource() noexcept {
 	return _color_image;
 }
 
-const ImageBuffer&	SceneRenderPass::getColorResource() const noexcept {
+const scop::core::ImageBuffer&	SceneRenderPass::getColorResource() const noexcept {
 	return _color_image;
 }
 
-ImageBuffer&	SceneRenderPass::getDepthResource() noexcept {
+scop::core::ImageBuffer&	SceneRenderPass::getDepthResource() noexcept {
 	return _depth_image;
 }
 
-const ImageBuffer&	SceneRenderPass::getDepthResource() const noexcept {
+const scop::core::ImageBuffer&	SceneRenderPass::getDepthResource() const noexcept {
 	return _depth_image;
 }
 
@@ -67,8 +67,8 @@ const ImageBuffer&	SceneRenderPass::getDepthResource() const noexcept {
 /* ========================================================================== */
 
 void	SceneRenderPass::_createRenderPass(
-	Device& device,
-	const RenderPass::RenderPassInfo& rp_info
+	scop::core::Device& device,
+	const RenderPassInfo& rp_info
 ) {
 	// Attachments
 	VkAttachmentDescription	color_attachment{};
@@ -154,13 +154,13 @@ void	SceneRenderPass::_createRenderPass(
 }
 
 void	SceneRenderPass::_createResources(
-	Device& device,
-	const RenderPass::RenderPassInfo& rp_info
+	scop::core::Device& device,
+	const RenderPassInfo& rp_info
 ) {
 	super::_width = rp_info.width;
 	super::_height = rp_info.height;
 
-	ImageBuffer::ImageMetaData	data{};
+	scop::core::ImageMetaData	data{};
 	data.layer_count = 1;
 	data.width = super::_width;
 	data.height = super::_height;
@@ -189,9 +189,9 @@ void	SceneRenderPass::_createResources(
 		VK_IMAGE_ASPECT_DEPTH_BIT);
 }
 
-void	SceneRenderPass::_destroyResources(Device& device) {
+void	SceneRenderPass::_destroyResources(scop::core::Device& device) {
 	_color_image.destroy(device);
 	_depth_image.destroy(device);
 }
 
-} // namespace scop::graphics
+} // namespace scop::gfx

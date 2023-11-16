@@ -14,7 +14,7 @@
 
 # include "texture_handler.h"
 
-namespace scop::graphics {
+namespace scop::gfx {
 
 /**
  * @brief Contains data for each block for each chunk.
@@ -66,4 +66,4 @@ private:
 
 }; // class ChunkTextureHandler
 
-} // namespace scop::graphics
+} // namespace scop::gfx

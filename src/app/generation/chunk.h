@@ -32,15 +32,15 @@ class Player;
  *
  * @note x, y and z represent the chunk's position in the world.
 */
-class Chunk final: public scop::graphics::BoundingBox {
+class Chunk final: public scop::gfx::BoundingBox {
 public:
 	/* ========================================================================= */
 	/*                                  TYPEDEFS                                 */
 	/* ========================================================================= */
 
-	using BoundingFrustum	= scop::graphics::BoundingFrustum;
-	using IntersectionType	= scop::graphics::IntersectionType;
-	using BoundingBox		= scop::graphics::BoundingBox;
+	using BoundingFrustum	= scop::gfx::BoundingFrustum;
+	using IntersectionType	= scop::gfx::IntersectionType;
+	using BoundingBox		= scop::gfx::BoundingBox;
 	using Plane				= BoundingBox::Plane;
 
 	/* ========================================================================= */

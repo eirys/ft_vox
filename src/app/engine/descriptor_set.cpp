@@ -15,7 +15,7 @@
 
 #include "utils.h"
 
-namespace scop::graphics {
+namespace scop::gfx {
 
 uint32_t	DescriptorSet::_descriptor_count = 0;
 
@@ -56,4 +56,4 @@ uint32_t	DescriptorSet::getSetIndex() const noexcept {
 	return _index;
 }
 
-} // namespace scop::graphics
+} // namespace scop::gfx

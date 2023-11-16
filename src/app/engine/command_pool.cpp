@@ -17,7 +17,7 @@
 #include <cassert> // assert
 #include <stdexcept> // std::runtime_error
 
-namespace scop::graphics {
+namespace scop::core {
 
 VkCommandPool	CommandPool::_pool = VK_NULL_HANDLE;
 
@@ -68,4 +68,4 @@ CommandPool::operator VkCommandPool() const noexcept {
 	return _pool;
 }
 
-} // namespace scop::graphics
+} // namespace scop::core

@@ -15,14 +15,21 @@
 // Graphics
 # include <vulkan/vulkan.h>
 
-namespace std {
-template <typename T> class vector;
+// Std
+# include <vector>
+
+# include "device.h"
+# include "debug_module.h"
+
+namespace scop {
+class Window;
+} // namespace scop
+
+namespace vox {
+class GameState;
 }
 
 namespace scop::core {
-
-class DebugModule;
-class Device;
 
 class Core final {
 public:
@@ -40,23 +47,29 @@ public:
 
 	/* ========================================================================= */
 
-	void				init(Window& window, const GameState& game);
-	void				destroy();
+	void						init(scop::Window& window);
+	void						destroy();
+
+	/* ========================================================================= */
+
+	Device&						getDevice() noexcept;
+	DebugModule&				getDebugModule() noexcept;
 
 private:
 	/* ========================================================================= */
 	/*                               CLASS MEMBERS                               */
 	/* ========================================================================= */
 
-	VkInstance			_vk_instance;
+	VkInstance					_vk_instance;
 
-	DebugModule			_debug_module;
-	Device				_device;
+	DebugModule					_debug_module;
+	Device						_device;
 
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
 
+	void						_createInstance();
 	bool						_checkValidationLayerSupport();
 	std::vector<const char*>	_getRequiredExtensions();
 

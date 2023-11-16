@@ -18,8 +18,7 @@
 # define SCOP_TEXTURE_PATH "assets/textures/"
 # define SCOP_MTL_PATH "assets/materials/"
 
-namespace scop {
-namespace mtl {
+namespace scop::mtl {
 
 /**
  * MtlParser for .mtl files.
@@ -137,5 +136,4 @@ private:
 
 }; // class MtlParser
 
-} // namespace mtl
-} // namespace scop
+} // namespace scop::mtl
