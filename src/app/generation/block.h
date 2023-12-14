@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/18 16:08:29 by etran             #+#    #+#             */
-/*   Updated: 2023/12/11 21:29:40 by etran            ###   ########.fr       */
+/*   Updated: 2023/12/14 11:21:08 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,9 +62,7 @@ private:
 	/* ========================================================================= */
 
 	MaterialType		_type		= MaterialType::AIR;
-	MaterialProperty	_properties	= MaterialProperty::OPAQUE;
-
-	scop::gfx::MaterialGFXProperty	_gfx_properties = scop::gfx::MaterialGFXProperty::TRANSPARENT;
+	MaterialProperty	_properties	= = MaterialProperty::Default;
 
 }; // class Block
 

@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/24 14:32:13 by etran             #+#    #+#             */
-/*   Updated: 2023/12/11 20:48:14 by etran            ###   ########.fr       */
+/*   Updated: 2023/12/14 11:07:40 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,7 @@ class Chunk;
 namespace scop::gfx {
 
 /**
- * @brief Contains chunk data.
+ * @brief Contains chunk data, aka blocks type
 */
 class ChunkTextureHandler final: public TextureHandler {
 public:
