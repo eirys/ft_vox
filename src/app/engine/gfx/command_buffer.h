@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/04 08:34:43 by etran             #+#    #+#             */
-/*   Updated: 2023/11/16 21:59:16 by etran            ###   ########.fr       */
+/*   Updated: 2023/11/20 01:43:32 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,6 +22,11 @@ class Device;
 namespace scop::gfx {
 
 class CommandPool;
+
+enum class CommandBufferType: uint8_t {
+	DRAW,
+	COMPUTE
+};
 
 /**
  * @brief Wrapper class for VkCommandBuffer.
@@ -45,25 +50,23 @@ public:
 	void				init(
 		scop::core::Device& device,
 		VkCommandPool pool,
-		uint32_t count = 1);
+		CommandBufferType type);
 	void				destroy(scop::core::Device& device, VkCommandPool pool);
 
 	/* ========================================================================= */
 
 	void				begin(
-		VkCommandBufferUsageFlags flags =
-			VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
+		VkCommandBufferUsageFlags flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
 	void				restart(
 		scop::core::Device& device,
-		VkCommandBufferUsageFlags flags =
-			VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
+		VkCommandBufferUsageFlags flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
 	void				reset();
 	void				end(scop::core::Device& device, bool await = true);
 
 	/* ========================================================================= */
 
+	CommandBufferType	getType() const noexcept;
 	VkCommandBuffer		getBuffer() const noexcept;
-	operator VkCommandBuffer() const noexcept;
 
 private:
 	/* ========================================================================= */
@@ -71,6 +74,7 @@ private:
 	/* ========================================================================= */
 
 	VkCommandBuffer		_buffer;
+	CommandBufferType	_type;
 
 }; // class CommandBuffer
 

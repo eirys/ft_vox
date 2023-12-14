@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/06 20:50:48 by etran             #+#    #+#             */
-/*   Updated: 2023/11/16 23:16:13 by etran            ###   ########.fr       */
+/*   Updated: 2023/11/25 01:29:50 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 #include "input_handler.h"
 #include "uniform_buffer_object.h"
 #include "command_buffer.h"
+#include "pipeline_helpers.h"
 
 #include "scene_texture_handler.h"
 #include "scene_render_pass.h"
@@ -71,10 +72,8 @@ void	ScenePipeline::assemble(
 	VkGraphicsPipelineCreateInfo& info
 ) {
 	/* SHADERS ================================================================= */
-	VkShaderModule	vert_module =
-		super::_createShaderModule(device, SCENE_VERTEX_PATH);
-	VkShaderModule	frag_module =
-		super::_createShaderModule(device, SCENE_FRAGMENT_PATH);
+	VkShaderModule	vert_module = createShaderModule(device, SCENE_VERTEX_PATH);
+	VkShaderModule	frag_module = createShaderModule(device, SCENE_FRAGMENT_PATH);
 
 	VkPipelineShaderStageCreateInfo	vert_info{};
 	vert_info.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -100,14 +99,8 @@ void	ScenePipeline::assemble(
 		throw std::runtime_error("failed to create scene gfx pipeline");
 	}
 
-	vkDestroyShaderModule(
-		device.getLogicalDevice(),
-		vert_module,
-		nullptr);
-	vkDestroyShaderModule(
-		device.getLogicalDevice(),
-		frag_module,
-		nullptr);
+	vkDestroyShaderModule(device.getLogicalDevice(), vert_module, nullptr);
+	vkDestroyShaderModule(device.getLogicalDevice(), frag_module, nullptr);
 }
 
 void	ScenePipeline::destroy(scop::core::Device& device) {
@@ -122,8 +115,7 @@ void	ScenePipeline::plugDescriptor(
 	TextureHandlerPtr shadowmap,
 	const scop::InputHandler& input
 ) {
-	auto	scene_descriptors =
-		std::dynamic_pointer_cast<SceneDescriptorSet>(super::_descriptor);
+	auto	scene_descriptors = std::dynamic_pointer_cast<SceneDescriptorSet>(super::_descriptor);
 	scene_descriptors->plug(
 		device,
 		_ubo,

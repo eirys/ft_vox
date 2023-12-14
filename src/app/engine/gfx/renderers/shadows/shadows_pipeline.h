@@ -6,26 +6,25 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/16 09:24:16 by etran             #+#    #+#             */
-/*   Updated: 2023/11/16 23:18:45 by etran            ###   ########.fr       */
+/*   Updated: 2023/11/19 10:43:42 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
-#include "pipeline.h"
+#include "graphics_pipeline.h"
 
 namespace scop::gfx {
 
 class Buffer;
 
-class ShadowsPipeline final: public Pipeline {
+class ShadowsPipeline final: public GraphicsPipeline {
 public:
 	/* ========================================================================= */
 	/*                                  TYPEDEFS                                 */
 	/* ========================================================================= */
 
-	using super = Pipeline;
-	using super::Texture;
+	using super = GraphicsPipeline;
 	using super::DescriptorSetPtr;
 
 	/* ========================================================================= */

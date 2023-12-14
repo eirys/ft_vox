@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/24 14:32:26 by etran             #+#    #+#             */
-/*   Updated: 2023/11/16 22:27:33 by etran            ###   ########.fr       */
+/*   Updated: 2023/12/12 00:02:34 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,7 +27,12 @@ namespace scop::gfx {
 
 void	ChunkTextureHandler::init(scop::core::Device& device) {
 	ImageMetaData	data{};
-	data.format = VK_FORMAT_R8_UINT;
+
+
+	// rg hold the data, b is mask for y axis
+	// ex: block data at y=0 (b=0) ->
+	//     block data at y=15 (b=15) -> rg+b= // TODO
+	data.format = VK_FORMAT_R8G8B8_UINT;
 	data.layer_count = RENDER_DISTANCE * RENDER_DISTANCE;
 	data.width = CHUNK_SIZE;
 	data.height = CHUNK_SIZE;
@@ -44,10 +49,10 @@ void	ChunkTextureHandler::init(scop::core::Device& device) {
 */
 void	ChunkTextureHandler::copyData(
 	scop::core::Device& device,
-	const std::vector<uint8_t>& height_map
+	const std::vector<vox::Chunk>& chunks
 ) {
 	const ImageMetaData&	image_data = super::_texture_buffer.getMetaData();
-	constexpr const VkDeviceSize		layer_size = CHUNK_AREA * sizeof(uint8_t);
+	constexpr const VkDeviceSize		layer_size = CHUNK_VOLUME * sizeof(uint32_t);
 	const VkDeviceSize					image_size = layer_size * image_data.getLayerCount();
 
 	// Create staging buffer to copy images data to (cpu->gpu)
@@ -62,12 +67,12 @@ void	ChunkTextureHandler::copyData(
 	// Copy every chunk data
 	staging_buffer.map(device.getLogicalDevice());
 	staging_buffer.copyFrom(
-		height_map.data(),
+		chunks.data(),
 		static_cast<std::size_t>(layer_size) * image_data.getLayerCount());
 	staging_buffer.unmap(device.getLogicalDevice());
 
 	// Setup copy command buffer
-	CommandBuffer	command_buffer = CommandPool::createBuffer(device);
+	CommandBuffer	command_buffer = CommandPool::createBuffer(device, CommandBufferType::DRAW);
 	command_buffer.begin();
 
 	// Transition to transfer destination layout
@@ -79,7 +84,7 @@ void	ChunkTextureHandler::copyData(
 	transfer_barrier.layerCount = image_data.getLayerCount();
 
 	super::_texture_buffer.setLayout(
-		command_buffer,
+		command_buffer.getBuffer(),
 		VK_IMAGE_LAYOUT_UNDEFINED,
 		VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
 		0,
@@ -90,12 +95,12 @@ void	ChunkTextureHandler::copyData(
 
 	// Record copy command
 	super::_texture_buffer.copyFrom(
-		command_buffer,
+		command_buffer.getBuffer(),
 		staging_buffer.getBuffer(),
 		static_cast<uint32_t>(layer_size));
 
 	super::_texture_buffer.setLayout(
-		command_buffer,
+		command_buffer.getBuffer(),
 		VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
 		VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
 		VK_ACCESS_TRANSFER_WRITE_BIT,
@@ -138,9 +143,9 @@ void	ChunkTextureHandler::_createTextureSampler(scop::core::Device& device) {
 	sampler.magFilter = VK_FILTER_NEAREST;
 	sampler.minFilter = VK_FILTER_NEAREST;
 	sampler.mipmapMode = VK_SAMPLER_MIPMAP_MODE_NEAREST;
-	sampler.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-	sampler.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-	sampler.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+	sampler.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER;
+	sampler.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER;
+	sampler.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER;
 	sampler.anisotropyEnable = VK_FALSE;
 	sampler.maxAnisotropy = 1.0;
 	sampler.compareEnable = VK_FALSE;
@@ -148,7 +153,7 @@ void	ChunkTextureHandler::_createTextureSampler(scop::core::Device& device) {
 	sampler.mipLodBias = 0.0f;
 	sampler.minLod = 0.0f;
 	sampler.maxLod = 1.0f;
-	sampler.borderColor = VK_BORDER_COLOR_INT_OPAQUE_WHITE;
+	sampler.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
 
 	if (vkCreateSampler(device.getLogicalDevice(), &sampler, nullptr, &(super::_texture_sampler)) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create texture sampler");

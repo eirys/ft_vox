@@ -1,73 +1,74 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   chunk_texture_handler.h                            :+:      :+:    :+:   */
+/*   culling_pipeline.h                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/10/24 14:32:13 by etran             #+#    #+#             */
-/*   Updated: 2023/12/11 20:48:14 by etran            ###   ########.fr       */
+/*   Created: 2023/11/18 20:15:16 by etran             #+#    #+#             */
+/*   Updated: 2023/12/06 23:23:17 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
-# include "texture_handler.h"
+// Graphics
+# include <vulkan/vulkan.h>
 
-namespace vox {
-class Chunk;
-}
+#include "compute_pipeline.h"
 
 namespace scop::gfx {
 
-/**
- * @brief Contains chunk data.
-*/
-class ChunkTextureHandler final: public TextureHandler {
+class TextureHandler;
+
+class CullingPipeline: public ComputePipeline {
 public:
 	/* ========================================================================= */
 	/*                                  TYPEDEFS                                 */
 	/* ========================================================================= */
 
-	using super = TextureHandler;
-	using super::Texture;
-	using super::TextureArray;
+	using super = ComputePipeline;
+	using super::DescriptorSetPtr;
+	using TextureHandlerPtr = std::shared_ptr<TextureHandler>;
 
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
 
-	ChunkTextureHandler() = default;
-	~ChunkTextureHandler() = default;
+	CullingPipeline();
+	~CullingPipeline() = default;
 
-	ChunkTextureHandler(ChunkTextureHandler&& other) = delete;
-	ChunkTextureHandler(const ChunkTextureHandler& other) = delete;
-	ChunkTextureHandler& operator=(ChunkTextureHandler&& other) = delete;
-	ChunkTextureHandler& operator=(const ChunkTextureHandler& other) = delete;
+	CullingPipeline(CullingPipeline&& other) = delete;
+	CullingPipeline(const CullingPipeline& other) = delete;
+	CullingPipeline& operator=(CullingPipeline&& other) = delete;
+	CullingPipeline& operator=(const CullingPipeline& other) = delete;
 
 	/* ========================================================================= */
 
-	using super::destroy;
-
-	void			init(scop::core::Device& device) override;
-	void			copyData(
+	void				init(scop::core::Device& device) override;
+	void				assemble(
 		scop::core::Device& device,
-		const std::vector<vox::Chunk>& chunks);
+		VkComputePipelineCreateInfo& info) override;
+	void				destroy(scop::core::Device& device) override;
+	void				compute(
+		scop::core::Device& device,
+		VkPipelineLayout layout,
+		CommandBuffer& command_buffer) override;
 
 	/* ========================================================================= */
 
-	using super::getTextureSampler;
-	using super::getTextureBuffer;
+	using super::getPipeline;
+	using super::getDescriptor;
+
+	TextureHandlerPtr	getCullingTextureHandler() const noexcept;
 
 private:
 	/* ========================================================================= */
-	/*                                  METHODS                                  */
+	/*                               CLASS MEMBERS                               */
 	/* ========================================================================= */
 
-	void			_createTextureImages(scop::core::Device& device) override;
-	void			_createTextureImageView(scop::core::Device& device) override;
-	void			_createTextureSampler(scop::core::Device& device);
+	TextureHandlerPtr	_culling_texture;
 
-}; // class ChunkTextureHandler
+}; // class CullingPipeline
 
 } // namespace scop::gfx

@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/16 01:00:19 by etran             #+#    #+#             */
-/*   Updated: 2023/11/16 22:31:39 by etran            ###   ########.fr       */
+/*   Updated: 2023/12/04 23:15:00 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -63,14 +63,14 @@ uint32_t	Device::findMemoryType(
  * @brief Retrieve queue families that are appropriate for
  * the physical device and the app needs.
 */
-Device::QueueFamilyIndices	Device::findQueueFamilies() {
+QueueFamilyIndices	Device::findQueueFamilies() {
 	return _findQueueFamilies(_physical_device);
 }
 
 /**
  * @brief Checks if the physical device is suitable for the app.
 */
-Device::SwapChainSupportDetails	Device::querySwapChainSupport() {
+SwapChainSupportDetails	Device::querySwapChainSupport() {
 	return _querySwapChainSupport(_physical_device);
 }
 
@@ -81,7 +81,7 @@ VkFormat	Device::findSupportedFormat(
 	const std::vector<VkFormat>& candidates,
 	VkImageTiling tiling,
 	VkFormatFeatureFlags features
-) {
+) const {
 	for (VkFormat format: candidates) {
 		// Query format properties for candidate
 		VkFormatProperties	properties;
@@ -91,13 +91,8 @@ VkFormat	Device::findSupportedFormat(
 			&properties
 		);
 
-		if ((
-			tiling == VK_IMAGE_TILING_LINEAR
-			&& (properties.linearTilingFeatures & features) == features
-		) || (
-			tiling == VK_IMAGE_TILING_OPTIMAL
-			&& (properties.optimalTilingFeatures & features) == features
-		)) {
+		if ((tiling == VK_IMAGE_TILING_LINEAR && (properties.linearTilingFeatures & features) == features) ||
+			(tiling == VK_IMAGE_TILING_OPTIMAL && (properties.optimalTilingFeatures & features) == features)) {
 			return format;
 		}
 	}
@@ -130,6 +125,10 @@ VkQueue	Device::getPresentQueue() const noexcept {
 	return _present_queue;
 }
 
+VkQueue	Device::getComputeQueue() const noexcept {
+	return _compute_queue;
+}
+
 /* ========================================================================== */
 /*                                   PRIVATE                                  */
 /* ========================================================================== */
@@ -159,6 +158,7 @@ void	Device::_pickPhysicalDevice(VkInstance instance) {
 	vkEnumeratePhysicalDevices(instance, &device_count, devices.data());
 
 	for (const VkPhysicalDevice& device: devices) {
+		_retrieveQueueProperties(device);
 		if (_isDeviceSuitable(device)) {
 			_physical_device = device;
 			_msaa_samples = _getMaxUsableSampleCount();
@@ -180,47 +180,46 @@ void	Device::_createLogicalDevice() {
 	std::vector<VkDeviceQueueCreateInfo>	queue_create_infos;
 	std::set<uint32_t>						unique_queue_families = {
 		indices.graphics_family.value(),
-		indices.present_family.value()
+		indices.present_family.value(),
+		indices.compute_family.value()
 	};
 
-	float	queue_priority = 1.0f;
+	const float	queue_priority = 1.0f;
 
 	for (uint32_t queue_family: unique_queue_families) {
-		VkDeviceQueueCreateInfo	queue_create_info{};
+		VkDeviceQueueCreateInfo	queue_info{};
 
-		queue_create_info.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-		queue_create_info.queueFamilyIndex = queue_family;
-		queue_create_info.queueCount = 1;
-		queue_create_info.pQueuePriorities = &queue_priority;
-		queue_create_infos.emplace_back(queue_create_info);
+		queue_info.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+		queue_info.queueFamilyIndex = queue_family;
+		queue_info.queueCount = 1;
+		queue_info.pQueuePriorities = &queue_priority;
+		queue_create_infos.emplace_back(queue_info);
 	}
 
-	// Enable device features: anisotropic filtering and cube map array
+	// Enable device features: anisotropic filtering
 	VkPhysicalDeviceFeatures	device_features{};
 	device_features.samplerAnisotropy = VK_TRUE;
 	// device_features.imageCubeArray = VK_TRUE;
 
-	VkDeviceCreateInfo			create_info{};
-	create_info.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-	create_info.pQueueCreateInfos = queue_create_infos.data();
-	create_info.queueCreateInfoCount = static_cast<uint32_t>(queue_create_infos.size());
-	create_info.pEnabledFeatures = &device_features;
+	VkDeviceCreateInfo			device_info{};
+	device_info.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+	device_info.pQueueCreateInfos = queue_create_infos.data();
+	device_info.queueCreateInfoCount = static_cast<uint32_t>(queue_create_infos.size());
+	device_info.pEnabledFeatures = &device_features;
 
 	// Validation layers
 	if (DebugModule::enable_validation_layers) {
-		create_info.enabledLayerCount = static_cast<uint32_t>(
-			DebugModule::validation_layers.size()
-		);
-		create_info.ppEnabledLayerNames = DebugModule::validation_layers.data();
+		device_info.enabledLayerCount = static_cast<uint32_t>(DebugModule::validation_layers.size());
+		device_info.ppEnabledLayerNames = DebugModule::validation_layers.data();
 	} else {
-		create_info.enabledLayerCount = 0;
+		device_info.enabledLayerCount = 0;
 	}
 
 	// Device extensions enabling, notably for swap chain support
-	create_info.enabledExtensionCount = static_cast<uint32_t>(_device_extensions.size());
-	create_info.ppEnabledExtensionNames = _device_extensions.data();
+	device_info.enabledExtensionCount = static_cast<uint32_t>(_device_extensions.size());
+	device_info.ppEnabledExtensionNames = _device_extensions.data();
 
-	if (vkCreateDevice(_physical_device, &create_info, nullptr, &_logical_device) != VK_SUCCESS)
+	if (vkCreateDevice(_physical_device, &device_info, nullptr, &_logical_device) != VK_SUCCESS)
 		throw std::runtime_error("failed to create logical device");
 
 	// Retrieve queue handles
@@ -228,14 +227,17 @@ void	Device::_createLogicalDevice() {
 		_logical_device,
 		indices.graphics_family.value(),
 		0,
-		&_graphics_queue
-	);
+		&_graphics_queue);
 	vkGetDeviceQueue(
 		_logical_device,
 		indices.present_family.value(),
 		0,
-		&_present_queue
-	);
+		&_present_queue);
+	vkGetDeviceQueue(
+		_logical_device,
+		indices.compute_family.value(),
+		0,
+		&_compute_queue);
 }
 
 /**
@@ -302,8 +304,7 @@ bool	Device::_isDeviceSuitable(VkPhysicalDevice device) {
 	bool	swap_chain_adequate = false;
 
 	if (extensions_supported) {
-		SwapChainSupportDetails	swap_chain_support =
-			_querySwapChainSupport(device);
+		SwapChainSupportDetails	swap_chain_support = _querySwapChainSupport(device);
 		swap_chain_adequate =
 			!swap_chain_support.formats.empty() &&
 			!swap_chain_support.present_modes.empty();
@@ -323,7 +324,7 @@ bool	Device::_isDeviceSuitable(VkPhysicalDevice device) {
 /**
  * @brief Make sure the swap chain support is available for this device.
 */
-Device::SwapChainSupportDetails	Device::_querySwapChainSupport(
+SwapChainSupportDetails	Device::_querySwapChainSupport(
 	VkPhysicalDevice device
 ) {
 	SwapChainSupportDetails	details;
@@ -372,43 +373,37 @@ Device::SwapChainSupportDetails	Device::_querySwapChainSupport(
  * @brief Retrieve queue families that are appropriate for
  * the selected physical device and the app needs.
 */
-Device::QueueFamilyIndices	Device::_findQueueFamilies(
-	VkPhysicalDevice device
-) {
+QueueFamilyIndices	Device::_findQueueFamilies(VkPhysicalDevice device) {
 	QueueFamilyIndices	indices;
-	uint32_t			queue_family_count = 0;
-	vkGetPhysicalDeviceQueueFamilyProperties(
-		device,
-		&queue_family_count, nullptr
-	);
-	std::vector<VkQueueFamilyProperties>	queue_families(queue_family_count);
-	vkGetPhysicalDeviceQueueFamilyProperties(
-		device,
-		&queue_family_count, queue_families.data()
-	);
-
 	int	i = 0;
-	for (const auto& queue_family: queue_families) {
-		// Looking for queue family that supports the gfx bit flag
-		if (queue_family.queueFlags & VK_QUEUE_GRAPHICS_BIT)
-			indices.graphics_family = i;
+	for (const VkQueueFamilyProperties& queue_family: _queue_properties) {
+		if ((queue_family.queueFlags & VK_QUEUE_GRAPHICS_BIT) || // Graphics
+		   ((queue_family.queueFlags & VK_QUEUE_COMPUTE_BIT) == VK_QUEUE_COMPUTE_BIT)) { // Compute
+			indices.compute_family = i;
+		}
 
-		// Looking for queue family that supports presenting
+		// Present
 		VkBool32	present_support = false;
-		vkGetPhysicalDeviceSurfaceSupportKHR(
-			device,
-			i,
-			_vk_surface,
-			&present_support
-		);
+		vkGetPhysicalDeviceSurfaceSupportKHR(device, i, _vk_surface, &present_support);
 		if (present_support)
 			indices.present_family = i;
+
 		if (indices.isComplete())
 			break;
 		++i;
 	}
 
 	return indices;
+}
+
+/**
+ * @brief Retrieve queue properties for the selected physical device.
+*/
+void	Device::_retrieveQueueProperties(VkPhysicalDevice device) {
+	uint32_t			queue_count = 0;
+	vkGetPhysicalDeviceQueueFamilyProperties(device, &queue_count, nullptr);
+	_queue_properties.resize(queue_count);
+	vkGetPhysicalDeviceQueueFamilyProperties(device, &queue_count, _queue_properties.data());
 }
 
 } // namespace scop::core

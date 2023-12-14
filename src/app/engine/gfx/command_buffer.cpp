@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/04 08:39:55 by etran             #+#    #+#             */
-/*   Updated: 2023/11/16 21:58:35 by etran            ###   ########.fr       */
+/*   Updated: 2023/11/19 11:04:28 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,15 +29,16 @@ namespace scop::gfx {
 void	CommandBuffer::init(
 	scop::core::Device& device,
 	VkCommandPool pool,
-	uint32_t count
+	CommandBufferType type
 ) {
-	VkCommandBufferAllocateInfo	alloc{};
-	alloc.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-	alloc.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-	alloc.commandPool = pool;
-	alloc.commandBufferCount = count;
+	VkCommandBufferAllocateInfo	alloc_info{};
+	alloc_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+	alloc_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+	alloc_info.commandPool = pool;
+	alloc_info.commandBufferCount = 1;
+	_type = type;
 
-	if (vkAllocateCommandBuffers(device.getLogicalDevice(), &alloc, &_buffer) != VK_SUCCESS) {
+	if (vkAllocateCommandBuffers(device.getLogicalDevice(), &alloc_info, &_buffer) != VK_SUCCESS) {
 		throw std::runtime_error("failed to allocate command buffer");
 	}
 }
@@ -49,10 +50,7 @@ void	CommandBuffer::destroy(
 	scop::core::Device& device,
 	VkCommandPool pool
 ) {
-	vkFreeCommandBuffers(
-		device.getLogicalDevice(),
-		pool,
-		1, &_buffer);
+	vkFreeCommandBuffers(device.getLogicalDevice(), pool, 1, &_buffer);
 }
 
 /* ========================================================================== */
@@ -131,11 +129,11 @@ void	CommandBuffer::end(scop::core::Device& device, bool await) {
 
 /* ========================================================================== */
 
-VkCommandBuffer	CommandBuffer::getBuffer() const noexcept {
-	return _buffer;
+CommandBufferType	CommandBuffer::getType() const noexcept {
+	return _type;
 }
 
-CommandBuffer::operator VkCommandBuffer() const noexcept {
+VkCommandBuffer	CommandBuffer::getBuffer() const noexcept {
 	return _buffer;
 }
 

@@ -1,29 +1,26 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   chunk_texture_handler.h                            :+:      :+:    :+:   */
+/*   culling_texture_handler.h                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/10/24 14:32:13 by etran             #+#    #+#             */
-/*   Updated: 2023/12/11 20:48:14 by etran            ###   ########.fr       */
+/*   Created: 2023/11/02 17:10:13 by etran             #+#    #+#             */
+/*   Updated: 2023/12/05 17:10:11 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
 # include "texture_handler.h"
-
-namespace vox {
-class Chunk;
-}
+# include "chunk_macros.h"
 
 namespace scop::gfx {
 
 /**
- * @brief Contains chunk data.
+ * @brief Culling data texture handler.
 */
-class ChunkTextureHandler final: public TextureHandler {
+class CullingTextureHandler final: public TextureHandler {
 public:
 	/* ========================================================================= */
 	/*                                  TYPEDEFS                                 */
@@ -37,37 +34,40 @@ public:
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
 
-	ChunkTextureHandler() = default;
-	~ChunkTextureHandler() = default;
+	CullingTextureHandler() = default;
+	~CullingTextureHandler() = default;
 
-	ChunkTextureHandler(ChunkTextureHandler&& other) = delete;
-	ChunkTextureHandler(const ChunkTextureHandler& other) = delete;
-	ChunkTextureHandler& operator=(ChunkTextureHandler&& other) = delete;
-	ChunkTextureHandler& operator=(const ChunkTextureHandler& other) = delete;
+	CullingTextureHandler(CullingTextureHandler&& other) = delete;
+	CullingTextureHandler(const CullingTextureHandler& other) = delete;
+	CullingTextureHandler& operator=(CullingTextureHandler&& other) = delete;
+	CullingTextureHandler& operator=(const CullingTextureHandler& other) = delete;
 
 	/* ========================================================================= */
 
-	using super::destroy;
-
-	void			init(scop::core::Device& device) override;
-	void			copyData(
+	void					init(scop::core::Device& device) override;
+	void					destroy(scop::core::Device& device) override;
+	void					copyData(
 		scop::core::Device& device,
-		const std::vector<vox::Chunk>& chunks);
+		const std::array<uint16_t, RENDER_DISTANCE2>& chunk_map);
+
 
 	/* ========================================================================= */
 
 	using super::getTextureSampler;
 	using super::getTextureBuffer;
 
+	/* ========================================================================= */
+
+	using super::setTextureSampler;
+
 private:
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
 
-	void			_createTextureImages(scop::core::Device& device) override;
-	void			_createTextureImageView(scop::core::Device& device) override;
-	void			_createTextureSampler(scop::core::Device& device);
+	void					_createTextureImages(scop::core::Device& device) override;
+	void					_createTextureImageView(scop::core::Device& device) override;
 
-}; // class ChunkTextureHandler
+}; // class CullingTextureHandler
 
 } // namespace scop::gfx

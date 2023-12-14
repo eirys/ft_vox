@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/06 12:07:38 by etran             #+#    #+#             */
-/*   Updated: 2023/10/06 12:52:32 by etran            ###   ########.fr       */
+/*   Updated: 2023/12/08 16:25:19 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -91,7 +91,7 @@ private:
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
 
-	IntersectionType	checkIntersection(const BoundingFrustum& frustum) const override;
+	IntersectionType	_checkIntersection(const BoundingFrustum& frustum) const override;
 
 	/* ========================================================================= */
 

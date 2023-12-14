@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/02 19:40:11 by etran             #+#    #+#             */
-/*   Updated: 2023/11/16 23:09:02 by etran            ###   ########.fr       */
+/*   Updated: 2023/12/04 23:20:47 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,7 +57,7 @@ void	SwapChain::update(
 /**
  * @brief Find a depth format for the wanted features.
 */
-VkFormat	SwapChain::findDepthFormat(core::Device& device) {
+VkFormat	SwapChain::findDepthFormat(const core::Device& device) const {
 	return device.findSupportedFormat({
 			VK_FORMAT_D32_SFLOAT,
 			VK_FORMAT_D32_SFLOAT_S8_UINT,
@@ -97,7 +97,9 @@ void	SwapChain::_createSwapChain(
 	core::Device& device,
 	Window& window
 ) {
-	core::Device::SwapChainSupportDetails	swap_chain_support =
+	VkSwapchainKHR	old_swap_chain = _swap_chain;
+
+	core::SwapChainSupportDetails	swap_chain_support =
 		device.querySwapChainSupport();
 
 	// Setup options for functionning swap chain
@@ -120,46 +122,50 @@ void	SwapChain::_createSwapChain(
 	}
 
 	// Setup the creation of the swap chain object, tied to the vk_surface
-	VkSwapchainCreateInfoKHR	create_info{};
-	create_info.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
-	create_info.surface = device.getSurface();
-	create_info.minImageCount = image_count;
-	create_info.imageFormat = surface_format.format;
-	create_info.imageColorSpace = surface_format.colorSpace;
-	create_info.imageExtent = swap_extent;
-	create_info.imageArrayLayers = 1;
-	create_info.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+	VkSwapchainCreateInfoKHR	swapchain_info{};
+	swapchain_info.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
+	swapchain_info.surface = device.getSurface();
+	swapchain_info.minImageCount = image_count;
+	swapchain_info.imageFormat = surface_format.format;
+	swapchain_info.imageColorSpace = surface_format.colorSpace;
+	swapchain_info.imageExtent = swap_extent;
+	swapchain_info.imageArrayLayers = 1;
+	swapchain_info.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
 	// Queue family swap handling:
 	// - gfx queue -> drawing to swap chain
 	// - present queue -> get passed the swap chain to be submitted
-	core::Device::QueueFamilyIndices	indices = device.findQueueFamilies();
+	core::QueueFamilyIndices	indices = device.findQueueFamilies();
 	uint32_t			queue_family_indices[] = {
 		indices.graphics_family.value(),
-		indices.present_family.value()
-	};
+		indices.present_family.value() };
 
 	if (indices.graphics_family != indices.present_family) {
 		// No image ownership transfer
-		create_info.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
-		create_info.queueFamilyIndexCount = 2;
-		create_info.pQueueFamilyIndices = queue_family_indices;
+		swapchain_info.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
+		swapchain_info.queueFamilyIndexCount = 2;
+		swapchain_info.pQueueFamilyIndices = queue_family_indices;
 	} else {
 		// Explicit image ownership needed between queue families
-		create_info.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
-		create_info.queueFamilyIndexCount = 0;
-		create_info.pQueueFamilyIndices = nullptr;
+		swapchain_info.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
+		swapchain_info.queueFamilyIndexCount = 0;
+		swapchain_info.pQueueFamilyIndices = nullptr;
 	}
 
-	create_info.preTransform = swap_chain_support.capabilities.currentTransform;
-	create_info.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
-	create_info.presentMode = present_mode;
-	create_info.clipped = VK_TRUE;
-	create_info.oldSwapchain = VK_NULL_HANDLE;
+	swapchain_info.preTransform = swap_chain_support.capabilities.currentTransform;
+	swapchain_info.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
+	swapchain_info.presentMode = present_mode;
+	swapchain_info.clipped = VK_TRUE;
+	swapchain_info.oldSwapchain = old_swap_chain;
 
 	// Create the object and images
-	if (vkCreateSwapchainKHR(device.getLogicalDevice(), &create_info, nullptr, &_swap_chain) != VK_SUCCESS) {
+	if (vkCreateSwapchainKHR(device.getLogicalDevice(), &swapchain_info, nullptr, &_swap_chain) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create swap chain");
+	}
+
+	// Remove old swap chain handler
+	if (old_swap_chain != VK_NULL_HANDLE) {
+		vkDestroySwapchainKHR(device.getLogicalDevice(), old_swap_chain, nullptr);
 	}
 
 	_image_format = surface_format.format;

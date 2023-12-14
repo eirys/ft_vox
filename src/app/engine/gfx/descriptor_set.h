@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/12 12:08:24 by etran             #+#    #+#             */
-/*   Updated: 2023/11/16 22:41:45 by etran            ###   ########.fr       */
+/*   Updated: 2023/11/18 20:21:54 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,6 +36,9 @@ struct DescriptorSizes {
 	uint32_t	storage_buffer = 0;
 };
 
+/**
+ * @brief Descriptor set handle.
+*/
 class DescriptorSet {
 public:
 	/* ========================================================================= */

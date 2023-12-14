@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:14:30 by etran             #+#    #+#             */
-/*   Updated: 2023/08/12 23:43:18 by etran            ###   ########.fr       */
+/*   Updated: 2023/12/04 23:15:10 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,30 +25,33 @@ class Window;
 
 namespace scop::core {
 
+/* ========================================================================= */
+/*                               HELPER OBJECTS                              */
+/* ========================================================================= */
+
+struct QueueFamilyIndices {
+	std::optional<uint32_t>	graphics_family;
+	std::optional<uint32_t>	present_family;
+	std::optional<uint32_t>	compute_family;
+
+	bool	isComplete() {
+		return graphics_family.has_value() &&
+			   present_family.has_value() &&
+			   compute_family.has_value();
+	}
+};
+
+struct SwapChainSupportDetails {
+	VkSurfaceCapabilitiesKHR		capabilities;
+	std::vector<VkSurfaceFormatKHR>	formats;
+	std::vector<VkPresentModeKHR>	present_modes;
+};
+
 /**
  * @brief Wrapper class for Vulkan device.
 */
 class Device {
 public:
-	/* ========================================================================= */
-	/*                               HELPER OBJECTS                              */
-	/* ========================================================================= */
-
-	struct QueueFamilyIndices {
-		std::optional<uint32_t>	graphics_family;
-		std::optional<uint32_t>	present_family;
-
-		bool	isComplete() {
-			return graphics_family.has_value() && present_family.has_value();
-		}
-	};
-
-	struct SwapChainSupportDetails {
-		VkSurfaceCapabilitiesKHR		capabilities;
-		std::vector<VkSurfaceFormatKHR>	formats;
-		std::vector<VkPresentModeKHR>	present_modes;
-	};
-
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
@@ -72,15 +75,13 @@ public:
 
 	uint32_t				findMemoryType(
 		uint32_t type_filter,
-		VkMemoryPropertyFlags properties
-	) const;
+		VkMemoryPropertyFlags properties) const;
 	SwapChainSupportDetails	querySwapChainSupport();
 	QueueFamilyIndices		findQueueFamilies();
 	VkFormat				findSupportedFormat(
 		const std::vector<VkFormat>& candidates,
 		VkImageTiling tiling,
-		VkFormatFeatureFlags features
-	);
+		VkFormatFeatureFlags features) const;
 
 	/* ========================================================================= */
 
@@ -90,6 +91,7 @@ public:
 	VkPhysicalDevice		getPhysicalDevice() const noexcept;
 	VkQueue					getGraphicsQueue() const noexcept;
 	VkQueue					getPresentQueue() const noexcept;
+	VkQueue					getComputeQueue() const noexcept;
 
 private:
 	/* ========================================================================= */
@@ -112,7 +114,9 @@ private:
 
 	VkQueue					_graphics_queue;
 	VkQueue					_present_queue;
-	// VkQueue					_compute_queue; // TODO
+	VkQueue					_compute_queue; // TODO
+
+	std::vector<VkQueueFamilyProperties>	_queue_properties;
 
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
@@ -120,18 +124,17 @@ private:
 
 	void					_createSurface(
 		VkInstance instance,
-		scop::Window& window
-	);
+		scop::Window& window);
 	void					_pickPhysicalDevice(VkInstance vk_instance);
 	void					_createLogicalDevice();
 
 	VkSampleCountFlagBits	_getMaxUsableSampleCount() const;
 	bool					_checkDeviceExtensionSupport(
-		VkPhysicalDevice device
-	);
+		VkPhysicalDevice device);
 	bool					_isDeviceSuitable(VkPhysicalDevice device);
 	QueueFamilyIndices		_findQueueFamilies(VkPhysicalDevice device);
 	SwapChainSupportDetails	_querySwapChainSupport(VkPhysicalDevice device);
+	void					_retrieveQueueProperties(VkPhysicalDevice device);
 
 }; // class Device
 

@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/24 14:14:11 by etran             #+#    #+#             */
-/*   Updated: 2023/10/25 17:38:36 by etran            ###   ########.fr       */
+/*   Updated: 2023/12/08 16:25:09 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,7 @@ BoundingBox::BoundingBox(Vect3 center, Vect3 half_diag):
 	_half_diag(half_diag),
 	_center(center) {}
 
-IntersectionType	BoundingBox::checkPlaneIntersection(const Plane& plane) const {
+IntersectionType	BoundingBox::_checkPlaneIntersection(const Plane& plane) const {
 	// Length of diag projected on plane normal
 	float extent = scop::dot(_half_diag, abs(plane.xyz));
 	float signedDistance = scop::dot(_center, plane.xyz) + plane.w;

@@ -6,7 +6,7 @@
 #    By: etran <etran@student.42.fr>                +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/04/06 03:40:09 by eli               #+#    #+#              #
-#    Updated: 2023/11/16 22:56:32 by etran            ###   ########.fr        #
+#    Updated: 2023/12/11 22:53:47 by etran            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -22,6 +22,9 @@ SRC_DIR		:=	src
 OBJ_DIR		:=	obj
 SHD_DIR		:=	shaders
 
+# shader binaries
+SHD_BIN_DIR	:=	$(OBJ_DIR)/bin
+
 # main
 APP_DIR		:=	app
 
@@ -29,14 +32,13 @@ APP_DIR		:=	app
 ENG_DIR		:=	$(APP_DIR)/engine
 CORE_DIR	:=	$(ENG_DIR)/core
 GFX_DIR		:=	$(ENG_DIR)/gfx
-OPTIM_DIR	:=	$(ENG_DIR)/optimization
 
 # renderers
 REN_DIR		:=	$(GFX_DIR)/renderers
+CULL_DIR	:=	$(REN_DIR)/culling
 SCENE_DIR	:=	$(REN_DIR)/scene
 SHADOW_DIR	:=	$(REN_DIR)/shadows
 
-CULL_DIR	:=	$(OPTIM_DIR)/culling
 
 # gameplay
 GAME_DIR	:=	$(APP_DIR)/gameplay
@@ -54,7 +56,6 @@ SUBDIRS		:=	$(APP_DIR)		\
 				$(ENG_DIR)		\
 				$(CORE_DIR)		\
 				$(GFX_DIR)		\
-				$(OPTIM_DIR)	\
 				$(REN_DIR)		\
 				$(SCENE_DIR)	\
 				$(SHADOW_DIR)	\
@@ -96,7 +97,10 @@ SRC_FILES	:=	$(TOOLS_DIR)/matrix.cpp \
 				$(CORE_DIR)/debug_module.cpp \
 				$(CORE_DIR)/device.cpp \
 				$(CORE_DIR)/core.cpp \
-				$(GFX_DIR)/pipeline.cpp \
+				$(GFX_DIR)/pipeline_manager.cpp \
+				$(GFX_DIR)/graphics_pipeline.cpp \
+				$(GFX_DIR)/compute_pipeline.cpp \
+				$(GFX_DIR)/pipeline_helpers.cpp \
 				$(GFX_DIR)/descriptor_pool.cpp \
 				$(GFX_DIR)/descriptor_set.cpp \
 				$(GFX_DIR)/command_pool.cpp \
@@ -106,10 +110,11 @@ SRC_FILES	:=	$(TOOLS_DIR)/matrix.cpp \
 				$(GFX_DIR)/command_buffer.cpp \
 				$(GFX_DIR)/image_buffer.cpp \
 				$(GFX_DIR)/texture_handler.cpp \
-				$(GFX_DIR)/map_texture_handler.cpp \
+				$(GFX_DIR)/culling_texture_handler.cpp \
 				$(GFX_DIR)/chunk_texture_handler.cpp \
 				$(CULL_DIR)/bounding_box.cpp \
 				$(CULL_DIR)/bounding_frustum.cpp \
+				$(CULL_DIR)/culling_pipeline.cpp \
 				$(SCENE_DIR)/scene_render_pass.cpp \
 				$(SCENE_DIR)/scene_descriptor_set.cpp \
 				$(SCENE_DIR)/scene_pipeline.cpp \
@@ -154,11 +159,13 @@ LDFLAGS		:=	-lglfw \
 				-lXi
 
 # ------------------- SHADERS ------------------ #
-SHD_FILES	:=	scene.fragment \
-				scene.vertex \
-				shadow.vertex
+# SHD_FILES	:=	scene.fragment \
+# 				scene.vertex \
+# 				shadow.vertex
 
-SHD			:=	$(addprefix $(SHD_DIR)/,$(SHD_FILES))
+SHD_FILES:= culling.compute
+
+SHD			:=	$(addprefix $(SHD_BIN_DIR)/,$(SHD_FILES))
 SHD_BIN		:=	$(addsuffix .spv,$(SHD))
 
 # -------------------- MISC -------------------- #
@@ -186,13 +193,14 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
 	@$(CXX) $(CFLAGS) -c $< -o $@
 
 # Compile shader binaries
-$(SHD_DIR)/%.spv: $(SHD_DIR)/glsl/%.glsl
+$(SHD_BIN_DIR)/%.spv: $(SHD_DIR)/glsl/%.glsl
+	@mkdir -p $(OBJ_DIR) $(SHD_BIN_DIR)
 	@echo "Compiling shader $<..."
 	@$(GLSLC) -fshader-stage=$(subst .,,$(suffix $(basename $<))) $< -o $@
 
 .PHONY: clean_shaders
 clean_shaders:
-	@${RM} $(SHD_BIN)
+	@${RM} $(SHD_BIN_DIR)
 	@echo "Removed shader binaries."
 
 .PHONY: shaders_re
@@ -204,9 +212,7 @@ clean:
 	@echo "Cleaning object files and dependencies."
 
 .PHONY: fclean
-fclean: clean
-	@${RM} $(SHD_BIN)
-	@echo "Removed shader binaries."
+fclean: clean clean_shaders
 	@${RM} $(NAME)
 	@echo "Removed $(NAME)."
 

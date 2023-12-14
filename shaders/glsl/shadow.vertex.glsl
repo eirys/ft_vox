@@ -21,7 +21,7 @@ layout(binding = 2, set = 1) uniform usampler2D				chunk_map;
 
 #include "scene_rendering_tools.glslh"
 
-/* MAIN ===================================================================== */
+/* ENTRYPOINT =============================================================== */
 void	main() {
 	gl_Position = vec4(0.0);
 	// int		cubeId = gl_InstanceIndex % CHUNK_AREA;

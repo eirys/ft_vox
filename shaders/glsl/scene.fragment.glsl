@@ -1,4 +1,5 @@
 #version 450
+#define PS
 
 // Input
 layout(location = 0) in vec3 in_normal;
@@ -39,7 +40,7 @@ vec4 directionalLighting(
 	return vec4(_light_color * illumination, 1.0f);
 }
 
-/* MAIN ===================================================================== */
+/* ENTRYPOINT =============================================================== */
 void main() {
 	vec4 color = texture(tex_sampler, in_uvw);
 	vec4 ambient = vec4(light.ambient, 1.0f);

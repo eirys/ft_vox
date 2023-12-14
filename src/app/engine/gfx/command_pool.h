@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:14:01 by etran             #+#    #+#             */
-/*   Updated: 2023/11/16 22:39:40 by etran            ###   ########.fr       */
+/*   Updated: 2023/11/19 11:01:46 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,6 +22,7 @@ class Device;
 namespace scop::gfx {
 
 class CommandBuffer;
+enum class CommandBufferType: uint8_t;
 
 /**
  * @brief Simple wrapper class for VkCommandPool.
@@ -45,7 +46,9 @@ public:
 	void					init(scop::core::Device& device);
 	void					destroy(scop::core::Device& device);
 
-	static CommandBuffer	createBuffer(scop::core::Device& device);
+	static CommandBuffer	createBuffer(
+		scop::core::Device& device,
+		CommandBufferType type);
 	static void				destroyBuffer(
 		scop::core::Device& device,
 		CommandBuffer& buffer);
@@ -60,7 +63,8 @@ private:
 	/*                               CLASS MEMBERS                               */
 	/* ========================================================================= */
 
-	static VkCommandPool	_pool;
+	static VkCommandPool	_draw_pool;
+	static VkCommandPool	_compute_pool;
 
 }; // class CommandPool
 

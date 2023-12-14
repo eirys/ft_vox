@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/10 22:32:26 by etran             #+#    #+#             */
-/*   Updated: 2023/11/16 23:14:20 by etran            ###   ########.fr       */
+/*   Updated: 2023/11/19 11:07:58 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -92,7 +92,7 @@ void	SceneTextureHandler::_createTextureImages(scop::core::Device& device) {
 		0);
 
 	// Setup copy command buffer
-	CommandBuffer	command_buffer = CommandPool::createBuffer(device);
+	CommandBuffer	command_buffer = CommandPool::createBuffer(device, CommandBufferType::DRAW);
 	command_buffer.begin();
 
 	// Transition to transfer destination layout
@@ -104,7 +104,7 @@ void	SceneTextureHandler::_createTextureImages(scop::core::Device& device) {
 	transfer_barrier.layerCount = data.getLayerCount();
 
 	super::_texture_buffer.setLayout(
-		command_buffer,
+		command_buffer.getBuffer(),
 		VK_IMAGE_LAYOUT_UNDEFINED,
 		VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
 		0,
@@ -115,13 +115,13 @@ void	SceneTextureHandler::_createTextureImages(scop::core::Device& device) {
 
 	// Send copy command
 	super::_texture_buffer.copyFrom(
-		command_buffer,
+		command_buffer.getBuffer(),
 		staging_buffer.getBuffer(),
 		static_cast<uint32_t>(layer_size));
 
 	// Dynamically generate mipmaps
 	super::_texture_buffer.generateMipmap(
-		command_buffer,
+		command_buffer.getBuffer(),
 		device);
 
 	// Submit commands

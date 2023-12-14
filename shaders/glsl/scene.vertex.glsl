@@ -1,10 +1,12 @@
 #version 450
+#define VS
 
 /* ========================================================================== */
 /*                                   MACROS                                   */
 /* ========================================================================== */
 
 #include "../../src/app/generation/chunk_macros.h"
+#include "decl.glslh"
 
 /* ========================================================================== */
 /*                                 SHADER I/O                                 */
@@ -14,15 +16,24 @@
 //  None
 
 // Output
-layout(location = 0) out vec3 out_normal;
-layout(location = 1) out vec3 out_uvw;
-layout(location = 2) out vec3 out_shadow;
+OUTPUT(0)				vec3 out_normal;
+OUTPUT(1)				vec3 out_uvw;
+OUTPUT(2)				vec3 out_shadow;
+
+// layout(location = 0) out vec3 out_normal;
+// layout(location = 1) out vec3 out_uvw;
+// layout(location = 2) out vec3 out_shadow;
 
 /* UNIFORMS ================================================================= */
-layout(binding = 0, set = 0) uniform Camera { mat4 vp; }	camera;
-layout(binding = 1, set = 0) uniform Projector { mat4 vp; }	projector;
-layout(binding = 5, set = 0) uniform usampler2DArray		height_map;
-layout(binding = 6, set = 0) uniform usampler2D				chunk_map;
+UNIFORM(SCENE_SET, 0)		Camera { mat4 vp; }		camera;
+UNIFORM(SCENE_SET, 1)		Projector { mat4 vp; }	projector;
+UNIFORM(SCENE_SET, 2)		usampler2DArray			height_map;
+UNIFORM(SCENE_SET, 3)		usampler2D				chunk_map;
+
+// layout(binding = 0, set = 0) uniform Camera { mat4 vp; }	camera;
+// layout(binding = 1, set = 0) uniform Projector { mat4 vp; }	projector;
+// layout(binding = 5, set = 0) uniform usampler2DArray		height_map;
+// layout(binding = 6, set = 0) uniform usampler2D				chunk_map;
 
 /* ========================================================================== */
 /*                                  INCLUDES                                  */
@@ -49,7 +60,7 @@ const vec2 uvs[6] = {
 	{ 1.0, 0.0 },
 };
 
-/* MAIN ===================================================================== */
+/* ENTRYPOINT =============================================================== */
 void	main() {
 	// Get actual instanceId
 	ivec2	instanceUV = ivec2(gl_InstanceIndex % RENDER_DISTANCE, gl_InstanceIndex / RENDER_DISTANCE);	// (x, y) in [0, 5]

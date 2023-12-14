@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/02 16:09:44 by etran             #+#    #+#             */
-/*   Updated: 2023/11/16 23:40:57 by etran            ###   ########.fr       */
+/*   Updated: 2023/12/06 23:20:43 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,6 @@
 #include "timer.h"
 #include "utils.h"
 #include "world_macros.h"
-#include "shadowmap_consts.h"
 
 // Vox
 #include "chunk.h"
@@ -27,9 +26,8 @@
 #include "target.h"
 #include "descriptor_set.h"
 #include "render_pass.h"
-// Renderer
-#include "scene_pipeline.h"
-#include "shadows_pipeline.h"
+#include "pipeline_manager.h"
+#include "chunk_texture_handler.h"
 
 #include <cstring> // std::strcmp
 
@@ -39,79 +37,53 @@ using Camera = ::scop::Camera;
 
 namespace scop {
 
-using gfx::ScenePipeline;
-using gfx::ShadowsPipeline;
-using gfx::RenderPassInfo;
-using gfx::TargetInfo;
+using gfx::ChunkTextureHandler;
 
 /* ========================================================================== */
 /*                                   PUBLIC                                   */
 /* ========================================================================== */
 
 void	Engine::init(Window& window, const vox::GameState& game) {
-	_pipelines.scene = std::make_shared<ScenePipeline>();
-	_pipelines.shadows = std::make_shared<ShadowsPipeline>();
-
-	// _createInstance();
-	// _debug_module.init(_vk_instance);
-	// _core.getDevice().init(window, _vk_instance);
-
 	_core.init(window);
+	_swap_chain.init(_core.getDevice(), window);
+	_command_pool.init(_core.getDevice());
 
-	core::Device&	device = _core.getDevice();
+	_draw_buffer.init(_core.getDevice(), _command_pool, gfx::CommandBufferType::DRAW);
+	_compute_buffer.init(_core.getDevice(), _command_pool, gfx::CommandBufferType::COMPUTE);
 
-	_swap_chain.init(device, window);
-	_command_pool.init(device);
+	_input_handler.init(_core.getDevice(), game);
+	_pipeline_manager.init(_core.getDevice(), _swap_chain);
 
-	_input_handler.init(device, game);
-
-	_createGraphicsPipelines();
-	_createGraphicsPipelineLayout();
-	_assembleGraphicsPipelines();
 	_createDescriptors();
-
-	_draw_buffer.init(device, _command_pool, max_frames_in_flight);
 	_createSyncObjects();
 
-	_pipelines.scene->update(_updateUbo(game));
+	// TODO
+	// _pipelines.scene->update(_updateUbo(game));
 }
 
 void	Engine::destroy() {
-	core::Device&	device = _core.getDevice();
-
-	_swap_chain.destroy(device);
-	_pipelines.scene->destroy(device);
-	_pipelines.shadows->destroy(device);
-
-	_input_handler.destroy(device);
-
-	vkDestroyPipelineLayout(
-		device.getLogicalDevice(),
-		_pipeline_layout,
-		nullptr);
-
-	_descriptor_pool.destroy(device);
+	_descriptor_pool.destroy(_core.getDevice());
 
 	// Remove sync objects
 	vkDestroySemaphore(
-		device.getLogicalDevice(),
+		_core.getDevice().getLogicalDevice(),
 		_image_available_semaphores,
 		nullptr);
 	vkDestroySemaphore(
-		device.getLogicalDevice(),
+		_core.getDevice().getLogicalDevice(),
 		_render_finished_semaphores,
 		nullptr);
 	vkDestroyFence(
-		device.getLogicalDevice(),
+		_core.getDevice().getLogicalDevice(),
 		_in_flight_fences,
 		nullptr);
 
-	_command_pool.destroy(device);
+	_pipeline_manager.destroy(_core.getDevice());
+	_input_handler.destroy(_core.getDevice());
 
+	_command_pool.destroy(_core.getDevice());
+	_swap_chain.destroy(_core.getDevice());
 	_core.destroy();
-	// _core.getDevice().destroy(_vk_instance);
-	// _debug_module.destroy(_vk_instance);
-	// vkDestroyInstance(_vk_instance, nullptr);
 }
 
 /* ========================================================================== */
@@ -130,8 +102,7 @@ void	Engine::render(
 		_core.getDevice().getLogicalDevice(),
 		1, &_in_flight_fences,
 		VK_TRUE,
-		UINT64_MAX
-	);
+		UINT64_MAX);
 
 	// Next available image from swap chain
 	uint32_t	image_index;
@@ -155,21 +126,25 @@ void	Engine::render(
 	// Record buffer
 	_draw_buffer.reset();
 	_draw_buffer.begin(0);
-	_pipelines.shadows->draw(
-		_pipeline_layout,
+	_pipeline_manager.getCullingPipeline()->compute(
+		_core.getDevice(),
+		_pipeline_manager.getPipelineLayout(),
+		_compute_buffer);
+	_pipeline_manager.getShadowsPipeline()->draw(
+		_pipeline_manager.getPipelineLayout(),
 		_draw_buffer,
 		_input_handler,
 		image_index);
-	_pipelines.scene->draw(
-		_pipeline_layout,
+	_pipeline_manager.getScenePipeline()->draw(
+		_pipeline_manager.getPipelineLayout(),
 		_draw_buffer,
 		_input_handler,
 		image_index);
 	_draw_buffer.end(_core.getDevice(), false);
 
-	_pipelines.scene->update(_updateUbo(game));
+	_pipeline_manager.getScenePipeline()->update(_updateUbo(game));
 
-	// Set synchronization objects
+	// Submit compute and draw command buffers
 	std::array<VkSemaphore, 1>			wait_semaphores = { _image_available_semaphores };
 	std::array<VkSemaphore, 1>			signal_semaphores = { _render_finished_semaphores };
 	std::array<VkPipelineStageFlags, 1>	wait_stages = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
@@ -184,7 +159,6 @@ void	Engine::render(
 	submit_info.commandBufferCount = 1;
 	submit_info.pCommandBuffers = reinterpret_cast<VkCommandBuffer*>(&_draw_buffer);
 
-	// Submit command buffer to be processed by gfx queue
 	if (vkQueueSubmit(_core.getDevice().getGraphicsQueue(), 1, &submit_info, _in_flight_fences) != VK_SUCCESS) {
 		throw std::runtime_error("failed to submit draw command buffer");
 	}
@@ -220,203 +194,16 @@ void	Engine::render(
 /*                                   PRIVATE                                  */
 /* ========================================================================== */
 
-/**
- * @brief Create generic pipeline createinfo
-*/
-void	Engine::_createGraphicsPipelines() {
-	RenderPassInfo	rp_info {
-		.width = _swap_chain.getExtent().width,
-		.height = _swap_chain.getExtent().height,
-		.depth_format = _swap_chain.findDepthFormat(_core.getDevice()),
-		.depth_samples = _core.getDevice().getMsaaSamples(),
-		.color_format = _swap_chain.getImageFormat(),
-		.color_samples = _core.getDevice().getMsaaSamples() };
-	TargetInfo	tar_info { .swap_chain = &_swap_chain };
-
-	_pipelines.scene->init(
-		_core.getDevice(),
-		rp_info,
-		tar_info);
-
-	rp_info.width = SHADOWMAP_SIZE;
-	rp_info.height = SHADOWMAP_SIZE;
-	rp_info.depth_format = SHADOWMAP_DEPTH_FORMAT;
-	rp_info.depth_samples = VK_SAMPLE_COUNT_1_BIT;
-
-	_pipelines.shadows->init(
-		_core.getDevice(),
-		rp_info,
-		tar_info);
-}
-
 void	Engine::_createDescriptors() {
 	using DescriptorSetPtr = std::shared_ptr<scop::gfx::DescriptorSet>;
-	using ScenePipelinePtr = std::shared_ptr<ScenePipeline>;
-	using ShadowsPipelinePtr = std::shared_ptr<ShadowsPipeline>;
 
 	std::vector<DescriptorSetPtr>	descriptors = {
-		_pipelines.scene->getDescriptor(),
-		_pipelines.shadows->getDescriptor() };
+		_pipeline_manager.getScenePipeline()->getDescriptor(),
+		_pipeline_manager.getShadowsPipeline()->getDescriptor(),
+		_pipeline_manager.getCullingPipeline()->getDescriptor() };
+
 	_descriptor_pool.init(_core.getDevice(), descriptors);
-
-	ScenePipelinePtr scene_pipeline =
-		std::dynamic_pointer_cast<ScenePipeline>(_pipelines.scene);
-	ShadowsPipelinePtr shadows_pipeline =
-		std::dynamic_pointer_cast<ShadowsPipeline>(_pipelines.shadows);
-
-	scene_pipeline->plugDescriptor(
-		_core.getDevice(),
-		shadows_pipeline->getTextureHandler(),
-		_input_handler);
-	shadows_pipeline->plugDescriptor(
-		_core.getDevice(),
-		scene_pipeline->getUbo(),
-		_input_handler);
-}
-
-void	Engine::_createGraphicsPipelineLayout() {
-	std::vector<VkDescriptorSetLayout>	layouts = {
-		_pipelines.scene->getDescriptor()->getLayout(),
-		_pipelines.shadows->getDescriptor()->getLayout()
-	};
-	VkPipelineLayoutCreateInfo	pipeline_layout_info{};
-	pipeline_layout_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-	pipeline_layout_info.setLayoutCount = static_cast<uint32_t>(layouts.size());
-	pipeline_layout_info.pSetLayouts = layouts.data();
-	pipeline_layout_info.pushConstantRangeCount = 0;
-	pipeline_layout_info.pPushConstantRanges = nullptr;
-
-	if (vkCreatePipelineLayout(_core.getDevice().getLogicalDevice(), &pipeline_layout_info, nullptr, &_pipeline_layout) != VK_SUCCESS) {
-		throw std::runtime_error("failed to create _pipeline layout");
-	}
-}
-
-void	Engine::_assembleGraphicsPipelines() {
-	/* INPUT FORMAT ============================================================ */
-	VkPipelineVertexInputStateCreateInfo	vert_input{};
-
-	vert_input.sType =
-		VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-
-	vert_input.vertexBindingDescriptionCount = 0;
-	vert_input.pVertexBindingDescriptions = nullptr;
-	vert_input.vertexAttributeDescriptionCount = 0;
-	vert_input.pVertexAttributeDescriptions = nullptr;
-
-	/* INPUT ASSEMBLY ========================================================== */
-	VkPipelineInputAssemblyStateCreateInfo	input_assembly{};
-	input_assembly.sType =
-		VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
-	input_assembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
-	input_assembly.primitiveRestartEnable = VK_FALSE;
-
-	/* VIEWPORT ================================================================ */
-	VkPipelineViewportStateCreateInfo	viewport_state{};
-	viewport_state.sType =
-		VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
-	viewport_state.viewportCount = 1;
-	viewport_state.scissorCount = 1;
-
-	/* RASTERIZER ============================================================== */
-	VkPipelineRasterizationStateCreateInfo	rasterizing{};
-	rasterizing.sType =
-		VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
-	rasterizing.depthClampEnable = VK_FALSE;
-	rasterizing.rasterizerDiscardEnable = VK_FALSE;
-	rasterizing.polygonMode = VK_POLYGON_MODE_FILL;
-	rasterizing.lineWidth = 1.0f;
-	rasterizing.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
-	rasterizing.depthBiasEnable = VK_FALSE;
-	rasterizing.depthBiasConstantFactor = 0.0f;
-	rasterizing.depthBiasClamp = 0.0f;
-	rasterizing.cullMode = VK_CULL_MODE_BACK_BIT;
-	rasterizing.depthBiasSlopeFactor = 0.0f;
-
-	/* MULTISAMPLING =========================================================== */
-	VkPipelineMultisampleStateCreateInfo	multisampling{};
-	multisampling.sType =
-		VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
-	multisampling.sampleShadingEnable = VK_FALSE;
-	multisampling.minSampleShading = 1.0f;
-	multisampling.pSampleMask = nullptr;
-	multisampling.alphaToCoverageEnable = VK_FALSE;
-	multisampling.alphaToOneEnable = VK_FALSE;
-	multisampling.rasterizationSamples = _core.getDevice().getMsaaSamples();
-
-	/* COLOR BLENDING ========================================================== */
-	VkPipelineColorBlendAttachmentState	color_blend_attachment{};
-	color_blend_attachment.colorWriteMask =
-		VK_COLOR_COMPONENT_R_BIT |
-		VK_COLOR_COMPONENT_G_BIT |
-		VK_COLOR_COMPONENT_B_BIT |
-		VK_COLOR_COMPONENT_A_BIT;
-	color_blend_attachment.blendEnable = VK_FALSE;
-	color_blend_attachment.srcColorBlendFactor = VK_BLEND_FACTOR_ONE;
-	color_blend_attachment.dstColorBlendFactor = VK_BLEND_FACTOR_ZERO;
-	color_blend_attachment.colorBlendOp = VK_BLEND_OP_ADD;
-	color_blend_attachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
-	color_blend_attachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
-	color_blend_attachment.alphaBlendOp = VK_BLEND_OP_ADD;
-
-	VkPipelineColorBlendStateCreateInfo	color_blending{};
-	color_blending.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
-	color_blending.logicOpEnable = VK_FALSE;
-	color_blending.logicOp = VK_LOGIC_OP_COPY;
-	color_blending.blendConstants[0] = 0.0f;
-	color_blending.blendConstants[1] = 0.0f;
-	color_blending.blendConstants[2] = 0.0f;
-	color_blending.blendConstants[3] = 0.0f;
-	color_blending.attachmentCount = 1;
-	color_blending.pAttachments = &color_blend_attachment;
-
-	/* DEPTH STENCIL =========================================================== */
-	VkPipelineDepthStencilStateCreateInfo	depth_stencil{};
-	depth_stencil.sType =
-		VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
-	depth_stencil.depthTestEnable = VK_TRUE;			// fragment depth compared to depth buffer enabled
-	depth_stencil.depthWriteEnable = VK_TRUE;			// if test passed, new depth saved in buffer enabled
-	depth_stencil.depthBoundsTestEnable = VK_FALSE;		// unused. specifies min/max depth bounds
-	depth_stencil.minDepthBounds = 0.0f;
-	depth_stencil.maxDepthBounds = 1.0f;
-	depth_stencil.stencilTestEnable = VK_FALSE;			// unused. typically used for reflection, shadow...
-	depth_stencil.front = {};
-	depth_stencil.back = {};
-	depth_stencil.depthCompareOp = VK_COMPARE_OP_LESS;
-
-	/* DYNAMIC STATE =========================================================== */
-	std::array<VkDynamicState, 2>	dynamic_states = {
-		VK_DYNAMIC_STATE_VIEWPORT,
-		VK_DYNAMIC_STATE_SCISSOR };
-
-	VkPipelineDynamicStateCreateInfo	dynamic_state{};
-	dynamic_state.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
-	dynamic_state.dynamicStateCount = static_cast<uint32_t>(dynamic_states.size());
-	dynamic_state.pDynamicStates = dynamic_states.data();
-
-	/* PIPELINE ================================================================ */
-	VkGraphicsPipelineCreateInfo	pipeline_info{};
-	pipeline_info.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-	pipeline_info.pVertexInputState = &vert_input;
-	pipeline_info.pInputAssemblyState = &input_assembly;
-	pipeline_info.pViewportState = &viewport_state;
-	pipeline_info.pRasterizationState = &rasterizing;
-	pipeline_info.pMultisampleState = &multisampling;
-	pipeline_info.pDepthStencilState = &depth_stencil;
-	pipeline_info.pColorBlendState = &color_blending;
-	pipeline_info.pDynamicState = &dynamic_state;
-	pipeline_info.layout = _pipeline_layout;
-	pipeline_info.subpass = 0;
-	pipeline_info.basePipelineHandle = VK_NULL_HANDLE;
-	pipeline_info.basePipelineIndex = -1;
-
-	_pipelines.scene->assemble(_core.getDevice(), pipeline_info);
-
-	color_blending.attachmentCount = 0;
-	rasterizing.cullMode = VK_CULL_MODE_NONE;
-	multisampling.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
-	depth_stencil.depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
-
-	_pipelines.shadows->assemble(_core.getDevice(), pipeline_info);
+	_pipeline_manager.plugDescriptors(_core.getDevice());
 }
 
 /**
@@ -432,6 +219,7 @@ void	Engine::_createSyncObjects() {
 
 	if (vkCreateSemaphore(_core.getDevice().getLogicalDevice(), &semaphore_info, nullptr, &_image_available_semaphores) != VK_SUCCESS ||
 		vkCreateSemaphore(_core.getDevice().getLogicalDevice(), &semaphore_info, nullptr, &_render_finished_semaphores) != VK_SUCCESS ||
+		vkCreateSemaphore(_core.getDevice().getLogicalDevice(), &semaphore_info, nullptr, &_compute_finished_semaphores) != VK_SUCCESS ||
 		vkCreateFence(_core.getDevice().getLogicalDevice(), &fence_info, nullptr, &_in_flight_fences) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create semaphore");
 	}
@@ -442,20 +230,21 @@ void	Engine::_createSyncObjects() {
 /**
  * @brief Update presentation objects to match window size.
 */
+// TODO fix
 void	Engine::_updatePresentation(Window& window) {
-	_swap_chain.update(_core.getDevice(), window);
+	// _swap_chain.update(_core.getDevice(), window);
 
-	RenderPassInfo	rp_info {
-		.width = _swap_chain.getExtent().width,
-		.height = _swap_chain.getExtent().height,
-		.depth_format = _swap_chain.findDepthFormat(_core.getDevice()),
-		.color_format = _swap_chain.getImageFormat() };
-	TargetInfo	tar_info {
-		.swap_chain = &_swap_chain,
-		.render_pass = _pipelines.scene->getRenderPass() };
+	// RenderPassInfo	rp_info {
+	// 	.width = _swap_chain.getExtent().width,
+	// 	.height = _swap_chain.getExtent().height,
+	// 	.depth_format = _swap_chain.findDepthFormat(_core.getDevice()),
+	// 	.color_format = _swap_chain.getImageFormat() };
+	// TargetInfo	tar_info {
+	// 	.swap_chain = &_swap_chain,
+	// 	.render_pass = _pipelines.scene->getRenderPass() };
 
-	_pipelines.scene->getRenderPass()->updateResources(_core.getDevice(), rp_info);
-	_pipelines.scene->getTarget()->update(_core.getDevice(), tar_info);
+	// _pipelines.scene->getRenderPass()->updateResources(_core.getDevice(), rp_info);
+	// _pipelines.scene->getTarget()->update(_core.getDevice(), tar_info);
 }
 
 UniformBufferObject	Engine::_updateUbo(const vox::GameState& game) {

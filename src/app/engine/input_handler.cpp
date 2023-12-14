@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/16 13:03:48 by etran             #+#    #+#             */
-/*   Updated: 2023/11/16 22:55:39 by etran            ###   ########.fr       */
+/*   Updated: 2023/12/05 17:12:47 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,37 +15,32 @@
 #include "chunk.h"
 
 #include "chunk_texture_handler.h"
-#include "map_texture_handler.h"
+#include "culling_texture_handler.h"
 
 #include "utils.h"
 
 namespace scop {
 
 using ChunkTextureHandler = gfx::ChunkTextureHandler;
-using MapTextureHandler = gfx::MapTextureHandler;
+using CullingTextureHandler = gfx::CullingTextureHandler;
 
 /* ========================================================================== */
 /*                                   PUBLIC                                   */
 /* ========================================================================== */
 
 void	InputHandler::init(core::Device& device, const vox::GameState& game) {
-	_height_map = std::make_shared<ChunkTextureHandler>();
-	_chunk_map = std::make_shared<MapTextureHandler>();
+	_chunk_texture = std::make_shared<ChunkTextureHandler>();
 
-	std::shared_ptr<ChunkTextureHandler>	height_map =
-		std::dynamic_pointer_cast<ChunkTextureHandler>(_height_map);
-	height_map->init(device);
-	height_map->copyData(device, game.getWorld().generateHeightBuffer());
+	// Chunk data (block pos)
+	std::shared_ptr<ChunkTextureHandler>	chunk_handler =
+		std::dynamic_pointer_cast<ChunkTextureHandler>(_chunk_texture);
+	chunk_handler->init(device);
+	chunk_handler->copyData(device, game.getWorld().generateHeightBuffer());
 
-	std::shared_ptr<MapTextureHandler>	chunk_map =
-		std::dynamic_pointer_cast<MapTextureHandler>(_chunk_map);
-	chunk_map->init(device);
-	chunk_map->setTextureSampler(height_map->getTextureSampler());
 }
 
 void	InputHandler::destroy(core::Device& device) {
-	_height_map->destroy(device);
-	_chunk_map->destroy(device);
+	_chunk_texture->destroy(device);
 }
 
 /* ========================================================================== */
@@ -70,10 +65,10 @@ void	InputHandler::updateVisibleChunks(
 			}
 		}
 	}
-	++_instances_count;
+	// ++_instances_count;
 
-	std::shared_ptr<MapTextureHandler>	chunk_map =
-		std::dynamic_pointer_cast<MapTextureHandler>(_chunk_map);
+	std::shared_ptr<CullingTextureHandler>	chunk_map =
+		std::dynamic_pointer_cast<CullingTextureHandler>(_chunk_map);
 	chunk_map->copyData(device, packed_visible_chunks);
 }
 

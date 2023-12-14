@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:15:01 by etran             #+#    #+#             */
-/*   Updated: 2023/11/16 22:54:06 by etran            ###   ########.fr       */
+/*   Updated: 2023/12/06 23:19:00 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,6 +33,9 @@ class TextureHandler;
 
 namespace scop {
 
+/**
+ * @brief Handle input for rendering pipelines.
+*/
 class InputHandler {
 public:
 	/* ========================================================================= */
@@ -65,18 +68,17 @@ public:
 
 	/* ========================================================================= */
 
-	uint32_t			getVerticesCount() const noexcept;
-	uint32_t			getInstancesCount() const noexcept;
-	TextureHandlerPtr	getHeightMap() const noexcept;
-	TextureHandlerPtr	getChunkMap() const noexcept;
+	uint32_t				getVerticesCount() const noexcept;
+	uint32_t				getInstancesCount() const noexcept;
+	TextureHandlerPtr		getHeightMap() const noexcept;
+	TextureHandlerPtr		getChunkMap() const noexcept;
 
 private:
 	/* ========================================================================= */
 	/*                               CLASS MEMBERS                               */
 	/* ========================================================================= */
 
-	TextureHandlerPtr		_height_map;
-	TextureHandlerPtr		_chunk_map;
+	TextureHandlerPtr		_chunk_texture;
 
 	gfx::BoundingFrustum	_frustum;
 	uint32_t				_instances_count = 25;

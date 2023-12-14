@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/16 10:16:30 by etran             #+#    #+#             */
-/*   Updated: 2023/11/16 23:19:39 by etran            ###   ########.fr       */
+/*   Updated: 2023/11/20 00:38:27 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 #include "device.h"
 #include "command_buffer.h"
 #include "input_handler.h"
+#include "pipeline_helpers.h"
 
 #include "shadows_target.h"
 #include "shadows_render_pass.h"
@@ -62,8 +63,7 @@ void	ShadowsPipeline::assemble(
 	VkGraphicsPipelineCreateInfo& info
 ) {
 	/* SHADERS ================================================================= */
-	VkShaderModule	vert_module =
-		super::_createShaderModule(device, SHADOW_VERTEX_PATH);
+	VkShaderModule	vert_module = createShaderModule(device, SHADOW_VERTEX_PATH);
 
 	VkPipelineShaderStageCreateInfo	vert_info{};
 	vert_info.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;

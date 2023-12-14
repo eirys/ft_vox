@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/02 16:27:11 by etran             #+#    #+#             */
-/*   Updated: 2023/11/16 23:07:58 by etran            ###   ########.fr       */
+/*   Updated: 2023/12/04 23:20:52 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,7 +60,7 @@ public:
 
 	/* ========================================================================= */
 
-	VkFormat							findDepthFormat(core::Device& device);
+	VkFormat							findDepthFormat(const core::Device& device) const;
 
 	/* ========================================================================= */
 
@@ -76,7 +76,7 @@ private:
 	/*                               CLASS MEMBERS                               */
 	/* ========================================================================= */
 
-	VkSwapchainKHR						_swap_chain;
+	VkSwapchainKHR						_swap_chain = VK_NULL_HANDLE;
 	VkFormat							_image_format;
 	VkExtent2D							_extent;
 

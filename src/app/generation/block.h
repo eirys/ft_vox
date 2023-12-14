@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/18 16:08:29 by etran             #+#    #+#             */
-/*   Updated: 2023/09/18 17:06:39 by etran            ###   ########.fr       */
+/*   Updated: 2023/12/11 21:29:40 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,27 +15,9 @@
 // Std
 # include <cstdint>
 
-# define BLOCK_SIZE	1
+# include "block_properties.h"
 
 namespace vox {
-
-// Total material types possible: 256
-enum class MaterialType: uint8_t {
-	MATERIAL_AIR		= 0,
-
-	MATERIAL_GRASS		= 1,
-	MATERIAL_DIRT		= 2,
-	MATERIAL_STONE		= 3,
-	MATERIAL_WOOD		= 4,
-	MATERIAL_LEAVES		= 5,
-	MATERIAL_SAND		= 6,
-	MATERIAL_WATER		= 7,
-	MATERIAL_LAVA		= 8,
-	MATERIAL_ICE		= 9,
-	MATERIAL_SNOW		= 10,
-
-	Last				= 255
-};
 
 class Block {
 public:
@@ -55,19 +37,34 @@ public:
 
 	/* ========================================================================= */
 
-	void			setType(MaterialType block_type) noexcept;
-	MaterialType	getType() const noexcept;
+	void				setType(MaterialType block_type) noexcept;
+	void				setProperies(MaterialProperty block_type) noexcept;
 
-	/* ========================================================================= */
+	MaterialType		getType() const noexcept;
+	MaterialProperty	getProperties() const noexcept;
 
-	bool			isEmpty() const noexcept;
+	/* GAMEPLAY ================================================================ */
+
+	bool				isEmpty() const noexcept;
+	bool				isSolid() const noexcept;
+	bool				isLiquid() const noexcept;
+	bool				isDirected() const noexcept;
+
+	/* GFX ===================================================================== */
+
+	bool				isTransparent() const noexcept;
+	bool				isSemiTransparent() const noexcept;
+	bool				isLightSource() const noexcept;
 
 private:
 	/* ========================================================================= */
 	/*                               CLASS MEMBERS                               */
 	/* ========================================================================= */
 
-	MaterialType	_type = MaterialType::MATERIAL_AIR;
+	MaterialType		_type		= MaterialType::AIR;
+	MaterialProperty	_properties	= MaterialProperty::OPAQUE;
+
+	scop::gfx::MaterialGFXProperty	_gfx_properties = scop::gfx::MaterialGFXProperty::TRANSPARENT;
 
 }; // class Block
 

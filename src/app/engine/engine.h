@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:14:35 by etran             #+#    #+#             */
-/*   Updated: 2023/11/16 23:46:15 by etran            ###   ########.fr       */
+/*   Updated: 2023/12/04 23:34:15 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,7 @@
 # include "core.h"
 # include "swap_chain.h"
 // # include "texture_handler.h"
-// # include "pipeline.h"
+// # include "graphics_pipeline.h"
 
 # include "descriptor_pool.h"
 # include "command_pool.h"
@@ -33,7 +33,8 @@ class GameState;
 }
 
 namespace scop::gfx {
-class Pipeline;
+class GraphicsPipeline;
+class ComputePipeline;
 }
 namespace scop {
 
@@ -46,9 +47,7 @@ public:
 	/*                                  TYPEDEFS                                 */
 	/* ========================================================================= */
 
-	using PipelinePtr = std::shared_ptr<gfx::Pipeline>;
 	using TextureHandlerPtr = std::shared_ptr<gfx::TextureHandler>;
-
 	using UniformBufferObject = scop::UniformBufferObject;
 
 	/* ========================================================================= */
@@ -91,27 +90,29 @@ private:
 	InputHandler				_input_handler;
 
 	gfx::CommandBuffer			_draw_buffer;
-	gfx::DescriptorPool			_descriptor_pool;
+	gfx::CommandBuffer			_compute_buffer;
 	gfx::CommandPool			_command_pool;
+	gfx::DescriptorPool			_descriptor_pool;
 
-	VkPipelineLayout			_pipeline_layout;
-	struct {
-		PipelinePtr				scene;
-		PipelinePtr				shadows;
-	}							_pipelines;
+	PipelineManager				_pipeline_manager;
 
 	VkSemaphore					_image_available_semaphores;
 	VkSemaphore					_render_finished_semaphores;
+	VkSemaphore					_compute_finished_semaphores;
 	VkFence						_in_flight_fences;
 
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
 
-	void						_createInstance();
 	void						_createGraphicsPipelines();
+	void						_createComputesPipelines();
+
 	void						_assembleGraphicsPipelines();
-	void						_createGraphicsPipelineLayout();
+	void						_assembleComputePipelines();
+
+	void						_createPipelineLayout();
+
 	void						_createSyncObjects();
 	void						_createDescriptors();
 

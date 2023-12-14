@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/15 20:56:05 by etran             #+#    #+#             */
-/*   Updated: 2023/11/16 22:05:21 by etran            ###   ########.fr       */
+/*   Updated: 2023/11/19 19:42:14 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,17 +60,19 @@ void	DescriptorPool::_createDescriptorPool(
 	scop::core::Device& device,
 	const std::vector<DescriptorSetPtr>& sets
 ) {
-	std::array<VkDescriptorPoolSize, 2>	pool_sizes;
+	std::array<VkDescriptorPoolSize, 4>	pool_sizes{};
 
 	pool_sizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	pool_sizes[0].descriptorCount = 0;
 	pool_sizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-	pool_sizes[1].descriptorCount = 0;
+	pool_sizes[2].type = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+	pool_sizes[3].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
 
 	for (const auto& set: sets) {
 		const auto& sizes = set->getPoolSizes();
 		pool_sizes[0].descriptorCount += sizes.uniform_buffer;
 		pool_sizes[1].descriptorCount += sizes.combined_image_sampler;
+		pool_sizes[2].descriptorCount += sizes.storage_image;
+		pool_sizes[3].descriptorCount += sizes.storage_buffer;
 	}
 
 	VkDescriptorPoolCreateInfo	pool_info{};

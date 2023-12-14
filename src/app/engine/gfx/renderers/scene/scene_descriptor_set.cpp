@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/31 11:08:11 by etran             #+#    #+#             */
-/*   Updated: 2023/11/16 23:01:53 by etran            ###   ########.fr       */
+/*   Updated: 2023/11/19 16:59:05 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -68,14 +68,14 @@ void	SceneDescriptorSet::init(scop::core::Device& device) {
 	VkDescriptorSetLayoutBinding	height{};
 	height.binding = 5;
 	height.descriptorCount = 1;
-	height.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+	height.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
 	height.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
 	++super::_writes_sizes.combined_image_sampler;
 
 	VkDescriptorSetLayoutBinding	culling{};
 	culling.binding = 6;
 	culling.descriptorCount = 1;
-	culling.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+	culling.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
 	culling.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
 	++super::_writes_sizes.combined_image_sampler;
 
@@ -207,18 +207,18 @@ void	SceneDescriptorSet::plug(
 	writes[5].dstSet = super::_set;
 	writes[5].dstBinding = 5;
 	writes[5].dstArrayElement = 0;
-	writes[5].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+	writes[5].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
 	writes[5].descriptorCount = 1;
 	writes[5].pBufferInfo = nullptr;
 	writes[5].pImageInfo = &height_info;
 	writes[5].pTexelBufferView = nullptr;
 
-	// Height sampler
+	// Chunk indexer sampler
 	writes[6].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 	writes[6].dstSet = super::_set;
 	writes[6].dstBinding = 6;
 	writes[6].dstArrayElement = 0;
-	writes[6].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+	writes[6].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
 	writes[6].descriptorCount = 1;
 	writes[6].pBufferInfo = nullptr;
 	writes[6].pImageInfo =  &cull_info;

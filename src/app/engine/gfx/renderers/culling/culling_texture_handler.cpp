@@ -1,16 +1,16 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   map_texture_handler.cpp                            :+:      :+:    :+:   */
+/*   culling_texture_handler.cpp                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/02 17:13:30 by etran             #+#    #+#             */
-/*   Updated: 2023/11/16 23:48:26 by etran            ###   ########.fr       */
+/*   Updated: 2023/12/05 17:10:49 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "map_texture_handler.h"
+#include "culling_texture_handler.h"
 #include "device.h"
 #include "buffer.h"
 #include "command_buffer.h"
@@ -24,7 +24,7 @@ namespace scop::gfx {
 /*                                   PUBLIC                                   */
 /* ========================================================================== */
 
-void	MapTextureHandler::init(scop::core::Device& device) {
+void	CullingTextureHandler::init(scop::core::Device& device) {
 	ImageMetaData	data{};
 	data.format = VK_FORMAT_R16_UINT;
 	data.layer_count = 1;
@@ -36,7 +36,7 @@ void	MapTextureHandler::init(scop::core::Device& device) {
 	_createTextureImages(device);
 	_createTextureImageView(device);
 
-	CommandBuffer	command_buffer = CommandPool::createBuffer(device);
+	CommandBuffer	command_buffer = CommandPool::createBuffer(device, CommandBufferType::DRAW);
 	command_buffer.begin();
 
 	VkImageSubresourceRange	transfer_barrier{};
@@ -47,7 +47,7 @@ void	MapTextureHandler::init(scop::core::Device& device) {
 	transfer_barrier.layerCount = data.getLayerCount();
 
 	super::_texture_buffer.setLayout(
-		command_buffer,
+		command_buffer.getBuffer(),
 		VK_IMAGE_LAYOUT_UNDEFINED,
 		VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
 		VK_ACCESS_NONE,
@@ -60,13 +60,13 @@ void	MapTextureHandler::init(scop::core::Device& device) {
 	CommandPool::destroyBuffer(device, command_buffer);
 }
 
-void	MapTextureHandler::destroy(scop::core::Device& device) {
+void	CullingTextureHandler::destroy(scop::core::Device& device) {
 	super::_texture_buffer.destroy(device);
 }
 
 /* ========================================================================== */
 
-void	MapTextureHandler::copyData(
+void	CullingTextureHandler::copyData(
 	scop::core::Device& device,
 	const std::array<uint16_t, RENDER_DISTANCE2>& chunk_map
 ) {
@@ -87,7 +87,7 @@ void	MapTextureHandler::copyData(
 	staging_buffer.copyFrom(chunk_map.data(), static_cast<std::size_t>(image_size));
 	staging_buffer.unmap(device.getLogicalDevice());
 
-	CommandBuffer	command_buffer = CommandPool::createBuffer(device);
+	CommandBuffer	command_buffer = CommandPool::createBuffer(device, CommandBufferType::DRAW);
 	command_buffer.begin();
 
 	VkImageSubresourceRange	transfer_barrier{};
@@ -98,7 +98,7 @@ void	MapTextureHandler::copyData(
 	transfer_barrier.layerCount = image_data.getLayerCount();
 
 	super::_texture_buffer.setLayout(
-		command_buffer,
+		command_buffer.getBuffer(),
 		VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
 		VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
 		VK_ACCESS_SHADER_READ_BIT,
@@ -108,12 +108,12 @@ void	MapTextureHandler::copyData(
 		transfer_barrier);
 
 	super::_texture_buffer.copyFrom(
-		command_buffer,
+		command_buffer.getBuffer(),
 		staging_buffer.getBuffer(),
 		static_cast<uint32_t>(layer_size));
 
 	super::_texture_buffer.setLayout(
-		command_buffer,
+		command_buffer.getBuffer(),
 		VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
 		VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
 		VK_ACCESS_TRANSFER_WRITE_BIT,
@@ -131,7 +131,7 @@ void	MapTextureHandler::copyData(
 /*                                   PRIVATE                                  */
 /* ========================================================================== */
 
-void	MapTextureHandler::_createTextureImages(scop::core::Device& device) {
+void	CullingTextureHandler::_createTextureImages(scop::core::Device& device) {
 	VkImageCreateFlags flags = 0;
 
 	super::_texture_buffer.initImage(
@@ -145,7 +145,7 @@ void	MapTextureHandler::_createTextureImages(scop::core::Device& device) {
 		VK_IMAGE_TYPE_2D);
 }
 
-void	MapTextureHandler::_createTextureImageView(scop::core::Device& device) {
+void	CullingTextureHandler::_createTextureImageView(scop::core::Device& device) {
 	super::_texture_buffer.initView(
 		device,
 		VK_IMAGE_ASPECT_COLOR_BIT,

@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/19 11:46:11 by etran             #+#    #+#             */
-/*   Updated: 2023/10/25 17:35:00 by etran            ###   ########.fr       */
+/*   Updated: 2023/12/08 16:25:31 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,7 +64,7 @@ std::array<uint8_t, CHUNK_AREA>	Chunk::generateHeightMap() const noexcept {
 }
 
 bool	Chunk::isVisible(const BoundingFrustum& frustum) const {
-	return checkIntersection(frustum) != IntersectionType::Outside;
+	return _checkIntersection(frustum) != IntersectionType::Outside;
 }
 
 /* GAMEPLAY ================================================================= */
@@ -114,10 +114,10 @@ bool	Chunk::isActive() const noexcept {
 /*                                   PRIVATE                                  */
 /* ========================================================================== */
 
-IntersectionType	Chunk::checkIntersection(const BoundingFrustum& frustum) const {
+IntersectionType	Chunk::_checkIntersection(const BoundingFrustum& frustum) const {
 	bool isIntersecting = false;
 	for (const Plane& plane: frustum.planes) {
-		IntersectionType planeIntersection = checkPlaneIntersection(plane);
+		IntersectionType planeIntersection = _checkPlaneIntersection(plane);
 
 		if (planeIntersection == IntersectionType::Outside)
 			return IntersectionType::Outside;

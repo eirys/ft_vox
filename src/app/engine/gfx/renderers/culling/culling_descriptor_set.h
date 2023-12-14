@@ -1,60 +1,60 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   bounding_box.h                                     :+:      :+:    :+:   */
+/*   culling_descriptor_set.h                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/10/24 14:12:32 by etran             #+#    #+#             */
-/*   Updated: 2023/10/24 14:12:32 by etran            ###   ########.fr       */
+/*   Created: 2023/11/19 11:52:18 by etran             #+#    #+#             */
+/*   Updated: 2023/11/19 16:53:34 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
-# include "bounding_object.h"
-# include "bounding_frustum.h"
+// Graphics
+# include <vulkan/vulkan.h>
+
+# include "descriptor_set.h"
 
 namespace scop::gfx {
 
-class BoundingBox: public IBoundingObject {
+class CullingDescriptorSet final: public DescriptorSet {
 public:
 	/* ========================================================================= */
 	/*                                  TYPEDEFS                                 */
 	/* ========================================================================= */
 
-	using Plane = BoundingFrustum::Plane;
+	using super = DescriptorSet;
+	using TextureHandlerPtr = std::shared_ptr<TextureHandler>;
 
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
 
-	virtual ~BoundingBox() = default;
+	CullingDescriptorSet() = default;
+	~CullingDescriptorSet() = default;
 
-protected:
-	/* ========================================================================= */
-	/*                                  METHODS                                  */
-	/* ========================================================================= */
-
-	BoundingBox(Vect3 center, Vect3 half_diag);
-
-	BoundingBox() = default;
-	BoundingBox(const BoundingBox& other) = default;
-	BoundingBox(BoundingBox&& other) = default;
-	BoundingBox& operator=(const BoundingBox& other) = default;
-	BoundingBox& operator=(BoundingBox&& other) = default;
+	CullingDescriptorSet(CullingDescriptorSet&& other) = delete;
+	CullingDescriptorSet(const CullingDescriptorSet& other) = delete;
+	CullingDescriptorSet& operator=(CullingDescriptorSet&& rhs) = delete;
+	CullingDescriptorSet& operator=(const CullingDescriptorSet& rhs) = delete;
 
 	/* ========================================================================= */
 
-	IntersectionType	checkPlaneIntersection(const Plane& plane) const;
+	using super::setDescriptors;
+
+	void	init(scop::core::Device& device) override;
+	using super::destroy;
+	// TODO
 
 	/* ========================================================================= */
-	/*                               CLASS MEMBERS                               */
-	/* ========================================================================= */
 
-	Vect3	_half_diag;
-	Vect3	_center;
+	using super::getLayout;
+	using super::getPoolSizes;
+	using super::getSet;
+	using super::getSetIndex;
 
-}; // class BoundingBox
+}; // class CullingDescriptorSet
 
 } // namespace scop::gfx

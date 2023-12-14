@@ -5,7 +5,33 @@
 /*                                  FUNCTIONS                                 */
 /* ========================================================================== */
 
-int	isOutsideTexture(ivec2 _pos) {
+uint	packBlockPos(in uvec3 _pos) {
+	return (_pos.x << 16) | (_pos.y << 8) | _pos.z;
+}
+
+uvec3	unpackBlockPos(in uint _pos) {
+	return uvec3(_pos >> 16, (_pos >> 8) & 0xFF, _pos & 0xFF);
+}
+
+uvec2	getBlock(in uvec3 _blockPos, in uint _chunkId) {
+	vec3 uvw = vec3(_blockPos) / float(CHUNK_SIZE);
+	return texture(chunks, vec4(uvw, _chunkId)).rg;
+}
+
+/* ========================================================================== */
+
+#ifdef CS
+#endif // CS
+
+#ifdef RS
+#endif // RS
+
+
+
+#if 0
+// Deprecated
+
+int	isOutsideTexture(in ivec2 _pos) {
 	if (_pos.x < 0 || _pos.y < 0)
 		return -1;
 	else if (_pos.x >= CHUNK_SIZE || _pos.y >= CHUNK_SIZE)
@@ -15,7 +41,7 @@ int	isOutsideTexture(ivec2 _pos) {
 
 /* ========================================================================== */
 
-float	getHeight(ivec2 _cubePos, uint _layer) {
+float	getHeight(in ivec2 _cubePos,in uint _layer) {
 	// TODO: select proper layer
 	int isOutside = isOutsideTexture(_cubePos);
 	if (isOutside != 0)
@@ -78,7 +104,7 @@ const vec3 vertices[36] = {
 };
 
 // Determine position of the vertex in the world.
-vec4	extractPos(uint _vertexId, ivec2 _cubePos, float _height, ivec2 _chunkPos) {
+vec4	extractPos(in uint _vertexId, in ivec2 _cubePos, in float _height, in ivec2 _chunkPos) {
 	vec4 position = vec4(vertices[_vertexId], 1.0);
 
 	position.xz += vec2((CHUNK_SIZE * _chunkPos) + _cubePos);
@@ -89,7 +115,7 @@ vec4	extractPos(uint _vertexId, ivec2 _cubePos, float _height, ivec2 _chunkPos) 
 
 /* ========================================================================== */
 
-bool	cullUnseenFace(uint _face, ivec2 _cubePos, uint _instanceId, float _cubeHeight) {
+bool	cullUnseenFace(in uint _face, in ivec2 _cubePos, in uint _instanceId, in float _cubeHeight) {
 	ivec2	adjacentCubePos = ivec2(-1);
 	if (_face == 2) {
 		adjacentCubePos = ivec2(_cubePos.x - 1, _cubePos.y);
@@ -104,5 +130,7 @@ bool	cullUnseenFace(uint _face, ivec2 _cubePos, uint _instanceId, float _cubeHei
 	}
 	return getHeight(adjacentCubePos, _instanceId) >= _cubeHeight;
 }
+
+#endif // 0
 
 #endif // SCENE_RENDERING_TOOLS_GLSLH

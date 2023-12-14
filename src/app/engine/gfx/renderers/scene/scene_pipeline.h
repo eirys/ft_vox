@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/06 17:31:39 by etran             #+#    #+#             */
-/*   Updated: 2023/11/16 23:05:51 by etran            ###   ########.fr       */
+/*   Updated: 2023/11/19 10:43:28 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,23 +15,19 @@
 // Std
 # include <memory> // std::shared_ptr
 
-# include "pipeline.h"
+# include "graphics_pipeline.h"
 # include "buffer.h"
 
 namespace scop::gfx {
 
-class ScenePipeline final: public Pipeline {
+class ScenePipeline final: public GraphicsPipeline {
 public:
 	/* ========================================================================= */
 	/*                                  TYPEDEFS                                 */
 	/* ========================================================================= */
 
-	using super = Pipeline;
-	using super::Texture;
+	using super = GraphicsPipeline;
 	using super::DescriptorSetPtr;
-
-	using super::UniformBufferObject;
-	using super::Camera;
 
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
@@ -65,7 +61,7 @@ public:
 		CommandBuffer& command_buffer,
 		const scop::InputHandler& input,
 		int32_t image_index) override;
-	void	update(const UniformBufferObject& ubo) noexcept override;
+	void	update(const scop::UniformBufferObject& ubo) noexcept override;
 
 	/* ========================================================================= */
 

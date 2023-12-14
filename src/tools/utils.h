@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:16:25 by etran             #+#    #+#             */
-/*   Updated: 2023/11/16 22:30:48 by etran            ###   ########.fr       */
+/*   Updated: 2023/12/11 22:17:56 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,6 +49,11 @@ inline std::vector<uint8_t>	readFile(const std::string& filename) {
 	file.read((char*)buffer.data(), file_size);
 	file.close();
 	return buffer;
+}
+
+template <typename EnumClass>
+inline uint32_t	enumSize() {
+	return static_cast<uint32_t>(EnumClass::Last) - static_cast<uint32_t>(EnumClass::First) + 1;
 }
 
 } // namespace scop::utils

@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/05 03:21:25 by etran             #+#    #+#             */
-/*   Updated: 2023/11/16 23:11:49 by etran            ###   ########.fr       */
+/*   Updated: 2023/12/04 22:17:19 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,12 +41,12 @@ class RenderPass;
  * @brief Target creation info.
 */
 struct TargetInfo {
-	scop::SwapChain*		swap_chain;
+	const scop::SwapChain*		swap_chain;
 	std::shared_ptr<RenderPass>	render_pass;
 };
 
 /**
- * @brief Wrapper class for target framebuffers.
+ * @brief Wrapper class for target framebuffers to render to.
 */
 class Target {
 public:
