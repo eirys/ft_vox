@@ -105,25 +105,25 @@ enum class MaterialAspect: uint8_t {
 */
 enum class MaterialProperty: uint32_t {
 	// GFX
-	OPAQUE				= (uint32_t)MaterialGFXProperty::OPAQUE << MaterialGFXProperty::PropertyShift,
-	TRANSPARENT			= (uint32_t)MaterialGFXProperty::TRANSPARENT << MaterialGFXProperty::PropertyShift,
-	ALPHACLIPPED		= (uint32_t)MaterialGFXProperty::ALPHACLIPPED << MaterialGFXProperty::PropertyShift,
-	LIGHT_SOURCE		= (uint32_t)MaterialGFXProperty::LIGHT << MaterialGFXProperty::PropertyShift,
+	OPAQUE				= (uint32_t)MaterialGFXProperty::OPAQUE << (uint32_t)MaterialGFXProperty::PropertyShift,
+	TRANSPARENT			= (uint32_t)MaterialGFXProperty::TRANSPARENT << (uint32_t)MaterialGFXProperty::PropertyShift,
+	ALPHACLIPPED		= (uint32_t)MaterialGFXProperty::ALPHACLIPPED << (uint32_t)MaterialGFXProperty::PropertyShift,
+	LIGHT_SOURCE		= (uint32_t)MaterialGFXProperty::LIGHT << (uint32_t)MaterialGFXProperty::PropertyShift,
 
 	// State
-	SOLID				= (uint32_t)MaterialState::SOLID << MaterialState::PropertyShift,
-	FLUID				= (uint32_t)MaterialState::FLUID << MaterialState::PropertyShift,
-	HOT					= (uint32_t)MaterialState::HOT << MaterialState::PropertyShift,
+	SOLID				= (uint32_t)MaterialState::SOLID << (uint32_t)MaterialState::PropertyShift,
+	FLUID				= (uint32_t)MaterialState::FLUID << (uint32_t)MaterialState::PropertyShift,
+	HOT					= (uint32_t)MaterialState::HOT << (uint32_t)MaterialState::PropertyShift,
 
 	// Interaction
-	INTANGIBLE			= (uint32_t)MaterialInteraction::INTANGIBLE << MaterialInteraction::PropertyShift,
-	GRAVITY_AFFECTED	= (uint32_t)MaterialInteraction::GRAVITY_AFFECTED << MaterialInteraction::PropertyShift,
-	COLLIDABLE			= (uint32_t)MaterialInteraction::COLLIDABLE << MaterialInteraction::PropertyShift,
+	INTANGIBLE			= (uint32_t)MaterialInteraction::INTANGIBLE << (uint32_t)MaterialInteraction::PropertyShift,
+	GRAVITY_AFFECTED	= (uint32_t)MaterialInteraction::GRAVITY_AFFECTED << (uint32_t)MaterialInteraction::PropertyShift,
+	COLLIDABLE			= (uint32_t)MaterialInteraction::COLLIDABLE << (uint32_t)MaterialInteraction::PropertyShift,
 
 	// Aspect
-	REGULAR				= (uint32_t)MaterialAspect::REGULAR << MaterialAspect::PropertyShift,
-	DIRECTED			= (uint32_t)MaterialAspect::DIRECTED << MaterialAspect::PropertyShift,
-	COLORED				= (uint32_t)MaterialAspect::COLORED << MaterialAspect::PropertyShift,
+	REGULAR				= (uint32_t)MaterialAspect::REGULAR << (uint32_t)MaterialAspect::PropertyShift,
+	DIRECTED			= (uint32_t)MaterialAspect::DIRECTED << (uint32_t)MaterialAspect::PropertyShift,
+	COLORED				= (uint32_t)MaterialAspect::COLORED << (uint32_t)MaterialAspect::PropertyShift,
 
 	GFXPropertyMask		= 0xFF000000,
 	StateMask			= 0x00FF0000,

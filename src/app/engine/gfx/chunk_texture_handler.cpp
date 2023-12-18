@@ -28,14 +28,13 @@ namespace scop::gfx {
 void	ChunkTextureHandler::init(scop::core::Device& device) {
 	ImageMetaData	data{};
 
-
-	// rg hold the data, b is mask for y axis
-	// ex: block data at y=0 (b=0) ->
-	//     block data at y=15 (b=15) -> rg+b= // TODO
 	data.format = VK_FORMAT_R8G8B8_UINT;
 	data.layer_count = RENDER_DISTANCE * RENDER_DISTANCE;
-	data.width = CHUNK_SIZE;
-	data.height = CHUNK_SIZE;
+
+	// Offset xz by 16*y to get chunk layer
+	// ex: to get element at (x:2, y:14, z: 3) -> sample with uv = vec2(x+(y*16), z+(y*16))
+	data.width = CHUNK_SIZE * CHUNK_SIZE;
+	data.height = CHUNK_SIZE * CHUNK_SIZE;
 
 	super::_texture_buffer.setMetaData(data);
 
@@ -52,7 +51,7 @@ void	ChunkTextureHandler::copyData(
 	const std::vector<vox::Chunk>& chunks
 ) {
 	const ImageMetaData&	image_data = super::_texture_buffer.getMetaData();
-	constexpr const VkDeviceSize		layer_size = CHUNK_VOLUME * sizeof(uint32_t);
+	constexpr const VkDeviceSize		layer_size = CHUNK_VOLUME * sizeof(uint16_t);
 	const VkDeviceSize					image_size = layer_size * image_data.getLayerCount();
 
 	// Create staging buffer to copy images data to (cpu->gpu)

@@ -62,7 +62,7 @@ private:
 	/* ========================================================================= */
 
 	MaterialType		_type		= MaterialType::AIR;
-	MaterialProperty	_properties	= = MaterialProperty::Default;
+	MaterialProperty	_properties	= MaterialProperty::Default;
 
 }; // class Block
 

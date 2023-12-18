@@ -97,10 +97,10 @@ SRC_FILES	:=	$(TOOLS_DIR)/matrix.cpp \
 				$(CORE_DIR)/debug_module.cpp \
 				$(CORE_DIR)/device.cpp \
 				$(CORE_DIR)/core.cpp \
-				$(GFX_DIR)/pipeline_manager.cpp \
-				$(GFX_DIR)/graphics_pipeline.cpp \
-				$(GFX_DIR)/compute_pipeline.cpp \
-				$(GFX_DIR)/pipeline_helpers.cpp \
+				$(REN_DIR)/pipeline_manager.cpp \
+				$(REN_DIR)/graphics_pipeline.cpp \
+				$(REN_DIR)/compute_pipeline.cpp \
+				$(REN_DIR)/pipeline_helpers.cpp \
 				$(GFX_DIR)/descriptor_pool.cpp \
 				$(GFX_DIR)/descriptor_set.cpp \
 				$(GFX_DIR)/command_pool.cpp \
