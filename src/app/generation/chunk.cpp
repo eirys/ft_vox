@@ -17,6 +17,7 @@
 #include "mesh.h"
 #include "bounding_frustum.h"
 #include "player.h"
+#include "block.h"
 
 #include <cassert> // assert
 
@@ -43,7 +44,7 @@ Chunk::Chunk(const PerlinNoise& noise, uint8_t x, uint8_t y, uint8_t z):
 
 /* GFX ====================================================================== */
 
-// TODO Update
+//DPCT
 std::array<uint8_t, CHUNK_AREA>	Chunk::generateHeightMap() const noexcept {
 	std::array<uint8_t, CHUNK_AREA>	height_map{};
 
@@ -52,7 +53,7 @@ std::array<uint8_t, CHUNK_AREA>	Chunk::generateHeightMap() const noexcept {
 
 			for (uint8_t y = CHUNK_SIZE - 1; y >= 0; --y) {
 				const Block& block = getBlock(x, y, z);
-				if (block.getType() != MaterialType::MATERIAL_AIR) {
+				if (block.getType() != MaterialType::AIR) {
 					height_map[z * CHUNK_SIZE + x] = y;
 					break;
 				}
@@ -65,6 +66,21 @@ std::array<uint8_t, CHUNK_AREA>	Chunk::generateHeightMap() const noexcept {
 
 bool	Chunk::isVisible(const BoundingFrustum& frustum) const {
 	return _checkIntersection(frustum) != IntersectionType::Outside;
+}
+
+void	Chunk::fillChunkMap(std::array<uint16_t, CHUNK_VOLUME>& data) const {
+	for (uint8_t z = 0; z < CHUNK_SIZE; ++z) {
+		for (uint8_t x = 0; x < CHUNK_SIZE; ++x) {
+			for (uint8_t y = 0; y < CHUNK_SIZE; ++y) {
+				const Block& block = getBlock(x, y, z);
+				if (!block.isEmpty()) {
+					const uint32_t x_offsetted = x + (y % 4) * CHUNK_SIZE;
+					const uint32_t z_offsetted = z + (y / 4) * CHUNK_SIZE;
+					data[z_offsetted * CHUNK_SIZE + x_offsetted] = block.getPackedData();
+				}
+			}
+		}
+	}
 }
 
 /* GAMEPLAY ================================================================= */
@@ -142,7 +158,7 @@ void	Chunk::_generateChunk(const PerlinNoise& perlin_noise) {
 		for (uint8_t x = 0; x < CHUNK_SIZE; ++x) {
 			float y = perlin_noise.noiseAt(_x * CHUNK_SIZE + x, _z * CHUNK_SIZE + z);
 			Block& block = getBlock(x, static_cast<uint8_t>(y), z);
-			block.setType(MaterialType::MATERIAL_GRASS);
+			block.setType(MaterialType::GRASS);
 			_fillColumn(x, static_cast<uint8_t>(y), z);
 		}
 	}
@@ -151,7 +167,7 @@ void	Chunk::_generateChunk(const PerlinNoise& perlin_noise) {
 void	Chunk::_fillColumn(uint8_t x, uint8_t max_height, uint8_t z) noexcept {
 	for (uint8_t y = 0; y < max_height; ++y) {
 		Block& block = getBlock(x, y, z);
-		block.setType(MaterialType::MATERIAL_DIRT);
+		block.setType(MaterialType::DIRT);
 	}
 }
 

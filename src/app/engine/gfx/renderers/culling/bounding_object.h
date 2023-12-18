@@ -45,7 +45,7 @@ protected:
 
 	/* ========================================================================= */
 
-	virtual IntersectionType	checkIntersection(
+	virtual IntersectionType	_checkIntersection(
 		const BoundingFrustum& frustum) const = 0;
 
 };

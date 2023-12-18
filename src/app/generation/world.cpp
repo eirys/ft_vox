@@ -13,6 +13,7 @@
 #include "world.h"
 #include "perlin_noise.h"
 #include "utils.h"
+#include "block_properties.h"
 
 #include <cstring> // memcpy
 #include <cassert> // assert
@@ -55,6 +56,7 @@ World& World::operator=(World&& other) {
 
 /* ========================================================================== */
 
+// DEPRECATED
 /**
  * @brief Generates a vector that stores height data for each block in the world.
  * Will be stored in a constant buffer and used for instancing.
@@ -76,6 +78,24 @@ std::vector<uint8_t>	World::generateHeightBuffer() const noexcept {
 
 	return height_buffer;
 }
+
+std::vector<uint16_t>	World::generateTerrainData() const {
+	std::vector<uint16_t> 				world_data;
+
+	world_data.reserve(_chunks.size() * CHUNK_VOLUME);
+
+	std::array<uint16_t, CHUNK_VOLUME>	chunk_data;
+	uint32_t							offset = 0;
+	for (const Chunk& chunk: _chunks) {
+		chunk.fillChunkMap(chunk_data);
+		memcpy(
+			world_data.data() + offset,
+			chunk_data.data(),
+			chunk_data.size());
+		offset += chunk_data.size() * sizeof(uint16_t);
+	}
+}
+
 
 /* SETTER/GETTER ============================================================ */
 

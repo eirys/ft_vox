@@ -14,8 +14,11 @@ uvec3	unpackBlockPos(in uint _pos) {
 }
 
 uvec2	getBlock(in uvec3 _blockPos, in uint _chunkId) {
-	vec3 uvw = vec3(_blockPos) / float(CHUNK_SIZE);
-	return texture(chunks, vec4(uvw, _chunkId)).rg;
+	float x_offsetted = float(_blockPos.x + (_blockPos.y % 4));
+	float z_offsetted = float(_blockPos.z + (_blockPos.y / 4));
+	vec3 uvw = vec3(x_offsetted, z_offsetted, _chunkId);
+	// vec3 uv = vec3(_blockPos) / float(CHUNK_SIZE);
+	return texture(chunks, uvw).rg;
 }
 
 /* ========================================================================== */

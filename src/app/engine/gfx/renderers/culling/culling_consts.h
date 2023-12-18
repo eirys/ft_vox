@@ -13,6 +13,7 @@
 #ifndef CULLING_CONSTS_H
 # define CULLING_CONSTS_H
 
+# define EMPTY_BLOCK			0x00
 # define TRANSPARENT_MASK		0x01
 # define ALPHACLIPPED_MASK		0x02
 # define LIGHT_MASK				0x04

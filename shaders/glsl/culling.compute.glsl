@@ -33,17 +33,18 @@ OUTPUT(CULLING_SET, 2, std140)	buffer QuadCount {
 }	quadCount;
 
 OUTPUT(CULLING_SET, 3, std140)	buffer SampleData {
-	uint info[CHUNK_VOLUME];	// x: 4 bits, y: 4 bits, z: 4 bits, layer: 12 bits (or 16 bits? TODO)
+	uint info[MAX_RENDER_DISTANCE][CHUNK_VOLUME];	// x: 4 bits, y: 4 bits, z: 4 bits, layer: 12 bits (or 16 bits? TODO)
 } sampleData;
 
 OUTPUT(CULLING_SET, 4, std140)	buffer VerticesData {
 	// TODO Can be compressed to 16 bits ?
-	uint vertexData[CHUNK_VOLUME][6][4]; // blockId: 12 bit, face: 4 bits, unused: 16 bits
+	// Per chunk / per block / per face
+	uint vertexData[MAX_RENDER_DISTANCE][CHUNK_VOLUME][6]; // blockId: 12 bit, face: 4 bits, unused: 16 bits
 } verticesData;
 
 /* UNIFORMS ================================================================= */
 UNIFORM(CULLING_SET, 0)		Frustum { vec4 planes[6]; }		frustum;
-UNIFORM(CULLING_SET, 1)		usampler2DArray					chunks; // r: type, g: properties, b: offset1, a: offset2
+UNIFORM(CULLING_SET, 1)		usampler2DArray					chunks; // r: type, g: properties
 
 /* ========================================================================== */
 /*                                  INCLUDES                                  */
@@ -97,8 +98,8 @@ ivec3	getBlockOffset(in uint _side) {
 // 	sampleData.info[blockPos] = (_blockId << 20) | _blockLayer;
 // }
 
-void	checkNeighborBlock(inout ivec3 _blockPos, inout uint _chunkId) {
-	// TODO
+void	checkNeighborBlock(inout ivec3 _neighborPos, inout uint _neighborChunkId) {
+	// TODO update neighbor pos
 
 	// if (_blockPos.x < 0) {
 	// 	_blockPos.x += CHUNK_SIZE;
@@ -133,10 +134,9 @@ bool	isFaceVisible(in uvec3 _blockPos, in uint _chunkId, in uint _face) {
 	checkNeighborBlock(neighborBlockPos, neighborBlockChunk);
 
 	uvec2 neighborBlock = getBlock(uvec3(neighborBlockPos), neighborBlockChunk);
-	if (neighborBlock.r == 0) // Empty block
+	if (neighborBlock.r == EMPTY_BLOCK || (neighborBlock.g & TRANSPARENT_MASK))
 		return true;
-	// if (neighborBlock.g & TRANSPARENT_MASK)
-		// return true;
+	return false;
 }
 
 /* ========================================================================== */
@@ -155,6 +155,11 @@ void	checkBlockFaces(in uvec3 _blockPos, in uint _chunkId, in uint _blockPropert
 
 		if (isFaceVisible(_blockPos, face)) {
 			++quadCount.n[_chunkId];
+
+			uint blockId = _blockPos.x << 12 | _blockPos.y << 8 | _blockPos.z << 4 | face;
+
+			uint blockIndex = z * CHUNK_AREA + (y * CHUNK_SIZE + x);
+			verticesData.vertexData[_chunkId][blockIndex][face] = blockId;
 		}
 
 	}
@@ -172,13 +177,10 @@ void main() {
 	for (uint z = 0; z < CHUNK_SIZE; ++z) {
 		for (uint y = 0; y < CHUNK_SIZE; ++y) {
 			for (uint x = 0; x < CHUNK_SIZE; ++x) {
-					uvec3 blockPos = uvec3(x, y, z);
-					uvec2 blockData = getBlock(blockPos, chunkId);
+				uvec3 blockPos = uvec3(x, y, z);
+				uvec2 blockData = getBlock(blockPos, chunkId);
 
-					uint blockPos = (x << 28) | (y << 24) | (z << 20);
-					uint blockIndex = z * CHUNK_AREA + (y * CHUNK_SIZE + x);
-
-					checkBlockFaces(blockPos, chunkId, blockData.g);
+				checkBlockFaces(blockPos, chunkId, blockData.g);
 			}
 
 		}

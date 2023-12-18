@@ -30,10 +30,14 @@ MaterialType	Block::getType() const noexcept {
 	return _type;
 }
 
+uint16_t	Block::getPackedData() const noexcept {
+	return (uint32_t)_type << 8 | (uint8_t)_properties;
+}
+
 /* ========================================================================== */
 
 bool	Block::isEmpty() const noexcept {
-	return _type == MaterialType::MATERIAL_AIR;
+	return _type == MaterialType::AIR;
 }
 
 } // namespace vox

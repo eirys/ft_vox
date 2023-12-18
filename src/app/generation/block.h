@@ -43,6 +43,8 @@ public:
 	MaterialType		getType() const noexcept;
 	MaterialProperty	getProperties() const noexcept;
 
+	uint16_t			getPackedData() const noexcept;
+
 	/* GAMEPLAY ================================================================ */
 
 	bool				isEmpty() const noexcept;

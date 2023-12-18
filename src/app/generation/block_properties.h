@@ -26,7 +26,7 @@ namespace vox {
 
 // Total material types possible: 256
 enum class MaterialType: uint8_t {
-	AIR		= 0,
+	AIR		= EMPTY_BLOCK,
 
 	// Solid
 	GRASS,

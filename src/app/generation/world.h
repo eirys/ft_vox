@@ -51,6 +51,9 @@ public:
 
 	std::vector<uint8_t>		generateHeightBuffer() const noexcept;
 
+	std::vector<uint16_t>		generateTerrainData() const;
+	void						updateTerrainData(std::vector<uint16_t>& data) const;
+
 	/* ========================================================================== */
 
 	void						setOrigin(const scop::Vect3& origin) noexcept;

@@ -15,8 +15,8 @@
 // Std
 # include <array> // std::vector
 # include <vector> // std::vector
+# include <memory>
 
-# include "block.h"
 # include "chunk_macros.h"
 # include "bounding_box.h"
 
@@ -26,6 +26,7 @@ struct Vertex;
 struct Mesh;
 class PerlinNoise;
 class Player;
+class Block;
 
 /**
  * @brief World subdivision. A chunk size is 16 x 16 x 16.
@@ -59,13 +60,15 @@ public:
 
 	/* GFX ===================================================================== */
 
+	//Deprecated
 	std::array<uint8_t, CHUNK_AREA>		generateHeightMap() const noexcept;
 	bool								isVisible(const BoundingFrustum& frustum) const;
+
+	void			fillChunkMap(std::array<uint16_t, CHUNK_VOLUME>& data) const;
 
 	/* GAMEPLAY ================================================================ */
 
 	void			updateActivity(const Player& player);
-
 	/* GETTERS ================================================================= */
 
 	scop::Vect3		getCoordinates() const noexcept;

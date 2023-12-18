@@ -50,7 +50,7 @@ void	ChunkTextureHandler::copyData(
 	scop::core::Device& device,
 	const std::vector<vox::Chunk>& chunks
 ) {
-	const ImageMetaData&	image_data = super::_texture_buffer.getMetaData();
+	const ImageMetaData&				image_data = super::_texture_buffer.getMetaData();
 	constexpr const VkDeviceSize		layer_size = CHUNK_VOLUME * sizeof(uint16_t);
 	const VkDeviceSize					image_size = layer_size * image_data.getLayerCount();
 
