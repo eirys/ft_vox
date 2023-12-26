@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/19 16:54:52 by etran             #+#    #+#             */
-/*   Updated: 2023/12/24 15:55:26 by etran            ###   ########.fr       */
+/*   Updated: 2023/12/26 19:39:28 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -76,9 +76,9 @@ void	CullingDescriptorSet::plug(
 	const scop::InputHandler& input
 ) {
 	VkDescriptorBufferInfo	frustum_info{};
-	frustum_info.buffer = input.getFrustumBuffer().getBuffer();
-	frustum_info.offset = 0;
-	frustum_info.range = sizeof(BoundingFrustum);
+	frustum_info.buffer = input.getInputBuffer().getBuffer();
+	frustum_info.offset = (uint32_t)InputBufferOffset::Frustum;
+	frustum_info.range = (uint32_t)InputBufferSize::Frustum;
 
 	VkDescriptorImageInfo	chunk_info{};
 	chunk_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
@@ -86,20 +86,25 @@ void	CullingDescriptorSet::plug(
 	chunk_info.sampler = input.getChunkMap()->getTextureSampler();
 
 	VkDescriptorBufferInfo	quad_count{};
-	frustum_info.buffer = input.getQuadCountBuffer().getBuffer();
-	frustum_info.offset = 0;
-	frustum_info.range = sizeof(uint32_t);
+	frustum_info.buffer = input.getInputBuffer().getBuffer();
+	frustum_info.offset = (uint32_t)InputBufferOffset::QuadCount;
+	frustum_info.range = (uint32_t)InputBufferSize::QuadCount;
 
 	VkDescriptorBufferInfo	vertices_data{};
-	vertices_data.buffer = input.getVerticesDataBuffer().getBuffer();
-	vertices_data.offset = 0;
-	vertices_data.range = 0; //TODO: At most value in compute culling glsl;
+	vertices_data.buffer = input.getInputBuffer().getBuffer();
+	vertices_data.offset = (uint32_t)InputBufferOffset::VerticesData;
+	vertices_data.range = (uint32_t)InputBufferSize::VerticesData;
 
 	std::array<VkWriteDescriptorSet, 4>	writes = {
 		super::createWriteDescriptorSet(DescriptorType::UNIFORM_BUFFER, &frustum_info, 0),
 		super::createWriteDescriptorSet(DescriptorType::COMBINED_IMAGE_SAMPLER, &chunk_info, 1),
 		super::createWriteDescriptorSet(DescriptorType::STORAGE_BUFFER, &quad_count, 2),
 		super::createWriteDescriptorSet(DescriptorType::STORAGE_BUFFER, &vertices_data, 3) };
+
+	vkUpdateDescriptorSets(
+		device.getLogicalDevice(),
+		static_cast<uint32_t>(writes.size()), writes.data(),
+		0, nullptr);
 }
 
 

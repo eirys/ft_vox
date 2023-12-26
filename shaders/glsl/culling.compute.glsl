@@ -42,6 +42,10 @@ OUTPUT(CULLING_SET, 3, std140)	uniform writeonly buffer VerticesData {
 	// unused: 3 bits
 } verticesData;
 
+OUTPUT(CULLING_SET, 4, std140) uniform writeonly buffer Indexer {
+	uint index[MAX_RENDER_DISTANCE * CHUNK_VOLUME * 6];
+} indexer;
+
 /* UNIFORMS ================================================================= */
 UNIFORM(CULLING_SET, 0)		Frustum { vec4 planes[6]; }		frustum;
 UNIFORM(CULLING_SET, 1)		usampler2DArray					chunks; // r: type, g: properties, b: todo (block orientation data etc)

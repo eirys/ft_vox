@@ -16,24 +16,22 @@
 //  None
 
 // Output
-OUTPUT(0)				vec3 out_normal;
-OUTPUT(1)				vec3 out_uvw;
-OUTPUT(2)				vec3 out_shadow;
-
-// layout(location = 0) out vec3 out_normal;
-// layout(location = 1) out vec3 out_uvw;
-// layout(location = 2) out vec3 out_shadow;
+OUTPUT(0)					vec3 out_normal;
+OUTPUT(1)					vec3 out_uvw;
+OUTPUT(2)					vec3 out_shadow;
 
 /* UNIFORMS ================================================================= */
 UNIFORM(SCENE_SET, 0)		Camera { mat4 vp; }		camera;
 UNIFORM(SCENE_SET, 1)		Projector { mat4 vp; }	projector;
-UNIFORM(SCENE_SET, 2)		usampler2DArray			height_map;
-UNIFORM(SCENE_SET, 3)		usampler2D				chunk_map;
-
-// layout(binding = 0, set = 0) uniform Camera { mat4 vp; }	camera;
-// layout(binding = 1, set = 0) uniform Projector { mat4 vp; }	projector;
-// layout(binding = 5, set = 0) uniform usampler2DArray		height_map;
-// layout(binding = 6, set = 0) uniform usampler2D				chunk_map;
+UNIFORM(SCENE_SET, 2)		usampler2DArray			chunks;
+UNIFORM(SCENE_SET, 3)		VerticesData {
+	uint vertexData[MAX_RENDER_DISTANCE][CHUNK_VOLUME][6];
+	// blockId: 12 bit		-> to retrieve block type in `chunks` + block position
+	// face: 4 bits			-> to retrieve which face to sample
+	// layer: 12 bits		-> to retrieve which chunk to offset block position
+	// orientation: 1 bit	-> swap uv orientation for directed faces
+	// unused: 3 bits
+} vertices_data;
 
 /* ========================================================================== */
 /*                                  INCLUDES                                  */
@@ -62,19 +60,23 @@ const vec2 uvs[6] = {
 
 /* ENTRYPOINT =============================================================== */
 void	main() {
+	uint input =
+
+
+	// DEPRECATED
 	// Get actual instanceId
-	ivec2	instanceUV = ivec2(gl_InstanceIndex % RENDER_DISTANCE, gl_InstanceIndex / RENDER_DISTANCE);	// (x, y) in [0, 5]
-	uint	instanceId = texture(chunk_map, instanceUV / vec2(textureSize(chunk_map, 0) - 1)).r; //???
+	// ivec2	instanceUV = ivec2(gl_InstanceIndex % RENDER_DISTANCE, gl_InstanceIndex / RENDER_DISTANCE);	// (x, y) in [0, 5]
+	// uint	instanceId = texture(chunk_map, instanceUV / vec2(textureSize(chunk_map, 0) - 1)).r; //???
 
-	// Get actual vertexId
-	uint	vertexId = gl_VertexIndex % 36;
+	// // Get actual vertexId
+	// uint	vertexId = gl_VertexIndex % 36;
 
-	// Get cube in chunk
-	uint	cubeId = gl_VertexIndex / 36;
-	ivec2	chunkPos = ivec2(instanceId % RENDER_DISTANCE, instanceId / RENDER_DISTANCE);
-	ivec2	cubePos = ivec2(cubeId % CHUNK_SIZE, cubeId / CHUNK_SIZE);
-	float	cubeHeight = getHeight(cubePos, instanceId);
-	uint	face = vertexId / 6;
+	// // Get cube in chunk
+	// uint	cubeId = gl_VertexIndex / 36;
+	// ivec2	chunkPos = ivec2(instanceId % RENDER_DISTANCE, instanceId / RENDER_DISTANCE);
+	// ivec2	cubePos = ivec2(cubeId % CHUNK_SIZE, cubeId / CHUNK_SIZE);
+	// float	cubeHeight = getHeight(cubePos, instanceId);
+	// uint	face = vertexId / 6;
 
 	vec4	position = extractPos(vertexId, cubePos, cubeHeight, chunkPos);
 	vec3	shadow_coord = (projector.vp * position).xyz;

@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/23 06:30:15 by etran             #+#    #+#             */
-/*   Updated: 2023/12/24 11:17:58 by etran            ###   ########.fr       */
+/*   Updated: 2023/12/26 17:41:05 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,8 +47,11 @@ public:
 		VkDeviceSize size,
 		VkBufferUsageFlags usage,
 		VkMemoryPropertyFlags properties,
-		VkSharingMode sharing_mode = VK_SHARING_MODE_EXCLUSIVE
-	);
+		VkSharingMode sharing_mode = VK_SHARING_MODE_EXCLUSIVE);
+	void				init(
+		scop::core::Device& device,
+		const std::vector<VkBufferCreateInfo>& buffer_infos,
+		VkMemoryPropertyFlags properties);
 
 	void				destroy(VkDevice device);
 
@@ -86,6 +89,14 @@ private:
 	VkBuffer			_buffer;
 	VkDeviceMemory		_memory;
 	void*				_data;
+
+	/* ========================================================================= */
+	/*                                  METHODS                                  */
+	/* ========================================================================= */
+
+	void				_allocateBuffer(
+		scop::core::Device& device,
+		VkMemoryPropertyFlags properties);
 
 }; // class Buffer
 

@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/02 16:09:44 by etran             #+#    #+#             */
-/*   Updated: 2023/12/24 12:03:18 by etran            ###   ########.fr       */
+/*   Updated: 2023/12/26 17:05:25 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -251,6 +251,7 @@ void	Engine::_updatePresentation(Window& window) {
 	// _pipelines.scene->getTarget()->update(_core.getDevice(), tar_info);
 }
 
+// TODO Change
 UniformBufferObject	Engine::_updateUbo(const vox::GameState& game) {
 	UniformBufferObject	ubo{};
 
@@ -276,10 +277,10 @@ UniformBufferObject	Engine::_updateUbo(const vox::GameState& game) {
 			right);
 
 		ubo.camera.vp = projection * view;
-		_input_handler.updateVisibleChunks(
-			_core.getDevice(),
-			gfx::BoundingFrustum::Camera{player.getPosition(), front, right, up},
-			game.getWorld());
+		// _input_handler.updateVisibleChunks(
+		// 	_core.getDevice(),
+		// 	gfx::BoundingFrustum::Camera{player.getPosition(), front, right, up},
+		// 	game.getWorld());
 	}
 	{	/* UPDATE LIGHT AND PROJECTOR ============================================== */
 		constexpr const float	terrain_length = CHUNK_SIZE * RENDER_DISTANCE;

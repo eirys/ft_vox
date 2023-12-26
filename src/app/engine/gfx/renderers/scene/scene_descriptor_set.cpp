@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/31 11:08:11 by etran             #+#    #+#             */
-/*   Updated: 2023/12/26 12:19:19 by etran            ###   ########.fr       */
+/*   Updated: 2023/12/26 19:41:27 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -108,8 +108,7 @@ void	SceneDescriptorSet::plug(
 	const Buffer& buffer,
 	TextureHandlerPtr textures,
 	TextureHandlerPtr shadowmap,
-	const scop::InputHandler& input,
-	TextureHandlerPtr vertices_data
+	const scop::InputHandler& input
 ) {
 	VkDescriptorBufferInfo	camera_info{};
 	camera_info.buffer = buffer.getBuffer();
@@ -141,15 +140,15 @@ void	SceneDescriptorSet::plug(
 	// height_info.imageView = input.getHeightMap()->getTextureBuffer().getView();
 	// height_info.sampler = input.getHeightMap()->getTextureSampler();
 
-	// VkDescriptorImageInfo	height_info{};
-	// height_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-	// height_info.imageView = input.getHeightMap()->getTextureBuffer().getView();
-	// height_info.sampler = input.getHeightMap()->getTextureSampler();
-
 	VkDescriptorImageInfo	chunk_info{};
 	chunk_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 	chunk_info.imageView = input.getChunkMap()->getTextureBuffer().getView();
 	chunk_info.sampler = input.getChunkMap()->getTextureSampler();
+
+	VkDescriptorBufferInfo	vertices_data_info{};
+	vertices_data_info.buffer = input.getInputBuffer().getBuffer();
+	vertices_data_info.offset = (uint32_t)InputBufferOffset::VerticesData;
+	vertices_data_info.range = (uint32_t)InputBufferSize::VerticesData;
 
 	std::array<VkWriteDescriptorSet, 7>	writes{
 		super::createWriteDescriptorSet(DescriptorType::UNIFORM_BUFFER, &camera_info, 0),
@@ -158,7 +157,7 @@ void	SceneDescriptorSet::plug(
 		super::createWriteDescriptorSet(DescriptorType::COMBINED_IMAGE_SAMPLER, &texture_info, 3),
 		super::createWriteDescriptorSet(DescriptorType::COMBINED_IMAGE_SAMPLER, &depth_info, 4),
 		super::createWriteDescriptorSet(DescriptorType::COMBINED_IMAGE_SAMPLER, &chunk_info, 5),
-		super::createWriteDescriptorSet(DescriptorType::STORAGE_IMAGE, &chunk_info, 6)
+		super::createWriteDescriptorSet(DescriptorType::STORAGE_BUFFER, &vertices_data_info, 6)
 	};
 
 	// // Camera UBO

@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/28 11:12:12 by eli               #+#    #+#             */
-/*   Updated: 2023/11/16 23:25:50 by etran            ###   ########.fr       */
+/*   Updated: 2023/12/26 17:09:53 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,6 +62,7 @@ void	App::run() {
 		_window.poll();
 		_updateGame();
 		_engine.render(_window, _game, _timer);
+		_game.update();
 		_timer.check();
 	}
 	_engine.idle();

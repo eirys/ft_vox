@@ -2,17 +2,42 @@
 # define SCENE_RENDERING_TOOLS_GLSLH
 
 /* ========================================================================== */
+/*                                   OBJECTS                                  */
+/* ========================================================================== */
+
+
+// Data contained in VerticesData buffer.
+struct VertexInput {
+	uvec3	blockPos;
+	uint	face;
+	uint	layer;
+	bool	isSideways;
+};
+
+
+/* ========================================================================== */
 /*                                  FUNCTIONS                                 */
 /* ========================================================================== */
 
 uint	packBlockPos(in uvec3 _pos) {
-	return (_pos.x << 16) | (_pos.y << 8) | _pos.z;
+	return (_pos.x << 8) | (_pos.y << 4) | _pos.z;
 }
 
-uvec3	unpackBlockPos(in uint _pos) {
-	return uvec3(_pos >> 16, (_pos >> 8) & 0xFF, _pos & 0xFF);
+uvec3	unpackBlockPos(in uint _packedPos) {
+	return uvec3(_packedPos >> 8, (_packedPos >> 4) & 0xF, _packedPos & 0xF);
 }
 
+// Unpacks VertexInput from vertices data buffer.
+VertexInput	unpackVertexInput(in uint _packedInput) {
+	VertexInput input;
+	uint blockId = _packedInput >> 20;
+	input.blockPos = unpackBlockPos(_blockId >> 4);
+	input.face = blockId & 0xF;
+
+	return input;
+}
+
+// Sampler for chunks texture.
 uvec2	getBlock(in uvec3 _blockPos, in uint _chunkId) {
 	float x_offsetted = float(_blockPos.x + (_blockPos.y % 4));
 	float z_offsetted = float(_blockPos.z + (_blockPos.y / 4));

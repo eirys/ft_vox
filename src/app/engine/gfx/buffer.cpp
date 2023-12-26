@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/23 06:44:38 by etran             #+#    #+#             */
-/*   Updated: 2023/12/24 11:58:12 by etran            ###   ########.fr       */
+/*   Updated: 2023/12/26 17:42:14 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,28 +43,19 @@ void	Buffer::init(
 		throw std::runtime_error("failed to create buffer");
 	}
 
-	// Allocate memory for buffer
-	VkMemoryRequirements	mem_requirements;
-	vkGetBufferMemoryRequirements(
-		device.getLogicalDevice(),
-		_buffer,
-		&mem_requirements
-	);
+	_allocateBuffer(device, properties);
+}
 
-	VkMemoryAllocateInfo	alloc_info{};
-	alloc_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-	alloc_info.allocationSize = mem_requirements.size;
-	alloc_info.memoryTypeIndex = device.findMemoryType(
-		mem_requirements.memoryTypeBits,
-		properties
-	);
-
-	if (vkAllocateMemory(device.getLogicalDevice(), &alloc_info, nullptr, &_memory) != VK_SUCCESS) {
-		throw std::runtime_error("failed to allocate buffer memory");
+void	Buffer::init(
+	scop::core::Device& device,
+	const std::vector<VkBufferCreateInfo>& buffer_infos,
+	VkMemoryPropertyFlags properties
+) {
+	if (vkCreateBuffer(device.getLogicalDevice(), buffer_infos.data(), nullptr, &_buffer) != VK_SUCCESS) {
+		throw std::runtime_error("failed to create buffer");
 	}
 
-	// Bind memory to instance
-	vkBindBufferMemory(device.getLogicalDevice(), _buffer, _memory, 0);
+	_allocateBuffer(device, properties);
 }
 
 /**
@@ -76,6 +67,27 @@ void	Buffer::destroy(VkDevice device) {
 }
 
 /* ========================================================================== */
+
+/**
+ * @brief Maps buffer memory to CPU accessible memory.
+ *
+ * @param device	Vulkan device.
+ * @param size		Size of memory to map. Default to VK_WHOLE_SIZE.
+*/
+void	Buffer::map(VkDevice device, VkDeviceSize size) {
+	if (vkMapMemory(device, _memory, 0, size, 0, &_data) != VK_SUCCESS) {
+		throw std::runtime_error("failed to map buffer memory");
+	}
+}
+
+/**
+ * @brief Unmaps buffer memory.
+ *
+ * @param device	Vulkan device.
+*/
+void	Buffer::unmap(VkDevice device) noexcept {
+	vkUnmapMemory(device, _memory);
+}
 
 /**
  * @brief Copies data to buffer.
@@ -154,25 +166,28 @@ void*	Buffer::getMappedData() const noexcept {
 /*                                   PRIVATE                                  */
 /* ========================================================================== */
 
-/**
- * @brief Maps buffer memory to CPU accessible memory.
- *
- * @param device	Vulkan device.
- * @param size		Size of memory to map. Default to VK_WHOLE_SIZE.
-*/
-void	Buffer::map(VkDevice device, VkDeviceSize size) {
-	if (vkMapMemory(device, _memory, 0, size, 0, &_data) != VK_SUCCESS) {
-		throw std::runtime_error("failed to map buffer memory");
-	}
-}
+void	Buffer::_allocateBuffer(
+	scop::core::Device& device,
+	VkMemoryPropertyFlags properties
+) {
+	// Allocate memory for buffer
+	VkMemoryRequirements	mem_requirements;
+	vkGetBufferMemoryRequirements(
+		device.getLogicalDevice(),
+		_buffer,
+		&mem_requirements);
 
-/**
- * @brief Unmaps buffer memory.
- *
- * @param device	Vulkan device.
-*/
-void	Buffer::unmap(VkDevice device) noexcept {
-	vkUnmapMemory(device, _memory);
+	VkMemoryAllocateInfo	alloc_info{};
+	alloc_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+	alloc_info.allocationSize = mem_requirements.size;
+	alloc_info.memoryTypeIndex = device.findMemoryType(mem_requirements.memoryTypeBits, properties);
+
+	if (vkAllocateMemory(device.getLogicalDevice(), &alloc_info, nullptr, &_memory) != VK_SUCCESS) {
+		throw std::runtime_error("failed to allocate buffer memory");
+	}
+
+	// Bind memory to instance
+	vkBindBufferMemory(device.getLogicalDevice(), _buffer, _memory, 0);
 }
 
 } // namespace scop::gfx

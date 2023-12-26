@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   gameplay.h                                         :+:      :+:    :+:   */
+/*   game_state.h                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/05 09:49:39 by etran             #+#    #+#             */
-/*   Updated: 2023/08/12 23:04:55 by etran            ###   ########.fr       */
+/*   Updated: 2023/12/26 17:11:02 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,6 +39,9 @@ public:
 	void			setOrigin(const scop::Vect3& origin) noexcept;
 	void			setCameraDir(float yaw, float pitch) noexcept;
 	void			setCameraPos(const scop::Vect3& new_pos) noexcept;
+
+	void			update();
+	void			updateWorld();
 
 	/* ========================================================================= */
 
