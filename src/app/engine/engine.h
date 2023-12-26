@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:14:35 by etran             #+#    #+#             */
-/*   Updated: 2023/12/04 23:34:15 by etran            ###   ########.fr       */
+/*   Updated: 2023/12/23 20:41:39 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,6 +25,7 @@
 # include "descriptor_pool.h"
 # include "command_pool.h"
 # include "command_buffer.h"
+# include "pipeline_manager.h"
 
 # include "input_handler.h"
 
@@ -94,7 +95,7 @@ private:
 	gfx::CommandPool			_command_pool;
 	gfx::DescriptorPool			_descriptor_pool;
 
-	PipelineManager				_pipeline_manager;
+	gfx::PipelineManager		_pipeline_manager;
 
 	VkSemaphore					_image_available_semaphores;
 	VkSemaphore					_render_finished_semaphores;
@@ -104,14 +105,6 @@ private:
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
-
-	void						_createGraphicsPipelines();
-	void						_createComputesPipelines();
-
-	void						_assembleGraphicsPipelines();
-	void						_assembleComputePipelines();
-
-	void						_createPipelineLayout();
 
 	void						_createSyncObjects();
 	void						_createDescriptors();

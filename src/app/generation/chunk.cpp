@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/19 11:46:11 by etran             #+#    #+#             */
-/*   Updated: 2023/12/08 16:25:31 by etran            ###   ########.fr       */
+/*   Updated: 2023/12/24 15:28:34 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,20 +64,22 @@ std::array<uint8_t, CHUNK_AREA>	Chunk::generateHeightMap() const noexcept {
 	return height_map;
 }
 
+//DPCT
 bool	Chunk::isVisible(const BoundingFrustum& frustum) const {
 	return _checkIntersection(frustum) != IntersectionType::Outside;
 }
 
+/**
+ * @brief Packs each block data into 2 bytes and stores them in the chunk data array.
+*/
 void	Chunk::fillChunkMap(std::array<uint16_t, CHUNK_VOLUME>& data) const {
 	for (uint8_t z = 0; z < CHUNK_SIZE; ++z) {
 		for (uint8_t x = 0; x < CHUNK_SIZE; ++x) {
 			for (uint8_t y = 0; y < CHUNK_SIZE; ++y) {
 				const Block& block = getBlock(x, y, z);
-				if (!block.isEmpty()) {
-					const uint32_t x_offsetted = x + (y % 4) * CHUNK_SIZE;
-					const uint32_t z_offsetted = z + (y / 4) * CHUNK_SIZE;
-					data[z_offsetted * CHUNK_SIZE + x_offsetted] = block.getPackedData();
-				}
+				const uint32_t x_offsetted = x + (y % 4) * CHUNK_SIZE;
+				const uint32_t z_offsetted = z + (y / 4) * CHUNK_SIZE;
+				data[z_offsetted * CHUNK_SIZE + x_offsetted] = block.computePackedData();
 			}
 		}
 	}

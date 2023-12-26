@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/23 06:44:38 by etran             #+#    #+#             */
-/*   Updated: 2023/11/16 22:51:27 by etran            ###   ########.fr       */
+/*   Updated: 2023/12/24 11:58:12 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -95,6 +95,23 @@ void	Buffer::copyFrom(
 }
 
 /**
+ * @brief Copies GPU buffer data to CPU dst buffer.
+ *
+ * @note Buffer must be mapped before calling this function.
+ *
+ * @param data_dst	Buffer to copy to.
+ * @param data_size	Size of data.
+ * @param offset	Offset of data in buffer.
+*/
+void	Buffer::copyTo(
+	void* data_dst,
+	std::size_t data_size,
+	std::size_t offset
+) noexcept {
+	memcpy(reinterpret_cast<uint8_t*>(data_dst) + offset, _data, data_size);
+}
+
+/**
  * @brief Sends a copy command to a command buffer.
  *
  * @param command_buffer	Command buffer to send command to.
@@ -103,7 +120,6 @@ void	Buffer::copyFrom(
  * @param src_offset		Offset of data in src buffer. Default to 0.
  * @param dst_offset		Offset of data in dst buffer. Default to 0.
 */
-
 void	Buffer::copyBuffer(
 	VkCommandBuffer command_buffer,
 	Buffer& src_buffer,
@@ -128,6 +144,10 @@ void	Buffer::copyBuffer(
 
 VkBuffer	Buffer::getBuffer() const noexcept {
 	return _buffer;
+}
+
+void*	Buffer::getMappedData() const noexcept {
+	return _data;
 }
 
 /* ========================================================================== */

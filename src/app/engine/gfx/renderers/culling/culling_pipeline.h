@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/18 20:15:16 by etran             #+#    #+#             */
-/*   Updated: 2023/12/06 23:23:17 by etran            ###   ########.fr       */
+/*   Updated: 2023/12/23 00:50:22 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,7 +60,7 @@ public:
 	using super::getPipeline;
 	using super::getDescriptor;
 
-	TextureHandlerPtr	getCullingTextureHandler() const noexcept;
+	TextureHandlerPtr	getCullingTextureHandler() const;
 
 private:
 	/* ========================================================================= */

@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/18 16:08:29 by etran             #+#    #+#             */
-/*   Updated: 2023/12/14 11:21:08 by etran            ###   ########.fr       */
+/*   Updated: 2023/12/23 01:19:36 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,7 @@ public:
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
 
-	Block(MaterialType type) noexcept;
+	Block(const MaterialType type) noexcept;
 
 	Block() = default;
 	Block(Block &&src) = default;
@@ -37,26 +37,28 @@ public:
 
 	/* ========================================================================= */
 
-	void				setType(MaterialType block_type) noexcept;
-	void				setProperies(MaterialProperty block_type) noexcept;
+	void				setType(const MaterialType block_type) noexcept;
+	void				setProperies(const MaterialProperty block_type) noexcept;
 
 	MaterialType		getType() const noexcept;
 	MaterialProperty	getProperties() const noexcept;
 
-	uint16_t			getPackedData() const noexcept;
+	uint16_t			computePackedData() const noexcept;
 
 	/* GAMEPLAY ================================================================ */
 
 	bool				isEmpty() const noexcept;
 	bool				isSolid() const noexcept;
-	bool				isLiquid() const noexcept;
+	bool				isFluid() const noexcept;
 	bool				isDirected() const noexcept;
+	// TODO
 
 	/* GFX ===================================================================== */
 
 	bool				isTransparent() const noexcept;
 	bool				isSemiTransparent() const noexcept;
 	bool				isLightSource() const noexcept;
+	// TODO
 
 private:
 	/* ========================================================================= */

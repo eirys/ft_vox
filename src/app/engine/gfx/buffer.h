@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/23 06:30:15 by etran             #+#    #+#             */
-/*   Updated: 2023/11/16 22:51:03 by etran            ###   ########.fr       */
+/*   Updated: 2023/12/24 11:17:58 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,19 +60,23 @@ public:
 	void				copyFrom(
 		const void* data,
 		std::size_t data_size,
-		std::size_t offset = 0
-	) noexcept;
+		std::size_t offset = 0) noexcept;
+	void				copyTo(
+		void* data_dst,
+		std::size_t data_size,
+		std::size_t offset = 0) noexcept;
 	void				copyBuffer(
 		VkCommandBuffer command_buffer,
 		Buffer& src_buffer,
 		VkDeviceSize size = VK_WHOLE_SIZE,
 		VkDeviceSize src_offset = 0,
-		VkDeviceSize dst_offset = 0
-	) noexcept;
+		VkDeviceSize dst_offset = 0) noexcept;
+
 
 	/* ========================================================================= */
 
 	VkBuffer			getBuffer() const noexcept;
+	void*				getMappedData() const noexcept;
 
 private:
 	/* ========================================================================= */

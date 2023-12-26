@@ -6,7 +6,7 @@
 #    By: etran <etran@student.42.fr>                +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/04/06 03:40:09 by eli               #+#    #+#              #
-#    Updated: 2023/12/11 22:53:47 by etran            ###   ########.fr        #
+#    Updated: 2023/12/23 01:10:35 by etran            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -97,10 +97,6 @@ SRC_FILES	:=	$(TOOLS_DIR)/matrix.cpp \
 				$(CORE_DIR)/debug_module.cpp \
 				$(CORE_DIR)/device.cpp \
 				$(CORE_DIR)/core.cpp \
-				$(REN_DIR)/pipeline_manager.cpp \
-				$(REN_DIR)/graphics_pipeline.cpp \
-				$(REN_DIR)/compute_pipeline.cpp \
-				$(REN_DIR)/pipeline_helpers.cpp \
 				$(GFX_DIR)/descriptor_pool.cpp \
 				$(GFX_DIR)/descriptor_set.cpp \
 				$(GFX_DIR)/command_pool.cpp \
@@ -110,11 +106,16 @@ SRC_FILES	:=	$(TOOLS_DIR)/matrix.cpp \
 				$(GFX_DIR)/command_buffer.cpp \
 				$(GFX_DIR)/image_buffer.cpp \
 				$(GFX_DIR)/texture_handler.cpp \
-				$(GFX_DIR)/culling_texture_handler.cpp \
 				$(GFX_DIR)/chunk_texture_handler.cpp \
+				$(REN_DIR)/pipeline_manager.cpp \
+				$(REN_DIR)/graphics_pipeline.cpp \
+				$(REN_DIR)/compute_pipeline.cpp \
+				$(REN_DIR)/pipeline_helpers.cpp \
 				$(CULL_DIR)/bounding_box.cpp \
 				$(CULL_DIR)/bounding_frustum.cpp \
 				$(CULL_DIR)/culling_pipeline.cpp \
+				$(CULL_DIR)/culling_descriptor_set.cpp \
+				$(CULL_DIR)/culling_texture_handler.cpp \
 				$(SCENE_DIR)/scene_render_pass.cpp \
 				$(SCENE_DIR)/scene_descriptor_set.cpp \
 				$(SCENE_DIR)/scene_pipeline.cpp \

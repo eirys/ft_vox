@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/19 11:50:07 by etran             #+#    #+#             */
-/*   Updated: 2023/12/06 23:32:28 by etran            ###   ########.fr       */
+/*   Updated: 2023/12/23 00:50:15 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -100,14 +100,14 @@ void	CullingPipeline::compute(
 		VK_PIPELINE_BIND_POINT_COMPUTE,
 		super::_pipeline);
 
-	vkCmdDispatch(command_buffer.getBuffer(), 16, 16, 1);
+	vkCmdDispatch(command_buffer.getBuffer(), 16, 16, 16);
 
 	command_buffer.end(device);
 }
 
 /* ========================================================================== */
 
-CullingPipeline::TextureHandlerPtr	CullingPipeline::getCullingTextureHandler() const noexcept {
+CullingPipeline::TextureHandlerPtr	CullingPipeline::getCullingTextureHandler() const {
 	return _culling_texture;
 }
 

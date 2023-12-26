@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/19 11:52:18 by etran             #+#    #+#             */
-/*   Updated: 2023/11/19 16:53:34 by etran            ###   ########.fr       */
+/*   Updated: 2023/12/23 21:18:57 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,12 @@
 
 # include "descriptor_set.h"
 
+namespace scop {
+class InputHandler;
+}
 namespace scop::gfx {
+
+class Buffer;
 
 class CullingDescriptorSet final: public DescriptorSet {
 public:
@@ -26,7 +31,6 @@ public:
 	/* ========================================================================= */
 
 	using super = DescriptorSet;
-	using TextureHandlerPtr = std::shared_ptr<TextureHandler>;
 
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
@@ -42,11 +46,13 @@ public:
 
 	/* ========================================================================= */
 
+	using super::destroy;
 	using super::setDescriptors;
 
 	void	init(scop::core::Device& device) override;
-	using super::destroy;
-	// TODO
+	void	plug(
+		scop::core::Device& device,
+		const scop::InputHandler& input);
 
 	/* ========================================================================= */
 

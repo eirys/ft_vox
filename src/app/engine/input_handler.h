@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:15:01 by etran             #+#    #+#             */
-/*   Updated: 2023/12/06 23:19:00 by etran            ###   ########.fr       */
+/*   Updated: 2023/12/24 15:31:14 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,6 +29,7 @@ class Device;
 
 namespace scop::gfx {
 class TextureHandler;
+class Buffer;
 }
 
 namespace scop {
@@ -61,28 +62,55 @@ public:
 	void				init(core::Device& device, const vox::GameState& game);
 	void				destroy(core::Device& device);
 
-	void				updateVisibleChunks(
+	void				updateData(
 		core::Device& device,
 		const gfx::BoundingFrustum::Camera& camera,
 		const vox::World& world);
+	void				retrieveData();
+
+	// void				updateVisibleChunks(
+	// 	core::Device& device,
+	// 	const gfx::BoundingFrustum::Camera& camera,
+	// 	const vox::World& world);
 
 	/* ========================================================================= */
 
-	uint32_t				getVerticesCount() const noexcept;
-	uint32_t				getInstancesCount() const noexcept;
-	TextureHandlerPtr		getHeightMap() const noexcept;
-	TextureHandlerPtr		getChunkMap() const noexcept;
+	uint32_t			getVerticesCount() const noexcept;
+	uint32_t			getInstancesCount() const noexcept;
+	TextureHandlerPtr	getChunkMap() const;
+
+	const gfx::Buffer&	getFrustumBuffer() const noexcept;
+	gfx::Buffer&		getFrustumBuffer() noexcept;
+	const gfx::Buffer&	getQuadCountBuffer() const noexcept;
+	gfx::Buffer&		getQuadCountBuffer() noexcept;
+	const gfx::Buffer&	getVerticesDataBuffer() const noexcept;
+	gfx::Buffer&		getVerticesDataBuffer() noexcept;
+
 
 private:
 	/* ========================================================================= */
 	/*                               CLASS MEMBERS                               */
 	/* ========================================================================= */
 
-	TextureHandlerPtr		_chunk_texture;
+	gfx::BoundingFrustum		_frustum;
 
-	gfx::BoundingFrustum	_frustum;
-	uint32_t				_instances_count = 25;
-	uint32_t				_vertices_count = CHUNK_AREA * 36;
+	TextureHandlerPtr			_chunk_texture;
+	// TODO put into 1 buffer
+	gfx::Buffer					_frustum_buffer; // TODO map
+	gfx::Buffer					_quad_count_buffer; // TODO map
+	gfx::Buffer					_vertices_data_buffer;
+
+	static constexpr uint32_t	_vertices_count = 4;
+	uint32_t					_instances_count = 6 * CHUNK_VOLUME * RENDER_DISTANCE;
+
+	// uint32_t				_instances_count = 25;
+	// uint32_t				_vertices_count = CHUNK_AREA * 36;
+
+	/* ========================================================================= */
+	/*                                  METHODS                                  */
+	/* ========================================================================= */
+
+	void				_createBuffers(core::Device& device);
 
 }; // class InputHandler
 

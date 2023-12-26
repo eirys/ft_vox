@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/24 14:32:26 by etran             #+#    #+#             */
-/*   Updated: 2023/12/12 00:02:34 by etran            ###   ########.fr       */
+/*   Updated: 2023/12/23 20:40:18 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,8 +31,9 @@ void	ChunkTextureHandler::init(scop::core::Device& device) {
 	data.format = VK_FORMAT_R8G8B8_UINT;
 	data.layer_count = RENDER_DISTANCE * RENDER_DISTANCE;
 
-	// Offset xz by 16*y to get chunk layer
-	// ex: to get element at (x:2, y:14, z: 3) -> sample with uv = vec2(x+(y*16), z+(y*16))
+	// Offset xz with y
+	// ex: if y = 0 -> uv = (x, z)
+	//        y = 4 -> uv = (x + (y % 4), z + (y / 4)) = (x, z + 1)
 	data.width = CHUNK_SIZE * CHUNK_SIZE;
 	data.height = CHUNK_SIZE * CHUNK_SIZE;
 
@@ -48,11 +49,11 @@ void	ChunkTextureHandler::init(scop::core::Device& device) {
 */
 void	ChunkTextureHandler::copyData(
 	scop::core::Device& device,
-	const std::vector<vox::Chunk>& chunks
+	const std::vector<uint16_t>& chunks
 ) {
-	const ImageMetaData&				image_data = super::_texture_buffer.getMetaData();
-	constexpr const VkDeviceSize		layer_size = CHUNK_VOLUME * sizeof(uint16_t);
-	const VkDeviceSize					image_size = layer_size * image_data.getLayerCount();
+	const ImageMetaData& image_data = super::_texture_buffer.getMetaData();
+	const VkDeviceSize layer_size = image_data.getWidth() * image_data.getHeight() * sizeof(uint16_t);
+	const VkDeviceSize image_size = layer_size * image_data.getLayerCount();
 
 	// Create staging buffer to copy images data to (cpu->gpu)
 	scop::gfx::Buffer	staging_buffer;

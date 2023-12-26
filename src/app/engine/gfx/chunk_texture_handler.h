@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/24 14:32:13 by etran             #+#    #+#             */
-/*   Updated: 2023/12/14 11:07:40 by etran            ###   ########.fr       */
+/*   Updated: 2023/12/23 01:44:56 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,9 +14,9 @@
 
 # include "texture_handler.h"
 
-namespace vox {
-class Chunk;
-}
+// namespace vox {
+// class Chunk;
+// }
 
 namespace scop::gfx {
 
@@ -52,7 +52,7 @@ public:
 	void			init(scop::core::Device& device) override;
 	void			copyData(
 		scop::core::Device& device,
-		const std::vector<vox::Chunk>& chunks);
+		const std::vector<uint16_t>& chunks);
 
 	/* ========================================================================= */
 

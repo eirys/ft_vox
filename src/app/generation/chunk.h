@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/06 12:07:38 by etran             #+#    #+#             */
-/*   Updated: 2023/12/08 16:25:19 by etran            ###   ########.fr       */
+/*   Updated: 2023/12/23 01:40:05 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,16 +17,14 @@
 # include <vector> // std::vector
 # include <memory>
 
-# include "chunk_macros.h"
 # include "bounding_box.h"
+# include "chunk_macros.h"
+# include "block.h"
 
 namespace vox {
 
-struct Vertex;
-struct Mesh;
 class PerlinNoise;
 class Player;
-class Block;
 
 /**
  * @brief World subdivision. A chunk size is 16 x 16 x 16.
@@ -82,13 +80,13 @@ private:
 	/*                               CLASS MEMBERS                               */
 	/* ========================================================================= */
 
-	std::vector<Block>		_blocks;
-	bool					_isActive = false;
+	std::vector<Block>	_blocks;
+	bool				_isActive = false;
 
 	// World index
-	uint8_t					_x;
-	uint8_t					_y;
-	uint8_t					_z;
+	uint8_t				_x;
+	uint8_t				_y;
+	uint8_t				_z;
 
 	/* ========================================================================= */
 	/*                                  METHODS                                  */

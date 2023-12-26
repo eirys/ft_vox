@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/02 16:09:44 by etran             #+#    #+#             */
-/*   Updated: 2023/12/06 23:20:43 by etran            ###   ########.fr       */
+/*   Updated: 2023/12/24 12:03:18 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,16 +22,17 @@
 #include "game_state.h"
 
 // Gfx
+#include "culling_pipeline.h"
+#include "scene_pipeline.h"
+#include "shadows_pipeline.h"
 #include "texture_handler.h"
 #include "target.h"
 #include "descriptor_set.h"
 #include "render_pass.h"
-#include "pipeline_manager.h"
 #include "chunk_texture_handler.h"
 
 #include <cstring> // std::strcmp
 
-using Vertex = ::vox::Vertex;
 using Mat4 = ::scop::Mat4;
 using Camera = ::scop::Camera;
 
@@ -130,6 +131,8 @@ void	Engine::render(
 		_core.getDevice(),
 		_pipeline_manager.getPipelineLayout(),
 		_compute_buffer);
+	_input_handler.retrieveData();
+
 	_pipeline_manager.getShadowsPipeline()->draw(
 		_pipeline_manager.getPipelineLayout(),
 		_draw_buffer,
@@ -203,7 +206,7 @@ void	Engine::_createDescriptors() {
 		_pipeline_manager.getCullingPipeline()->getDescriptor() };
 
 	_descriptor_pool.init(_core.getDevice(), descriptors);
-	_pipeline_manager.plugDescriptors(_core.getDevice());
+	_pipeline_manager.plugDescriptors(_core.getDevice(), _input_handler);
 }
 
 /**
@@ -232,6 +235,7 @@ void	Engine::_createSyncObjects() {
 */
 // TODO fix
 void	Engine::_updatePresentation(Window& window) {
+	(void)window;
 	// _swap_chain.update(_core.getDevice(), window);
 
 	// RenderPassInfo	rp_info {

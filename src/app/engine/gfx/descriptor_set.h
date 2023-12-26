@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/12 12:08:24 by etran             #+#    #+#             */
-/*   Updated: 2023/11/18 20:21:54 by etran            ###   ########.fr       */
+/*   Updated: 2023/12/24 15:52:28 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,6 +28,14 @@ namespace scop::gfx {
 /* ========================================================================= */
 /*                               HELPER OBJECTS                              */
 /* ========================================================================= */
+
+enum class DescriptorType: uint8_t {
+	UNIFORM_BUFFER,
+	COMBINED_IMAGE_SAMPLER,
+	SAMPLED_IMAGE,
+	STORAGE_IMAGE,
+	STORAGE_BUFFER
+};
 
 struct DescriptorSizes {
 	uint32_t	uniform_buffer = 0;
@@ -86,6 +94,24 @@ protected:
 	DescriptorSet(const DescriptorSet& other) = delete;
 	DescriptorSet&	operator=(DescriptorSet&& other) = delete;
 	DescriptorSet&	operator=(const DescriptorSet& other) = delete;
+
+	/* ========================================================================= */
+
+	static VkWriteDescriptorSet	createWriteDescriptorSet(
+		DescriptorType type,
+		void* descriptor_info,
+		uint32_t binding,
+		uint32_t count = 1) const;
+
+private:
+	/* ========================================================================= */
+	/*                                  METHODS                                  */
+	/* ========================================================================= */
+
+	void	_fillDescriptorType(
+		DescriptorType type,
+		void* descriptor_info,
+		VkWriteDescriptorSet& write_descriptor_set) const;
 
 }; // class DescriptorSet
 
