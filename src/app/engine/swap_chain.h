@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/02 16:27:11 by etran             #+#    #+#             */
-/*   Updated: 2023/12/04 23:20:52 by etran            ###   ########.fr       */
+/*   Updated: 2023/12/28 22:50:37 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,6 +57,11 @@ public:
 	void								update(
 		core::Device& device,
 		Window& window);
+	bool								acquireNextImage(
+		core::Device& device,
+		VkSemaphore semaphore,
+		VkFence fence,
+		uint32_t& image_index);
 
 	/* ========================================================================= */
 

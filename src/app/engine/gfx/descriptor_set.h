@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/12 12:08:24 by etran             #+#    #+#             */
-/*   Updated: 2023/12/24 15:52:28 by etran            ###   ########.fr       */
+/*   Updated: 2024/01/04 00:59:44 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,6 +42,7 @@ struct DescriptorSizes {
 	uint32_t	combined_image_sampler = 0;
 	uint32_t	storage_image = 0;
 	uint32_t	storage_buffer = 0;
+	uint32_t	sampled_image = 0;
 };
 
 /**
@@ -67,12 +68,6 @@ public:
 
 protected:
 	/* ========================================================================= */
-	/*                               STATIC MEMBERS                              */
-	/* ========================================================================= */
-
-	static uint32_t			_descriptor_count;
-
-	/* ========================================================================= */
 	/*                               CLASS MEMBERS                               */
 	/* ========================================================================= */
 
@@ -80,7 +75,7 @@ protected:
 
 	VkDescriptorSetLayout	_layout;
 	VkDescriptorSet			_set = VK_NULL_HANDLE;
-	DescriptorSizes			_writes_sizes;
+	DescriptorSizes			_writes_sizes = {};
 
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
@@ -97,10 +92,16 @@ protected:
 
 	/* ========================================================================= */
 
-	static VkWriteDescriptorSet	createWriteDescriptorSet(
+	VkDescriptorSetLayoutBinding	createLayoutBinding(
+		DescriptorType type,
+		VkShaderStageFlags shader_stage,
+		uint32_t binding_index,
+		uint32_t count = 1);
+
+	VkWriteDescriptorSet			createWriteDescriptorSet(
 		DescriptorType type,
 		void* descriptor_info,
-		uint32_t binding,
+		uint32_t binding_index,
 		uint32_t count = 1) const;
 
 private:
@@ -108,7 +109,7 @@ private:
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
 
-	void	_fillDescriptorType(
+	void					_fillDescriptorType(
 		DescriptorType type,
 		void* descriptor_info,
 		VkWriteDescriptorSet& write_descriptor_set) const;

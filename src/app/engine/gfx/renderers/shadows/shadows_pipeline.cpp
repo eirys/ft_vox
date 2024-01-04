@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/16 10:16:30 by etran             #+#    #+#             */
-/*   Updated: 2023/11/20 00:38:27 by etran            ###   ########.fr       */
+/*   Updated: 2024/01/03 14:44:39 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,9 +27,9 @@
 #include <stdexcept> // std::runtime_error
 
 #if defined(__LINUX)
-# define SHADOW_VERTEX_PATH "shaders/shadow.vertex.spv"
+# define SHADOW_VERTEX_PATH "shadow.vertex.spv"
 #else
-# define SHADOW_VERTEX_PATH "shaders/shadow_vert.spv"
+# define SHADOW_VERTEX_PATH "shadow_vert.spv"
 #endif
 
 namespace scop::gfx {
@@ -92,7 +92,7 @@ void	ShadowsPipeline::plugDescriptor(
 ) {
 	auto	shadows_descriptor =
 		std::dynamic_pointer_cast<ShadowsDescriptorSet>(super::_descriptor);
-	shadows_descriptor->plug(device, ubo, input);
+	shadows_descriptor->fill(device, ubo, input);
 }
 
 void	ShadowsPipeline::draw(

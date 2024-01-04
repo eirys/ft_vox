@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/02 19:40:11 by etran             #+#    #+#             */
-/*   Updated: 2023/12/04 23:20:47 by etran            ###   ########.fr       */
+/*   Updated: 2023/12/28 22:50:41 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,6 +50,28 @@ void	SwapChain::update(
 
 	destroy(device);
 	init(device, window);
+}
+
+bool	SwapChain::acquireNextImage(
+	core::Device& device,
+	VkSemaphore semaphore,
+	VkFence fence,
+	uint32_t& image_index
+) {
+	VkResult	result = vkAcquireNextImageKHR(
+		device.getLogicalDevice(),
+		_swap_chain,
+		UINT64_MAX,
+		semaphore,
+		VK_NULL_HANDLE,
+		&image_index);
+	if (result == VK_ERROR_OUT_OF_DATE_KHR) {
+		return false;
+	} else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
+		throw std::runtime_error("failed to acquire swap chain image");
+	}
+	vkResetFences(device.getLogicalDevice(), 1, &fence);
+	return true;
 }
 
 /* ========================================================================== */

@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/31 11:34:45 by etran             #+#    #+#             */
-/*   Updated: 2023/11/16 23:49:27 by etran            ###   ########.fr       */
+/*   Updated: 2024/01/03 14:44:39 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,7 +51,7 @@ public:
 
 	void	init(scop::core::Device& device) override;
 
-	void	plug(
+	void	fill(
 		scop::core::Device& device,
 		const Buffer& buffer,
 		const scop::InputHandler& input);

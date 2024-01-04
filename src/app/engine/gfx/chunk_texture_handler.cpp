@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/24 14:32:26 by etran             #+#    #+#             */
-/*   Updated: 2023/12/23 20:40:18 by etran            ###   ########.fr       */
+/*   Updated: 2024/01/03 22:50:35 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,8 @@
 #include "command_buffer.h"
 #include "command_pool.h"
 #include "buffer.h"
+
+#include "debug.h"
 
 #include <stdexcept> // std::runtime_error
 
@@ -28,7 +30,7 @@ namespace scop::gfx {
 void	ChunkTextureHandler::init(scop::core::Device& device) {
 	ImageMetaData	data{};
 
-	data.format = VK_FORMAT_R8G8B8_UINT;
+	data.format = VK_FORMAT_R8G8_UINT;
 	data.layer_count = RENDER_DISTANCE * RENDER_DISTANCE;
 
 	// Offset xz with y
@@ -68,7 +70,8 @@ void	ChunkTextureHandler::copyData(
 	staging_buffer.map(device.getLogicalDevice());
 	staging_buffer.copyFrom(
 		chunks.data(),
-		static_cast<std::size_t>(layer_size) * image_data.getLayerCount());
+		chunks.size());
+		// static_cast<std::size_t>(layer_size) * image_data.getLayerCount());
 	staging_buffer.unmap(device.getLogicalDevice());
 
 	// Setup copy command buffer
@@ -94,10 +97,12 @@ void	ChunkTextureHandler::copyData(
 		transfer_barrier);
 
 	// Record copy command
+	LOG("Copying chunk data to texture image...");
 	super::_texture_buffer.copyFrom(
 		command_buffer.getBuffer(),
 		staging_buffer.getBuffer(),
 		static_cast<uint32_t>(layer_size));
+	LOG("Chunks loaded.");
 
 	super::_texture_buffer.setLayout(
 		command_buffer.getBuffer(),
@@ -106,7 +111,9 @@ void	ChunkTextureHandler::copyData(
 		VK_ACCESS_TRANSFER_WRITE_BIT,
 		VK_ACCESS_SHADER_READ_BIT,
 		VK_PIPELINE_STAGE_TRANSFER_BIT,
-		VK_PIPELINE_STAGE_VERTEX_SHADER_BIT,
+		VK_PIPELINE_STAGE_VERTEX_SHADER_BIT |
+		VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT |
+		VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
 		transfer_barrier);
 
 	// Submit commands
@@ -115,12 +122,28 @@ void	ChunkTextureHandler::copyData(
 	staging_buffer.destroy(device.getLogicalDevice());
 }
 
+/**
+ * @brief When the player moves, the visible chunks are updated.
+*/
+void	ChunkTextureHandler::updateData(
+	scop::core::Device& device,
+	const std::vector<uint16_t>& chunks,
+	const Travelator& travelator
+) {
+	(void)device, (void)chunks, (void)travelator;
+	// const ImageMetaData& image_data = super::_texture_buffer.getMetaData();
+	// const VkDeviceSize layer_size = image_data.getWidth() * image_data.getHeight() * sizeof(uint16_t);
+	// const VkDeviceSize image_size = layer_size * image_data.getLayerCount();
+
+	//todo;
+}
+
 /* ========================================================================== */
 /*                                   PRIVATE                                  */
 /* ========================================================================== */
 
 void	ChunkTextureHandler::_createTextureImages(scop::core::Device& device) {
-	VkImageCreateFlags flags = 0;
+	constexpr VkImageCreateFlags flags = 0;
 
 	super::_texture_buffer.initImage(
 		device,

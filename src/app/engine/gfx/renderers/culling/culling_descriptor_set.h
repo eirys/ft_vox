@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/19 11:52:18 by etran             #+#    #+#             */
-/*   Updated: 2023/12/23 21:18:57 by etran            ###   ########.fr       */
+/*   Updated: 2024/01/03 14:44:23 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,7 +50,7 @@ public:
 	using super::setDescriptors;
 
 	void	init(scop::core::Device& device) override;
-	void	plug(
+	void	fill(
 		scop::core::Device& device,
 		const scop::InputHandler& input);
 

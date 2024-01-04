@@ -6,19 +6,16 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/16 13:03:48 by etran             #+#    #+#             */
-/*   Updated: 2023/12/26 19:32:40 by etran            ###   ########.fr       */
+/*   Updated: 2024/01/03 22:42:38 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "input_handler.h"
 #include "game_state.h"
-#include "chunk.h"
 
 #include "chunk_texture_handler.h"
-#include "buffer.h"
-// #include "culling_texture_handler.h"
 
-#include "utils.h"
+#include "debug.h"
 
 namespace scop {
 
@@ -54,9 +51,9 @@ void	InputHandler::updateData(
 	const gfx::BoundingFrustum::Camera& camera,
 	const vox::World& world
 ) {
+	(void)device, (void)world;
 // update bf
 	_frustum = gfx::BoundingFrustum(camera);
-	// _frustum_buffer.copyFrom(&_frustum, sizeof(gfx::BoundingFrustum));
 	_input_buffer.copyFrom(&_frustum, sizeof(gfx::BoundingFrustum), (uint32_t)InputBufferOffset::Frustum);
 
 // update chunkmap
@@ -68,8 +65,11 @@ void	InputHandler::updateData(
 */
 void	InputHandler::retrieveData() {
 	// Retrieve quad count
-	// _quad_count_buffer.copyTo(&_instances_count, sizeof(uint32_t));
-	_input_buffer.copyTo(&_instances_count, sizeof(uint32_t), (uint32_t)InputBufferOffset::QuadCount);
+	uint32_t quad_counts[MAX_RENDER_DISTANCE];
+	_input_buffer.copyTo(quad_counts, sizeof(uint32_t) * MAX_RENDER_DISTANCE, (uint32_t)InputBufferOffset::QuadCount);
+	for (uint32_t i = 0; i < MAX_RENDER_DISTANCE; ++i) {
+		_instances_count += quad_counts[i];
+	}
 }
 
 // void	InputHandler::updateVisibleChunks(
@@ -156,7 +156,7 @@ void	InputHandler::_createBuffers(core::Device& device) {
 	{
 		VkBufferCreateInfo	frustum_info{};
 		frustum_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-		frustum_info.size = (uint32_t)InputBufferSize::Frustum;
+		frustum_info.size = (VkDeviceSize)InputBufferSize::Frustum;
 		frustum_info.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
 		frustum_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 		buffer_infos.emplace_back(frustum_info);
@@ -164,7 +164,7 @@ void	InputHandler::_createBuffers(core::Device& device) {
 	{
 		VkBufferCreateInfo	quad_count_info{};
 		quad_count_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-		quad_count_info.size = (uint32_t)InputBufferSize::QuadCount;
+		quad_count_info.size = (VkDeviceSize)InputBufferSize::QuadCount;
 		quad_count_info.usage = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
 		quad_count_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 		buffer_infos.emplace_back(quad_count_info);
@@ -172,7 +172,7 @@ void	InputHandler::_createBuffers(core::Device& device) {
 	{
 		VkBufferCreateInfo	vertices_data_info{};
 		vertices_data_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-		vertices_data_info.size = (uint32_t)InputBufferSize::VerticesData;
+		vertices_data_info.size = (VkDeviceSize)InputBufferSize::VerticesData;
 		vertices_data_info.usage = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
 		vertices_data_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 		buffer_infos.emplace_back(vertices_data_info);
@@ -182,24 +182,6 @@ void	InputHandler::_createBuffers(core::Device& device) {
 		device,
 		buffer_infos,
 		VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-
-	// _frustum_buffer.init(
-	// 	device,
-	// 	sizeof(gfx::BoundingFrustum),
-	// 	VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-	// 	VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-
-	// _quad_count_buffer.create(
-	// 	device,
-	// 	sizeof(uint32_t),
-	// 	VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
-	// 	VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-
-	// _vertices_data_buffer.create(
-	// 	device,
-	// 	sizeof(gfx::Vertex) * MAX_VERTICES_COUNT,
-	// 	VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
-	// 	VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 }
 
 } // namespace scop

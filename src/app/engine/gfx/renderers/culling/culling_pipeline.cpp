@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/19 11:50:07 by etran             #+#    #+#             */
-/*   Updated: 2023/12/23 00:50:15 by etran            ###   ########.fr       */
+/*   Updated: 2024/01/03 14:44:30 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,9 +21,9 @@
 #include <stdexcept> // std::runtime_error
 
 #if defined(__LINUX)
-# define CULLING_COMPUTE_PATH "shaders/culling.compute.spv"
+# define CULLING_COMPUTE_PATH	"/culling.compute.spv"
 #else
-# define CULLING_COMPUTE_PATH "shaders/culling_comp.spv"
+# define CULLING_COMPUTE_PATH	"/culling_comp.spv"
 #endif
 
 namespace scop::gfx {
@@ -35,18 +35,18 @@ namespace scop::gfx {
 CullingPipeline::CullingPipeline() {
 	super::_descriptor = std::make_shared<CullingDescriptorSet>();
 
-	_culling_texture = std::make_shared<gfx::CullingTextureHandler>();
+	// _culling_texture = std::make_shared<gfx::CullingTextureHandler>();
 }
 
 /* ========================================================================== */
 
 void CullingPipeline::init(scop::core::Device& device) {
-	_descriptor->init(device);
+	super::_descriptor->init(device);
 
 	// Map data (culling)
-	std::shared_ptr<gfx::CullingTextureHandler>		culling_texture =
-		std::dynamic_pointer_cast<gfx::CullingTextureHandler>(_culling_texture);
-	culling_texture->init(device);
+	// std::shared_ptr<gfx::CullingTextureHandler>		culling_texture =
+	// 	std::dynamic_pointer_cast<gfx::CullingTextureHandler>(_culling_texture);
+	// culling_texture->init(device);
 	// culling_texture->setTextureSampler(chunk_handler->getTextureSampler());
 }
 
@@ -71,9 +71,17 @@ void	CullingPipeline::assemble(
 	vkDestroyShaderModule(device.getLogicalDevice(), compute_module, nullptr);
 }
 
+void	CullingPipeline::plugDescriptor(
+	scop::core::Device& device,
+	const scop::InputHandler& input
+) {
+	auto culling_descriptor = std::dynamic_pointer_cast<CullingDescriptorSet>(super::_descriptor);
+	culling_descriptor->fill(device, input);
+}
+
 void	CullingPipeline::destroy(scop::core::Device& device) {
 	_descriptor->destroy(device);
-	_culling_texture->destroy(device);
+	// _culling_texture->destroy(device);
 }
 
 void	CullingPipeline::compute(
@@ -100,7 +108,7 @@ void	CullingPipeline::compute(
 		VK_PIPELINE_BIND_POINT_COMPUTE,
 		super::_pipeline);
 
-	vkCmdDispatch(command_buffer.getBuffer(), 16, 16, 16);
+	vkCmdDispatch(command_buffer.getBuffer(), 8, 8, 8);
 
 	command_buffer.end(device);
 }

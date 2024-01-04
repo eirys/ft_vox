@@ -6,22 +6,23 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/12 12:33:52 by etran             #+#    #+#             */
-/*   Updated: 2023/12/24 15:52:32 by etran            ###   ########.fr       */
+/*   Updated: 2024/01/04 00:56:52 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "descriptor_set.h"
 #include "device.h"
+#include "descriptor_pool.h"
+
+#include <cassert> // assert
 
 namespace scop::gfx {
-
-uint32_t	DescriptorSet::_descriptor_count = 0;
 
 /* ========================================================================== */
 /*                                   PUBLIC                                   */
 /* ========================================================================== */
 
-DescriptorSet::DescriptorSet(): _index(_descriptor_count++) {}
+DescriptorSet::DescriptorSet(): _index(DescriptorPool::getDescriptorCount(true)) {}
 
 /* ========================================================================== */
 
@@ -58,16 +59,60 @@ uint32_t	DescriptorSet::getSetIndex() const noexcept {
 /*                                  PROTECTED                                 */
 /* ========================================================================== */
 
+VkDescriptorSetLayoutBinding	DescriptorSet::createLayoutBinding(
+	DescriptorType type,
+	VkShaderStageFlags shader_stage,
+	uint32_t binding_index,
+	uint32_t count
+) {
+	VkDescriptorSetLayoutBinding	layout_binding = {};
+	layout_binding.binding = binding_index;
+	layout_binding.descriptorCount = count;
+	layout_binding.descriptorType = VK_DESCRIPTOR_TYPE_MAX_ENUM;
+	layout_binding.stageFlags = shader_stage;
+
+	switch (type) {
+		case DescriptorType::UNIFORM_BUFFER:
+			layout_binding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+			++_writes_sizes.uniform_buffer;
+			break;
+
+		case DescriptorType::COMBINED_IMAGE_SAMPLER:
+			layout_binding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+			++_writes_sizes.combined_image_sampler;
+			break;
+
+		case DescriptorType::STORAGE_BUFFER:
+			layout_binding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+			++_writes_sizes.storage_buffer;
+			break;
+
+		case DescriptorType::STORAGE_IMAGE:
+			layout_binding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+			++_writes_sizes.storage_image;
+			break;
+
+		case DescriptorType::SAMPLED_IMAGE:
+			layout_binding.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
+			++_writes_sizes.sampled_image;
+			break;
+
+		default:
+			assert(false && "Descriptor type not found");
+	}
+	return layout_binding;
+}
+
 VkWriteDescriptorSet	DescriptorSet::createWriteDescriptorSet(
 	DescriptorType type,
 	void* descriptor_info,
-	uint32_t binding,
+	uint32_t binding_index,
 	uint32_t count
 ) const {
 	VkWriteDescriptorSet	write_descriptor_set = {};
 	write_descriptor_set.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 	write_descriptor_set.dstSet = _set;
-	write_descriptor_set.dstBinding = binding;
+	write_descriptor_set.dstBinding = binding_index;
 	write_descriptor_set.dstArrayElement = 0;
 	write_descriptor_set.descriptorCount = count;
 	write_descriptor_set.pTexelBufferView = nullptr;
@@ -89,31 +134,36 @@ void	DescriptorSet::_fillDescriptorType(
 	switch (type) {
 		case DescriptorType::UNIFORM_BUFFER:
 			write_descriptor_set.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-			write_descriptor_set.pBufferInfo = reinterpret_cast<VkDescriptorBufferInfo*>(descriptor_info);
+			write_descriptor_set.pBufferInfo = reinterpret_cast<VkDescriptorBufferInfo*>(&descriptor_info);
 			write_descriptor_set.pImageInfo = nullptr;
+			break;
 
 		case DescriptorType::COMBINED_IMAGE_SAMPLER:
 			write_descriptor_set.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 			write_descriptor_set.pBufferInfo = nullptr;
-			write_descriptor_set.pImageInfo = reinterpret_cast<VkDescriptorImageInfo*>(descriptor_info);
+			write_descriptor_set.pImageInfo = reinterpret_cast<VkDescriptorImageInfo*>(&descriptor_info);
+			break;
 
 		case DescriptorType::STORAGE_BUFFER:
 			write_descriptor_set.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-			write_descriptor_set.pBufferInfo = reinterpret_cast<VkDescriptorBufferInfo*>(descriptor_info);
+			write_descriptor_set.pBufferInfo = reinterpret_cast<VkDescriptorBufferInfo*>(&descriptor_info);
 			write_descriptor_set.pImageInfo = nullptr;
+			break;
 
 		case DescriptorType::STORAGE_IMAGE:
 			write_descriptor_set.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
 			write_descriptor_set.pBufferInfo = nullptr;
-			write_descriptor_set.pImageInfo = reinterpret_cast<VkDescriptorImageInfo*>(descriptor_info);
+			write_descriptor_set.pImageInfo = reinterpret_cast<VkDescriptorImageInfo*>(&descriptor_info);
+			break;
 
 		case DescriptorType::SAMPLED_IMAGE:
 			write_descriptor_set.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
 			write_descriptor_set.pBufferInfo = nullptr;
-			write_descriptor_set.pImageInfo = reinterpret_cast<VkDescriptorImageInfo*>(descriptor_info);
+			write_descriptor_set.pImageInfo = reinterpret_cast<VkDescriptorImageInfo*>(&descriptor_info);
+			break;
 
 		default:
-			write_descriptor_set.descriptorType = VK_DESCRIPTOR_TYPE_MAX_ENUM;
+			assert(false && "Descriptor type not found");
 	}
 }
 

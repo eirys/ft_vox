@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 22:53:11 by etran             #+#    #+#             */
-/*   Updated: 2023/12/26 17:09:05 by etran            ###   ########.fr       */
+/*   Updated: 2023/12/31 02:01:29 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -80,9 +80,9 @@ private:
 	/*                               CLASS MEMBERS                               */
 	/* ========================================================================= */
 
-	scop::Vect3						_origin = {0.0f, 0.0f, 0.0f};
 	std::vector<Chunk>				_chunks;
 	std::vector<uint16_t>			_world_data;
+	scop::Vect3						_origin = {0.0f, 0.0f, 0.0f};
 	// Light todo put here
 
 	// For now, only render distance is rendered

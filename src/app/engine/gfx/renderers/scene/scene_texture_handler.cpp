@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/10 22:32:26 by etran             #+#    #+#             */
-/*   Updated: 2023/11/19 11:07:58 by etran            ###   ########.fr       */
+/*   Updated: 2023/12/31 17:51:53 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,12 +16,13 @@
 #include "command_pool.h"
 #include "command_buffer.h"
 #include "buffer.h"
-#include "utils.h"
 #include "ppm_loader.h"
 #include "mtl_parser.h"
 
 #include <stdexcept> // std::runtime_error
 #include <cassert> // assert
+
+#include "debug.h"
 
 namespace scop::gfx {
 

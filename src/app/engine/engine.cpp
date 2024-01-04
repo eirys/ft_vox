@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/02 16:09:44 by etran             #+#    #+#             */
-/*   Updated: 2023/12/26 17:05:25 by etran            ###   ########.fr       */
+/*   Updated: 2023/12/31 17:50:12 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,6 @@
 #include "window.h"
 #include "uniform_buffer_object.h"
 #include "timer.h"
-#include "utils.h"
 #include "world_macros.h"
 
 // Vox
@@ -68,6 +67,14 @@ void	Engine::destroy() {
 	// Remove sync objects
 	vkDestroySemaphore(
 		_core.getDevice().getLogicalDevice(),
+		_graphics_ready_semaphores,
+		nullptr);
+	vkDestroySemaphore(
+		_core.getDevice().getLogicalDevice(),
+		_compute_finished_semaphores,
+		nullptr);
+	vkDestroySemaphore(
+		_core.getDevice().getLogicalDevice(),
 		_image_available_semaphores,
 		nullptr);
 	vkDestroySemaphore(
@@ -105,26 +112,44 @@ void	Engine::render(
 		VK_TRUE,
 		UINT64_MAX);
 
-	// Next available image from swap chain
-	uint32_t	image_index;
-	VkResult	result = vkAcquireNextImageKHR(
-		_core.getDevice().getLogicalDevice(),
-		_swap_chain.getSwapChain(),
-		UINT64_MAX,
-		_image_available_semaphores,
-		VK_NULL_HANDLE,
-		&image_index);
-	if (result == VK_ERROR_OUT_OF_DATE_KHR) {
-		_updatePresentation(window);
-		return;
-	} else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
-		throw std::runtime_error("failed to acquire swap chain image");
+	std::array<VkSemaphore, 2>				signal_semaphores;
+	std::array<VkSemaphore, 2>				wait_semaphores;
+	std::array<VkPipelineStageFlags, 2>		wait_stages;
+	std::array<VkCommandBuffer, 1>			command_buffers;
+
+	VkSubmitInfo	submit_info{};
+	submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+	submit_info.pWaitSemaphores = wait_semaphores.data();
+	submit_info.pSignalSemaphores = signal_semaphores.data();
+	submit_info.pWaitDstStageMask = wait_stages.data();
+	submit_info.pCommandBuffers = command_buffers.data();
+	submit_info.commandBufferCount = 1;
+
+	// Compute -------
+	command_buffers = { _compute_buffer.getBuffer() };
+
+	wait_semaphores = { _graphics_ready_semaphores };
+	wait_stages = { VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT };
+	submit_info.waitSemaphoreCount = 1;
+
+	signal_semaphores = { _compute_finished_semaphores };
+	submit_info.signalSemaphoreCount = 1;
+
+	if (vkQueueSubmit(_core.getDevice().getComputeQueue(), 1, &submit_info, _in_flight_fences) != VK_SUCCESS) {
+		throw std::runtime_error("failed to submit compute command buffer");
 	}
+	// ---------------
 
-	// Work is done, unlock fence
-	vkResetFences(_core.getDevice().getLogicalDevice(), 1, &_in_flight_fences);
 
-	// Record buffer
+	// Retrieve image for swap chain -----
+	uint32_t	image_index;
+	if (_swap_chain.acquireNextImage(_core.getDevice(), _image_available_semaphores, _in_flight_fences, image_index) == false) {
+		return _updatePresentation(window);
+	}
+	// -----------------------------------
+
+
+	// Record buffers ----------------
 	_draw_buffer.reset();
 	_draw_buffer.begin(0);
 	_pipeline_manager.getCullingPipeline()->compute(
@@ -146,25 +171,23 @@ void	Engine::render(
 	_draw_buffer.end(_core.getDevice(), false);
 
 	_pipeline_manager.getScenePipeline()->update(_updateUbo(game));
+	// ------------------------------
 
-	// Submit compute and draw command buffers
-	std::array<VkSemaphore, 1>			wait_semaphores = { _image_available_semaphores };
-	std::array<VkSemaphore, 1>			signal_semaphores = { _render_finished_semaphores };
-	std::array<VkPipelineStageFlags, 1>	wait_stages = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
 
-	VkSubmitInfo	submit_info{};
-	submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-	submit_info.waitSemaphoreCount = static_cast<uint32_t>(wait_semaphores.size());
-	submit_info.pWaitSemaphores = wait_semaphores.data();
-	submit_info.pWaitDstStageMask = wait_stages.data();
-	submit_info.signalSemaphoreCount = static_cast<uint32_t>(signal_semaphores.size());
-	submit_info.pSignalSemaphores = signal_semaphores.data();
-	submit_info.commandBufferCount = 1;
-	submit_info.pCommandBuffers = reinterpret_cast<VkCommandBuffer*>(&_draw_buffer);
+	// Graphics ---------------------
+	command_buffers = { _draw_buffer.getBuffer() };
+
+	signal_semaphores = {_graphics_ready_semaphores, _render_finished_semaphores };
+	submit_info.signalSemaphoreCount = 2;
+
+	wait_semaphores = { _compute_finished_semaphores, _image_available_semaphores };
+	wait_stages = { VK_PIPELINE_STAGE_VERTEX_INPUT_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
+	submit_info.waitSemaphoreCount = 2;
 
 	if (vkQueueSubmit(_core.getDevice().getGraphicsQueue(), 1, &submit_info, _in_flight_fences) != VK_SUCCESS) {
 		throw std::runtime_error("failed to submit draw command buffer");
 	}
+	// -----------------------------
 
 	// Set presentation for next swap chain image
 	std::array<VkSwapchainKHR, 1>	swap_chains = { _swap_chain.getSwapChain() };
@@ -178,19 +201,14 @@ void	Engine::render(
 	present_info.pResults = nullptr;
 
 	// Submit to swap chain, check if swap chain is still compatible
-	result = vkQueuePresentKHR(_core.getDevice().getPresentQueue(), &present_info);
-	timer.update();
-
-	if (
-		result == VK_ERROR_OUT_OF_DATE_KHR ||
-		result == VK_SUBOPTIMAL_KHR ||
-		window.resized()
-	) {
+	VkResult result = vkQueuePresentKHR(_core.getDevice().getPresentQueue(), &present_info);
+	if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || window.resized()) {
 		window.toggleFrameBufferResized(false);
 		_updatePresentation(window);
 	} else if (result != VK_SUCCESS) {
 		throw std::runtime_error("failed to present swapchain image");
 	}
+	timer.update();
 }
 
 /* ========================================================================== */
@@ -222,9 +240,21 @@ void	Engine::_createSyncObjects() {
 
 	if (vkCreateSemaphore(_core.getDevice().getLogicalDevice(), &semaphore_info, nullptr, &_image_available_semaphores) != VK_SUCCESS ||
 		vkCreateSemaphore(_core.getDevice().getLogicalDevice(), &semaphore_info, nullptr, &_render_finished_semaphores) != VK_SUCCESS ||
+		vkCreateSemaphore(_core.getDevice().getLogicalDevice(), &semaphore_info, nullptr, &_graphics_ready_semaphores) != VK_SUCCESS ||
 		vkCreateSemaphore(_core.getDevice().getLogicalDevice(), &semaphore_info, nullptr, &_compute_finished_semaphores) != VK_SUCCESS ||
 		vkCreateFence(_core.getDevice().getLogicalDevice(), &fence_info, nullptr, &_in_flight_fences) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create semaphore");
+	}
+
+	// Signal `graphics ready semaphore`
+	VkSubmitInfo	submitInfo{};
+	submitInfo.signalSemaphoreCount = 1;
+	submitInfo.pSignalSemaphores = &_graphics_ready_semaphores;
+	if (vkQueueSubmit(_core.getDevice().getGraphicsQueue(), 1, &submitInfo, VK_NULL_HANDLE) != VK_SUCCESS) {
+		throw std::runtime_error("failed to submit queue (create sync objects)");
+	}
+	if (vkQueueWaitIdle(_core.getDevice().getGraphicsQueue()) != VK_SUCCESS) {
+		throw std::runtime_error("failed to wait queue (create sync objects)");
 	}
 }
 
@@ -252,7 +282,7 @@ void	Engine::_updatePresentation(Window& window) {
 }
 
 // TODO Change
-UniformBufferObject	Engine::_updateUbo(const vox::GameState& game) {
+UniformBufferObject	Engine::_updateUbo(const vox::GameState& game) const {
 	UniformBufferObject	ubo{};
 
 	const ::vox::Player& player = game.getPlayer();
@@ -277,10 +307,6 @@ UniformBufferObject	Engine::_updateUbo(const vox::GameState& game) {
 			right);
 
 		ubo.camera.vp = projection * view;
-		// _input_handler.updateVisibleChunks(
-		// 	_core.getDevice(),
-		// 	gfx::BoundingFrustum::Camera{player.getPosition(), front, right, up},
-		// 	game.getWorld());
 	}
 	{	/* UPDATE LIGHT AND PROJECTOR ============================================== */
 		constexpr const float	terrain_length = CHUNK_SIZE * RENDER_DISTANCE;

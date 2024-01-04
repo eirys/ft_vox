@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/19 16:54:52 by etran             #+#    #+#             */
-/*   Updated: 2023/12/26 19:39:28 by etran            ###   ########.fr       */
+/*   Updated: 2024/01/03 14:44:17 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,52 +18,39 @@
 #include "input_handler.h"
 #include "texture_handler.h"
 
+#include "utils.h"
+
 #include <stdexcept> // std::runtime_error
 
 namespace scop::gfx {
+
+enum class CullingPipelineDescriptors: uint32_t {
+	Frustum = 0,
+	ChunkMap,
+	QuadCount,
+	VerticesData,
+
+	First = Frustum,
+	Last = VerticesData
+};
+
+constexpr const uint32_t DescriptorSetSize = scop::utils::enumSize<CullingPipelineDescriptors>();
 
 /* ========================================================================== */
 /*                                   PUBLIC                                   */
 /* ========================================================================== */
 
 void CullingDescriptorSet::init(scop::core::Device& device) {
-	VkDescriptorSetLayoutBinding	frustum{};
-	frustum.binding = 0;
-	frustum.descriptorCount = 1;
-	frustum.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	frustum.stageFlags = VK_SHADER_STAGE_COMPUTE_BIT;
-	++super::_writes_sizes.uniform_buffer;
-
-	VkDescriptorSetLayoutBinding	chunk{};
-	chunk.binding = 1;
-	chunk.descriptorCount = 1;
-	chunk.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
-	chunk.stageFlags = VK_SHADER_STAGE_COMPUTE_BIT;
-	++super::_writes_sizes.combined_image_sampler;
-
-	VkDescriptorSetLayoutBinding	quad_count{};
-	quad_count.binding = 2;
-	quad_count.descriptorCount = 1;
-	quad_count.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-	quad_count.stageFlags = VK_SHADER_STAGE_COMPUTE_BIT;
-	++super::_writes_sizes.storage_buffer;
-
-	VkDescriptorSetLayoutBinding	vertices_data{};
-	vertices_data.binding = 3;
-	vertices_data.descriptorCount = 1;
-	vertices_data.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-	vertices_data.stageFlags = VK_SHADER_STAGE_COMPUTE_BIT;
-	++super::_writes_sizes.storage_buffer;
-
-	std::array<VkDescriptorSetLayoutBinding, 4>	bindings = {
-		frustum,
-		chunk,
-		quad_count,
-		vertices_data };
+	std::array<VkDescriptorSetLayoutBinding, DescriptorSetSize>	bindings = {
+		super::createLayoutBinding(DescriptorType::UNIFORM_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT, (uint32_t)CullingPipelineDescriptors::Frustum),
+		super::createLayoutBinding(DescriptorType::COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_COMPUTE_BIT, (uint32_t)CullingPipelineDescriptors::ChunkMap),
+		super::createLayoutBinding(DescriptorType::STORAGE_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT, (uint32_t)CullingPipelineDescriptors::QuadCount),
+		super::createLayoutBinding(DescriptorType::STORAGE_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT, (uint32_t)CullingPipelineDescriptors::VerticesData)
+	};
 
 	VkDescriptorSetLayoutCreateInfo	layout_info{};
 	layout_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-	layout_info.bindingCount = static_cast<uint32_t>(bindings.size());
+	layout_info.bindingCount = DescriptorSetSize;
 	layout_info.pBindings = bindings.data();
 
 	if (vkCreateDescriptorSetLayout(device.getLogicalDevice(), &layout_info, nullptr, &(super::_layout)) != VK_SUCCESS) {
@@ -71,7 +58,7 @@ void CullingDescriptorSet::init(scop::core::Device& device) {
 	}
 }
 
-void	CullingDescriptorSet::plug(
+void	CullingDescriptorSet::fill(
 	scop::core::Device& device,
 	const scop::InputHandler& input
 ) {
@@ -95,15 +82,16 @@ void	CullingDescriptorSet::plug(
 	vertices_data.offset = (uint32_t)InputBufferOffset::VerticesData;
 	vertices_data.range = (uint32_t)InputBufferSize::VerticesData;
 
-	std::array<VkWriteDescriptorSet, 4>	writes = {
-		super::createWriteDescriptorSet(DescriptorType::UNIFORM_BUFFER, &frustum_info, 0),
-		super::createWriteDescriptorSet(DescriptorType::COMBINED_IMAGE_SAMPLER, &chunk_info, 1),
-		super::createWriteDescriptorSet(DescriptorType::STORAGE_BUFFER, &quad_count, 2),
-		super::createWriteDescriptorSet(DescriptorType::STORAGE_BUFFER, &vertices_data, 3) };
+	std::array<VkWriteDescriptorSet, DescriptorSetSize>	writes = {
+		super::createWriteDescriptorSet(DescriptorType::UNIFORM_BUFFER, &frustum_info, (uint32_t)CullingPipelineDescriptors::Frustum),
+		super::createWriteDescriptorSet(DescriptorType::COMBINED_IMAGE_SAMPLER, &chunk_info, (uint32_t)CullingPipelineDescriptors::ChunkMap),
+		super::createWriteDescriptorSet(DescriptorType::STORAGE_BUFFER, &quad_count, (uint32_t)CullingPipelineDescriptors::QuadCount),
+		super::createWriteDescriptorSet(DescriptorType::STORAGE_BUFFER, &vertices_data, (uint32_t)CullingPipelineDescriptors::VerticesData)
+	};
 
 	vkUpdateDescriptorSets(
 		device.getLogicalDevice(),
-		static_cast<uint32_t>(writes.size()), writes.data(),
+		DescriptorSetSize, writes.data(),
 		0, nullptr);
 }
 

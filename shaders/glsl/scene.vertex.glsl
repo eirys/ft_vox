@@ -12,20 +12,17 @@
 /*                                 SHADER I/O                                 */
 /* ========================================================================== */
 
-// Input
-//  None
-
 // Output
-OUTPUT(0)					vec3 out_normal;
-OUTPUT(1)					vec3 out_uvw;
-OUTPUT(2)					vec3 out_shadow;
+OUTPUT(0)						vec3 out_normal;
+OUTPUT(1)						vec3 out_uvw;
+OUTPUT(2)						vec3 out_shadow;
 
 /* UNIFORMS ================================================================= */
-UNIFORM(SCENE_SET, 0)		Camera { mat4 vp; }		camera;
-UNIFORM(SCENE_SET, 1)		Projector { mat4 vp; }	projector;
-UNIFORM(SCENE_SET, 2)		usampler2DArray			chunks;
-UNIFORM(SCENE_SET, 3)		VerticesData {
-	uint vertexData[MAX_RENDER_DISTANCE][CHUNK_VOLUME][6];
+UNIFORM(SCENE_SET, 0)			Camera { mat4 vp; }		camera;
+UNIFORM(SCENE_SET, 1)			Projector { mat4 vp; }	projector;
+UNIFORM(SCENE_SET, 5)			usampler2DArray			chunks;
+BUFFER(SCENE_SET, 6, std140)	readonly VerticesData {
+	uint vertexData[MAX_RENDER_DISTANCE * CHUNK_VOLUME * FACE_COUNT];
 	// blockId: 12 bit		-> to retrieve block type in `chunks` + block position
 	// face: 4 bits			-> to retrieve which face to sample
 	// layer: 12 bits		-> to retrieve which chunk to offset block position
@@ -40,7 +37,7 @@ UNIFORM(SCENE_SET, 3)		VerticesData {
 #include "scene_rendering_tools.glslh"
 
 /* CONSTS =================================================================== */
-const vec3 normals[6] = {
+const vec3 normals[FACE_COUNT] = {
 	{  0.0,  1.0,  0.0 },	// 0 top
 	{  0.0, -1.0,  0.0 },	// 1 bottom
 	{ -1.0,  0.0,  0.0 },	// 2 left
@@ -49,7 +46,7 @@ const vec3 normals[6] = {
 	{  0.0,  0.0, -1.0 },	// 5 back
 };
 
-const vec2 uvs[6] = {
+const vec2 uvs[FACE_COUNT] = {
 	{ 0.0, 1.0 },
 	{ 1.0, 0.0 },
 	{ 1.0, 1.0 },
@@ -60,8 +57,9 @@ const vec2 uvs[6] = {
 
 /* ENTRYPOINT =============================================================== */
 void	main() {
-	uint input =
-
+	uint		vertexInputPacked = vertices_data.vertexData[gl_InstanceIndex];
+	VertexInput	vertexInput = unpackVertexInput(vertexInputPacked);
+	Block 		block = getBlock(vertexInput.blockPos, vertexInput.layer);
 
 	// DEPRECATED
 	// Get actual instanceId
@@ -76,13 +74,15 @@ void	main() {
 	// ivec2	chunkPos = ivec2(instanceId % RENDER_DISTANCE, instanceId / RENDER_DISTANCE);
 	// ivec2	cubePos = ivec2(cubeId % CHUNK_SIZE, cubeId / CHUNK_SIZE);
 	// float	cubeHeight = getHeight(cubePos, instanceId);
-	// uint	face = vertexId / 6;
+	// uint	face = vertexId / FACE_COUNT;
 
-	vec4	position = extractPos(vertexId, cubePos, cubeHeight, chunkPos);
-	vec3	shadow_coord = (projector.vp * position).xyz;
+	// vec4	position = extractPos(vertexId, cubePos, cubeHeight, chunkPos);
+
+	vec4	worldPos = vec4(block.worldPos, 1.0);
+	vec3	shadow_coord = (projector.vp * worldPos).xyz;
 
 	out_shadow = vec3(shadow_coord.xy * 0.5f + 0.5f, shadow_coord.z);
-	out_normal = normals[face];
-	out_uvw = vec3(uvs[vertexId % 6], face);
-	gl_Position = camera.vp * position;
+	out_normal = normals[vertexInput.face];
+	out_uvw = vec3(uvs[vertexInput.face], clamp(vertexInput.face, 0, 2));
+	gl_Position = camera.vp * worldPos;
 }

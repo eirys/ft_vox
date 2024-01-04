@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/04 19:23:47 by eli               #+#    #+#             */
-/*   Updated: 2023/07/03 11:56:16 by etran            ###   ########.fr       */
+/*   Updated: 2023/12/31 17:52:07 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,6 @@
 #include "image_handler.h"
 #include "vector.h"
 #include "vertex.h"
-#include "utils.h"
 #include "material.h"
 #include "ppm_loader.h"
 

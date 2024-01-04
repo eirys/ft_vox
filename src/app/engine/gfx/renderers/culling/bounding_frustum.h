@@ -6,13 +6,14 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/16 16:25:31 by etran             #+#    #+#             */
-/*   Updated: 2023/10/25 17:32:05 by etran            ###   ########.fr       */
+/*   Updated: 2024/01/01 15:01:44 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
 # include "vector.h"
+# include "chunk_macros.h"
 
 namespace scop::gfx {
 
@@ -62,7 +63,7 @@ struct BoundingFrustum {
 			Plane	left;
 			Plane	right;
 		};
-		Plane	planes[6];
+		Plane	planes[FACE_COUNT];
 	};
 
 }; // struct BoundingFrustum

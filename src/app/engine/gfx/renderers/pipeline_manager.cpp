@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/04 22:56:55 by etran             #+#    #+#             */
-/*   Updated: 2023/12/11 20:24:19 by etran            ###   ########.fr       */
+/*   Updated: 2024/01/04 01:05:15 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,8 @@
 
 #include "shadowmap_consts.h"
 
+#include "debug.h"
+
 #include <stdexcept>
 
 namespace scop::gfx {
@@ -33,9 +35,9 @@ namespace scop::gfx {
 /* ========================================================================== */
 
 PipelineManager::PipelineManager() {
-	_compute.culling = std::make_shared<CullingPipeline>();
 	_graphics.scene = std::make_shared<ScenePipeline>();
 	_graphics.shadows = std::make_shared<ShadowsPipeline>();
+	_compute.culling = std::make_shared<CullingPipeline>();
 }
 
 void	PipelineManager::init(
@@ -45,6 +47,7 @@ void	PipelineManager::init(
 	_createComputesPipelines(device);
 	_createGraphicsPipelines(device, swap_chain);
 	_createPipelineLayout(device);
+
 	_assembleComputePipelines(device);
 	_assembleGraphicsPipelines(device);
 
@@ -55,7 +58,6 @@ void	PipelineManager::destroy(scop::core::Device& device) {
 
 	_graphics.scene->destroy(device);
 	_graphics.shadows->destroy(device);
-
 	_compute.culling->destroy(device);
 }
 
@@ -67,12 +69,21 @@ void	PipelineManager::plugDescriptors(
 ) {
 	using ScenePipelinePtr = std::shared_ptr<ScenePipeline>;
 	using ShadowsPipelinePtr = std::shared_ptr<ShadowsPipeline>;
+	using CullingPipelinePtr = std::shared_ptr<CullingPipeline>;
 
 	ScenePipelinePtr scene_pipeline = std::dynamic_pointer_cast<ScenePipeline>(_graphics.scene);
 	ShadowsPipelinePtr shadows_pipeline = std::dynamic_pointer_cast<ShadowsPipeline>(_graphics.shadows);
+	CullingPipelinePtr culling_pipeline = std::dynamic_pointer_cast<CullingPipeline>(_compute.culling);
 
+	LOG("Filling descriptor sets: scene");
 	scene_pipeline->plugDescriptor(device, shadows_pipeline->getTextureHandler(), input_handler);
+	LOG("Done filling descriptor sets: scene");
+	LOG("Filling descriptor sets: shadows");
 	shadows_pipeline->plugDescriptor(device, scene_pipeline->getUbo(), input_handler);
+	LOG("Done filling descriptor sets: shadows");
+	LOG("Filling descriptor sets: culling");
+	culling_pipeline->plugDescriptor(device, input_handler);
+	LOG("Done filling descriptor sets: culling");
 }
 
 /* ========================================================================== */
@@ -146,7 +157,7 @@ void	PipelineManager::_createPipelineLayout(scop::core::Device& device) {
 	pipeline_layout_info.pPushConstantRanges = nullptr;
 
 	if (vkCreatePipelineLayout(device.getLogicalDevice(), &pipeline_layout_info, nullptr, &_pipeline_layout) != VK_SUCCESS) {
-		throw std::runtime_error("failed to create _pipeline layout");
+		throw std::runtime_error("failed to create pipeline layout");
 	}
 }
 
@@ -156,7 +167,9 @@ void	PipelineManager::_assembleComputePipelines(scop::core::Device& device) {
 	pipeline_info.layout = _pipeline_layout;
 	pipeline_info.flags = 0;
 
+	LOG("PipelineManager::_assembleComputePipelines: culling");
 	_compute.culling->assemble(device, pipeline_info);
+	LOG("Culling pipeline assembled.");
 }
 
 void	PipelineManager::_assembleGraphicsPipelines(scop::core::Device& device) {
@@ -277,14 +290,18 @@ void	PipelineManager::_assembleGraphicsPipelines(scop::core::Device& device) {
 	pipeline_info.basePipelineHandle = VK_NULL_HANDLE;
 	pipeline_info.basePipelineIndex = -1;
 
+	LOG("PipelineManager::_assembleGraphicsPipelines: scene");
 	_graphics.scene->assemble(device, pipeline_info);
+	LOG("Scene pipeline assembled.");
 
 	color_blending.attachmentCount = 0;
 	rasterizing.cullMode = VK_CULL_MODE_NONE;
 	multisampling.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
 	depth_stencil.depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
 
+	LOG("PipelineManager::_assembleGraphicsPipelines: shadows");
 	_graphics.shadows->assemble(device, pipeline_info);
+	LOG("Shadowmap pipeline assembled.");
 }
 
 } // namespace scop::gfx

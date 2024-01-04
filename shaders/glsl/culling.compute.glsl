@@ -1,7 +1,7 @@
 #version 450
 #define CS
 
-// Execute this compute for each chunk
+// Execute this compute for two chunks
 // Each chunk is 16x16x16 blocs
 // Compute shader will determine which blocs are visible or not and
 // compute the number of vertices to draw + the vertices data
@@ -25,30 +25,26 @@
 /* ========================================================================== */
 
 // Input
-INPUT(16, 16, 16);
+INPUT(8, 8, 8);
 
 // Output
-OUTPUT(CULLING_SET, 2, std140)	uniform writeonly buffer QuadCount {
+OUTPUT(CULLING_SET, 2, std140) buffer QuadCount {
 	uint n[MAX_RENDER_DISTANCE];
 }	quadCount;
 
-OUTPUT(CULLING_SET, 3, std140)	uniform writeonly buffer VerticesData {
-	// Per chunk / per block / per face
-	uint vertexData[MAX_RENDER_DISTANCE][CHUNK_VOLUME][6];
+OUTPUT(CULLING_SET, 3, std140) buffer VerticesData {
+	uint vertexData[MAX_RENDER_DISTANCE * CHUNK_VOLUME * FACE_COUNT];
 	// blockId: 12 bit		-> to retrieve block type in `chunks` + block position
-	// face: 4 bits			-> to retrieve which face to sample
+	// face: 3 bits			-> to retrieve which face to sample
 	// layer: 12 bits		-> to retrieve which chunk to offset block position
 	// orientation: 1 bit	-> swap uv orientation for directed faces
-	// unused: 3 bits
-} verticesData;
-
-OUTPUT(CULLING_SET, 4, std140) uniform writeonly buffer Indexer {
-	uint index[MAX_RENDER_DISTANCE * CHUNK_VOLUME * 6];
-} indexer;
+	// unused: 4 bits
+}	verticesData;
 
 /* UNIFORMS ================================================================= */
-UNIFORM(CULLING_SET, 0)		Frustum { vec4 planes[6]; }		frustum;
-UNIFORM(CULLING_SET, 1)		usampler2DArray					chunks; // r: type, g: properties, b: todo (block orientation data etc)
+UNIFORM(CULLING_SET, 0)		Frustum { vec4 planes[FACE_COUNT]; }	frustum;
+UNIFORM(CULLING_SET, 1)		usampler2DArray							chunks;
+	// r: type, g: properties, b: todo (block orientation data etc)
 
 /* ========================================================================== */
 /*                                  INCLUDES                                  */
@@ -68,11 +64,14 @@ AABB	_getAABB() {
 
 	AABB box;
 	box.extent = vec3(halfChunkSize);
-	box.center = vec3((float(gl_GlobalInvocationID.x)),
-					  (float(gl_GlobalInvocationID.y)),
-					  (float(gl_GlobalInvocationID.z)))
+	box.center = vec3(gl_GlobalInvocationID.xyz)
 				 + halfChunkSize
 				 * float(CHUNK_SIZE);
+	// box.center = vec3((float(gl_GlobalInvocationID.x)),
+	// 				  (float(gl_GlobalInvocationID.y)),
+	// 				  (float(gl_GlobalInvocationID.z)))
+				//  + halfChunkSize
+				//  * float(CHUNK_SIZE);
 	return box;
 }
 
@@ -123,7 +122,7 @@ bool	_isAABBOutside(in vec4 _plane, in AABB _box) {
 
 // Frustum culling
 bool	_isChunkVisible(in AABB _box) {
-	for (uint i = 0; i < 6; ++i) {
+	for (uint i = 0; i < FACE_COUNT; ++i) {
 		if (_isAABBOutside(frustum.planes[i], _box))
 			return false;
 	}
@@ -132,16 +131,16 @@ bool	_isChunkVisible(in AABB _box) {
 
 // Face culling
 bool	_isFaceVisible(in uvec3 _blockPos, in uint _chunkId, in uint _face) {
-	uvec2 blockData = getBlock(_blockPos, _chunkId);
-	if ((blockData.r == EMPTY_BLOCK) || bool(blockData.g & TRANSPARENT_MASK))
+	Block block = getBlock(_blockPos, _chunkId);
+	if ((block.type == EMPTY_BLOCK) || bool(block.properties & TRANSPARENT_MASK))
 		return false;
 
 	ivec3 neighborBlockPos = ivec3(_blockPos) + _getBlockOffset(_face);
 	uint  neighborBlockChunk = _chunkId;
 	_checkNeighborBlock(neighborBlockPos, neighborBlockChunk);
 
-	uvec2 neighborBlockData = getBlock(uvec3(neighborBlockPos), neighborBlockChunk);
-	if ((neighborBlockData.r == EMPTY_BLOCK) || bool(neighborBlockData.g & TRANSPARENT_MASK))
+	Block neighborBlock = getBlock(uvec3(neighborBlockPos), neighborBlockChunk);
+	if ((neighborBlock.type == EMPTY_BLOCK) || bool(neighborBlock.properties & TRANSPARENT_MASK))
 		return true;
 
 	return false;
@@ -149,19 +148,15 @@ bool	_isFaceVisible(in uvec3 _blockPos, in uint _chunkId, in uint _face) {
 
 /* ========================================================================== */
 
-void	_checkBlockFaces(in uvec3 _blockPos, in uint _chunkId) {
+void	_checkBlockFaces(in uvec3 _blockPos, in uint _chunkId, inout uint _vertexIndex) {
 	// TODO: Semi-transparent blocs
 
-	for (uint face = 0; face < 6; ++face) {
-		uint blockIndex = _blockPos.z * CHUNK_AREA + (_blockPos.y * CHUNK_SIZE + _blockPos.x);
-
+	for (uint face = 0; face < FACE_COUNT; ++face) {
 		if (_isFaceVisible(_blockPos, _chunkId, face)) {
 			++quadCount.n[_chunkId];
 			uint blockId = _blockPos.x << 12 | _blockPos.y << 8 | _blockPos.z << 4 | face;
-			verticesData.vertexData[_chunkId][blockIndex][face] = blockId;
-		} else {
-			// TODO: set value mask for unused val
-			verticesData.vertexData[_chunkId][blockIndex][face] = 1 << 31;
+			verticesData.vertexData[_vertexIndex] = blockId;
+			++_vertexIndex;
 		}
 	}
 }
@@ -175,11 +170,12 @@ void main() {
 				 + (gl_GlobalInvocationID.y << 8)
 				 + (gl_GlobalInvocationID.z << 4);
 
+	uint vertexIndex = 0;
 	for (uint z = 0; z < CHUNK_SIZE; ++z) {
 		for (uint y = 0; y < CHUNK_SIZE; ++y) {
 			for (uint x = 0; x < CHUNK_SIZE; ++x) {
 				uvec3 blockPos = uvec3(x, y, z);
-				_checkBlockFaces(blockPos, chunkId);
+				_checkBlockFaces(blockPos, chunkId, vertexIndex);
 			}
 		}
 	}

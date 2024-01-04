@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/16 01:00:19 by etran             #+#    #+#             */
-/*   Updated: 2023/12/04 23:15:00 by etran            ###   ########.fr       */
+/*   Updated: 2023/12/31 12:59:57 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -380,6 +380,7 @@ QueueFamilyIndices	Device::_findQueueFamilies(VkPhysicalDevice device) {
 		if ((queue_family.queueFlags & VK_QUEUE_GRAPHICS_BIT) || // Graphics
 		   ((queue_family.queueFlags & VK_QUEUE_COMPUTE_BIT) == VK_QUEUE_COMPUTE_BIT)) { // Compute
 			indices.compute_family = i;
+			indices.graphics_family = i;
 		}
 
 		// Present

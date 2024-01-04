@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/15 20:56:05 by etran             #+#    #+#             */
-/*   Updated: 2023/11/19 19:42:14 by etran            ###   ########.fr       */
+/*   Updated: 2024/01/04 01:01:40 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,6 +23,7 @@ namespace scop::gfx {
 using DescriptorSetPtr = DescriptorPool::DescriptorSetPtr;
 
 VkDescriptorPool	DescriptorPool::_pool = VK_NULL_HANDLE;
+uint32_t			DescriptorPool::_descriptor_count = 0;
 
 /* ========================================================================== */
 /*                                   PUBLIC                                   */
@@ -49,6 +50,12 @@ VkDescriptorPool		DescriptorPool::getPool() noexcept {
 	return _pool;
 }
 
+uint32_t	DescriptorPool::getDescriptorCount(bool increment) noexcept {
+	if (increment)
+		++_descriptor_count;
+	return _descriptor_count;
+}
+
 /* ========================================================================== */
 /*                                   PRIVATE                                  */
 /* ========================================================================== */
@@ -60,19 +67,21 @@ void	DescriptorPool::_createDescriptorPool(
 	scop::core::Device& device,
 	const std::vector<DescriptorSetPtr>& sets
 ) {
-	std::array<VkDescriptorPoolSize, 4>	pool_sizes{};
+	std::array<VkDescriptorPoolSize, 3>	pool_sizes{};
 
 	pool_sizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 	pool_sizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-	pool_sizes[2].type = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
-	pool_sizes[3].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+	pool_sizes[2].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+	// pool_sizes[3].type = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+	// pool_sizes[4].type = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
 
 	for (const auto& set: sets) {
 		const auto& sizes = set->getPoolSizes();
 		pool_sizes[0].descriptorCount += sizes.uniform_buffer;
 		pool_sizes[1].descriptorCount += sizes.combined_image_sampler;
-		pool_sizes[2].descriptorCount += sizes.storage_image;
-		pool_sizes[3].descriptorCount += sizes.storage_buffer;
+		pool_sizes[2].descriptorCount += sizes.storage_buffer;
+		// pool_sizes[3].descriptorCount += sizes.storage_image;
+		// pool_sizes[4].descriptorCount += sizes.sampled_image;
 	}
 
 	VkDescriptorPoolCreateInfo	pool_info{};
@@ -91,13 +100,13 @@ void	DescriptorPool::_createDescriptorPool(
 */
 void	DescriptorPool::_allocateSets(
 	scop::core::Device& device,
-	const std::vector<DescriptorSetPtr>& sets
+	const std::vector<DescriptorSetPtr>& set_ptrs
 ) {
-	std::vector<VkDescriptorSet>		descriptor_sets(sets.size());
+	std::vector<VkDescriptorSet>		descriptor_sets(set_ptrs.size());
 	std::vector<VkDescriptorSetLayout>	layouts;
-	layouts.reserve(sets.size());
+	layouts.reserve(set_ptrs.size());
 
-	for (const auto& set: sets) {
+	for (const auto& set: set_ptrs) {
 		layouts.emplace_back(set->getLayout());
 	}
 
@@ -111,8 +120,8 @@ void	DescriptorPool::_allocateSets(
 		throw std::runtime_error("failed to allocate descriptor sets");
 	}
 
-	for (std::size_t i = 0; i < sets.size(); ++i) {
-		sets[i]->setDescriptors(descriptor_sets[i]);
+	for (std::size_t i = 0; i < set_ptrs.size(); ++i) {
+		set_ptrs[i]->setDescriptors(descriptor_sets[i]);
 	}
 }
 

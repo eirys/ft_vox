@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/19 11:46:11 by etran             #+#    #+#             */
-/*   Updated: 2023/12/24 15:28:34 by etran            ###   ########.fr       */
+/*   Updated: 2023/12/31 02:36:31 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,7 @@
 #include "block.h"
 
 #include <cassert> // assert
+#include <limits> // std::numeric_limits
 
 namespace vox {
 
@@ -154,7 +155,9 @@ IntersectionType	Chunk::_checkIntersection(const BoundingFrustum& frustum) const
  * @brief Fills chunk volume data with blocks.
 */
 void	Chunk::_generateChunk(const PerlinNoise& perlin_noise) {
-	_blocks.resize(CHUNK_VOLUME);
+	static const constexpr uint32_t chunk_height = 256;
+
+	_blocks.resize(CHUNK_SIZE * CHUNK_SIZE * chunk_height);
 
 	for (uint8_t z = 0; z < CHUNK_SIZE; ++z) {
 		for (uint8_t x = 0; x < CHUNK_SIZE; ++x) {

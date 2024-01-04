@@ -6,7 +6,7 @@
 #    By: etran <etran@student.42.fr>                +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/04/06 03:40:09 by eli               #+#    #+#              #
-#    Updated: 2023/12/23 01:10:35 by etran            ###   ########.fr        #
+#    Updated: 2024/01/02 18:14:14 by etran            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -23,7 +23,7 @@ OBJ_DIR		:=	obj
 SHD_DIR		:=	shaders
 
 # shader binaries
-SHD_BIN_DIR	:=	$(OBJ_DIR)/bin
+SHD_BIN_DIR	:=	$(OBJ_DIR)/shaders
 
 # main
 APP_DIR		:=	app
@@ -139,7 +139,9 @@ INCLUDES	:=	$(addprefix -I./,$(INC_SUBDIRS))
 
 MACROS		:=	__DEBUG \
 				__LINUX \
-				NDEBUG
+				NDEBUG \
+				SHD_BIN_DIR=\"$(SHD_BIN_DIR)/\"
+
 DEFINES		:=	$(addprefix -D,$(MACROS))
 
 CFLAGS		:=	$(EXTRA) \
@@ -160,11 +162,10 @@ LDFLAGS		:=	-lglfw \
 				-lXi
 
 # ------------------- SHADERS ------------------ #
-# SHD_FILES	:=	scene.fragment \
-# 				scene.vertex \
-# 				shadow.vertex
-
-SHD_FILES:= culling.compute
+SHD_FILES	:=	scene.fragment \
+				scene.vertex \
+				shadow.vertex \
+				culling.compute
 
 SHD			:=	$(addprefix $(SHD_BIN_DIR)/,$(SHD_FILES))
 SHD_BIN		:=	$(addsuffix .spv,$(SHD))
@@ -213,7 +214,7 @@ clean:
 	@echo "Cleaning object files and dependencies."
 
 .PHONY: fclean
-fclean: clean clean_shaders
+fclean: clean
 	@${RM} $(NAME)
 	@echo "Removed $(NAME)."
 

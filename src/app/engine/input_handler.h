@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:15:01 by etran             #+#    #+#             */
-/*   Updated: 2023/12/26 19:31:37 by etran            ###   ########.fr       */
+/*   Updated: 2024/01/01 15:00:33 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,7 @@
 
 # include "bounding_frustum.h"
 # include "chunk_macros.h"
+# include "buffer.h"
 
 namespace vox {
 class GameState;
@@ -29,15 +30,15 @@ class Device;
 
 namespace scop::gfx {
 class TextureHandler;
-class Buffer;
 }
 
 namespace scop {
 
 enum class InputBufferSize: uint32_t {
 	Frustum			= sizeof(gfx::BoundingFrustum),
-	QuadCount		= sizeof(uint32_t),
-	VerticesData	= sizeof(uint32_t) * MAX_RENDER_DISTANCE * CHUNK_VOLUME * 6
+	QuadCount		= sizeof(uint32_t) * MAX_RENDER_PYRAMID,
+	VerticesData	= sizeof(uint32_t) * MAX_RENDER_PYRAMID * CHUNK_VOLUME * 6
+	// TODO: Overkill, need to be optimized
 };
 
 enum class InputBufferOffset: uint32_t {
@@ -80,23 +81,11 @@ public:
 		const vox::World& world);
 	void				retrieveData();
 
-	// void				updateVisibleChunks(
-	// 	core::Device& device,
-	// 	const gfx::BoundingFrustum::Camera& camera,
-	// 	const vox::World& world);
-
 	/* ========================================================================= */
 
 	uint32_t			getVerticesCount() const noexcept;
 	uint32_t			getInstancesCount() const noexcept;
 	TextureHandlerPtr	getChunkMap() const;
-
-	// const gfx::Buffer&	getFrustumBuffer() const noexcept;
-	// gfx::Buffer&		getFrustumBuffer() noexcept;
-	// const gfx::Buffer&	getQuadCountBuffer() const noexcept;
-	// gfx::Buffer&		getQuadCountBuffer() noexcept;
-	// const gfx::Buffer&	getVerticesDataBuffer() const noexcept;
-	// gfx::Buffer&		getVerticesDataBuffer() noexcept;
 
 	const gfx::Buffer&	getInputBuffer() const noexcept;
 	gfx::Buffer&		getInputBuffer() noexcept;
@@ -109,18 +98,10 @@ private:
 	gfx::BoundingFrustum		_frustum;
 
 	TextureHandlerPtr			_chunk_texture;
-	// TODO put into 1 buffer
-	// gfx::Buffer					_frustum_buffer; // TODO map
-	// gfx::Buffer					_quad_count_buffer; // TODO map
-	// gfx::Buffer					_vertices_data_buffer;
-
 	gfx::Buffer					_input_buffer;
 
 	static constexpr uint32_t	_vertices_count = 4;
-	uint32_t					_instances_count = 6 * CHUNK_VOLUME * RENDER_DISTANCE;
-
-	// uint32_t				_instances_count = 25;
-	// uint32_t				_vertices_count = CHUNK_AREA * 36;
+	uint32_t					_instances_count = 0;
 
 	/* ========================================================================= */
 	/*                                  METHODS                                  */

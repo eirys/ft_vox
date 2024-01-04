@@ -6,18 +6,19 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/18 17:42:36 by etran             #+#    #+#             */
-/*   Updated: 2023/12/24 15:29:38 by etran            ###   ########.fr       */
+/*   Updated: 2023/12/31 17:50:45 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "world.h"
 #include "perlin_noise.h"
-#include "utils.h"
 #include "block_properties.h"
 #include "chunk_macros.h"
 
 #include <cstring> // memcpy
 #include <cassert> // assert
+
+#include "debug.h"
 
 namespace vox {
 
@@ -41,6 +42,7 @@ World::World(
 
 	_generateChunks(noise);
 	_generateTerrainData();
+	LOG("World generated.");
 }
 
 World::World(World&& other) {
@@ -52,6 +54,7 @@ World& World::operator=(World&& other) {
 		return *this;
 	_origin = std::move(other._origin);
 	_chunks = std::move(other._chunks);
+	_world_data = std::move(other._world_data);
 	return *this;
 }
 
@@ -92,7 +95,7 @@ void	World::updateTerrainData(std::vector<uint16_t>& data) const {
 			data.data() + offset,
 			chunk_data.data(),
 			chunk_data.size());
-		offset += chunk_data.size() * sizeof(uint16_t);
+		offset += chunk_data.size();
 	}
 }
 
@@ -106,13 +109,9 @@ const scop::Vect3&	World::getOrigin() const noexcept {
 	return _origin;
 }
 
-/* ========================================================================== */
-
 const std::vector<Chunk>&	World::getChunks() const noexcept {
 	return _chunks;
 }
-
-/* ========================================================================== */
 
 const Chunk&	World::getChunk(uint8_t x, uint8_t y, uint8_t z) const {
 	return _chunks[z * _render_distance + (y * _render_distance + x)];
@@ -121,8 +120,6 @@ const Chunk&	World::getChunk(uint8_t x, uint8_t y, uint8_t z) const {
 Chunk&	World::getChunk(uint8_t x, uint8_t y, uint8_t z) {
 	return _chunks[z * _render_distance + (y * _render_distance + x)];
 }
-
-/* ========================================================================== */
 
 static std::array<uint8_t, 3>	_extractChunkIndex(float x, float y, float z) {
 	std::array<uint8_t, 3>	chunk_index;
@@ -243,6 +240,7 @@ void	World::_generateChunks(const PerlinNoise& noise) {
 */
 void	World::_generateTerrainData() {
 	_world_data.reserve(_chunks.size() * CHUNK_VOLUME);
+
 	updateTerrainData(_world_data);
 }
 

@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/23 06:30:15 by etran             #+#    #+#             */
-/*   Updated: 2023/12/26 17:41:05 by etran            ###   ########.fr       */
+/*   Updated: 2023/12/29 10:01:58 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,8 @@
 # include <vulkan/vulkan.h>
 
 // Std
-# include <cstddef> // std::size_t
+// # include <cstddef> // std::size_t
+# include <vector> // std::vector
 
 namespace scop::core {
 class Device;

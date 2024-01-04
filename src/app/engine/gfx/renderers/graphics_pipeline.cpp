@@ -6,13 +6,12 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/06 17:59:15 by etran             #+#    #+#             */
-/*   Updated: 2023/11/19 22:47:47 by etran            ###   ########.fr       */
+/*   Updated: 2023/12/31 17:51:32 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "graphics_pipeline.h"
 #include "device.h"
-#include "utils.h"
 
 #include "render_pass.h"
 #include "texture_handler.h"

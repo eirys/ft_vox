@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/18 20:15:16 by etran             #+#    #+#             */
-/*   Updated: 2023/12/23 00:50:22 by etran            ###   ########.fr       */
+/*   Updated: 2024/01/01 16:53:46 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,10 @@
 # include <vulkan/vulkan.h>
 
 #include "compute_pipeline.h"
+
+namespace scop {
+class InputHandler;
+}
 
 namespace scop::gfx {
 
@@ -49,7 +53,11 @@ public:
 	void				assemble(
 		scop::core::Device& device,
 		VkComputePipelineCreateInfo& info) override;
+	void				plugDescriptor(
+		scop::core::Device& device,
+		const scop::InputHandler& input);
 	void				destroy(scop::core::Device& device) override;
+
 	void				compute(
 		scop::core::Device& device,
 		VkPipelineLayout layout,

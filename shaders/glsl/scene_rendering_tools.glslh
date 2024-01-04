@@ -5,7 +5,6 @@
 /*                                   OBJECTS                                  */
 /* ========================================================================== */
 
-
 // Data contained in VerticesData buffer.
 struct VertexInput {
 	uvec3	blockPos;
@@ -14,45 +13,80 @@ struct VertexInput {
 	bool	isSideways;
 };
 
+// cf. block_properties.h
+struct Block {
+	vec3	worldPos;
+	uint	type;
+	uint	properties;
+};
 
 /* ========================================================================== */
 /*                                  FUNCTIONS                                 */
 /* ========================================================================== */
 
+/* GENERAL ================================================================== */
+
+// Sampler for chunks texture.
+Block	getBlock(in uvec3 _blockPos, in uint _chunkId) {
+	vec3 worldPos = vec3(_blockPos) + vec3(_chunkId * CHUNK_SIZE);
+
+	float x_offsetted = float(_blockPos.x + (_blockPos.y % 4));
+	float z_offsetted = float(_blockPos.z + (_blockPos.y / 4));
+	vec3 uvw = vec3(x_offsetted, z_offsetted, _chunkId) / vec3(textureSize(chunks, 0));
+	uvec2 blockRawData = texture(chunks, uvw).rg;
+
+	return Block(worldPos, blockRawData.r, blockRawData.g);
+}
+
+/* CS ======================================================================= */
+
+#ifdef CS
+
 uint	packBlockPos(in uvec3 _pos) {
 	return (_pos.x << 8) | (_pos.y << 4) | _pos.z;
 }
 
-uvec3	unpackBlockPos(in uint _packedPos) {
-	return uvec3(_packedPos >> 8, (_packedPos >> 4) & 0xF, _packedPos & 0xF);
-}
+#endif // CS
+
+/* RS ======================================================================= */
+
+#ifdef RS
 
 // Unpacks VertexInput from vertices data buffer.
 VertexInput	unpackVertexInput(in uint _packedInput) {
-	VertexInput input;
-	uint blockId = _packedInput >> 20;
-	input.blockPos = unpackBlockPos(_blockId >> 4);
-	input.face = blockId & 0xF;
+	VertexInput vertexInput;
 
-	return input;
+	uint packedBlockPos = _packedInput >> 20;
+	vertexInput.blockPos = uvec3(packedBlockPos >> 8,
+						   packedBlockPos >> 4 & 0xF,
+						   packedBlockPos & 0xF);
+
+	vertexInput.face = (_packedInput >> 17) & 0x7;
+	vertexInput.layer = (_packedInput >> 5) & 0xFFF;
+	vertexInput.isSideways = bool((_packedInput >> 4) & 0x1);
+
+	return vertexInput;
 }
 
-// Sampler for chunks texture.
-uvec2	getBlock(in uvec3 _blockPos, in uint _chunkId) {
-	float x_offsetted = float(_blockPos.x + (_blockPos.y % 4));
-	float z_offsetted = float(_blockPos.z + (_blockPos.y / 4));
-	vec3 uvw = vec3(x_offsetted, z_offsetted, _chunkId);
-	// vec3 uv = vec3(_blockPos) / float(CHUNK_SIZE);
-	return texture(chunks, uvw).rg;
-}
+#endif // RS
 
 /* ========================================================================== */
 
-#ifdef CS
-#endif // CS
 
-#ifdef RS
-#endif // RS
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -67,8 +101,6 @@ int	isOutsideTexture(in ivec2 _pos) {
 	return 0;
 }
 
-/* ========================================================================== */
-
 float	getHeight(in ivec2 _cubePos,in uint _layer) {
 	// TODO: select proper layer
 	int isOutside = isOutsideTexture(_cubePos);
@@ -77,8 +109,6 @@ float	getHeight(in ivec2 _cubePos,in uint _layer) {
 	vec2 cubeUV = vec2(_cubePos) / vec2(textureSize(height_map, 0));
 	return texture(height_map, vec3(cubeUV, _layer)).r;
 }
-
-/* ========================================================================== */
 
 // The vertices of a cube.
 const vec3 vertices[36] = {
@@ -140,8 +170,6 @@ vec4	extractPos(in uint _vertexId, in ivec2 _cubePos, in float _height, in ivec2
 
 	return position;
 }
-
-/* ========================================================================== */
 
 bool	cullUnseenFace(in uint _face, in ivec2 _cubePos, in uint _instanceId, in float _cubeHeight) {
 	ivec2	adjacentCubePos = ivec2(-1);

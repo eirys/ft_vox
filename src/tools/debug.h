@@ -1,31 +1,26 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   main.cpp                                           :+:      :+:    :+:   */
+/*   debug.h                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/04/06 03:53:55 by eli               #+#    #+#             */
-/*   Updated: 2023/12/31 17:49:50 by etran            ###   ########.fr       */
+/*   Created: 2023/12/31 17:48:20 by etran             #+#    #+#             */
+/*   Updated: 2024/01/02 18:20:01 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "app.h"
-#include "debug.h"
+#pragma once
 
-int main(int ac, char** av) {
-	try {
-		(void)av;
-		if (ac != 1) {
-			throw std::invalid_argument("Unexcepted arguments.");
-		}
+# ifdef __LINUX
+# define __NL "\n"
+# else
+# define __NL "\r\n"
+# endif
 
-		scop::App		app;
-		app.run();
-	} catch (const std::exception& e) {
-		std::cerr << e.what() << __NL;
-		return EXIT_FAILURE;
-	}
-
-	return EXIT_SUCCESS;
-}
+# ifdef __DEBUG
+#  include <iostream>
+#  define LOG(X) std::cerr << "[[LOG]] " << X << __NL
+# else
+#  define LOG(X)
+# endif

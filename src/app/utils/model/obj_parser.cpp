@@ -6,12 +6,11 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/04 15:06:05 by etran             #+#    #+#             */
-/*   Updated: 2023/07/03 11:53:08 by etran            ###   ########.fr       */
+/*   Updated: 2023/12/31 17:52:30 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "obj_parser.h"
-#include "utils.h"	// LOG
 #include "mtl_parser.h"
 #include "ppm_loader.h"
 #include "material.h"
@@ -20,6 +19,8 @@
 #include <vector>		// std::vector
 #include <optional>		// std::optional
 #include <algorithm>	// std::count
+
+#include "debug.h"
 
 namespace scop {
 namespace obj {
@@ -232,7 +233,7 @@ void	ObjParser::parseFace() {
 
 /**
  * @brief Retrieves the material library file name.
- * 
+ *
  * @note - Format expected: "mtllib <filename>"
  * @note - The path is just the name of the file.
  * @note - Only one material library file name is stored.
@@ -246,7 +247,7 @@ void	ObjParser::parseMtlPath() {
 
 /**
  * @brief Retrieves the material name.
- * 
+ *
  * @note - Format expected: "usemtl <name>"
  * @note - Only one material name is stored.
 */
@@ -259,7 +260,7 @@ void	ObjParser::parseMtlName() {
 
 /**
  * @brief Parses smooth shading enable.
- * 
+ *
  * @note Format expected: "s <0 | 1 | off | on>"
 */
 void	ObjParser::parseSmoothShading() {

@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/28 11:12:12 by eli               #+#    #+#             */
-/*   Updated: 2023/12/26 17:09:53 by etran            ###   ########.fr       */
+/*   Updated: 2023/12/31 17:50:06 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,10 +14,11 @@
 #include "scop_math.h"
 #include "obj_parser.h"
 #include "perlin_noise.h"
-#include "utils.h"
 
 #include "world_generator.h"
 #include "world.h"
+
+#include "debug.h"
 
 namespace scop {
 
@@ -62,7 +63,7 @@ void	App::run() {
 		_window.poll();
 		_updateGame();
 		_engine.render(_window, _game, _timer);
-		_game.update();
+		// _game.update(); // TODO
 		_timer.check();
 	}
 	_engine.idle();

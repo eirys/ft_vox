@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:14:35 by etran             #+#    #+#             */
-/*   Updated: 2023/12/23 20:41:39 by etran            ###   ########.fr       */
+/*   Updated: 2023/12/28 22:21:43 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -100,6 +100,7 @@ private:
 	VkSemaphore					_image_available_semaphores;
 	VkSemaphore					_render_finished_semaphores;
 	VkSemaphore					_compute_finished_semaphores;
+	VkSemaphore					_graphics_ready_semaphores;
 	VkFence						_in_flight_fences;
 
 	/* ========================================================================= */
@@ -109,7 +110,7 @@ private:
 	void						_createSyncObjects();
 	void						_createDescriptors();
 
-	UniformBufferObject			_updateUbo(const vox::GameState& game);
+	UniformBufferObject			_updateUbo(const vox::GameState& game) const;
 	void						_updatePresentation(Window& window);
 
 }; // class Engine

@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:16:25 by etran             #+#    #+#             */
-/*   Updated: 2023/12/11 22:17:56 by etran            ###   ########.fr       */
+/*   Updated: 2024/01/01 14:03:19 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,19 +16,6 @@
 # include <cmath>
 # include <fstream>
 # include <vector>
-
-# ifdef __LINUX
-# define __NL "\n"
-# else
-# define __NL "\r\n"
-# endif
-
-# ifdef __DEBUG
-#  include <iostream>
-#  define LOG(X) std::cerr << X << __NL
-# else
-#  define LOG(X)
-# endif
 
 namespace scop::utils {
 
@@ -52,7 +39,7 @@ inline std::vector<uint8_t>	readFile(const std::string& filename) {
 }
 
 template <typename EnumClass>
-inline uint32_t	enumSize() {
+constexpr inline uint32_t	enumSize() {
 	return static_cast<uint32_t>(EnumClass::Last) - static_cast<uint32_t>(EnumClass::First) + 1;
 }
 

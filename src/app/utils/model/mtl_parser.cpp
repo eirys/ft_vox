@@ -6,17 +6,18 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/26 13:32:56 by etran             #+#    #+#             */
-/*   Updated: 2023/06/04 16:52:39 by etran            ###   ########.fr       */
+/*   Updated: 2023/12/31 17:52:20 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "mtl_parser.h"
-#include "utils.h"
 #include "ppm_loader.h"
 
 #include <fstream> // std::ifstream
 #include <stdexcept> // std::invalid_argument
 #include <algorithm> // std::clamp
+
+#include "debug.h"
 
 namespace scop {
 namespace mtl {
@@ -103,7 +104,7 @@ void	MtlParser::processLine() {
 
 /**
  * @brief Parses a `newmtl` line (name).
- * 
+ *
  * @note The line should be in the format `newmtl <name>`.
 */
 void	MtlParser::parseNewmtl() {
@@ -115,7 +116,7 @@ void	MtlParser::parseNewmtl() {
 
 /**
  * @brief Parses a `Ka` line (ambient color).
- * 
+ *
  * @note The line should be in the format `Ka <r> <g> <b>`.
 */
 void	MtlParser::parseKa() {
@@ -124,7 +125,7 @@ void	MtlParser::parseKa() {
 
 /**
  * @brief Parses a `Kd` line (diffuse color).
- * 
+ *
  * @note The line should be in the format `Kd <r> <g> <b>`.
 */
 void	MtlParser::parseKd() {
@@ -133,7 +134,7 @@ void	MtlParser::parseKd() {
 
 /**
  * @brief Parses a `Ks` line (specular color).
- * 
+ *
  * @note The line should be in the format `Ks <r> <g> <b>`.
 */
 void	MtlParser::parseKs() {
@@ -142,7 +143,7 @@ void	MtlParser::parseKs() {
 
 /**
  * @brief Parses a `Ke` line (emissive color).
- * 
+ *
  * @note The line should be in the format `Ke <r> <g> <b>`.
 */
 void	MtlParser::parseKe() {
@@ -151,7 +152,7 @@ void	MtlParser::parseKe() {
 
 /**
  * @brief Parses opacity.
- * 
+ *
  * @note The line should be in the format `Tr <float>`
  * or `d <float>`.
  * @note If `d` is used, the value is inverted.
@@ -167,7 +168,7 @@ void	MtlParser::parseTr() {
 
 /**
  * @brief Parses a `Ns` line (shininess exponent).
- * 
+ *
  * @note The line should be in the format `Ns <num>`.
 */
 void	MtlParser::parseNs() {
@@ -183,7 +184,7 @@ void	MtlParser::parseNs() {
 
 /**
  * @brief Parses a `illum` line (illumination model).
- * 
+ *
  * @note The line should be in the format `illum <num>`.
 */
 void	MtlParser::parseIllum() {
@@ -198,7 +199,7 @@ void	MtlParser::parseIllum() {
 
 /**
  * @brief Parses a `map_Ka` line (texture filename).
- * 
+ *
  * @note - The line should be in the format `map_Ka <filename>`.
  * @note - The texture file name is just the file name.
  * @note - For now, the texture file should be a .ppm file.

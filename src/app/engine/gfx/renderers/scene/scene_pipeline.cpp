@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/06 20:50:48 by etran             #+#    #+#             */
-/*   Updated: 2023/11/25 01:29:50 by etran            ###   ########.fr       */
+/*   Updated: 2024/01/03 14:44:39 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,11 +27,11 @@
 #include <chrono>
 
 #if defined(__LINUX)
-# define SCENE_VERTEX_PATH "shaders/scene.vertex.spv"
-# define SCENE_FRAGMENT_PATH "shaders/scene.fragment.spv"
+# define SCENE_VERTEX_PATH		"scene.vertex.spv"
+# define SCENE_FRAGMENT_PATH	"scene.fragment.spv"
 #else
-# define SCENE_VERTEX_PATH "shaders/scene_vert.spv"
-# define SCENE_FRAGMENT_PATH "shaders/scene_frag.spv"
+# define SCENE_VERTEX_PATH		"scene_vert.spv"
+# define SCENE_FRAGMENT_PATH	"scene_frag.spv"
 #endif
 
 namespace scop::gfx {
@@ -116,7 +116,7 @@ void	ScenePipeline::plugDescriptor(
 	const scop::InputHandler& input
 ) {
 	auto	scene_descriptors = std::dynamic_pointer_cast<SceneDescriptorSet>(super::_descriptor);
-	scene_descriptors->plug(
+	scene_descriptors->fill(
 		device,
 		_ubo,
 		super::_texture,
