@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/16 13:03:48 by etran             #+#    #+#             */
-/*   Updated: 2024/01/04 19:05:34 by etran            ###   ########.fr       */
+/*   Updated: 2024/01/05 13:47:38 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,6 +48,7 @@ void	InputHandler::init(core::Device& device, const vox::GameState& game) {
 		(VkDeviceSize)InputBufferSize::QuadCount,
 		VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
 		VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+	_quad_count_buffer.map(device, (VkDeviceSize)InputBufferSize::QuadCount);
 	LOG("Quad count buffer created");
 
 	LOG("Create vertices data buffer...");
@@ -90,11 +91,15 @@ void	InputHandler::updateData(
 */
 void	InputHandler::retrieveData() {
 	// Retrieve quad count
+	LOG("Retrieving data");
+
 	uint32_t quad_counts[MAX_RENDER_DISTANCE];
-	_quad_count_buffer.copyTo(quad_counts, sizeof(uint32_t) * MAX_RENDER_DISTANCE, (uint32_t)InputBufferOffset::QuadCount);
+	_quad_count_buffer.copyTo(quad_counts, (uint32_t)InputBufferSize::QuadCount);
 	for (uint32_t i = 0; i < MAX_RENDER_DISTANCE; ++i) {
 		_instances_count += quad_counts[i];
 	}
+
+	LOG("Quad count retrieved");
 }
 
 // void	InputHandler::updateVisibleChunks(

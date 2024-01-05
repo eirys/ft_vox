@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/23 06:30:15 by etran             #+#    #+#             */
-/*   Updated: 2024/01/04 22:25:56 by etran            ###   ########.fr       */
+/*   Updated: 2024/01/05 13:46:05 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,8 +62,7 @@ public:
 		std::size_t offset = 0) noexcept;
 	void				copyTo(
 		void* data_dst,
-		std::size_t data_size,
-		std::size_t offset = 0) noexcept;
+		std::size_t data_size) noexcept;
 	void				copyBuffer(
 		VkCommandBuffer command_buffer,
 		Buffer& src_buffer,

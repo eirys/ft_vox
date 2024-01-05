@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/06 03:53:55 by eli               #+#    #+#             */
-/*   Updated: 2023/12/31 17:49:50 by etran            ###   ########.fr       */
+/*   Updated: 2024/01/05 13:46:32 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,7 @@ int main(int ac, char** av) {
 	try {
 		(void)av;
 		if (ac != 1) {
-			throw std::invalid_argument("Unexcepted arguments.");
+			throw std::invalid_argument("Unexpected arguments.");
 		}
 
 		scop::App		app;
