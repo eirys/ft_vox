@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:15:01 by etran             #+#    #+#             */
-/*   Updated: 2024/01/01 15:00:33 by etran            ###   ########.fr       */
+/*   Updated: 2024/01/04 22:25:31 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,15 +37,20 @@ namespace scop {
 enum class InputBufferSize: uint32_t {
 	Frustum			= sizeof(gfx::BoundingFrustum),
 	QuadCount		= sizeof(uint32_t) * MAX_RENDER_PYRAMID,
-	VerticesData	= sizeof(uint32_t) * MAX_RENDER_PYRAMID * CHUNK_VOLUME * 6
+	VerticesData	= sizeof(uint32_t) * MAX_RENDER_PYRAMID // * CHUNK_VOLUME * 6
 	// TODO: Overkill, need to be optimized
 };
 
 enum class InputBufferOffset: uint32_t {
 	Frustum			= 0,
-	QuadCount		= (uint32_t)InputBufferSize::Frustum,
-	VerticesData	= QuadCount + (uint32_t)InputBufferSize::QuadCount
+	QuadCount		= 0,
+	VerticesData	= 0
 };
+
+static_assert((uint32_t)InputBufferOffset::QuadCount % 16 == 0);
+static_assert((uint32_t)InputBufferOffset::VerticesData % 16 == 0);
+
+constexpr uint32_t verticesdata_size = (uint32_t)InputBufferSize::VerticesData;
 
 /**
  * @brief Handle input for rendering pipelines.
@@ -63,12 +68,12 @@ public:
 	/* ========================================================================= */
 
 	InputHandler() = default;
-	InputHandler(InputHandler&& x) = default;
-	InputHandler&	operator=(InputHandler&& x) = default;
 	~InputHandler() = default;
 
+	InputHandler(InputHandler&& x) = delete;
 	InputHandler(const InputHandler& x) = delete;
-	InputHandler&	operator=(const InputHandler& x) = delete;
+	InputHandler& operator=(InputHandler&& x) = delete;
+	InputHandler& operator=(const InputHandler& x) = delete;
 
 	/* ========================================================================= */
 
@@ -87,27 +92,33 @@ public:
 	uint32_t			getInstancesCount() const noexcept;
 	TextureHandlerPtr	getChunkMap() const;
 
-	const gfx::Buffer&	getInputBuffer() const noexcept;
-	gfx::Buffer&		getInputBuffer() noexcept;
+	// const gfx::Buffer&	getInputBuffer() const noexcept;
+	// gfx::Buffer&		getInputBuffer() noexcept;
+
+	const gfx::Buffer&	getFrustumBuffer() const noexcept;
+	gfx::Buffer&		getFrustumBuffer() noexcept;
+	const gfx::Buffer&	getQuadCountBuffer() const noexcept;
+	gfx::Buffer&		getQuadCountBuffer() noexcept;
+	const gfx::Buffer&	getVerticesDataBuffer() const noexcept;
+	gfx::Buffer&		getVerticesDataBuffer() noexcept;
 
 private:
 	/* ========================================================================= */
 	/*                               CLASS MEMBERS                               */
 	/* ========================================================================= */
 
-	gfx::BoundingFrustum		_frustum;
+	gfx::BoundingFrustum	_frustum;
 
-	TextureHandlerPtr			_chunk_texture;
-	gfx::Buffer					_input_buffer;
+	TextureHandlerPtr		_chunk_texture;
+	// gfx::Buffer				_input_buffer;
 
-	static constexpr uint32_t	_vertices_count = 4;
-	uint32_t					_instances_count = 0;
+	gfx::Buffer				_frustum_buffer;
+	gfx::Buffer				_quad_count_buffer;
+	gfx::Buffer				_vertices_data_buffer;
 
-	/* ========================================================================= */
-	/*                                  METHODS                                  */
-	/* ========================================================================= */
 
-	void				_createBuffers(core::Device& device);
+	const uint32_t			_vertices_count = 4;
+	uint32_t				_instances_count = 0;
 
 }; // class InputHandler
 

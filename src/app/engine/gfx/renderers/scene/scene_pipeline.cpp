@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/06 20:50:48 by etran             #+#    #+#             */
-/*   Updated: 2024/01/03 14:44:39 by etran            ###   ########.fr       */
+/*   Updated: 2024/01/04 13:37:38 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,7 +64,7 @@ void	ScenePipeline::init(
 		VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
 		VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
 		VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-	_ubo.map(device.getLogicalDevice(), sizeof(UniformBufferObject));
+	_ubo.map(device, sizeof(UniformBufferObject));
 }
 
 void	ScenePipeline::assemble(
@@ -104,8 +104,8 @@ void	ScenePipeline::assemble(
 }
 
 void	ScenePipeline::destroy(scop::core::Device& device) {
-	_ubo.unmap(device.getLogicalDevice());
-	_ubo.destroy(device.getLogicalDevice());
+	_ubo.unmap(device);
+	_ubo.destroy(device);
 
 	super::destroy(device);
 }

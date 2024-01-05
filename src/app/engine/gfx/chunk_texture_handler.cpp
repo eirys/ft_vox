@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/24 14:32:26 by etran             #+#    #+#             */
-/*   Updated: 2024/01/03 22:50:35 by etran            ###   ########.fr       */
+/*   Updated: 2024/01/04 19:02:38 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,12 +67,12 @@ void	ChunkTextureHandler::copyData(
 		VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 
 	// Copy every chunk data
-	staging_buffer.map(device.getLogicalDevice());
+	staging_buffer.map(device);
 	staging_buffer.copyFrom(
 		chunks.data(),
 		chunks.size());
 		// static_cast<std::size_t>(layer_size) * image_data.getLayerCount());
-	staging_buffer.unmap(device.getLogicalDevice());
+	staging_buffer.unmap(device);
 
 	// Setup copy command buffer
 	CommandBuffer	command_buffer = CommandPool::createBuffer(device, CommandBufferType::DRAW);
@@ -119,7 +119,7 @@ void	ChunkTextureHandler::copyData(
 	// Submit commands
 	command_buffer.end(device);
 	CommandPool::destroyBuffer(device, command_buffer);
-	staging_buffer.destroy(device.getLogicalDevice());
+	staging_buffer.destroy(device);
 }
 
 /**

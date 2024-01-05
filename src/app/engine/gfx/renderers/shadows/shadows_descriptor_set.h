@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/31 11:34:45 by etran             #+#    #+#             */
-/*   Updated: 2024/01/03 14:44:39 by etran            ###   ########.fr       */
+/*   Updated: 2024/01/05 12:47:35 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,7 +36,8 @@ public:
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
 
-	ShadowsDescriptorSet() = default;
+	ShadowsDescriptorSet();
+
 	~ShadowsDescriptorSet() = default;
 
 	ShadowsDescriptorSet(ShadowsDescriptorSet&& other) = delete;

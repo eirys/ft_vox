@@ -6,13 +6,12 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/16 13:03:48 by etran             #+#    #+#             */
-/*   Updated: 2024/01/03 22:42:38 by etran            ###   ########.fr       */
+/*   Updated: 2024/01/04 19:05:34 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "input_handler.h"
 #include "game_state.h"
-
 #include "chunk_texture_handler.h"
 
 #include "debug.h"
@@ -20,7 +19,6 @@
 namespace scop {
 
 using ChunkTextureHandler = gfx::ChunkTextureHandler;
-// using CullingTextureHandler = gfx::CullingTextureHandler;
 
 /* ========================================================================== */
 /*                                   PUBLIC                                   */
@@ -35,10 +33,37 @@ void	InputHandler::init(core::Device& device, const vox::GameState& game) {
 	chunk_handler->init(device);
 	chunk_handler->copyData(device, game.getWorld().getWorldData());
 
+	LOG("Create frustum buffer...");
+	_frustum_buffer.init(
+		device,
+		(VkDeviceSize)InputBufferSize::Frustum,
+		VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+		VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+	_frustum_buffer.map(device, (VkDeviceSize)InputBufferSize::Frustum);
+	LOG("Frustum buffer created");
+
+	LOG("Create quad count buffer...");
+	_quad_count_buffer.init(
+		device,
+		(VkDeviceSize)InputBufferSize::QuadCount,
+		VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
+		VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+	LOG("Quad count buffer created");
+
+	LOG("Create vertices data buffer...");
+	_vertices_data_buffer.init(
+		device,
+		(VkDeviceSize)InputBufferSize::VerticesData,
+		VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
+		VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+	LOG("Vertices data buffer created");
 }
 
 void	InputHandler::destroy(core::Device& device) {
 	_chunk_texture->destroy(device);
+	_frustum_buffer.destroy(device);
+	_quad_count_buffer.destroy(device);
+	_vertices_data_buffer.destroy(device);
 }
 
 /* ========================================================================== */
@@ -54,7 +79,7 @@ void	InputHandler::updateData(
 	(void)device, (void)world;
 // update bf
 	_frustum = gfx::BoundingFrustum(camera);
-	_input_buffer.copyFrom(&_frustum, sizeof(gfx::BoundingFrustum), (uint32_t)InputBufferOffset::Frustum);
+	_frustum_buffer.copyFrom(&_frustum, sizeof(gfx::BoundingFrustum), (uint32_t)InputBufferOffset::Frustum);
 
 // update chunkmap
 
@@ -66,7 +91,7 @@ void	InputHandler::updateData(
 void	InputHandler::retrieveData() {
 	// Retrieve quad count
 	uint32_t quad_counts[MAX_RENDER_DISTANCE];
-	_input_buffer.copyTo(quad_counts, sizeof(uint32_t) * MAX_RENDER_DISTANCE, (uint32_t)InputBufferOffset::QuadCount);
+	_quad_count_buffer.copyTo(quad_counts, sizeof(uint32_t) * MAX_RENDER_DISTANCE, (uint32_t)InputBufferOffset::QuadCount);
 	for (uint32_t i = 0; i < MAX_RENDER_DISTANCE; ++i) {
 		_instances_count += quad_counts[i];
 	}
@@ -113,75 +138,28 @@ InputHandler::TextureHandlerPtr	InputHandler::getChunkMap() const {
 	return _chunk_texture;
 }
 
-// const gfx::Buffer&	InputHandler::getFrustumBuffer() const noexcept {
-// 	return _frustum_buffer;
-// }
-
-// gfx::Buffer&	InputHandler::getFrustumBuffer() noexcept {
-// 	return _frustum_buffer;
-// }
-
-// const gfx::Buffer&	InputHandler::getQuadCountBuffer() const noexcept {
-// 	return _quad_count_buffer;
-// }
-
-// gfx::Buffer&	InputHandler::getQuadCountBuffer() noexcept {
-// 	return _quad_count_buffer;
-// }
-
-// const gfx::Buffer&	InputHandler::getVerticesDataBuffer() const noexcept {
-// 	return _vertices_data_buffer;
-// }
-
-// gfx::Buffer&	InputHandler::getVerticesDataBuffer() noexcept {
-// 	return _vertices_data_buffer;
-// }
-
-const gfx::Buffer&	InputHandler::getInputBuffer() const noexcept {
-	return _input_buffer;
+const gfx::Buffer&	InputHandler::getFrustumBuffer() const noexcept {
+	return _frustum_buffer;
 }
 
-gfx::Buffer&	InputHandler::getInputBuffer() noexcept {
-	return _input_buffer;
+gfx::Buffer&	InputHandler::getFrustumBuffer() noexcept {
+	return _frustum_buffer;
 }
 
-/* ========================================================================== */
-/*                                   PRIVATE                                  */
-/* ========================================================================== */
+const gfx::Buffer&	InputHandler::getQuadCountBuffer() const noexcept {
+	return _quad_count_buffer;
+}
 
-void	InputHandler::_createBuffers(core::Device& device) {
-	std::vector<VkBufferCreateInfo>	buffer_infos;
-	buffer_infos.reserve(3);
+gfx::Buffer&	InputHandler::getQuadCountBuffer() noexcept {
+	return _quad_count_buffer;
+}
 
-	{
-		VkBufferCreateInfo	frustum_info{};
-		frustum_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-		frustum_info.size = (VkDeviceSize)InputBufferSize::Frustum;
-		frustum_info.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
-		frustum_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-		buffer_infos.emplace_back(frustum_info);
-	}
-	{
-		VkBufferCreateInfo	quad_count_info{};
-		quad_count_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-		quad_count_info.size = (VkDeviceSize)InputBufferSize::QuadCount;
-		quad_count_info.usage = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
-		quad_count_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-		buffer_infos.emplace_back(quad_count_info);
-	}
-	{
-		VkBufferCreateInfo	vertices_data_info{};
-		vertices_data_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-		vertices_data_info.size = (VkDeviceSize)InputBufferSize::VerticesData;
-		vertices_data_info.usage = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
-		vertices_data_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-		buffer_infos.emplace_back(vertices_data_info);
-	}
+const gfx::Buffer&	InputHandler::getVerticesDataBuffer() const noexcept {
+	return _vertices_data_buffer;
+}
 
-	_input_buffer.init(
-		device,
-		buffer_infos,
-		VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+gfx::Buffer&	InputHandler::getVerticesDataBuffer() noexcept {
+	return _vertices_data_buffer;
 }
 
 } // namespace scop

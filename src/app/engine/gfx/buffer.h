@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/23 06:30:15 by etran             #+#    #+#             */
-/*   Updated: 2023/12/29 10:01:58 by etran            ###   ########.fr       */
+/*   Updated: 2024/01/04 22:25:56 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,17 +49,12 @@ public:
 		VkBufferUsageFlags usage,
 		VkMemoryPropertyFlags properties,
 		VkSharingMode sharing_mode = VK_SHARING_MODE_EXCLUSIVE);
-	void				init(
-		scop::core::Device& device,
-		const std::vector<VkBufferCreateInfo>& buffer_infos,
-		VkMemoryPropertyFlags properties);
-
-	void				destroy(VkDevice device);
+	void				destroy(scop::core::Device& device);
 
 	/* ========================================================================= */
 
-	void				map(VkDevice device, VkDeviceSize size = VK_WHOLE_SIZE);
-	void				unmap(VkDevice device) noexcept;
+	void				map(scop::core::Device& device, VkDeviceSize size = VK_WHOLE_SIZE);
+	void				unmap(scop::core::Device& device) noexcept;
 
 	void				copyFrom(
 		const void* data,

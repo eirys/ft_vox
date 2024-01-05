@@ -20,7 +20,9 @@
 UNIFORM(SHADOW_SET, 0)			Projector { mat4 vp; }	projector;
 UNIFORM(SHADOW_SET, 1)			usampler2DArray			chunks;
 BUFFER(SHADOW_SET, 2, std140)	VerticesData {
-	uint vertexData[MAX_RENDER_DISTANCE * CHUNK_VOLUME * FACE_COUNT];
+	uint vertexData[MAX_RENDER_PYRAMID];
+
+	// uint vertexData[MAX_RENDER_DISTANCE * CHUNK_VOLUME * FACE_COUNT];
 	// blockId: 12 bit		-> to retrieve block type in `chunks` + block position
 	// face: 4 bits			-> to retrieve which face to sample
 	// layer: 12 bits		-> to retrieve which chunk to offset block position

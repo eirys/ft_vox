@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/23 06:44:38 by etran             #+#    #+#             */
-/*   Updated: 2023/12/26 17:42:14 by etran            ###   ########.fr       */
+/*   Updated: 2024/01/04 22:25:49 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,24 +46,12 @@ void	Buffer::init(
 	_allocateBuffer(device, properties);
 }
 
-void	Buffer::init(
-	scop::core::Device& device,
-	const std::vector<VkBufferCreateInfo>& buffer_infos,
-	VkMemoryPropertyFlags properties
-) {
-	if (vkCreateBuffer(device.getLogicalDevice(), buffer_infos.data(), nullptr, &_buffer) != VK_SUCCESS) {
-		throw std::runtime_error("failed to create buffer");
-	}
-
-	_allocateBuffer(device, properties);
-}
-
 /**
  * @brief Destroy buffer and free memory
 */
-void	Buffer::destroy(VkDevice device) {
-	vkDestroyBuffer(device, _buffer, nullptr);
-	vkFreeMemory(device, _memory, nullptr);
+void	Buffer::destroy(scop::core::Device& device) {
+	vkDestroyBuffer(device.getLogicalDevice(), _buffer, nullptr);
+	vkFreeMemory(device.getLogicalDevice(), _memory, nullptr);
 }
 
 /* ========================================================================== */
@@ -74,8 +62,8 @@ void	Buffer::destroy(VkDevice device) {
  * @param device	Vulkan device.
  * @param size		Size of memory to map. Default to VK_WHOLE_SIZE.
 */
-void	Buffer::map(VkDevice device, VkDeviceSize size) {
-	if (vkMapMemory(device, _memory, 0, size, 0, &_data) != VK_SUCCESS) {
+void	Buffer::map(scop::core::Device& device, VkDeviceSize size) {
+	if (vkMapMemory(device.getLogicalDevice(), _memory, 0, size, 0, &_data) != VK_SUCCESS) {
 		throw std::runtime_error("failed to map buffer memory");
 	}
 }
@@ -85,8 +73,8 @@ void	Buffer::map(VkDevice device, VkDeviceSize size) {
  *
  * @param device	Vulkan device.
 */
-void	Buffer::unmap(VkDevice device) noexcept {
-	vkUnmapMemory(device, _memory);
+void	Buffer::unmap(scop::core::Device& device) noexcept {
+	vkUnmapMemory(device.getLogicalDevice(), _memory);
 }
 
 /**

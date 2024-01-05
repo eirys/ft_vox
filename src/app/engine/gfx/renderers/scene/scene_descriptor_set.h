@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/31 11:08:15 by etran             #+#    #+#             */
-/*   Updated: 2024/01/03 14:44:39 by etran            ###   ########.fr       */
+/*   Updated: 2024/01/05 12:46:40 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,7 +38,8 @@ public:
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
 
-	SceneDescriptorSet() = default;
+	SceneDescriptorSet();
+
 	~SceneDescriptorSet() = default;
 
 	SceneDescriptorSet(SceneDescriptorSet&& other) = delete;

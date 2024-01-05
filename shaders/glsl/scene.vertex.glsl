@@ -22,7 +22,8 @@ UNIFORM(SCENE_SET, 0)			Camera { mat4 vp; }		camera;
 UNIFORM(SCENE_SET, 1)			Projector { mat4 vp; }	projector;
 UNIFORM(SCENE_SET, 5)			usampler2DArray			chunks;
 BUFFER(SCENE_SET, 6, std140)	readonly VerticesData {
-	uint vertexData[MAX_RENDER_DISTANCE * CHUNK_VOLUME * FACE_COUNT];
+	// uint vertexData[MAX_RENDER_DISTANCE * CHUNK_VOLUME * FACE_COUNT];
+	uint vertexData[MAX_RENDER_PYRAMID];
 	// blockId: 12 bit		-> to retrieve block type in `chunks` + block position
 	// face: 4 bits			-> to retrieve which face to sample
 	// layer: 12 bits		-> to retrieve which chunk to offset block position

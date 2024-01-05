@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/19 16:54:52 by etran             #+#    #+#             */
-/*   Updated: 2024/01/03 14:44:17 by etran            ###   ########.fr       */
+/*   Updated: 2024/01/05 12:46:20 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,8 +19,10 @@
 #include "texture_handler.h"
 
 #include "utils.h"
+#include "glsl/decl.glslh"
 
 #include <stdexcept> // std::runtime_error
+#include <cassert> // assert
 
 namespace scop::gfx {
 
@@ -38,6 +40,10 @@ constexpr const uint32_t DescriptorSetSize = scop::utils::enumSize<CullingPipeli
 
 /* ========================================================================== */
 /*                                   PUBLIC                                   */
+/* ========================================================================== */
+
+CullingDescriptorSet::CullingDescriptorSet(): DescriptorSet(CULLING_SET) {}
+
 /* ========================================================================== */
 
 void CullingDescriptorSet::init(scop::core::Device& device) {
@@ -63,30 +69,33 @@ void	CullingDescriptorSet::fill(
 	const scop::InputHandler& input
 ) {
 	VkDescriptorBufferInfo	frustum_info{};
-	frustum_info.buffer = input.getInputBuffer().getBuffer();
+	frustum_info.buffer = input.getFrustumBuffer().getBuffer();
 	frustum_info.offset = (uint32_t)InputBufferOffset::Frustum;
 	frustum_info.range = (uint32_t)InputBufferSize::Frustum;
+	assert(frustum_info.buffer != VK_NULL_HANDLE);
 
 	VkDescriptorImageInfo	chunk_info{};
 	chunk_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 	chunk_info.imageView = input.getChunkMap()->getTextureBuffer().getView();
 	chunk_info.sampler = input.getChunkMap()->getTextureSampler();
 
-	VkDescriptorBufferInfo	quad_count{};
-	frustum_info.buffer = input.getInputBuffer().getBuffer();
-	frustum_info.offset = (uint32_t)InputBufferOffset::QuadCount;
-	frustum_info.range = (uint32_t)InputBufferSize::QuadCount;
+	VkDescriptorBufferInfo	quad_count_info{};
+	quad_count_info.buffer = input.getQuadCountBuffer().getBuffer();
+	quad_count_info.offset = (uint32_t)InputBufferOffset::QuadCount;
+	quad_count_info.range = (uint32_t)InputBufferSize::QuadCount;
+	assert(quad_count_info.buffer != VK_NULL_HANDLE);
 
-	VkDescriptorBufferInfo	vertices_data{};
-	vertices_data.buffer = input.getInputBuffer().getBuffer();
-	vertices_data.offset = (uint32_t)InputBufferOffset::VerticesData;
-	vertices_data.range = (uint32_t)InputBufferSize::VerticesData;
+	VkDescriptorBufferInfo	vertices_data_info{};
+	vertices_data_info.buffer = input.getVerticesDataBuffer().getBuffer();
+	vertices_data_info.offset = (uint32_t)InputBufferOffset::VerticesData;
+	vertices_data_info.range = (uint32_t)InputBufferSize::VerticesData;
+	assert(vertices_data_info.buffer != VK_NULL_HANDLE);
 
 	std::array<VkWriteDescriptorSet, DescriptorSetSize>	writes = {
 		super::createWriteDescriptorSet(DescriptorType::UNIFORM_BUFFER, &frustum_info, (uint32_t)CullingPipelineDescriptors::Frustum),
 		super::createWriteDescriptorSet(DescriptorType::COMBINED_IMAGE_SAMPLER, &chunk_info, (uint32_t)CullingPipelineDescriptors::ChunkMap),
-		super::createWriteDescriptorSet(DescriptorType::STORAGE_BUFFER, &quad_count, (uint32_t)CullingPipelineDescriptors::QuadCount),
-		super::createWriteDescriptorSet(DescriptorType::STORAGE_BUFFER, &vertices_data, (uint32_t)CullingPipelineDescriptors::VerticesData)
+		super::createWriteDescriptorSet(DescriptorType::STORAGE_BUFFER, &quad_count_info, (uint32_t)CullingPipelineDescriptors::QuadCount),
+		super::createWriteDescriptorSet(DescriptorType::STORAGE_BUFFER, &vertices_data_info, (uint32_t)CullingPipelineDescriptors::VerticesData)
 	};
 
 	vkUpdateDescriptorSets(

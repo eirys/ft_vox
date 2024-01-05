@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/02 16:09:44 by etran             #+#    #+#             */
-/*   Updated: 2023/12/31 17:50:12 by etran            ###   ########.fr       */
+/*   Updated: 2024/01/05 12:36:10 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,6 +29,8 @@
 #include "descriptor_set.h"
 #include "render_pass.h"
 #include "chunk_texture_handler.h"
+
+#include "debug.h"
 
 #include <cstring> // std::strcmp
 
@@ -112,35 +114,6 @@ void	Engine::render(
 		VK_TRUE,
 		UINT64_MAX);
 
-	std::array<VkSemaphore, 2>				signal_semaphores;
-	std::array<VkSemaphore, 2>				wait_semaphores;
-	std::array<VkPipelineStageFlags, 2>		wait_stages;
-	std::array<VkCommandBuffer, 1>			command_buffers;
-
-	VkSubmitInfo	submit_info{};
-	submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-	submit_info.pWaitSemaphores = wait_semaphores.data();
-	submit_info.pSignalSemaphores = signal_semaphores.data();
-	submit_info.pWaitDstStageMask = wait_stages.data();
-	submit_info.pCommandBuffers = command_buffers.data();
-	submit_info.commandBufferCount = 1;
-
-	// Compute -------
-	command_buffers = { _compute_buffer.getBuffer() };
-
-	wait_semaphores = { _graphics_ready_semaphores };
-	wait_stages = { VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT };
-	submit_info.waitSemaphoreCount = 1;
-
-	signal_semaphores = { _compute_finished_semaphores };
-	submit_info.signalSemaphoreCount = 1;
-
-	if (vkQueueSubmit(_core.getDevice().getComputeQueue(), 1, &submit_info, _in_flight_fences) != VK_SUCCESS) {
-		throw std::runtime_error("failed to submit compute command buffer");
-	}
-	// ---------------
-
-
 	// Retrieve image for swap chain -----
 	uint32_t	image_index;
 	if (_swap_chain.acquireNextImage(_core.getDevice(), _image_available_semaphores, _in_flight_fences, image_index) == false) {
@@ -152,11 +125,14 @@ void	Engine::render(
 	// Record buffers ----------------
 	_draw_buffer.reset();
 	_draw_buffer.begin(0);
+	LOG("Computing");
 	_pipeline_manager.getCullingPipeline()->compute(
 		_core.getDevice(),
 		_pipeline_manager.getPipelineLayout(),
 		_compute_buffer);
 	_input_handler.retrieveData();
+
+	LOG("Drawing");
 
 	_pipeline_manager.getShadowsPipeline()->draw(
 		_pipeline_manager.getPipelineLayout(),
@@ -174,6 +150,38 @@ void	Engine::render(
 	// ------------------------------
 
 
+	std::array<VkSemaphore, 2>				signal_semaphores;
+	std::array<VkSemaphore, 2>				wait_semaphores;
+	std::array<VkPipelineStageFlags, 2>		wait_stages;
+	std::array<VkCommandBuffer, 1>			command_buffers;
+
+	VkSubmitInfo	submit_info{};
+	submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+	submit_info.pWaitSemaphores = wait_semaphores.data();
+	submit_info.pSignalSemaphores = signal_semaphores.data();
+	submit_info.pWaitDstStageMask = wait_stages.data();
+	submit_info.pCommandBuffers = command_buffers.data();
+	submit_info.commandBufferCount = 1;
+
+
+	// Compute -------
+	command_buffers = { _compute_buffer.getBuffer() };
+
+	wait_semaphores = { _graphics_ready_semaphores };
+	wait_stages = { VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT };
+	submit_info.waitSemaphoreCount = 1;
+
+	signal_semaphores = { _compute_finished_semaphores };
+	submit_info.signalSemaphoreCount = 1;
+
+	LOG("Submit compute command buffer");
+	if (vkQueueSubmit(_core.getDevice().getComputeQueue(), 1, &submit_info, VK_NULL_HANDLE) != VK_SUCCESS) {
+		throw std::runtime_error("failed to submit compute command buffer");
+	}
+	LOG("Compute command buffer submitted");
+	// ---------------
+
+
 	// Graphics ---------------------
 	command_buffers = { _draw_buffer.getBuffer() };
 
@@ -184,9 +192,12 @@ void	Engine::render(
 	wait_stages = { VK_PIPELINE_STAGE_VERTEX_INPUT_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
 	submit_info.waitSemaphoreCount = 2;
 
+	LOG("Submit draw command buffer");
 	if (vkQueueSubmit(_core.getDevice().getGraphicsQueue(), 1, &submit_info, _in_flight_fences) != VK_SUCCESS) {
 		throw std::runtime_error("failed to submit draw command buffer");
 	}
+	LOG("Draw command buffer submitted");
+
 	// -----------------------------
 
 	// Set presentation for next swap chain image
@@ -247,10 +258,11 @@ void	Engine::_createSyncObjects() {
 	}
 
 	// Signal `graphics ready semaphore`
-	VkSubmitInfo	submitInfo{};
-	submitInfo.signalSemaphoreCount = 1;
-	submitInfo.pSignalSemaphores = &_graphics_ready_semaphores;
-	if (vkQueueSubmit(_core.getDevice().getGraphicsQueue(), 1, &submitInfo, VK_NULL_HANDLE) != VK_SUCCESS) {
+	VkSubmitInfo	submit_info{};
+	submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+	submit_info.signalSemaphoreCount = 1;
+	submit_info.pSignalSemaphores = &_graphics_ready_semaphores;
+	if (vkQueueSubmit(_core.getDevice().getGraphicsQueue(), 1, &submit_info, VK_NULL_HANDLE) != VK_SUCCESS) {
 		throw std::runtime_error("failed to submit queue (create sync objects)");
 	}
 	if (vkQueueWaitIdle(_core.getDevice().getGraphicsQueue()) != VK_SUCCESS) {

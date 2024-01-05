@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/12 12:33:52 by etran             #+#    #+#             */
-/*   Updated: 2024/01/04 00:56:52 by etran            ###   ########.fr       */
+/*   Updated: 2024/01/05 12:45:16 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,7 @@ namespace scop::gfx {
 /*                                   PUBLIC                                   */
 /* ========================================================================== */
 
-DescriptorSet::DescriptorSet(): _index(DescriptorPool::getDescriptorCount(true)) {}
+DescriptorSet::DescriptorSet(const uint32_t index): _index(index) {}
 
 /* ========================================================================== */
 
@@ -109,7 +109,7 @@ VkWriteDescriptorSet	DescriptorSet::createWriteDescriptorSet(
 	uint32_t binding_index,
 	uint32_t count
 ) const {
-	VkWriteDescriptorSet	write_descriptor_set = {};
+	VkWriteDescriptorSet	write_descriptor_set{};
 	write_descriptor_set.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 	write_descriptor_set.dstSet = _set;
 	write_descriptor_set.dstBinding = binding_index;
@@ -134,32 +134,32 @@ void	DescriptorSet::_fillDescriptorType(
 	switch (type) {
 		case DescriptorType::UNIFORM_BUFFER:
 			write_descriptor_set.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-			write_descriptor_set.pBufferInfo = reinterpret_cast<VkDescriptorBufferInfo*>(&descriptor_info);
+			write_descriptor_set.pBufferInfo = reinterpret_cast<VkDescriptorBufferInfo*>(descriptor_info);
 			write_descriptor_set.pImageInfo = nullptr;
 			break;
 
 		case DescriptorType::COMBINED_IMAGE_SAMPLER:
 			write_descriptor_set.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 			write_descriptor_set.pBufferInfo = nullptr;
-			write_descriptor_set.pImageInfo = reinterpret_cast<VkDescriptorImageInfo*>(&descriptor_info);
+			write_descriptor_set.pImageInfo = reinterpret_cast<VkDescriptorImageInfo*>(descriptor_info);
 			break;
 
 		case DescriptorType::STORAGE_BUFFER:
 			write_descriptor_set.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-			write_descriptor_set.pBufferInfo = reinterpret_cast<VkDescriptorBufferInfo*>(&descriptor_info);
+			write_descriptor_set.pBufferInfo = reinterpret_cast<VkDescriptorBufferInfo*>(descriptor_info);
 			write_descriptor_set.pImageInfo = nullptr;
 			break;
 
 		case DescriptorType::STORAGE_IMAGE:
 			write_descriptor_set.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
 			write_descriptor_set.pBufferInfo = nullptr;
-			write_descriptor_set.pImageInfo = reinterpret_cast<VkDescriptorImageInfo*>(&descriptor_info);
+			write_descriptor_set.pImageInfo = reinterpret_cast<VkDescriptorImageInfo*>(descriptor_info);
 			break;
 
 		case DescriptorType::SAMPLED_IMAGE:
 			write_descriptor_set.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
 			write_descriptor_set.pBufferInfo = nullptr;
-			write_descriptor_set.pImageInfo = reinterpret_cast<VkDescriptorImageInfo*>(&descriptor_info);
+			write_descriptor_set.pImageInfo = reinterpret_cast<VkDescriptorImageInfo*>(descriptor_info);
 			break;
 
 		default:

@@ -33,7 +33,8 @@ OUTPUT(CULLING_SET, 2, std140) buffer QuadCount {
 }	quadCount;
 
 OUTPUT(CULLING_SET, 3, std140) buffer VerticesData {
-	uint vertexData[MAX_RENDER_DISTANCE * CHUNK_VOLUME * FACE_COUNT];
+	// uint vertexData[MAX_RENDER_DISTANCE * CHUNK_VOLUME * FACE_COUNT];
+	uint vertexData[MAX_RENDER_PYRAMID];
 	// blockId: 12 bit		-> to retrieve block type in `chunks` + block position
 	// face: 3 bits			-> to retrieve which face to sample
 	// layer: 12 bits		-> to retrieve which chunk to offset block position
@@ -176,6 +177,9 @@ void main() {
 			for (uint x = 0; x < CHUNK_SIZE; ++x) {
 				uvec3 blockPos = uvec3(x, y, z);
 				_checkBlockFaces(blockPos, chunkId, vertexIndex);
+
+				if (vertexIndex == 124416) // Max size of the buffer
+					return;
 			}
 		}
 	}

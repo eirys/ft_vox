@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:17:15 by etran             #+#    #+#             */
-/*   Updated: 2023/10/29 02:38:28 by etran            ###   ########.fr       */
+/*   Updated: 2024/01/04 12:23:29 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -65,10 +65,6 @@ struct UniformBufferObject {
 
 }; // struct UniformBufferObject
 
-	// static const constexpr offset0 = offsetof(UniformBufferObject, camera);
-	// static const constexpr offset1 = offsetof(UniformBufferObject, projector);
-	// static const constexpr offset2 = offsetof(UniformBufferObject, light);
-	// static const constexpr offset3 = offsetof(UniformBufferObject, chunks);
-
+static_assert(sizeof(UniformBufferObject) % 16 == 0, "UniformBufferObject size must be a multiple of 16 bytes");
 
 } // namespace scop

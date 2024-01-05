@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/15 20:56:05 by etran             #+#    #+#             */
-/*   Updated: 2024/01/04 01:01:40 by etran            ###   ########.fr       */
+/*   Updated: 2024/01/05 12:39:52 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,6 @@ namespace scop::gfx {
 using DescriptorSetPtr = DescriptorPool::DescriptorSetPtr;
 
 VkDescriptorPool	DescriptorPool::_pool = VK_NULL_HANDLE;
-uint32_t			DescriptorPool::_descriptor_count = 0;
 
 /* ========================================================================== */
 /*                                   PUBLIC                                   */
@@ -48,12 +47,6 @@ void	DescriptorPool::destroy(scop::core::Device& device) {
 
 VkDescriptorPool		DescriptorPool::getPool() noexcept {
 	return _pool;
-}
-
-uint32_t	DescriptorPool::getDescriptorCount(bool increment) noexcept {
-	if (increment)
-		++_descriptor_count;
-	return _descriptor_count;
 }
 
 /* ========================================================================== */

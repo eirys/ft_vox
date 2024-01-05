@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/19 11:52:18 by etran             #+#    #+#             */
-/*   Updated: 2024/01/03 14:44:23 by etran            ###   ########.fr       */
+/*   Updated: 2024/01/05 12:45:54 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,7 +36,8 @@ public:
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
 
-	CullingDescriptorSet() = default;
+	CullingDescriptorSet();
+
 	~CullingDescriptorSet() = default;
 
 	CullingDescriptorSet(CullingDescriptorSet&& other) = delete;

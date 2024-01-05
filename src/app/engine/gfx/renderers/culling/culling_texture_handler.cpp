@@ -85,9 +85,9 @@ void	CullingTextureHandler::copyData(
 		VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
 		VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 
-	staging_buffer.map(device.getLogicalDevice());
+	staging_buffer.map(device);
 	staging_buffer.copyFrom(chunk_map.data(), static_cast<std::size_t>(image_size));
-	staging_buffer.unmap(device.getLogicalDevice());
+	staging_buffer.unmap(device);
 
 	CommandBuffer	command_buffer = CommandPool::createBuffer(device, CommandBufferType::DRAW);
 	command_buffer.begin();
@@ -126,7 +126,7 @@ void	CullingTextureHandler::copyData(
 
 	command_buffer.end(device);
 	CommandPool::destroyBuffer(device, command_buffer);
-	staging_buffer.destroy(device.getLogicalDevice());
+	staging_buffer.destroy(device);
 }
 
 /* ========================================================================== */

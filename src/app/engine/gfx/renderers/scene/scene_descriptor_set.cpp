@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/31 11:08:11 by etran             #+#    #+#             */
-/*   Updated: 2024/01/04 01:19:26 by etran            ###   ########.fr       */
+/*   Updated: 2024/01/05 12:47:57 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,8 @@
 #include "texture_handler.h"
 #include "input_handler.h"
 #include "utils.h"
+
+#include "glsl/decl.glslh"
 
 #include <array> // std::array
 #include <stdexcept> // std::runtime_error
@@ -40,6 +42,10 @@ constexpr const uint32_t DescriptorSetSize = scop::utils::enumSize<ScenePipeline
 
 /* ========================================================================== */
 /*                                   PUBLIC                                   */
+/* ========================================================================== */
+
+SceneDescriptorSet::SceneDescriptorSet(): DescriptorSet(SCENE_SET) {}
+
 /* ========================================================================== */
 
 /**
@@ -109,7 +115,7 @@ void	SceneDescriptorSet::fill(
 	chunk_info.sampler = input.getChunkMap()->getTextureSampler();
 
 	VkDescriptorBufferInfo	vertices_data_info{};
-	vertices_data_info.buffer = input.getInputBuffer().getBuffer();
+	vertices_data_info.buffer = input.getVerticesDataBuffer().getBuffer();
 	vertices_data_info.offset = (uint32_t)InputBufferOffset::VerticesData;
 	vertices_data_info.range = (uint32_t)InputBufferSize::VerticesData;
 

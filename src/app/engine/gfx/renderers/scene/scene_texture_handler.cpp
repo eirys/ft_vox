@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/10 22:32:26 by etran             #+#    #+#             */
-/*   Updated: 2023/12/31 17:51:53 by etran            ###   ########.fr       */
+/*   Updated: 2024/01/04 19:03:07 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,14 +74,14 @@ void	SceneTextureHandler::_createTextureImages(scop::core::Device& device) {
 		VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 
 	// Copy every face of every image data to staging buffer
-	staging_buffer.map(device.getLogicalDevice());
+	staging_buffer.map(device);
 	for (uint32_t i = 0; i < data.getLayerCount(); ++i) {
 		staging_buffer.copyFrom(
 			images[i].getPixels(),
 			static_cast<std::size_t>(layer_size),
 			static_cast<std::size_t>(layer_size) * i);
 	}
-	staging_buffer.unmap(device.getLogicalDevice());
+	staging_buffer.unmap(device);
 
 	// Create texture image to be filled
 	super::_texture_buffer.initImage(
@@ -128,7 +128,7 @@ void	SceneTextureHandler::_createTextureImages(scop::core::Device& device) {
 	// Submit commands
 	command_buffer.end(device);
 	CommandPool::destroyBuffer(device, command_buffer);
-	staging_buffer.destroy(device.getLogicalDevice());
+	staging_buffer.destroy(device);
 }
 
 /**

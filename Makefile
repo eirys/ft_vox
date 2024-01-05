@@ -6,7 +6,7 @@
 #    By: etran <etran@student.42.fr>                +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/04/06 03:40:09 by eli               #+#    #+#              #
-#    Updated: 2024/01/02 18:14:14 by etran            ###   ########.fr        #
+#    Updated: 2024/01/05 12:43:04 by etran            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -69,7 +69,8 @@ SUBDIRS		:=	$(APP_DIR)		\
 				$(TOOLS_DIR)
 
 OBJ_SUBDIRS	:=	$(addprefix $(OBJ_DIR)/,$(SUBDIRS))
-INC_SUBDIRS	:=	$(addprefix $(SRC_DIR)/,$(SUBDIRS))
+INC_SUBDIRS	:=	$(addprefix $(SRC_DIR)/,$(SUBDIRS)) \
+				$(SHD_DIR)
 
 # ---------------- SOURCE FILES ---------------- #
 SRC_FILES	:=	$(TOOLS_DIR)/matrix.cpp \
@@ -140,7 +141,8 @@ INCLUDES	:=	$(addprefix -I./,$(INC_SUBDIRS))
 MACROS		:=	__DEBUG \
 				__LINUX \
 				NDEBUG \
-				SHD_BIN_DIR=\"$(SHD_BIN_DIR)/\"
+				SHD_BIN_DIR=\"$(SHD_BIN_DIR)/\" \
+				VOX_CPP
 
 DEFINES		:=	$(addprefix -D,$(MACROS))
 
