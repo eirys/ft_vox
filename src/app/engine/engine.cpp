@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/02 16:09:44 by etran             #+#    #+#             */
-/*   Updated: 2024/01/05 12:36:10 by etran            ###   ########.fr       */
+/*   Updated: 2024/01/08 17:08:47 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,7 +35,7 @@
 #include <cstring> // std::strcmp
 
 using Mat4 = ::scop::Mat4;
-using Camera = ::scop::Camera;
+using DescriptorSetPtr = std::shared_ptr<scop::gfx::DescriptorSet>;
 
 namespace scop {
 
@@ -48,49 +48,39 @@ using gfx::ChunkTextureHandler;
 void	Engine::init(Window& window, const vox::GameState& game) {
 	_core.init(window);
 	_swap_chain.init(_core.getDevice(), window);
-	_command_pool.init(_core.getDevice());
 
-	_draw_buffer.init(_core.getDevice(), _command_pool, gfx::CommandBufferType::DRAW);
-	_compute_buffer.init(_core.getDevice(), _command_pool, gfx::CommandBufferType::COMPUTE);
+	_command_pool.init(_core.getDevice());
+	_draw_buffer = _command_pool.createBuffer(_core.getDevice(), gfx::CommandBufferType::DRAW);
+	_compute_buffer = _command_pool.createBuffer(_core.getDevice(), gfx::CommandBufferType::COMPUTE);
+
+	// _draw_buffer.init(_core.getDevice(), gfx::CommandBufferType::DRAW);
+	// _compute_buffer.init(_core.getDevice(), gfx::CommandBufferType::COMPUTE);
 
 	_input_handler.init(_core.getDevice(), game);
-	_pipeline_manager.init(_core.getDevice(), _swap_chain);
 
-	_createDescriptors();
-	_createSyncObjects();
+	_pipeline_manager.init(_core.getDevice(), _swap_chain);
+	{
+		std::vector<DescriptorSetPtr>	descriptors = {
+			_pipeline_manager.getScenePipeline()->getDescriptor(),
+			_pipeline_manager.getShadowsPipeline()->getDescriptor(),
+			_pipeline_manager.getCullingPipeline()->getDescriptor() };
+
+		_descriptor_pool.init(_core.getDevice(), descriptors);
+	}
+	_pipeline_manager.plugDescriptors(_core.getDevice(), _input_handler);
+
+	_synchronizer.init(_core.getDevice());
 
 	// TODO
 	// _pipelines.scene->update(_updateUbo(game));
 }
 
 void	Engine::destroy() {
+	_synchronizer.destroy(_core.getDevice());
+
 	_descriptor_pool.destroy(_core.getDevice());
-
-	// Remove sync objects
-	vkDestroySemaphore(
-		_core.getDevice().getLogicalDevice(),
-		_graphics_ready_semaphores,
-		nullptr);
-	vkDestroySemaphore(
-		_core.getDevice().getLogicalDevice(),
-		_compute_finished_semaphores,
-		nullptr);
-	vkDestroySemaphore(
-		_core.getDevice().getLogicalDevice(),
-		_image_available_semaphores,
-		nullptr);
-	vkDestroySemaphore(
-		_core.getDevice().getLogicalDevice(),
-		_render_finished_semaphores,
-		nullptr);
-	vkDestroyFence(
-		_core.getDevice().getLogicalDevice(),
-		_in_flight_fences,
-		nullptr);
-
 	_pipeline_manager.destroy(_core.getDevice());
 	_input_handler.destroy(_core.getDevice());
-
 	_command_pool.destroy(_core.getDevice());
 	_swap_chain.destroy(_core.getDevice());
 	_core.destroy();
@@ -107,33 +97,30 @@ void	Engine::render(
 	const vox::GameState& game,
 	Timer& timer
 ) {
-	// Wait fence available, lock it
-	vkWaitForFences(
-		_core.getDevice().getLogicalDevice(),
-		1, &_in_flight_fences,
-		VK_TRUE,
-		UINT64_MAX);
+	const auto& semaphores = _synchronizer.getSemaphores();
+	const auto& fences = _synchronizer.getFences();
 
 	// Retrieve image for swap chain -----
+	fences.graphics_in_flight.wait(_core.getDevice());
 	uint32_t	image_index;
-	if (_swap_chain.acquireNextImage(_core.getDevice(), _image_available_semaphores, _in_flight_fences, image_index) == false) {
+	if (_swap_chain.acquireNextImage(_core.getDevice(), _synchronizer, &image_index) == false) {
 		return _updatePresentation(window);
 	}
+	fences.graphics_in_flight.reset(_core.getDevice());
 	// -----------------------------------
-
 
 	// Record buffers ----------------
 	_draw_buffer.reset();
 	_draw_buffer.begin(0);
-	LOG("Computing");
+
+	SCOP_DEBUG("Computing");
 	_pipeline_manager.getCullingPipeline()->compute(
 		_core.getDevice(),
 		_pipeline_manager.getPipelineLayout(),
 		_compute_buffer);
 	_input_handler.retrieveData();
 
-	LOG("Drawing");
-
+	SCOP_DEBUG("Drawing");
 	_pipeline_manager.getShadowsPipeline()->draw(
 		_pipeline_manager.getPipelineLayout(),
 		_draw_buffer,
@@ -149,8 +136,7 @@ void	Engine::render(
 	_pipeline_manager.getScenePipeline()->update(_updateUbo(game));
 	// ------------------------------
 
-
-	std::array<VkSemaphore, 2>				signal_semaphores;
+	std::array<VkSemaphore, 1>				signal_semaphores;
 	std::array<VkSemaphore, 2>				wait_semaphores;
 	std::array<VkPipelineStageFlags, 2>		wait_stages;
 	std::array<VkCommandBuffer, 1>			command_buffers;
@@ -163,113 +149,49 @@ void	Engine::render(
 	submit_info.pCommandBuffers = command_buffers.data();
 	submit_info.commandBufferCount = 1;
 
-
 	// Compute -------
+	fences.compute_in_flight.wait(_core.getDevice());
+	fences.compute_in_flight.reset(_core.getDevice());
+
 	command_buffers = { _compute_buffer.getBuffer() };
-
-	wait_semaphores = { _graphics_ready_semaphores };
-	wait_stages = { VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT };
-	submit_info.waitSemaphoreCount = 1;
-
-	signal_semaphores = { _compute_finished_semaphores };
+	signal_semaphores = { semaphores.compute_finished.getSemaphore() };
 	submit_info.signalSemaphoreCount = 1;
+	wait_stages = {};// { VK_PIPELINE_STAGE_VERTEX_SHADER_BIT };
+	wait_semaphores = {}; //{ semaphores.render_finished.getSemaphore() };
+	submit_info.waitSemaphoreCount = 0;
 
-	LOG("Submit compute command buffer");
-	if (vkQueueSubmit(_core.getDevice().getComputeQueue(), 1, &submit_info, VK_NULL_HANDLE) != VK_SUCCESS) {
+	SCOP_DEBUG("Submit compute command buffer");
+	if (vkQueueSubmit(_core.getDevice().getComputeQueue(), 1, &submit_info, fences.compute_in_flight.getFence()) != VK_SUCCESS) {
 		throw std::runtime_error("failed to submit compute command buffer");
 	}
-	LOG("Compute command buffer submitted");
+	SCOP_DEBUG("Compute command buffer submitted");
 	// ---------------
-
 
 	// Graphics ---------------------
 	command_buffers = { _draw_buffer.getBuffer() };
-
-	signal_semaphores = {_graphics_ready_semaphores, _render_finished_semaphores };
-	submit_info.signalSemaphoreCount = 2;
-
-	wait_semaphores = { _compute_finished_semaphores, _image_available_semaphores };
-	wait_stages = { VK_PIPELINE_STAGE_VERTEX_INPUT_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
+	signal_semaphores = { semaphores.render_finished.getSemaphore() };
+	submit_info.signalSemaphoreCount = 1;
+	wait_stages = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT };
+	wait_semaphores = { semaphores.image_available.getSemaphore(), semaphores.compute_finished.getSemaphore() };
 	submit_info.waitSemaphoreCount = 2;
 
-	LOG("Submit draw command buffer");
-	if (vkQueueSubmit(_core.getDevice().getGraphicsQueue(), 1, &submit_info, _in_flight_fences) != VK_SUCCESS) {
+	SCOP_DEBUG("Submit draw command buffer");
+	if (vkQueueSubmit(_core.getDevice().getGraphicsQueue(), 1, &submit_info, fences.graphics_in_flight.getFence()) != VK_SUCCESS) {
 		throw std::runtime_error("failed to submit draw command buffer");
 	}
-	LOG("Draw command buffer submitted");
-
+	SCOP_DEBUG("Draw command buffer submitted");
 	// -----------------------------
 
-	// Set presentation for next swap chain image
-	std::array<VkSwapchainKHR, 1>	swap_chains = { _swap_chain.getSwapChain() };
-	VkPresentInfoKHR				present_info{};
-	present_info.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
-	present_info.waitSemaphoreCount = static_cast<uint32_t>(wait_semaphores.size());
-	present_info.pWaitSemaphores = signal_semaphores.data();
-	present_info.swapchainCount = static_cast<uint32_t>(swap_chains.size());
-	present_info.pSwapchains = swap_chains.data();
-	present_info.pImageIndices = &image_index;
-	present_info.pResults = nullptr;
-
-	// Submit to swap chain, check if swap chain is still compatible
-	VkResult result = vkQueuePresentKHR(_core.getDevice().getPresentQueue(), &present_info);
-	if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || window.resized()) {
+	if (_swap_chain.submitImage(_core.getDevice(), _synchronizer, &image_index) == false || window.resized()) {
 		window.toggleFrameBufferResized(false);
-		_updatePresentation(window);
-	} else if (result != VK_SUCCESS) {
-		throw std::runtime_error("failed to present swapchain image");
+		return _updatePresentation(window);
 	}
+
 	timer.update();
 }
 
 /* ========================================================================== */
 /*                                   PRIVATE                                  */
-/* ========================================================================== */
-
-void	Engine::_createDescriptors() {
-	using DescriptorSetPtr = std::shared_ptr<scop::gfx::DescriptorSet>;
-
-	std::vector<DescriptorSetPtr>	descriptors = {
-		_pipeline_manager.getScenePipeline()->getDescriptor(),
-		_pipeline_manager.getShadowsPipeline()->getDescriptor(),
-		_pipeline_manager.getCullingPipeline()->getDescriptor() };
-
-	_descriptor_pool.init(_core.getDevice(), descriptors);
-	_pipeline_manager.plugDescriptors(_core.getDevice(), _input_handler);
-}
-
-/**
- * @brief Create semaphores and fences
-*/
-void	Engine::_createSyncObjects() {
-	VkSemaphoreCreateInfo	semaphore_info{};
-	semaphore_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-
-	VkFenceCreateInfo	fence_info{};
-	fence_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-	fence_info.flags = VK_FENCE_CREATE_SIGNALED_BIT;
-
-	if (vkCreateSemaphore(_core.getDevice().getLogicalDevice(), &semaphore_info, nullptr, &_image_available_semaphores) != VK_SUCCESS ||
-		vkCreateSemaphore(_core.getDevice().getLogicalDevice(), &semaphore_info, nullptr, &_render_finished_semaphores) != VK_SUCCESS ||
-		vkCreateSemaphore(_core.getDevice().getLogicalDevice(), &semaphore_info, nullptr, &_graphics_ready_semaphores) != VK_SUCCESS ||
-		vkCreateSemaphore(_core.getDevice().getLogicalDevice(), &semaphore_info, nullptr, &_compute_finished_semaphores) != VK_SUCCESS ||
-		vkCreateFence(_core.getDevice().getLogicalDevice(), &fence_info, nullptr, &_in_flight_fences) != VK_SUCCESS) {
-		throw std::runtime_error("failed to create semaphore");
-	}
-
-	// Signal `graphics ready semaphore`
-	VkSubmitInfo	submit_info{};
-	submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-	submit_info.signalSemaphoreCount = 1;
-	submit_info.pSignalSemaphores = &_graphics_ready_semaphores;
-	if (vkQueueSubmit(_core.getDevice().getGraphicsQueue(), 1, &submit_info, VK_NULL_HANDLE) != VK_SUCCESS) {
-		throw std::runtime_error("failed to submit queue (create sync objects)");
-	}
-	if (vkQueueWaitIdle(_core.getDevice().getGraphicsQueue()) != VK_SUCCESS) {
-		throw std::runtime_error("failed to wait queue (create sync objects)");
-	}
-}
-
 /* ========================================================================== */
 
 /**
@@ -294,7 +216,7 @@ void	Engine::_updatePresentation(Window& window) {
 }
 
 // TODO Change
-UniformBufferObject	Engine::_updateUbo(const vox::GameState& game) const {
+UniformBufferObject	Engine::_updateUbo(const vox::GameState& game) {
 	UniformBufferObject	ubo{};
 
 	const ::vox::Player& player = game.getPlayer();
@@ -319,6 +241,17 @@ UniformBufferObject	Engine::_updateUbo(const vox::GameState& game) const {
 			right);
 
 		ubo.camera.vp = projection * view;
+
+		gfx::BoundingFrustum::Camera	camera {
+			.position = player.getPosition(),
+			.front = front,
+			.right = right,
+			.up = up };
+
+		_input_handler.updateData(
+			_core.getDevice(),
+			camera,
+			game.getWorld());
 	}
 	{	/* UPDATE LIGHT AND PROJECTOR ============================================== */
 		constexpr const float	terrain_length = CHUNK_SIZE * RENDER_DISTANCE;

@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/04 22:56:55 by etran             #+#    #+#             */
-/*   Updated: 2024/01/04 01:05:15 by etran            ###   ########.fr       */
+/*   Updated: 2024/01/08 15:18:05 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -75,15 +75,15 @@ void	PipelineManager::plugDescriptors(
 	ShadowsPipelinePtr shadows_pipeline = std::dynamic_pointer_cast<ShadowsPipeline>(_graphics.shadows);
 	CullingPipelinePtr culling_pipeline = std::dynamic_pointer_cast<CullingPipeline>(_compute.culling);
 
-	LOG("Filling descriptor sets: scene");
+	SCOP_DEBUG("Filling descriptor sets: scene");
 	scene_pipeline->plugDescriptor(device, shadows_pipeline->getTextureHandler(), input_handler);
-	LOG("Done filling descriptor sets: scene");
-	LOG("Filling descriptor sets: shadows");
+	SCOP_DEBUG("Done filling descriptor sets: scene");
+	SCOP_DEBUG("Filling descriptor sets: shadows");
 	shadows_pipeline->plugDescriptor(device, scene_pipeline->getUbo(), input_handler);
-	LOG("Done filling descriptor sets: shadows");
-	LOG("Filling descriptor sets: culling");
+	SCOP_DEBUG("Done filling descriptor sets: shadows");
+	SCOP_DEBUG("Filling descriptor sets: culling");
 	culling_pipeline->plugDescriptor(device, input_handler);
-	LOG("Done filling descriptor sets: culling");
+	SCOP_DEBUG("Done filling descriptor sets: culling");
 }
 
 /* ========================================================================== */
@@ -167,9 +167,9 @@ void	PipelineManager::_assembleComputePipelines(scop::core::Device& device) {
 	pipeline_info.layout = _pipeline_layout;
 	pipeline_info.flags = 0;
 
-	LOG("PipelineManager::_assembleComputePipelines: culling");
+	SCOP_DEBUG("PipelineManager::_assembleComputePipelines: culling");
 	_compute.culling->assemble(device, pipeline_info);
-	LOG("Culling pipeline assembled.");
+	SCOP_DEBUG("Culling pipeline assembled.");
 }
 
 void	PipelineManager::_assembleGraphicsPipelines(scop::core::Device& device) {
@@ -290,18 +290,18 @@ void	PipelineManager::_assembleGraphicsPipelines(scop::core::Device& device) {
 	pipeline_info.basePipelineHandle = VK_NULL_HANDLE;
 	pipeline_info.basePipelineIndex = -1;
 
-	LOG("PipelineManager::_assembleGraphicsPipelines: scene");
+	SCOP_DEBUG("PipelineManager::_assembleGraphicsPipelines: scene");
 	_graphics.scene->assemble(device, pipeline_info);
-	LOG("Scene pipeline assembled.");
+	SCOP_DEBUG("Scene pipeline assembled.");
 
 	color_blending.attachmentCount = 0;
 	rasterizing.cullMode = VK_CULL_MODE_NONE;
 	multisampling.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
 	depth_stencil.depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
 
-	LOG("PipelineManager::_assembleGraphicsPipelines: shadows");
+	SCOP_DEBUG("PipelineManager::_assembleGraphicsPipelines: shadows");
 	_graphics.shadows->assemble(device, pipeline_info);
-	LOG("Shadowmap pipeline assembled.");
+	SCOP_DEBUG("Shadowmap pipeline assembled.");
 }
 
 } // namespace scop::gfx

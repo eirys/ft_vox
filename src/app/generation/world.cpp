@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/18 17:42:36 by etran             #+#    #+#             */
-/*   Updated: 2023/12/31 17:50:45 by etran            ###   ########.fr       */
+/*   Updated: 2024/01/08 18:55:16 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,7 +31,7 @@ World::World(
 	std::size_t width,
 	std::size_t height
 ) {
-	LOG("Generating world...");
+	SCOP_INFO("Generating world...");
 	_origin.x = static_cast<float>(width) / 2;
 	_origin.z = static_cast<float>(height) / 2;
 
@@ -42,7 +42,7 @@ World::World(
 
 	_generateChunks(noise);
 	_generateTerrainData();
-	LOG("World generated.");
+	SCOP_INFO("World generated.");
 }
 
 World::World(World&& other) {
@@ -89,12 +89,27 @@ std::vector<uint8_t>	World::generateHeightBuffer() const noexcept {
 void	World::updateTerrainData(std::vector<uint16_t>& data) const {
 	std::array<uint16_t, CHUNK_VOLUME>	chunk_data;
 	uint32_t							offset = 0;
+
 	for (const Chunk& chunk: _chunks) {
+
 		chunk.fillChunkMap(chunk_data);
 		memcpy(
 			data.data() + offset,
 			chunk_data.data(),
 			chunk_data.size());
+
+		if (offset == 0) {
+			// display chunk data
+			std::string str;
+			str.reserve(CHUNK_VOLUME);
+			for (uint32_t i = 0; i < CHUNK_VOLUME; ++i) {
+				uint8_t type = chunk_data[i] & 0xFF00;
+				str.data()[i] = type;
+			}
+
+			SCOP_DEBUG("Chunk data: '" << str <<'\'');
+		}
+
 		offset += chunk_data.size();
 	}
 }
@@ -240,6 +255,7 @@ void	World::_generateChunks(const PerlinNoise& noise) {
 */
 void	World::_generateTerrainData() {
 	_world_data.reserve(_chunks.size() * CHUNK_VOLUME);
+	SCOP_DEBUG("Reserving " << _chunks.size() * CHUNK_VOLUME << " bytes for terrain data.");
 
 	updateTerrainData(_world_data);
 }

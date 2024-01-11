@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/19 11:50:07 by etran             #+#    #+#             */
-/*   Updated: 2024/01/03 14:44:30 by etran            ###   ########.fr       */
+/*   Updated: 2024/01/08 14:55:33 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,20 +34,12 @@ namespace scop::gfx {
 
 CullingPipeline::CullingPipeline() {
 	super::_descriptor = std::make_shared<CullingDescriptorSet>();
-
-	// _culling_texture = std::make_shared<gfx::CullingTextureHandler>();
 }
 
 /* ========================================================================== */
 
 void CullingPipeline::init(scop::core::Device& device) {
 	super::_descriptor->init(device);
-
-	// Map data (culling)
-	// std::shared_ptr<gfx::CullingTextureHandler>		culling_texture =
-	// 	std::dynamic_pointer_cast<gfx::CullingTextureHandler>(_culling_texture);
-	// culling_texture->init(device);
-	// culling_texture->setTextureSampler(chunk_handler->getTextureSampler());
 }
 
 void	CullingPipeline::assemble(
@@ -79,11 +71,6 @@ void	CullingPipeline::plugDescriptor(
 	culling_descriptor->fill(device, input);
 }
 
-void	CullingPipeline::destroy(scop::core::Device& device) {
-	_descriptor->destroy(device);
-	// _culling_texture->destroy(device);
-}
-
 void	CullingPipeline::compute(
 	scop::core::Device& device,
 	VkPipelineLayout layout,
@@ -92,6 +79,7 @@ void	CullingPipeline::compute(
 	// Make sure previous compute shader is finished
 	vkQueueWaitIdle(device.getComputeQueue());
 
+	command_buffer.reset();
 	command_buffer.begin(0);
 
 	std::array<VkDescriptorSet, 1>	descriptor_sets = { super::_descriptor->getSet() };
@@ -108,6 +96,7 @@ void	CullingPipeline::compute(
 		VK_PIPELINE_BIND_POINT_COMPUTE,
 		super::_pipeline);
 
+	// TODO Need to optimize dispatch sizes with vkGetPhysicalDeviceProperties
 	vkCmdDispatch(command_buffer.getBuffer(), 8, 8, 8);
 
 	command_buffer.end(device);

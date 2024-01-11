@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:15:01 by etran             #+#    #+#             */
-/*   Updated: 2024/01/05 13:26:39 by etran            ###   ########.fr       */
+/*   Updated: 2024/01/08 00:23:17 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,7 +67,8 @@ public:
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
 
-	InputHandler() = default;
+	InputHandler();
+
 	~InputHandler() = default;
 
 	InputHandler(InputHandler&& x) = delete;

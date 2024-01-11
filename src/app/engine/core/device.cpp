@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/16 01:00:19 by etran             #+#    #+#             */
-/*   Updated: 2024/01/05 11:45:34 by etran            ###   ########.fr       */
+/*   Updated: 2024/01/08 14:51:49 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -375,23 +375,23 @@ SwapChainSupportDetails	Device::_querySwapChainSupport(
 */
 QueueFamilyIndices	Device::_findQueueFamilies(VkPhysicalDevice device) {
 	QueueFamilyIndices	indices;
-	int	i = 0;
+	int	queue_index = 0;
 	for (const VkQueueFamilyProperties& queue_family: _queue_properties) {
-		if ((queue_family.queueFlags & VK_QUEUE_GRAPHICS_BIT) && // Graphics
-		   (queue_family.queueFlags & VK_QUEUE_COMPUTE_BIT)) { // Compute
-			indices.compute_family = i;
-			indices.graphics_family = i;
-		}
+		if (queue_family.queueFlags & VK_QUEUE_GRAPHICS_BIT) // Graphics
+			indices.graphics_family = queue_index;
+
+		if (queue_family.queueFlags & VK_QUEUE_COMPUTE_BIT) // Compute
+			indices.compute_family = queue_index;
 
 		// Present
 		VkBool32	present_support = false;
-		vkGetPhysicalDeviceSurfaceSupportKHR(device, i, _vk_surface, &present_support);
+		vkGetPhysicalDeviceSurfaceSupportKHR(device, queue_index, _vk_surface, &present_support);
 		if (present_support)
-			indices.present_family = i;
+			indices.present_family = queue_index;
 
 		if (indices.isComplete())
 			break;
-		++i;
+		++queue_index;
 	}
 
 	return indices;

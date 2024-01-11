@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:14:08 by etran             #+#    #+#             */
-/*   Updated: 2023/11/16 22:57:51 by etran            ###   ########.fr       */
+/*   Updated: 2024/01/08 16:47:59 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,7 +27,7 @@ public:
 
 	static const std::vector<const char*>	validation_layers;
 
-	#ifdef NDEBUG
+	#ifdef __RELEASE
 	static const constexpr bool			enable_validation_layers = true;
 	#else
 	static const constexpr bool			enable_validation_layers = false;

@@ -6,13 +6,14 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/02 19:40:11 by etran             #+#    #+#             */
-/*   Updated: 2023/12/28 22:50:41 by etran            ###   ########.fr       */
+/*   Updated: 2024/01/08 00:20:49 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "swap_chain.h"
 #include "window.h"
 #include "device.h"
+#include "synchronizer.h"
 
 #include <algorithm> // std::clamp
 #include <stdexcept> // std::runtime_error
@@ -53,24 +54,53 @@ void	SwapChain::update(
 }
 
 bool	SwapChain::acquireNextImage(
-	core::Device& device,
-	VkSemaphore semaphore,
-	VkFence fence,
-	uint32_t& image_index
-) {
+	const core::Device& device,
+	const Synchronizer& synchronizer,
+	uint32_t* image_index
+) const {
 	VkResult	result = vkAcquireNextImageKHR(
 		device.getLogicalDevice(),
 		_swap_chain,
 		UINT64_MAX,
-		semaphore,
+		synchronizer.getSemaphores().image_available.getSemaphore(),
 		VK_NULL_HANDLE,
-		&image_index);
+		image_index);
+
 	if (result == VK_ERROR_OUT_OF_DATE_KHR) {
 		return false;
 	} else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
 		throw std::runtime_error("failed to acquire swap chain image");
 	}
-	vkResetFences(device.getLogicalDevice(), 1, &fence);
+
+	return true;
+}
+
+bool	SwapChain::submitImage(
+	const core::Device& device,
+	const Synchronizer& synchronizer,
+	const uint32_t* image_index
+) const {
+	std::array<VkSemaphore, 1>	wait_semaphores = {
+		synchronizer.getSemaphores().render_finished.getSemaphore() };
+
+	VkPresentInfoKHR				present_info{};
+	present_info.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+	present_info.waitSemaphoreCount = static_cast<uint32_t>(wait_semaphores.size());
+	present_info.pWaitSemaphores = wait_semaphores.data();
+	present_info.swapchainCount = 1;
+	present_info.pSwapchains = &_swap_chain;
+	present_info.pImageIndices = image_index;
+	present_info.pResults = nullptr;
+
+	// Submit to swap chain, check if swap chain is still compatible
+	VkResult result = vkQueuePresentKHR(device.getPresentQueue(), &present_info);
+
+	if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR) {
+		return false;
+	} else if (result != VK_SUCCESS) {
+		throw std::runtime_error("failed to present swapchain image");
+	}
+
 	return true;
 }
 

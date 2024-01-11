@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/04 08:39:55 by etran             #+#    #+#             */
-/*   Updated: 2023/11/19 11:04:28 by etran            ###   ########.fr       */
+/*   Updated: 2024/01/08 15:11:47 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 #include "command_pool.h"
 
 #include <stdexcept> // std::runtime_error
+#include <cassert> // assert
 
 namespace scop::gfx {
 
@@ -22,21 +23,28 @@ namespace scop::gfx {
 /*                                   PUBLIC                                   */
 /* ========================================================================== */
 
+CommandBuffer::CommandBuffer(CommandBufferType type):
+	_type(type) {}
+
+/* ========================================================================== */
+
 /**
  * @brief Initialize the command buffer.
  * @todo Change _buffer to std::vector<VkCommandBuffer>.
 */
-void	CommandBuffer::init(
-	scop::core::Device& device,
-	VkCommandPool pool,
-	CommandBufferType type
-) {
+void	CommandBuffer::init(scop::core::Device& device) {
+	VkCommandPool	pool = VK_NULL_HANDLE;
+	if (_type == CommandBufferType::DRAW) {
+		pool = CommandPool::getDrawPool();
+	} else if (_type == CommandBufferType::COMPUTE) {
+		pool = CommandPool::getComputePool();
+	}
+
 	VkCommandBufferAllocateInfo	alloc_info{};
 	alloc_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
 	alloc_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 	alloc_info.commandPool = pool;
 	alloc_info.commandBufferCount = 1;
-	_type = type;
 
 	if (vkAllocateCommandBuffers(device.getLogicalDevice(), &alloc_info, &_buffer) != VK_SUCCESS) {
 		throw std::runtime_error("failed to allocate command buffer");
@@ -47,9 +55,15 @@ void	CommandBuffer::init(
  * @brief Deallocate the command buffer.
 */
 void	CommandBuffer::destroy(
-	scop::core::Device& device,
-	VkCommandPool pool
+	scop::core::Device& device
 ) {
+	VkCommandPool	pool = VK_NULL_HANDLE;
+	if (_type == CommandBufferType::DRAW) {
+		pool = CommandPool::getDrawPool();
+	} else if (_type == CommandBufferType::COMPUTE) {
+		pool = CommandPool::getComputePool();
+	}
+
 	vkFreeCommandBuffers(device.getLogicalDevice(), pool, 1, &_buffer);
 }
 
@@ -64,6 +78,8 @@ void	CommandBuffer::destroy(
 void	CommandBuffer::begin(
 	VkCommandBufferUsageFlags flags
 ) {
+	assert(_buffer != VK_NULL_HANDLE);
+
 	VkCommandBufferBeginInfo	begin_info{};
 	begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 	begin_info.flags = flags;
@@ -78,21 +94,6 @@ void	CommandBuffer::begin(
 */
 void	CommandBuffer::reset() {
 	vkResetCommandBuffer(_buffer, 0);
-}
-
-/**
- * @brief Restart the command buffer.
- *
- * @param flags Command buffer usage flags.
- * Defaults to VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT.
-*/
-void	CommandBuffer::restart(
-	scop::core::Device& device,
-	VkCommandBufferUsageFlags flags
-) {
-	end(device);
-	reset();
-	begin(flags);
 }
 
 /**
@@ -118,7 +119,15 @@ void	CommandBuffer::end(scop::core::Device& device, bool await) {
 		submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 		submit_info.commandBufferCount = 1;
 		submit_info.pCommandBuffers = &_buffer;
-		if (vkQueueSubmit(device.getGraphicsQueue(), 1, &submit_info, fence) != VK_SUCCESS) {
+
+		VkQueue	queue = VK_NULL_HANDLE;
+		if (_type == CommandBufferType::DRAW) {
+			queue = device.getGraphicsQueue();
+		} else if (_type == CommandBufferType::COMPUTE) {
+			queue = device.getComputeQueue();
+		}
+
+		if (vkQueueSubmit(queue, 1, &submit_info, fence) != VK_SUCCESS) {
 			throw std::runtime_error("failed to submit command buffer to queue");
 		}
 

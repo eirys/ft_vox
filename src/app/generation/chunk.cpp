@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/19 11:46:11 by etran             #+#    #+#             */
-/*   Updated: 2023/12/31 02:36:31 by etran            ###   ########.fr       */
+/*   Updated: 2024/01/08 18:56:59 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -78,9 +78,10 @@ void	Chunk::fillChunkMap(std::array<uint16_t, CHUNK_VOLUME>& data) const {
 		for (uint8_t x = 0; x < CHUNK_SIZE; ++x) {
 			for (uint8_t y = 0; y < CHUNK_SIZE; ++y) {
 				const Block& block = getBlock(x, y, z);
-				const uint32_t x_offsetted = x + (y % 4) * CHUNK_SIZE;
-				const uint32_t z_offsetted = z + (y / 4) * CHUNK_SIZE;
-				data[z_offsetted * CHUNK_SIZE + x_offsetted] = block.computePackedData();
+
+				const uint32_t x_offsetted = (x + (y % 4)) * CHUNK_SIZE;
+				const uint32_t z_offsetted = (z + (y / 4)) * CHUNK_SIZE;
+				data[z_offsetted + x_offsetted] = block.computePackedData();
 			}
 		}
 	}

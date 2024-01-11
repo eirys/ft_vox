@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/10 22:32:26 by etran             #+#    #+#             */
-/*   Updated: 2024/01/04 19:03:07 by etran            ###   ########.fr       */
+/*   Updated: 2024/01/08 16:40:04 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -176,7 +176,7 @@ void	SceneTextureHandler::_createTextureSampler(scop::core::Device& device) {
  * @note Assuming all images have the same size as squares.
 */
 std::vector<Texture>	SceneTextureHandler::_loadTextures() const {
-	LOG("Loading textures...");
+	SCOP_INFO("Loading textures...");
 	std::vector<Texture>	images;
 	const std::vector<std::string>	paths {
 		SCOP_TEXTURE_PATH "grass_top.ppm",
@@ -204,7 +204,7 @@ std::vector<Texture>	SceneTextureHandler::_loadTextures() const {
 			}
 		}
 	}
-	LOG("Textures loaded.");
+	SCOP_INFO("Textures loaded.");
 
 	return images;
 }

@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:14:35 by etran             #+#    #+#             */
-/*   Updated: 2023/12/28 22:21:43 by etran            ###   ########.fr       */
+/*   Updated: 2024/01/07 21:39:07 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,19 +15,16 @@
 // Graphics
 # include <vulkan/vulkan.h>
 
-// # include "debug_module.h"
-// # include "device.h"
 # include "core.h"
 # include "swap_chain.h"
-// # include "texture_handler.h"
-// # include "graphics_pipeline.h"
+# include "input_handler.h"
+# include "synchronizer.h"
 
 # include "descriptor_pool.h"
 # include "command_pool.h"
 # include "command_buffer.h"
 # include "pipeline_manager.h"
 
-# include "input_handler.h"
 
 namespace vox {
 class GameState;
@@ -89,28 +86,20 @@ private:
 
 	SwapChain					_swap_chain;
 	InputHandler				_input_handler;
+	Synchronizer				_synchronizer;
 
 	gfx::CommandBuffer			_draw_buffer;
 	gfx::CommandBuffer			_compute_buffer;
 	gfx::CommandPool			_command_pool;
+
 	gfx::DescriptorPool			_descriptor_pool;
-
 	gfx::PipelineManager		_pipeline_manager;
-
-	VkSemaphore					_image_available_semaphores;
-	VkSemaphore					_render_finished_semaphores;
-	VkSemaphore					_compute_finished_semaphores;
-	VkSemaphore					_graphics_ready_semaphores;
-	VkFence						_in_flight_fences;
 
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
 
-	void						_createSyncObjects();
-	void						_createDescriptors();
-
-	UniformBufferObject			_updateUbo(const vox::GameState& game) const;
+	UniformBufferObject			_updateUbo(const vox::GameState& game);
 	void						_updatePresentation(Window& window);
 
 }; // class Engine

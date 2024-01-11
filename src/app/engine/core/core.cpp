@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/10 17:27:51 by etran             #+#    #+#             */
-/*   Updated: 2023/11/16 23:47:11 by etran            ###   ########.fr       */
+/*   Updated: 2024/01/08 14:46:04 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,8 @@
 
 #include <cstring>
 #include <stdexcept> // std::runtime_error
+
+#include "debug.h"
 
 namespace scop::core {
 

@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/24 14:32:26 by etran             #+#    #+#             */
-/*   Updated: 2024/01/04 19:02:38 by etran            ###   ########.fr       */
+/*   Updated: 2024/01/08 17:37:34 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,7 +51,7 @@ void	ChunkTextureHandler::init(scop::core::Device& device) {
 */
 void	ChunkTextureHandler::copyData(
 	scop::core::Device& device,
-	const std::vector<uint16_t>& chunks
+	const std::vector<uint16_t>& packed_chunks
 ) {
 	const ImageMetaData& image_data = super::_texture_buffer.getMetaData();
 	const VkDeviceSize layer_size = image_data.getWidth() * image_data.getHeight() * sizeof(uint16_t);
@@ -69,8 +69,8 @@ void	ChunkTextureHandler::copyData(
 	// Copy every chunk data
 	staging_buffer.map(device);
 	staging_buffer.copyFrom(
-		chunks.data(),
-		chunks.size());
+		packed_chunks.data(),
+		packed_chunks.size() * sizeof(uint16_t));
 		// static_cast<std::size_t>(layer_size) * image_data.getLayerCount());
 	staging_buffer.unmap(device);
 
@@ -97,12 +97,12 @@ void	ChunkTextureHandler::copyData(
 		transfer_barrier);
 
 	// Record copy command
-	LOG("Copying chunk data to texture image...");
+	SCOP_DEBUG("Copying chunk data to texture image...");
 	super::_texture_buffer.copyFrom(
 		command_buffer.getBuffer(),
 		staging_buffer.getBuffer(),
 		static_cast<uint32_t>(layer_size));
-	LOG("Chunks loaded.");
+	SCOP_DEBUG("Chunks loaded.");
 
 	super::_texture_buffer.setLayout(
 		command_buffer.getBuffer(),

@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/18 21:11:40 by etran             #+#    #+#             */
-/*   Updated: 2023/11/25 02:25:53 by etran            ###   ########.fr       */
+/*   Updated: 2024/01/08 14:53:51 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,7 +47,7 @@ public:
 	virtual void		assemble(
 		scop::core::Device& device,
 		VkComputePipelineCreateInfo& info) = 0;
-	virtual void		destroy(scop::core::Device& device) = 0;
+	virtual void		destroy(scop::core::Device& device);
 	virtual void		compute(
 		scop::core::Device& device,
 		VkPipelineLayout layout,

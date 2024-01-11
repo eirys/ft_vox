@@ -1,35 +1,42 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   player.cpp                                         :+:      :+:    :+:   */
+/*   gfx_semaphore.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/06/05 13:57:57 by etran             #+#    #+#             */
-/*   Updated: 2024/01/08 15:18:05 by etran            ###   ########.fr       */
+/*   Created: 2024/01/06 21:30:07 by etran             #+#    #+#             */
+/*   Updated: 2024/01/06 21:50:45 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "player.h"
+#include "gfx_semaphore.h"
+#include "device.h"
 
-#include "debug.h"
-namespace vox {
+#include <stdexcept> // std::runtime_error
+
+namespace scop::gfx {
 
 /* ========================================================================== */
 /*                                   PUBLIC                                   */
 /* ========================================================================== */
 
-Player::Player(const scop::Vect3& pos/* , const scop::Vect3& eye_dir */):
-	Character(pos, VOX_DEFAULT_EYE_DIR, VOX_CAMERA_SPEED) {}
+void	GfxSemaphore::init(scop::core::Device& device) {
+	VkSemaphoreCreateInfo	semaphore_info = {};
+	semaphore_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+
+	if (vkCreateSemaphore(device.getLogicalDevice(), &semaphore_info, nullptr, &_semaphore) != VK_SUCCESS)
+		throw std::runtime_error("failed to create semaphore");
+}
+
+void	GfxSemaphore::destroy(scop::core::Device& device) {
+	vkDestroySemaphore(device.getLogicalDevice(), _semaphore, nullptr);
+}
 
 /* ========================================================================== */
 
-void	Player::reset(const scop::Vect3& pos/* , const scop::Vect3& eye_dir */) {
-	SCOP_DEBUG("Character::reset: " << pos);
-	Character::resetPositionX(pos.x);
-	Character::resetPositionY(pos.y + Player::height);
-	Character::resetPositionZ(pos.z);
-	Character::resetEyeDir(VOX_DEFAULT_EYE_DIR);
+VkSemaphore	GfxSemaphore::getSemaphore() const noexcept {
+	return _semaphore;
 }
 
-} // namespace vox
+} // namespace scop::gfx

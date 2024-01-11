@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   command_pool.h                                     :+:      :+:    :+:   */
+/*   fence.h                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/06/04 17:14:01 by etran             #+#    #+#             */
-/*   Updated: 2024/01/08 14:56:45 by etran            ###   ########.fr       */
+/*   Created: 2024/01/06 21:35:00 by etran             #+#    #+#             */
+/*   Updated: 2024/01/07 22:09:38 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,51 +21,46 @@ class Device;
 
 namespace scop::gfx {
 
-class CommandBuffer;
-enum class CommandBufferType: uint8_t;
-
 /**
- * @brief Simple wrapper class for VkCommandPool.
+ * @brief Wrapper for VkFence. Synchronizes CPU and GPU.
 */
-class CommandPool final {
+class Fence {
 public:
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
 
-	CommandPool() = default;
-	~CommandPool() = default;
+	Fence() = default;
+	~Fence() = default;
 
-	CommandPool(CommandPool&& other) = delete;
-	CommandPool(const CommandPool& other) = delete;
-	CommandPool& operator=(CommandPool&& other) = delete;
-	CommandPool& operator=(const CommandPool& other) = delete;
-
-	/* ========================================================================= */
-
-	void					init(scop::core::Device& device);
-	void					destroy(scop::core::Device& device);
-
-	static CommandBuffer	createBuffer(
-		scop::core::Device& device,
-		CommandBufferType type);
-	static void				destroyBuffer(
-		scop::core::Device& device,
-		CommandBuffer& buffer);
+	Fence(Fence&& x) = delete;
+	Fence(const Fence& x) = delete;
+	Fence& operator=(Fence&& rhs) = delete;
+	Fence& operator=(const Fence& rhs) = delete;
 
 	/* ========================================================================= */
 
-	static VkCommandPool	getDrawPool() noexcept;
-	static VkCommandPool	getComputePool() noexcept;
+	void		init(
+		const scop::core::Device& device,
+		VkFenceCreateFlagBits flags = VK_FENCE_CREATE_SIGNALED_BIT);
+	void		destroy(const scop::core::Device& device);
+
+	void		wait(
+		const scop::core::Device& device,
+		uint64_t timeout = UINT64_MAX) const;
+	void		reset(const scop::core::Device& device) const;
+
+	/* ========================================================================= */
+
+	VkFence		getFence() const noexcept;
 
 private:
 	/* ========================================================================= */
 	/*                               CLASS MEMBERS                               */
 	/* ========================================================================= */
 
-	static VkCommandPool	_draw_pool;
-	static VkCommandPool	_compute_pool;
+	VkFence	_fence;
 
-}; // class CommandPool
+}; // class Fence
 
 } // namespace scop::gfx

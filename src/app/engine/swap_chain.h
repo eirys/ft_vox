@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/02 16:27:11 by etran             #+#    #+#             */
-/*   Updated: 2023/12/28 22:50:37 by etran            ###   ########.fr       */
+/*   Updated: 2024/01/07 22:10:22 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,6 +29,7 @@ class RenderPass;
 namespace scop {
 
 class Window;
+class Synchronizer;
 
 /**
  * @brief Wrapper class for swap chain.
@@ -58,10 +59,14 @@ public:
 		core::Device& device,
 		Window& window);
 	bool								acquireNextImage(
-		core::Device& device,
-		VkSemaphore semaphore,
-		VkFence fence,
-		uint32_t& image_index);
+		const core::Device& device,
+		const Synchronizer& synchronizer,
+		uint32_t* image_index) const;
+
+	bool								submitImage(
+		const core::Device& device,
+		const Synchronizer& synchronizer,
+		const uint32_t* image_index) const;
 
 	/* ========================================================================= */
 

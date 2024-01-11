@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   culling_pipeline.h                                 :+:      :+:    :+:   */
+/*   synchronizer.h                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/11/18 20:15:16 by etran             #+#    #+#             */
-/*   Updated: 2024/01/08 14:55:36 by etran            ###   ########.fr       */
+/*   Created: 2023/11/18 21:20:17 by etran             #+#    #+#             */
+/*   Updated: 2024/01/07 23:52:35 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,67 +15,69 @@
 // Graphics
 # include <vulkan/vulkan.h>
 
-#include "compute_pipeline.h"
+#include "gfx_semaphore.h"
+#include "fence.h"
 
 namespace scop {
-class InputHandler;
-}
 
-namespace scop::gfx {
-
-class TextureHandler;
-
-class CullingPipeline: public ComputePipeline {
+/**
+ * @brief Manager for synchronization objects (VkSemaphores, VkFences, mutexes).
+*/
+class Synchronizer {
 public:
 	/* ========================================================================= */
 	/*                                  TYPEDEFS                                 */
 	/* ========================================================================= */
 
-	using super = ComputePipeline;
-	using super::DescriptorSetPtr;
-	using TextureHandlerPtr = std::shared_ptr<TextureHandler>;
+	struct Semaphores {
+		gfx::GfxSemaphore		image_available;
+		gfx::GfxSemaphore		render_finished;
+		gfx::GfxSemaphore		compute_finished;
+	};
+
+	struct Fences {
+		gfx::Fence				graphics_in_flight;
+		gfx::Fence				compute_in_flight;
+	};
+
+	// TODO
+	struct Mutexes {
+
+	};
 
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
 
-	CullingPipeline();
-	~CullingPipeline() = default;
+	Synchronizer() = default;
+	~Synchronizer() = default;
 
-	CullingPipeline(CullingPipeline&& other) = delete;
-	CullingPipeline(const CullingPipeline& other) = delete;
-	CullingPipeline& operator=(CullingPipeline&& other) = delete;
-	CullingPipeline& operator=(const CullingPipeline& other) = delete;
-
-	/* ========================================================================= */
-
-	void				init(scop::core::Device& device) override;
-	void				assemble(
-		scop::core::Device& device,
-		VkComputePipelineCreateInfo& info) override;
-	void				plugDescriptor(
-		scop::core::Device& device,
-		const scop::InputHandler& input);
-
-	void				compute(
-		scop::core::Device& device,
-		VkPipelineLayout layout,
-		CommandBuffer& command_buffer) override;
+	Synchronizer(Synchronizer&& x) = delete;
+	Synchronizer(const Synchronizer& x) = delete;
+	Synchronizer& operator=(Synchronizer&& rhs) = delete;
+	Synchronizer& operator=(const Synchronizer& rhs) = delete;
 
 	/* ========================================================================= */
 
-	using super::getPipeline;
-	using super::getDescriptor;
+	void		init(core::Device& device);
+	void		destroy(core::Device& device);
 
-	TextureHandlerPtr	getCullingTextureHandler() const;
+	/* ========================================================================= */
+
+	Semaphores&					getSemaphores() noexcept;
+	const Semaphores&			getSemaphores() const noexcept;
+
+	Fences&						getFences() noexcept;
+	const Fences&				getFences() const noexcept;
 
 private:
 	/* ========================================================================= */
 	/*                               CLASS MEMBERS                               */
 	/* ========================================================================= */
 
-	TextureHandlerPtr	_culling_texture;
+	Semaphores					_semaphores;
+	Fences						_fences;
 
-}; // class CullingPipeline
+}; // class Synchronizer
 
-} // namespace scop::gfx
+} // namespace scop

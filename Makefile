@@ -6,7 +6,7 @@
 #    By: etran <etran@student.42.fr>                +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/04/06 03:40:09 by eli               #+#    #+#              #
-#    Updated: 2024/01/05 12:43:04 by etran            ###   ########.fr        #
+#    Updated: 2024/01/08 17:23:09 by etran            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -39,7 +39,6 @@ CULL_DIR	:=	$(REN_DIR)/culling
 SCENE_DIR	:=	$(REN_DIR)/scene
 SHADOW_DIR	:=	$(REN_DIR)/shadows
 
-
 # gameplay
 GAME_DIR	:=	$(APP_DIR)/gameplay
 GEN_DIR		:=	$(APP_DIR)/generation
@@ -49,7 +48,10 @@ CHAR_DIR	:=	$(GAME_DIR)/character
 UTILS_DIR	:=	$(APP_DIR)/utils
 IMG_DIR		:=	$(UTILS_DIR)/img
 MODEL_DIR	:=	$(UTILS_DIR)/model
+
+# tools
 TOOLS_DIR	:=	tools
+MATH_DIR	:=	$(TOOLS_DIR)/math
 
 # ---------------- SUBDIRECTORIES -------------- #
 SUBDIRS		:=	$(APP_DIR)		\
@@ -66,14 +68,15 @@ SUBDIRS		:=	$(APP_DIR)		\
 				$(UTILS_DIR)	\
 				$(IMG_DIR)		\
 				$(MODEL_DIR)	\
-				$(TOOLS_DIR)
+				$(TOOLS_DIR)	\
+				$(MATH_DIR)
 
 OBJ_SUBDIRS	:=	$(addprefix $(OBJ_DIR)/,$(SUBDIRS))
 INC_SUBDIRS	:=	$(addprefix $(SRC_DIR)/,$(SUBDIRS)) \
 				$(SHD_DIR)
 
 # ---------------- SOURCE FILES ---------------- #
-SRC_FILES	:=	$(TOOLS_DIR)/matrix.cpp \
+SRC_FILES	:=	$(MATH_DIR)/matrix.cpp \
 				$(MODEL_DIR)/model.cpp \
 				$(MODEL_DIR)/parser.cpp \
 				$(MODEL_DIR)/obj_parser.cpp \
@@ -94,10 +97,13 @@ SRC_FILES	:=	$(TOOLS_DIR)/matrix.cpp \
 				$(ENG_DIR)/window.cpp \
 				$(ENG_DIR)/swap_chain.cpp \
 				$(ENG_DIR)/input_handler.cpp \
+				$(ENG_DIR)/synchronizer.cpp \
 				$(ENG_DIR)/engine.cpp \
 				$(CORE_DIR)/debug_module.cpp \
 				$(CORE_DIR)/device.cpp \
 				$(CORE_DIR)/core.cpp \
+				$(GFX_DIR)/gfx_semaphore.cpp \
+				$(GFX_DIR)/fence.cpp \
 				$(GFX_DIR)/descriptor_pool.cpp \
 				$(GFX_DIR)/descriptor_set.cpp \
 				$(GFX_DIR)/command_pool.cpp \
@@ -138,11 +144,42 @@ CXX			:=	clang++
 EXTRA		:=	-Wall -Werror -Wextra
 INCLUDES	:=	$(addprefix -I./,$(INC_SUBDIRS))
 
-MACROS		:=	__DEBUG \
-				__LINUX \
-				NDEBUG \
+MACROS		:=	NDEBUG \
 				SHD_BIN_DIR=\"$(SHD_BIN_DIR)/\" \
+				__DEBUG \
+				__LOG \
+				__INFO \
+				__LINUX \
 				VOX_CPP
+
+## All macros:
+
+## SHD_BIN_DIR
+## Must be defined to the directory where the shader binaries will be stored.
+
+## __RELEASE
+## Enables release build, disables debug logs.
+
+## __VERBOSE
+## Enables verbose Vulkan validation layers.
+
+## __DEBUG
+## For debug logs.
+
+## __LOG
+## Enables logging, messages meant for the user.
+
+## __INFO
+## Enables info messages, for both the user and the developer.
+
+## __LINUX
+## Enables Linux-specific code.
+
+## VOX_CPP
+## Enables C++ code.
+
+## NDEBUG
+## Disables assertions (if using <cassert>).
 
 DEFINES		:=	$(addprefix -D,$(MACROS))
 

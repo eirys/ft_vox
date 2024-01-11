@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/04 15:06:05 by etran             #+#    #+#             */
-/*   Updated: 2023/12/31 17:52:30 by etran            ###   ########.fr       */
+/*   Updated: 2024/01/08 16:37:49 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -322,7 +322,7 @@ void	ObjParser::storeTriangles(
 void	ObjParser::ignore() noexcept {
 	if (token != "#") {
 		// Line type contains a material component that is not supported.
-		LOG(token << " is not supported by this renderer.");
+		SCOP_LOG(token << " is not supported by this renderer.");
 	}
 	return skipComment();
 }

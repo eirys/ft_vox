@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/16 12:47:19 by etran             #+#    #+#             */
-/*   Updated: 2023/11/19 11:06:16 by etran            ###   ########.fr       */
+/*   Updated: 2024/01/08 15:10:11 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,6 +26,9 @@ VkCommandPool	CommandPool::_compute_pool = VK_NULL_HANDLE;
 /*                                   PUBLIC                                   */
 /* ========================================================================== */
 
+/**
+ * @brief Creates both graphics and compute command pools.
+*/
 void	CommandPool::init(scop::core::Device& device) {
 	scop::core::QueueFamilyIndices	queue_family_indices = device.findQueueFamilies();
 
@@ -50,37 +53,31 @@ void	CommandPool::init(scop::core::Device& device) {
 
 void	CommandPool::destroy(scop::core::Device& device) {
 	vkDestroyCommandPool(device.getLogicalDevice(), _draw_pool, nullptr);
+	vkDestroyCommandPool(device.getLogicalDevice(), _compute_pool, nullptr);
 }
 
 CommandBuffer	CommandPool::createBuffer(
 	scop::core::Device& device,
 	CommandBufferType type)
 {
-	CommandBuffer	command_buffer;
-
-	if (type == CommandBufferType::DRAW)
-		command_buffer.init(device, _draw_pool, type);
-	else if (type == CommandBufferType::COMPUTE)
-		command_buffer.init(device, _compute_pool, type);
+	CommandBuffer	command_buffer(type);
+	command_buffer.init(device);
 
 	return command_buffer;
 }
 
 void	CommandPool::destroyBuffer(scop::core::Device& device, CommandBuffer& buffer) {
-	if (buffer.getType() == CommandBufferType::DRAW)
-		buffer.destroy(device, _draw_pool);
-	else if (buffer.getType() == CommandBufferType::COMPUTE)
-		buffer.destroy(device, _compute_pool);
+	buffer.destroy(device);
 }
 
 /* ========================================================================== */
 
-VkCommandPool	CommandPool::getPool() noexcept {
+VkCommandPool	CommandPool::getDrawPool() noexcept {
 	return _draw_pool;
 }
 
-CommandPool::operator VkCommandPool() const noexcept {
-	return _draw_pool;
+VkCommandPool	CommandPool::getComputePool() noexcept {
+	return _compute_pool;
 }
 
 } // namespace scop::gfx

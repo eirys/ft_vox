@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/18 16:08:29 by etran             #+#    #+#             */
-/*   Updated: 2023/12/23 01:19:36 by etran            ###   ########.fr       */
+/*   Updated: 2024/01/08 18:54:12 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,10 +38,16 @@ public:
 	/* ========================================================================= */
 
 	void				setType(const MaterialType block_type) noexcept;
-	void				setProperies(const MaterialProperty block_type) noexcept;
+	void				setGFXProperty(const MaterialGFXProperty property) noexcept;
+	void				setStateProperty(const MaterialState property) noexcept;
+	void				setInteractionProperty(const MaterialInteraction property) noexcept;
+	void				setAspectProperty(const MaterialAspect property) noexcept;
 
 	MaterialType		getType() const noexcept;
-	MaterialProperty	getProperties() const noexcept;
+	MaterialGFXProperty	getGFXProperty() const noexcept;
+	MaterialState		getStateProperty() const noexcept;
+	MaterialInteraction	getInteractionProperty() const noexcept;
+	MaterialAspect		getAspectProperty() const noexcept;
 
 	uint16_t			computePackedData() const noexcept;
 
@@ -65,8 +71,11 @@ private:
 	/*                               CLASS MEMBERS                               */
 	/* ========================================================================= */
 
-	MaterialType		_type		= MaterialType::AIR;
-	MaterialProperty	_properties	= MaterialProperty::Default;
+	MaterialType		_type			= MaterialType::AIR;
+	MaterialGFXProperty	_gfx			= MaterialGFXProperty::OPAQUE;
+	MaterialState		_state			= MaterialState::SOLID;
+	MaterialInteraction	_interaction	= MaterialInteraction::INTANGIBLE;
+	MaterialAspect		_aspect			= MaterialAspect::REGULAR;
 
 }; // class Block
 

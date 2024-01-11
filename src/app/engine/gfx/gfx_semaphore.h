@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   command_pool.h                                     :+:      :+:    :+:   */
+/*   semaphore.h                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/06/04 17:14:01 by etran             #+#    #+#             */
-/*   Updated: 2024/01/08 14:56:45 by etran            ###   ########.fr       */
+/*   Created: 2024/01/06 21:26:18 by etran             #+#    #+#             */
+/*   Updated: 2024/01/06 21:50:06 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,51 +21,39 @@ class Device;
 
 namespace scop::gfx {
 
-class CommandBuffer;
-enum class CommandBufferType: uint8_t;
-
 /**
- * @brief Simple wrapper class for VkCommandPool.
+ * @brief Wrapper for VkSemaphore. Synchronizes GPU commands.
 */
-class CommandPool final {
+class GfxSemaphore {
 public:
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
 
-	CommandPool() = default;
-	~CommandPool() = default;
+	GfxSemaphore() = default;
+	~GfxSemaphore() = default;
 
-	CommandPool(CommandPool&& other) = delete;
-	CommandPool(const CommandPool& other) = delete;
-	CommandPool& operator=(CommandPool&& other) = delete;
-	CommandPool& operator=(const CommandPool& other) = delete;
-
-	/* ========================================================================= */
-
-	void					init(scop::core::Device& device);
-	void					destroy(scop::core::Device& device);
-
-	static CommandBuffer	createBuffer(
-		scop::core::Device& device,
-		CommandBufferType type);
-	static void				destroyBuffer(
-		scop::core::Device& device,
-		CommandBuffer& buffer);
+	GfxSemaphore(GfxSemaphore&& x) = delete;
+	GfxSemaphore(const GfxSemaphore& x) = delete;
+	GfxSemaphore& operator=(GfxSemaphore&& rhs) = delete;
+	GfxSemaphore& operator=(const GfxSemaphore& rhs) = delete;
 
 	/* ========================================================================= */
 
-	static VkCommandPool	getDrawPool() noexcept;
-	static VkCommandPool	getComputePool() noexcept;
+	void		init(scop::core::Device& device);
+	void		destroy(scop::core::Device& device);
+
+	/* ========================================================================= */
+
+	VkSemaphore	getSemaphore() const noexcept;
 
 private:
 	/* ========================================================================= */
 	/*                               CLASS MEMBERS                               */
 	/* ========================================================================= */
 
-	static VkCommandPool	_draw_pool;
-	static VkCommandPool	_compute_pool;
+	VkSemaphore	_semaphore;
 
-}; // class CommandPool
+}; // class GfxSemaphore
 
 } // namespace scop::gfx

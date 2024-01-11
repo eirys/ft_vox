@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/26 13:32:56 by etran             #+#    #+#             */
-/*   Updated: 2023/12/31 17:52:20 by etran            ###   ########.fr       */
+/*   Updated: 2024/01/08 16:38:05 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -234,7 +234,7 @@ void	MtlParser::parseTexture() {
 void	MtlParser::ignore() {
 	if (token != "#") {
 		// Line type contains a material component that is not supported.
-		LOG(token << " is not supported by this renderer.");
+		SCOP_LOG(token << " is not supported by this renderer.");
 	}
 	return skipComment();
 }
