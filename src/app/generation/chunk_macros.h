@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/21 10:42:08 by etran             #+#    #+#             */
-/*   Updated: 2024/01/01 16:25:27 by etran            ###   ########.fr       */
+/*   Updated: 2024/01/11 16:48:20 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,5 +28,10 @@
 # define MAX_RENDER_PYRAMID			(MAX_RENDER_DISTANCE * RD_PYRAMID_BASE / 3) // 31 104 chunks
 
 # define FACE_COUNT					 6 // Number of faces per block
+
+
+# define DISPATCH_SIZE 8
+# define DISPATCH_TOTAL (DISPATCH_SIZE * DISPATCH_SIZE * DISPATCH_SIZE)
+
 
 #endif

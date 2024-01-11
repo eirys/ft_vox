@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/18 17:42:36 by etran             #+#    #+#             */
-/*   Updated: 2024/01/11 14:39:29 by etran            ###   ########.fr       */
+/*   Updated: 2024/01/11 16:44:02 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -97,6 +97,7 @@ void	World::updateTerrainData(std::vector<uint16_t>& data) const {
 			chunk_data.data(),
 			chunk_data.size());
 
+#if 0
 #ifdef __DEBUG
 		if (offset == 0) {
 			SCOP_DEBUG("Column [0]:");
@@ -104,6 +105,7 @@ void	World::updateTerrainData(std::vector<uint16_t>& data) const {
 				std::cout << Block::computeFromPackedData(chunk_data[i]);
 			std::cout << __NL;
 		}
+#endif // __DEBUG
 #endif
 
 		offset += chunk_data.size();

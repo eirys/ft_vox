@@ -29,7 +29,7 @@ INPUT(8, 8, 8);
 
 // Output
 OUTPUT(CULLING_SET, 2, std140) buffer QuadCount {
-	uint n[MAX_RENDER_DISTANCE];
+	uint n[DISPATCH_TOTAL];
 }	quadCount;
 
 OUTPUT(CULLING_SET, 3, std140) buffer VerticesData {

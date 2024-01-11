@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/19 11:50:07 by etran             #+#    #+#             */
-/*   Updated: 2024/01/08 14:55:33 by etran            ###   ########.fr       */
+/*   Updated: 2024/01/11 16:48:39 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -97,7 +97,7 @@ void	CullingPipeline::compute(
 		super::_pipeline);
 
 	// TODO Need to optimize dispatch sizes with vkGetPhysicalDeviceProperties
-	vkCmdDispatch(command_buffer.getBuffer(), 8, 8, 8);
+	vkCmdDispatch(command_buffer.getBuffer(), DISPATCH_SIZE, DISPATCH_SIZE, DISPATCH_SIZE);
 
 	command_buffer.end(device);
 }

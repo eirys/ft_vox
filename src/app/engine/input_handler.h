@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:15:01 by etran             #+#    #+#             */
-/*   Updated: 2024/01/08 00:23:17 by etran            ###   ########.fr       */
+/*   Updated: 2024/01/11 16:48:24 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,7 +36,7 @@ namespace scop {
 
 enum class InputBufferSize: uint32_t {
 	Frustum			= sizeof(gfx::BoundingFrustum),
-	QuadCount		= sizeof(uint32_t) * MAX_RENDER_DISTANCE,
+	QuadCount		= sizeof(uint32_t) * DISPATCH_TOTAL,
 	VerticesData	= sizeof(uint32_t) * MAX_RENDER_PYRAMID // * CHUNK_VOLUME * 6
 	// TODO: Overkill, need to be optimized
 };
