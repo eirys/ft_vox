@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/19 11:33:58 by etran             #+#    #+#             */
-/*   Updated: 2024/01/08 18:52:47 by etran            ###   ########.fr       */
+/*   Updated: 2024/01/11 13:34:22 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -73,8 +73,18 @@ MaterialAspect		Block::getAspectProperty() const noexcept {
  * @note Extract properties with packed_data & 0xFF.
 */
 uint16_t	Block::computePackedData() const noexcept {
-	const uint16_t packed_data = (uint32_t)_type << 8 | (uint8_t)_gfx;
-	return packed_data;
+	const uint16_t packed_type = (uint16_t)_type << 8;
+	const uint16_t packed_property = (uint16_t)_gfx;
+	return packed_type | packed_property;
+}
+
+Block	Block::computeFromPackedData(const uint16_t packed_data) {
+	const uint8_t type = (packed_data >> 8) & 0xFF;
+	const uint8_t property = packed_data & 0xFF;
+
+	Block block((MaterialType)type);
+	block.setGFXProperty((MaterialGFXProperty)property);
+	return block;
 }
 
 /* GAMEPLAY ================================================================= */
@@ -95,6 +105,15 @@ bool	Block::isDirected() const noexcept {
 	return (uint8_t)_aspect & (uint8_t)MaterialProperty::DIRECTED;
 }
 
-/* GFX ====================================================================== */
+/* ========================================================================== */
+/*                                    OTHER                                   */
+/* ========================================================================== */
+
+#ifdef __DEBUG
+std::ostream&		operator<<(std::ostream& os, const Block& block) {
+	os << '[' << (uint32_t)block.getType() << ']';
+	return os;
+}
+#endif
 
 } // namespace vox

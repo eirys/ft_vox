@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/18 16:08:29 by etran             #+#    #+#             */
-/*   Updated: 2024/01/08 18:54:12 by etran            ###   ########.fr       */
+/*   Updated: 2024/01/11 13:32:17 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,10 @@
 # include <cstdint>
 
 # include "block_properties.h"
+
+#ifdef __DEBUG
+# include <ostream>
+#endif
 
 namespace vox {
 
@@ -50,6 +54,7 @@ public:
 	MaterialAspect		getAspectProperty() const noexcept;
 
 	uint16_t			computePackedData() const noexcept;
+	static Block		computeFromPackedData(const uint16_t packed_data);
 
 	/* GAMEPLAY ================================================================ */
 
@@ -78,5 +83,9 @@ private:
 	MaterialAspect		_aspect			= MaterialAspect::REGULAR;
 
 }; // class Block
+
+#ifdef __DEBUG
+	std::ostream&		operator<<(std::ostream& os, const Block& block);
+#endif
 
 } // namespace vox

@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/02 19:40:11 by etran             #+#    #+#             */
-/*   Updated: 2024/01/08 00:20:49 by etran            ###   ########.fr       */
+/*   Updated: 2024/01/11 13:11:53 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,7 @@
 
 #include <algorithm> // std::clamp
 #include <stdexcept> // std::runtime_error
+#include <array> // std::array
 
 namespace scop {
 

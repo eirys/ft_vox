@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/24 14:32:26 by etran             #+#    #+#             */
-/*   Updated: 2024/01/08 17:37:34 by etran            ###   ########.fr       */
+/*   Updated: 2024/01/11 14:41:24 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,10 +34,9 @@ void	ChunkTextureHandler::init(scop::core::Device& device) {
 	data.layer_count = RENDER_DISTANCE * RENDER_DISTANCE;
 
 	// Offset xz with y
-	// ex: if y = 0 -> uv = (x, z)
-	//        y = 4 -> uv = (x + (y % 4), z + (y / 4)) = (x, z + 1)
-	data.width = CHUNK_SIZE * CHUNK_SIZE;
-	data.height = CHUNK_SIZE * CHUNK_SIZE;
+	// ex: if y = 14 -> uv = (x + (y % 14), z + (y / 14)) = (x, z + 1)
+	data.width = CHUNK_SIZE * 4;
+	data.height = CHUNK_SIZE * 4;
 
 	super::_texture_buffer.setMetaData(data);
 
@@ -70,8 +69,8 @@ void	ChunkTextureHandler::copyData(
 	staging_buffer.map(device);
 	staging_buffer.copyFrom(
 		packed_chunks.data(),
-		packed_chunks.size() * sizeof(uint16_t));
-		// static_cast<std::size_t>(layer_size) * image_data.getLayerCount());
+		// packed_chunks.size() * sizeof(uint16_t));
+		static_cast<std::size_t>(layer_size) * image_data.getLayerCount());
 	staging_buffer.unmap(device);
 
 	// Setup copy command buffer

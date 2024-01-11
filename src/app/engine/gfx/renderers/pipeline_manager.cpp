@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/04 22:56:55 by etran             #+#    #+#             */
-/*   Updated: 2024/01/08 15:18:05 by etran            ###   ########.fr       */
+/*   Updated: 2024/01/11 13:12:25 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,7 +26,8 @@
 
 #include "debug.h"
 
-#include <stdexcept>
+#include <stdexcept> // std::runtime_error
+#include <array> // std::array
 
 namespace scop::gfx {
 

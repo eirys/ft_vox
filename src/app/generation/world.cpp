@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/18 17:42:36 by etran             #+#    #+#             */
-/*   Updated: 2024/01/08 18:55:16 by etran            ###   ########.fr       */
+/*   Updated: 2024/01/11 14:39:29 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -91,24 +91,20 @@ void	World::updateTerrainData(std::vector<uint16_t>& data) const {
 	uint32_t							offset = 0;
 
 	for (const Chunk& chunk: _chunks) {
-
 		chunk.fillChunkMap(chunk_data);
 		memcpy(
 			data.data() + offset,
 			chunk_data.data(),
 			chunk_data.size());
 
+#ifdef __DEBUG
 		if (offset == 0) {
-			// display chunk data
-			std::string str;
-			str.reserve(CHUNK_VOLUME);
-			for (uint32_t i = 0; i < CHUNK_VOLUME; ++i) {
-				uint8_t type = chunk_data[i] & 0xFF00;
-				str.data()[i] = type;
-			}
-
-			SCOP_DEBUG("Chunk data: '" << str <<'\'');
+			SCOP_DEBUG("Column [0]:");
+			for (uint32_t i = 0; i < CHUNK_VOLUME; ++i)
+				std::cout << Block::computeFromPackedData(chunk_data[i]);
+			std::cout << __NL;
 		}
+#endif
 
 		offset += chunk_data.size();
 	}

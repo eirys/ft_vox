@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/19 11:46:11 by etran             #+#    #+#             */
-/*   Updated: 2024/01/08 18:56:59 by etran            ###   ########.fr       */
+/*   Updated: 2024/01/11 14:40:55 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,14 +74,19 @@ bool	Chunk::isVisible(const BoundingFrustum& frustum) const {
  * @brief Packs each block data into 2 bytes and stores them in the chunk data array.
 */
 void	Chunk::fillChunkMap(std::array<uint16_t, CHUNK_VOLUME>& data) const {
+	// 16 blocks in x and z, y subdivided in rows of 4
+	constexpr const uint32_t LINE_SIZE = CHUNK_SIZE * 4;
+
 	for (uint8_t z = 0; z < CHUNK_SIZE; ++z) {
 		for (uint8_t x = 0; x < CHUNK_SIZE; ++x) {
 			for (uint8_t y = 0; y < CHUNK_SIZE; ++y) {
 				const Block& block = getBlock(x, y, z);
 
-				const uint32_t x_offsetted = (x + (y % 4)) * CHUNK_SIZE;
-				const uint32_t z_offsetted = (z + (y / 4)) * CHUNK_SIZE;
-				data[z_offsetted + x_offsetted] = block.computePackedData();
+				const uint32_t x_offsetted = (x * 4) + (y % 4);
+				const uint32_t z_offsetted = (z * 4) + (y / 4);
+				// const uint32_t x_offsetted = (x + (y % 4)) * CHUNK_SIZE;
+				// const uint32_t z_offsetted = (z + (y / 4)) * CHUNK_SIZE;
+				data[z_offsetted * LINE_SIZE + x_offsetted] = block.computePackedData();
 			}
 		}
 	}
@@ -162,8 +167,10 @@ void	Chunk::_generateChunk(const PerlinNoise& perlin_noise) {
 
 	for (uint8_t z = 0; z < CHUNK_SIZE; ++z) {
 		for (uint8_t x = 0; x < CHUNK_SIZE; ++x) {
-			float y = perlin_noise.noiseAt(_x * CHUNK_SIZE + x, _z * CHUNK_SIZE + z);
-			Block& block = getBlock(x, static_cast<uint8_t>(y), z);
+			float height = perlin_noise.noiseAt(_x * CHUNK_SIZE + x, _z * CHUNK_SIZE + z);
+			uint8_t y = std::floor(height);
+			Block& block = getBlock(x, y, z);
+
 			block.setType(MaterialType::GRASS);
 			_fillColumn(x, static_cast<uint8_t>(y), z);
 		}
