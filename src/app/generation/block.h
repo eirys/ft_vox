@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/18 16:08:29 by etran             #+#    #+#             */
-/*   Updated: 2024/01/11 13:32:17 by etran            ###   ########.fr       */
+/*   Updated: 2024/01/11 16:29:34 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -77,8 +77,8 @@ private:
 	/* ========================================================================= */
 
 	MaterialType		_type			= MaterialType::AIR;
-	MaterialGFXProperty	_gfx			= MaterialGFXProperty::OPAQUE;
-	MaterialState		_state			= MaterialState::SOLID;
+	MaterialGFXProperty	_gfx			= MaterialGFXProperty::TRANSPARENT;
+	MaterialState		_state			= MaterialState::VOID;
 	MaterialInteraction	_interaction	= MaterialInteraction::INTANGIBLE;
 	MaterialAspect		_aspect			= MaterialAspect::REGULAR;
 

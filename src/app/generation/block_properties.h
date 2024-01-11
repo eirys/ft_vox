@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/11 21:28:34 by etran             #+#    #+#             */
-/*   Updated: 2023/12/14 11:23:07 by etran            ###   ########.fr       */
+/*   Updated: 2024/01/11 16:29:06 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -69,9 +69,10 @@ enum class MaterialGFXProperty: uint8_t {
 enum class MaterialState: uint8_t {
 	Default				= 0,
 
-	SOLID				= Default,
-	FLUID				= 0x01,
-	HOT					= 0x02,
+	VOID				= Default,
+	SOLID				= 0x01,
+	FLUID				= 0x02,
+	HOT					= 0x03,
 
 	PropertyShift		= 16
 };
@@ -111,6 +112,7 @@ enum class MaterialProperty: uint32_t {
 	LIGHT_SOURCE		= (uint32_t)MaterialGFXProperty::LIGHT << (uint32_t)MaterialGFXProperty::PropertyShift,
 
 	// State
+	VOID				= (uint32_t)MaterialState::VOID << (uint32_t)MaterialState::PropertyShift,
 	SOLID				= (uint32_t)MaterialState::SOLID << (uint32_t)MaterialState::PropertyShift,
 	FLUID				= (uint32_t)MaterialState::FLUID << (uint32_t)MaterialState::PropertyShift,
 	HOT					= (uint32_t)MaterialState::HOT << (uint32_t)MaterialState::PropertyShift,

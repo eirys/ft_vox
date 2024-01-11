@@ -68,11 +68,6 @@ AABB	_getAABB() {
 	box.center = vec3(gl_GlobalInvocationID.xyz)
 				 + halfChunkSize
 				 * float(CHUNK_SIZE);
-	// box.center = vec3((float(gl_GlobalInvocationID.x)),
-	// 				  (float(gl_GlobalInvocationID.y)),
-	// 				  (float(gl_GlobalInvocationID.z)))
-				//  + halfChunkSize
-				//  * float(CHUNK_SIZE);
 	return box;
 }
 
