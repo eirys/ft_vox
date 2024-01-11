@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/24 14:32:26 by etran             #+#    #+#             */
-/*   Updated: 2024/01/11 14:41:24 by etran            ###   ########.fr       */
+/*   Updated: 2024/01/11 14:51:39 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -69,7 +69,6 @@ void	ChunkTextureHandler::copyData(
 	staging_buffer.map(device);
 	staging_buffer.copyFrom(
 		packed_chunks.data(),
-		// packed_chunks.size() * sizeof(uint16_t));
 		static_cast<std::size_t>(layer_size) * image_data.getLayerCount());
 	staging_buffer.unmap(device);
 

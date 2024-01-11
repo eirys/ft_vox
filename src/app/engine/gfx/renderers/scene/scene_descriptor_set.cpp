@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/31 11:08:11 by etran             #+#    #+#             */
-/*   Updated: 2024/01/05 12:47:57 by etran            ###   ########.fr       */
+/*   Updated: 2024/01/11 14:49:57 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,7 +44,7 @@ constexpr const uint32_t DescriptorSetSize = scop::utils::enumSize<ScenePipeline
 /*                                   PUBLIC                                   */
 /* ========================================================================== */
 
-SceneDescriptorSet::SceneDescriptorSet(): DescriptorSet(SCENE_SET) {}
+SceneDescriptorSet::SceneDescriptorSet(): DescriptorSet(DescriptorIndex::Scene) {}
 
 /* ========================================================================== */
 

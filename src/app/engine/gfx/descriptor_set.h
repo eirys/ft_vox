@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/12 12:08:24 by etran             #+#    #+#             */
-/*   Updated: 2024/01/05 12:45:06 by etran            ###   ########.fr       */
+/*   Updated: 2024/01/11 14:55:01 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,6 +18,8 @@
 // Std
 # include <vector> // std::vector
 # include <memory> // std::shared_ptr
+
+# include "glsl/decl.glslh"
 
 namespace scop::core {
 class Device;
@@ -51,6 +53,19 @@ struct DescriptorSizes {
 class DescriptorSet {
 public:
 	/* ========================================================================= */
+	/*                                   ENUMS                                   */
+	/* ========================================================================= */
+
+	enum class DescriptorIndex: uint32_t {
+		Scene = SCENE_SET,
+		Shadows = SHADOW_SET,
+		Culling = CULLING_SET,
+
+		First = Scene,
+		Last = Culling
+	};
+
+	/* ========================================================================= */
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
 
@@ -81,7 +96,7 @@ protected:
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
 
-	DescriptorSet(const uint32_t index);
+	DescriptorSet(const DescriptorIndex index);
 
 	virtual ~DescriptorSet() = default;
 

@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/31 11:34:47 by etran             #+#    #+#             */
-/*   Updated: 2024/01/05 12:48:17 by etran            ###   ########.fr       */
+/*   Updated: 2024/01/11 14:50:16 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,7 +40,7 @@ constexpr const uint32_t DescriptorSetSize = scop::utils::enumSize<ShadowsPipeli
 /*                                   PUBLIC                                   */
 /* ========================================================================== */
 
-ShadowsDescriptorSet::ShadowsDescriptorSet(): DescriptorSet(SHADOW_SET) {}
+ShadowsDescriptorSet::ShadowsDescriptorSet(): DescriptorSet(DescriptorIndex::Shadows) {}
 
 /* ========================================================================== */
 

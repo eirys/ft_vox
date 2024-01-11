@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/19 16:54:52 by etran             #+#    #+#             */
-/*   Updated: 2024/01/05 12:46:20 by etran            ###   ########.fr       */
+/*   Updated: 2024/01/11 14:49:40 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,6 @@
 #include "texture_handler.h"
 
 #include "utils.h"
-#include "glsl/decl.glslh"
 
 #include <stdexcept> // std::runtime_error
 #include <cassert> // assert
@@ -42,7 +41,7 @@ constexpr const uint32_t DescriptorSetSize = scop::utils::enumSize<CullingPipeli
 /*                                   PUBLIC                                   */
 /* ========================================================================== */
 
-CullingDescriptorSet::CullingDescriptorSet(): DescriptorSet(CULLING_SET) {}
+CullingDescriptorSet::CullingDescriptorSet(): DescriptorSet(DescriptorIndex::Culling) {}
 
 /* ========================================================================== */
 

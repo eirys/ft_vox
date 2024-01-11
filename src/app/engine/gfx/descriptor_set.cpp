@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/12 12:33:52 by etran             #+#    #+#             */
-/*   Updated: 2024/01/05 12:45:16 by etran            ###   ########.fr       */
+/*   Updated: 2024/01/11 14:54:56 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,7 @@ namespace scop::gfx {
 /*                                   PUBLIC                                   */
 /* ========================================================================== */
 
-DescriptorSet::DescriptorSet(const uint32_t index): _index(index) {}
+DescriptorSet::DescriptorSet(const DescriptorIndex index): _index((uint32_t)index) {}
 
 /* ========================================================================== */
 
