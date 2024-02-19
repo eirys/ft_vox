@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/16 01:00:19 by etran             #+#    #+#             */
-/*   Updated: 2024/01/08 14:51:49 by etran            ###   ########.fr       */
+/*   Updated: 2024/02/02 23:16:36 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -118,15 +118,15 @@ VkPhysicalDevice	Device::getPhysicalDevice() const noexcept {
 }
 
 VkQueue	Device::getGraphicsQueue() const noexcept {
-	return _graphics_queue;
+	return _queue_families.graphic;
 }
 
 VkQueue	Device::getPresentQueue() const noexcept {
-	return _present_queue;
+	return _queue_families.present;
 }
 
 VkQueue	Device::getComputeQueue() const noexcept {
-	return _compute_queue;
+	return _queue_families.compute;
 }
 
 /* ========================================================================== */
@@ -227,17 +227,17 @@ void	Device::_createLogicalDevice() {
 		_logical_device,
 		indices.graphics_family.value(),
 		0,
-		&_graphics_queue);
+		&_queue_families.graphic);
 	vkGetDeviceQueue(
 		_logical_device,
 		indices.present_family.value(),
 		0,
-		&_present_queue);
+		&_queue_families.present);
 	vkGetDeviceQueue(
 		_logical_device,
 		indices.compute_family.value(),
 		0,
-		&_compute_queue);
+		&_queue_families.compute);
 }
 
 /**
@@ -375,7 +375,8 @@ SwapChainSupportDetails	Device::_querySwapChainSupport(
 */
 QueueFamilyIndices	Device::_findQueueFamilies(VkPhysicalDevice device) {
 	QueueFamilyIndices	indices;
-	int	queue_index = 0;
+
+	uint32_t	queue_index = 0;
 	for (const VkQueueFamilyProperties& queue_family: _queue_properties) {
 		if (queue_family.queueFlags & VK_QUEUE_GRAPHICS_BIT) // Graphics
 			indices.graphics_family = queue_index;
@@ -386,7 +387,7 @@ QueueFamilyIndices	Device::_findQueueFamilies(VkPhysicalDevice device) {
 		// Present
 		VkBool32	present_support = false;
 		vkGetPhysicalDeviceSurfaceSupportKHR(device, queue_index, _vk_surface, &present_support);
-		if (present_support)
+		if (present_support) // Present
 			indices.present_family = queue_index;
 
 		if (indices.isComplete())

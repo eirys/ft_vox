@@ -6,16 +6,17 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/19 22:48:05 by etran             #+#    #+#             */
-/*   Updated: 2024/01/01 16:21:22 by etran            ###   ########.fr       */
+/*   Updated: 2024/01/15 07:56:49 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "pipeline_helpers.h"
 #include "device.h"
+#include "io_helpers.h"
 #include "utils.h"
 
 #ifndef SHD_BIN_DIR
-# define SHD_BIN_DIR ""
+# define SHD_BIN_DIR STR()
 #endif
 
 namespace scop::gfx {

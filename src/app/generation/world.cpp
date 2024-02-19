@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/18 17:42:36 by etran             #+#    #+#             */
-/*   Updated: 2024/01/11 16:44:02 by etran            ###   ########.fr       */
+/*   Updated: 2024/02/04 09:30:58 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -86,8 +86,8 @@ std::vector<uint8_t>	World::generateHeightBuffer() const noexcept {
 /**
  * @brief Given a vector, fills it with packed world data.
 */
-void	World::updateTerrainData(std::vector<uint16_t>& data) const {
-	std::array<uint16_t, CHUNK_VOLUME>	chunk_data;
+void	World::updateTerrainData(std::vector<uint32_t>& data) const {
+	std::array<uint32_t, CHUNK_VOLUME>	chunk_data;
 	uint32_t							offset = 0;
 
 	for (const Chunk& chunk: _chunks) {
@@ -217,7 +217,7 @@ uint8_t	World::getRenderDistance() const noexcept {
  * @brief Returns packed world data.
  * @note a block is represented by 2 bytes (r: block type, g: block properties).
 */
-const std::vector<uint16_t>&	World::getWorldData() const noexcept {
+const std::vector<uint32_t>&	World::getWorldData() const noexcept {
 	return _world_data;
 }
 
@@ -225,7 +225,7 @@ const std::vector<uint16_t>&	World::getWorldData() const noexcept {
  * @brief Returns packed world data.
  * @note a block is represented by 2 bytes (r: block type, g: block properties).
 */
-std::vector<uint16_t>&	World::getWorldData() noexcept {
+std::vector<uint32_t>&	World::getWorldData() noexcept {
 	return _world_data;
 }
 
@@ -235,7 +235,7 @@ std::vector<uint16_t>&	World::getWorldData() noexcept {
 
 /**
  * @brief Generates chunks from noise.
- * @note TODO: need biome system
+ * @todo biome system
 */
 void	World::_generateChunks(const PerlinNoise& noise) {
 	_chunks.reserve(_render_distance * _render_distance);

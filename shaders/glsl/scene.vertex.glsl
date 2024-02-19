@@ -2,11 +2,21 @@
 #define VS
 
 /* ========================================================================== */
+/*                                 DESCRIPTORS                                */
+/* ========================================================================== */
+
+#define CAMERA
+#define PROJECTOR
+#define CHUNKS
+#define QUAD_DATA
+#define QUAD_COUNT
+
+/* ========================================================================== */
 /*                                   MACROS                                   */
 /* ========================================================================== */
 
-#include "../../src/app/generation/chunk_macros.h"
 #include "decl.glslh"
+#include "descriptors.glslh"
 
 /* ========================================================================== */
 /*                                 SHADER I/O                                 */
@@ -18,24 +28,17 @@ OUTPUT(1)						vec3 out_uvw;
 OUTPUT(2)						vec3 out_shadow;
 
 /* UNIFORMS ================================================================= */
-UNIFORM(SCENE_SET, 0)			Camera { mat4 vp; }		camera;
-UNIFORM(SCENE_SET, 1)			Projector { mat4 vp; }	projector;
-UNIFORM(SCENE_SET, 5)			usampler2DArray			chunks;
-BUFFER(SCENE_SET, 6, std140)	readonly VerticesData {
-	// uint vertexData[MAX_RENDER_DISTANCE * CHUNK_VOLUME * FACE_COUNT];
-	uint vertexData[MAX_RENDER_PYRAMID];
-	// blockId: 12 bit		-> to retrieve block type in `chunks` + block position
-	// face: 4 bits			-> to retrieve which face to sample
-	// layer: 12 bits		-> to retrieve which chunk to offset block position
-	// orientation: 1 bit	-> swap uv orientation for directed faces
-	// unused: 3 bits
-} vertices_data;
+UNIFORM(SCENE_SET, 0)					CAMERA_DESCRIPTOR;
+UNIFORM(SCENE_SET, 1)					PROJECTOR_DESCRIPTOR;
+UNIFORM(SCENE_SET, 5) usampler2DArray	CHUNKS_DESCRIPTOR;
+BUFFER(SCENE_SET, 6) readonly			QUAD_DATA_DESCRIPTOR;
+BUFFER(SCENE_SET, 7) readonly			QUAD_COUNT_DESCRIPTOR;
 
 /* ========================================================================== */
 /*                                  INCLUDES                                  */
 /* ========================================================================== */
 
-#include "scene_rendering_tools.glslh"
+#include "tools.glslh"
 
 /* CONSTS =================================================================== */
 const vec3 normals[FACE_COUNT] = {
@@ -57,10 +60,11 @@ const vec2 uvs[FACE_COUNT] = {
 };
 
 /* ENTRYPOINT =============================================================== */
+
+
 void	main() {
-	uint		vertexInputPacked = vertices_data.vertexData[gl_InstanceIndex];
-	VertexInput	vertexInput = unpackVertexInput(vertexInputPacked);
-	Block 		block = getBlock(vertexInput.blockPos, vertexInput.layer);
+	QuadInput	quadInput = _getQuadInput();
+	Block 		block = getBlock(quadInput.blockUv, quadInput.layer);
 
 	// DEPRECATED
 	// Get actual instanceId
@@ -80,10 +84,10 @@ void	main() {
 	// vec4	position = extractPos(vertexId, cubePos, cubeHeight, chunkPos);
 
 	vec4	worldPos = vec4(block.worldPos, 1.0);
-	vec3	shadow_coord = (projector.vp * worldPos).xyz;
+	vec3	shadow_coord = (projector * worldPos).xyz;
 
 	out_shadow = vec3(shadow_coord.xy * 0.5f + 0.5f, shadow_coord.z);
-	out_normal = normals[vertexInput.face];
-	out_uvw = vec3(uvs[vertexInput.face], clamp(vertexInput.face, 0, 2));
-	gl_Position = camera.vp * worldPos;
+	out_normal = normals[quadInput.face];
+	out_uvw = vec3(uvs[quadInput.face], clamp(quadInput.face, 0, 2));
+	gl_Position = camera * worldPos;
 }

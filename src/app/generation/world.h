@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 22:53:11 by etran             #+#    #+#             */
-/*   Updated: 2023/12/31 02:01:29 by etran            ###   ########.fr       */
+/*   Updated: 2024/01/20 12:55:47 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,7 +52,7 @@ public:
 	// DEPRECATED
 	std::vector<uint8_t>			generateHeightBuffer() const noexcept;
 
-	void							updateTerrainData(std::vector<uint16_t>& data) const;
+	void							updateTerrainData(std::vector<uint32_t>& data) const;
 
 	/* ========================================================================== */
 
@@ -72,16 +72,16 @@ public:
 	float							getDepth() const noexcept;
 	uint8_t							getRenderDistance() const noexcept;
 
-	const std::vector<uint16_t>&	getWorldData() const noexcept;
-	std::vector<uint16_t>&			getWorldData() noexcept;
+	const std::vector<uint32_t>&	getWorldData() const noexcept;
+	std::vector<uint32_t>&			getWorldData() noexcept;
 
 private:
 	/* ========================================================================= */
-	/*                               CLASS MEMBERS                               */
+	/*                                    DATA                                   */
 	/* ========================================================================= */
 
 	std::vector<Chunk>				_chunks;
-	std::vector<uint16_t>			_world_data;
+	std::vector<uint32_t>			_world_data;
 	scop::Vect3						_origin = {0.0f, 0.0f, 0.0f};
 	// Light todo put here
 

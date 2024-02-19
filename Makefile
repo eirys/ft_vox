@@ -6,7 +6,7 @@
 #    By: etran <etran@student.42.fr>                +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/04/06 03:40:09 by eli               #+#    #+#              #
-#    Updated: 2024/01/08 17:23:09 by etran            ###   ########.fr        #
+#    Updated: 2024/01/31 12:14:53 by etran            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -41,8 +41,11 @@ SHADOW_DIR	:=	$(REN_DIR)/shadows
 
 # gameplay
 GAME_DIR	:=	$(APP_DIR)/gameplay
-GEN_DIR		:=	$(APP_DIR)/generation
 CHAR_DIR	:=	$(GAME_DIR)/character
+
+# generation
+GEN_DIR		:=	$(APP_DIR)/generation
+BLOCK_DIR	:=	$(GEN_DIR)/block
 
 # other
 UTILS_DIR	:=	$(APP_DIR)/utils
@@ -64,6 +67,7 @@ SUBDIRS		:=	$(APP_DIR)		\
 				$(CULL_DIR)		\
 				$(GAME_DIR)		\
 				$(GEN_DIR)		\
+				$(BLOCK_DIR)	\
 				$(CHAR_DIR)		\
 				$(UTILS_DIR)	\
 				$(IMG_DIR)		\
@@ -82,12 +86,11 @@ SRC_FILES	:=	$(MATH_DIR)/matrix.cpp \
 				$(MODEL_DIR)/obj_parser.cpp \
 				$(MODEL_DIR)/mtl_parser.cpp \
 				$(GEN_DIR)/perlin_noise.cpp \
-				$(GEN_DIR)/cube.cpp \
-				$(GEN_DIR)/packed_cube.cpp \
-				$(GEN_DIR)/block.cpp \
 				$(GEN_DIR)/chunk.cpp \
 				$(GEN_DIR)/world.cpp \
 				$(GEN_DIR)/world_generator.cpp \
+				$(BLOCK_DIR)/block.cpp \
+				$(BLOCK_DIR)/block_data.cpp \
 				$(IMG_DIR)/ppm_loader.cpp \
 				$(IMG_DIR)/image_handler.cpp \
 				$(GAME_DIR)/game_state.cpp \
@@ -223,7 +226,7 @@ all: $(NAME)
 -include $(DEP)
 
 # Compile binary
-$(NAME): $(SHD_BIN) $(OBJ)
+$(NAME):  shaders $(OBJ)
 	@$(CXX) $(CFLAGS) $(OBJ) -o $(NAME) $(LDFLAGS)
 	@echo "\`$(NAME)\` successfully created."
 
@@ -238,6 +241,9 @@ $(SHD_BIN_DIR)/%.spv: $(SHD_DIR)/glsl/%.glsl
 	@mkdir -p $(OBJ_DIR) $(SHD_BIN_DIR)
 	@echo "Compiling shader $<..."
 	@$(GLSLC) -fshader-stage=$(subst .,,$(suffix $(basename $<))) $< -o $@
+
+.PHONY: shaders
+shaders: $(SHD_BIN)
 
 .PHONY: clean_shaders
 clean_shaders:

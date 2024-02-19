@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/31 11:08:11 by etran             #+#    #+#             */
-/*   Updated: 2024/01/11 14:49:57 by etran            ###   ########.fr       */
+/*   Updated: 2024/01/31 11:40:52 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,10 +32,11 @@ enum class ScenePipelineDescriptors: uint32_t {
 	BlockTextures	= 3,
 	ShadowMap		= 4,
 	ChunkMap		= 5,
-	VerticesData	= 6,
+	QuadData		= 6,
+	QuadCount		= 7,
 
 	First = Camera,
-	Last = VerticesData
+	Last = QuadCount
 };
 
 constexpr const uint32_t DescriptorSetSize = scop::utils::enumSize<ScenePipelineDescriptors>();
@@ -59,7 +60,8 @@ void	SceneDescriptorSet::init(scop::core::Device& device) {
 		super::createLayoutBinding(DescriptorType::COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, (uint32_t)ScenePipelineDescriptors::BlockTextures),
 		super::createLayoutBinding(DescriptorType::COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, (uint32_t)ScenePipelineDescriptors::ShadowMap),
 		super::createLayoutBinding(DescriptorType::COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_VERTEX_BIT, (uint32_t)ScenePipelineDescriptors::ChunkMap),
-		super::createLayoutBinding(DescriptorType::STORAGE_BUFFER, VK_SHADER_STAGE_VERTEX_BIT, (uint32_t)ScenePipelineDescriptors::VerticesData)
+		super::createLayoutBinding(DescriptorType::STORAGE_BUFFER, VK_SHADER_STAGE_VERTEX_BIT, (uint32_t)ScenePipelineDescriptors::QuadData),
+		super::createLayoutBinding(DescriptorType::STORAGE_BUFFER, VK_SHADER_STAGE_VERTEX_BIT, (uint32_t)ScenePipelineDescriptors::QuadCount)
 	};
 
 	VkDescriptorSetLayoutCreateInfo	layout_info{};
@@ -114,10 +116,15 @@ void	SceneDescriptorSet::fill(
 	chunk_info.imageView = input.getChunkMap()->getTextureBuffer().getView();
 	chunk_info.sampler = input.getChunkMap()->getTextureSampler();
 
-	VkDescriptorBufferInfo	vertices_data_info{};
-	vertices_data_info.buffer = input.getVerticesDataBuffer().getBuffer();
-	vertices_data_info.offset = (uint32_t)InputBufferOffset::VerticesData;
-	vertices_data_info.range = (uint32_t)InputBufferSize::VerticesData;
+	VkDescriptorBufferInfo	quad_data_info{};
+	quad_data_info.buffer = input.getQuadDataBuffer().getBuffer();
+	quad_data_info.offset = (VkDeviceSize)InputBufferOffset::QuadData;
+	quad_data_info.range = (VkDeviceSize)InputBufferSize::QuadData;
+
+	VkDescriptorBufferInfo	quad_count_info{};
+	quad_count_info.buffer = input.getQuadCountBuffer().getBuffer();
+	quad_count_info.offset = (VkDeviceSize)InputBufferOffset::QuadCount;
+	quad_count_info.range = (VkDeviceSize)InputBufferSize::QuadCount;
 
 	std::array<VkWriteDescriptorSet, DescriptorSetSize>	writes{
 		super::createWriteDescriptorSet(DescriptorType::UNIFORM_BUFFER, &camera_info, (uint32_t)ScenePipelineDescriptors::Camera),
@@ -126,7 +133,8 @@ void	SceneDescriptorSet::fill(
 		super::createWriteDescriptorSet(DescriptorType::COMBINED_IMAGE_SAMPLER, &texture_info, (uint32_t)ScenePipelineDescriptors::BlockTextures),
 		super::createWriteDescriptorSet(DescriptorType::COMBINED_IMAGE_SAMPLER, &depth_info, (uint32_t)ScenePipelineDescriptors::ShadowMap),
 		super::createWriteDescriptorSet(DescriptorType::COMBINED_IMAGE_SAMPLER, &chunk_info, (uint32_t)ScenePipelineDescriptors::ChunkMap),
-		super::createWriteDescriptorSet(DescriptorType::STORAGE_BUFFER, &vertices_data_info, (uint32_t)ScenePipelineDescriptors::VerticesData)
+		super::createWriteDescriptorSet(DescriptorType::STORAGE_BUFFER, &quad_data_info, (uint32_t)ScenePipelineDescriptors::QuadData),
+		super::createWriteDescriptorSet(DescriptorType::STORAGE_BUFFER, &quad_count_info, (uint32_t)ScenePipelineDescriptors::QuadCount)
 	};
 
 	vkUpdateDescriptorSets(

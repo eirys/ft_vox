@@ -38,7 +38,7 @@ void	CullingTextureHandler::init(scop::core::Device& device) {
 	_createTextureImages(device);
 	_createTextureImageView(device);
 
-	CommandBuffer	command_buffer = CommandPool::createBuffer(device, CommandBufferType::DRAW);
+	CommandBuffer	command_buffer = CommandPool::createCommandBuffer(device, CommandBufferType::DRAW);
 	command_buffer.begin();
 
 	VkImageSubresourceRange	transfer_barrier{};
@@ -89,7 +89,7 @@ void	CullingTextureHandler::copyData(
 	staging_buffer.copyFrom(chunk_map.data(), static_cast<std::size_t>(image_size));
 	staging_buffer.unmap(device);
 
-	CommandBuffer	command_buffer = CommandPool::createBuffer(device, CommandBufferType::DRAW);
+	CommandBuffer	command_buffer = CommandPool::createCommandBuffer(device, CommandBufferType::DRAW);
 	command_buffer.begin();
 
 	VkImageSubresourceRange	transfer_barrier{};

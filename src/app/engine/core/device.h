@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:14:30 by etran             #+#    #+#             */
-/*   Updated: 2023/12/04 23:15:10 by etran            ###   ########.fr       */
+/*   Updated: 2024/02/02 23:17:50 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -89,11 +89,22 @@ public:
 	VkSampleCountFlagBits	getMsaaSamples() const noexcept;
 	VkDevice				getLogicalDevice() const noexcept;
 	VkPhysicalDevice		getPhysicalDevice() const noexcept;
+
 	VkQueue					getGraphicsQueue() const noexcept;
 	VkQueue					getPresentQueue() const noexcept;
 	VkQueue					getComputeQueue() const noexcept;
 
 private:
+	/* ========================================================================= */
+	/*                                HELPER CLASS                               */
+	/* ========================================================================= */
+
+	struct QueueFamilies {
+		VkQueue				graphic;
+		VkQueue				present;
+		VkQueue				compute;
+	};
+
 	/* ========================================================================= */
 	/*                               CONST MEMBERS                               */
 	/* ========================================================================= */
@@ -103,7 +114,7 @@ private:
 	};
 
 	/* ========================================================================= */
-	/*                               CLASS MEMBERS                               */
+	/*                                    DATA                                   */
 	/* ========================================================================= */
 
 	VkSurfaceKHR			_vk_surface;
@@ -112,9 +123,7 @@ private:
 	VkPhysicalDevice		_physical_device = VK_NULL_HANDLE;
 	VkDevice				_logical_device;
 
-	VkQueue					_graphics_queue;
-	VkQueue					_present_queue;
-	VkQueue					_compute_queue; // TODO
+	QueueFamilies			_queue_families;
 
 	std::vector<VkQueueFamilyProperties>	_queue_properties;
 

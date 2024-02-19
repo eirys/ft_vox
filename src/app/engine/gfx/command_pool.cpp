@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/16 12:47:19 by etran             #+#    #+#             */
-/*   Updated: 2024/01/08 15:10:11 by etran            ###   ########.fr       */
+/*   Updated: 2024/01/31 12:19:14 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,7 +56,7 @@ void	CommandPool::destroy(scop::core::Device& device) {
 	vkDestroyCommandPool(device.getLogicalDevice(), _compute_pool, nullptr);
 }
 
-CommandBuffer	CommandPool::createBuffer(
+CommandBuffer	CommandPool::createCommandBuffer(
 	scop::core::Device& device,
 	CommandBufferType type)
 {

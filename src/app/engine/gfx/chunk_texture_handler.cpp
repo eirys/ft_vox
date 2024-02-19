@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/24 14:32:26 by etran             #+#    #+#             */
-/*   Updated: 2024/01/11 14:51:39 by etran            ###   ########.fr       */
+/*   Updated: 2024/01/31 12:19:14 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,11 +30,8 @@ namespace scop::gfx {
 void	ChunkTextureHandler::init(scop::core::Device& device) {
 	ImageMetaData	data{};
 
-	data.format = VK_FORMAT_R8G8_UINT;
+	data.format = VK_FORMAT_R8G8B8A8_UINT;
 	data.layer_count = RENDER_DISTANCE * RENDER_DISTANCE;
-
-	// Offset xz with y
-	// ex: if y = 14 -> uv = (x + (y % 14), z + (y / 14)) = (x, z + 1)
 	data.width = CHUNK_SIZE * 4;
 	data.height = CHUNK_SIZE * 4;
 
@@ -50,10 +47,10 @@ void	ChunkTextureHandler::init(scop::core::Device& device) {
 */
 void	ChunkTextureHandler::copyData(
 	scop::core::Device& device,
-	const std::vector<uint16_t>& packed_chunks
+	const std::vector<uint32_t>& packed_chunks
 ) {
 	const ImageMetaData& image_data = super::_texture_buffer.getMetaData();
-	const VkDeviceSize layer_size = image_data.getWidth() * image_data.getHeight() * sizeof(uint16_t);
+	const VkDeviceSize layer_size = image_data.getWidth() * image_data.getHeight() * image_data.getPixelSize();
 	const VkDeviceSize image_size = layer_size * image_data.getLayerCount();
 
 	// Create staging buffer to copy images data to (cpu->gpu)
@@ -73,7 +70,7 @@ void	ChunkTextureHandler::copyData(
 	staging_buffer.unmap(device);
 
 	// Setup copy command buffer
-	CommandBuffer	command_buffer = CommandPool::createBuffer(device, CommandBufferType::DRAW);
+	CommandBuffer	command_buffer = CommandPool::createCommandBuffer(device, CommandBufferType::DRAW);
 	command_buffer.begin();
 
 	// Transition to transfer destination layout
@@ -125,12 +122,12 @@ void	ChunkTextureHandler::copyData(
 */
 void	ChunkTextureHandler::updateData(
 	scop::core::Device& device,
-	const std::vector<uint16_t>& chunks,
+	const std::vector<uint32_t>& chunks,
 	const Travelator& travelator
 ) {
 	(void)device, (void)chunks, (void)travelator;
 	// const ImageMetaData& image_data = super::_texture_buffer.getMetaData();
-	// const VkDeviceSize layer_size = image_data.getWidth() * image_data.getHeight() * sizeof(uint16_t);
+	// const VkDeviceSize layer_size = image_data.getWidth() * image_data.getHeight() * sizeof(uint32_t);
 	// const VkDeviceSize image_size = layer_size * image_data.getLayerCount();
 
 	//todo;

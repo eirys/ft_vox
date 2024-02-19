@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/18 16:08:29 by etran             #+#    #+#             */
-/*   Updated: 2024/01/11 16:29:34 by etran            ###   ########.fr       */
+/*   Updated: 2024/01/20 14:15:54 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,9 @@
 // Std
 # include <cstdint>
 
-# include "block_properties.h"
+# include "block_data.h"
+// # include "block_properties.h"
+// # include "block_types.h"
 
 #ifdef __DEBUG
 # include <ostream>
@@ -42,16 +44,7 @@ public:
 	/* ========================================================================= */
 
 	void				setType(const MaterialType block_type) noexcept;
-	void				setGFXProperty(const MaterialGFXProperty property) noexcept;
-	void				setStateProperty(const MaterialState property) noexcept;
-	void				setInteractionProperty(const MaterialInteraction property) noexcept;
-	void				setAspectProperty(const MaterialAspect property) noexcept;
-
 	MaterialType		getType() const noexcept;
-	MaterialGFXProperty	getGFXProperty() const noexcept;
-	MaterialState		getStateProperty() const noexcept;
-	MaterialInteraction	getInteractionProperty() const noexcept;
-	MaterialAspect		getAspectProperty() const noexcept;
 
 	uint16_t			computePackedData() const noexcept;
 	static Block		computeFromPackedData(const uint16_t packed_data);
@@ -68,19 +61,17 @@ public:
 
 	bool				isTransparent() const noexcept;
 	bool				isSemiTransparent() const noexcept;
+	bool				isOpaque() const noexcept;
+
 	bool				isLightSource() const noexcept;
 	// TODO
 
 private:
 	/* ========================================================================= */
-	/*                               CLASS MEMBERS                               */
+	/*                                    DATA                                   */
 	/* ========================================================================= */
 
-	MaterialType		_type			= MaterialType::AIR;
-	MaterialGFXProperty	_gfx			= MaterialGFXProperty::TRANSPARENT;
-	MaterialState		_state			= MaterialState::VOID;
-	MaterialInteraction	_interaction	= MaterialInteraction::INTANGIBLE;
-	MaterialAspect		_aspect			= MaterialAspect::REGULAR;
+	BlockData			_data;
 
 }; // class Block
 

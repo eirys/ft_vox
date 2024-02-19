@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/06 21:30:07 by etran             #+#    #+#             */
-/*   Updated: 2024/01/06 21:50:45 by etran            ###   ########.fr       */
+/*   Updated: 2024/01/31 16:11:00 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,6 +31,19 @@ void	GfxSemaphore::init(scop::core::Device& device) {
 
 void	GfxSemaphore::destroy(scop::core::Device& device) {
 	vkDestroySemaphore(device.getLogicalDevice(), _semaphore, nullptr);
+}
+
+/* ========================================================================== */
+
+void	GfxSemaphore::signal(VkQueue queue) {
+	VkSubmitInfo	submit_info = {};
+	submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+
+	submit_info.signalSemaphoreCount = 1;
+	submit_info.pSignalSemaphores = &_semaphore;
+
+	if (vkQueueSubmit(queue, 1, &submit_info, VK_NULL_HANDLE) != VK_SUCCESS)
+		throw std::runtime_error("failed to signal semaphore");
 }
 
 /* ========================================================================== */

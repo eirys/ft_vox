@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/02 16:09:44 by etran             #+#    #+#             */
-/*   Updated: 2024/01/08 17:08:47 by etran            ###   ########.fr       */
+/*   Updated: 2024/01/31 16:35:05 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,11 +50,8 @@ void	Engine::init(Window& window, const vox::GameState& game) {
 	_swap_chain.init(_core.getDevice(), window);
 
 	_command_pool.init(_core.getDevice());
-	_draw_buffer = _command_pool.createBuffer(_core.getDevice(), gfx::CommandBufferType::DRAW);
-	_compute_buffer = _command_pool.createBuffer(_core.getDevice(), gfx::CommandBufferType::COMPUTE);
-
-	// _draw_buffer.init(_core.getDevice(), gfx::CommandBufferType::DRAW);
-	// _compute_buffer.init(_core.getDevice(), gfx::CommandBufferType::COMPUTE);
+	_draw_buffer = _command_pool.createCommandBuffer(_core.getDevice(), gfx::CommandBufferType::DRAW);
+	_compute_buffer = _command_pool.createCommandBuffer(_core.getDevice(), gfx::CommandBufferType::COMPUTE);
 
 	_input_handler.init(_core.getDevice(), game);
 
@@ -97,15 +94,14 @@ void	Engine::render(
 	const vox::GameState& game,
 	Timer& timer
 ) {
-	const auto& semaphores = _synchronizer.getSemaphores();
-	const auto& fences = _synchronizer.getFences();
+	const scop::Synchronizer::Semaphores& semaphores = _synchronizer.getSemaphores();
+	const scop::Synchronizer::Fences& fences = _synchronizer.getFences();
 
 	// Retrieve image for swap chain -----
 	fences.graphics_in_flight.wait(_core.getDevice());
 	uint32_t	image_index;
-	if (_swap_chain.acquireNextImage(_core.getDevice(), _synchronizer, &image_index) == false) {
+	if (_swap_chain.acquireNextImage(_core.getDevice(), _synchronizer, &image_index) == false)
 		return _updatePresentation(window);
-	}
 	fences.graphics_in_flight.reset(_core.getDevice());
 	// -----------------------------------
 
@@ -136,7 +132,7 @@ void	Engine::render(
 	_pipeline_manager.getScenePipeline()->update(_updateUbo(game));
 	// ------------------------------
 
-	std::array<VkSemaphore, 1>				signal_semaphores;
+	std::array<VkSemaphore, 2>				signal_semaphores;
 	std::array<VkSemaphore, 2>				wait_semaphores;
 	std::array<VkPipelineStageFlags, 2>		wait_stages;
 	std::array<VkCommandBuffer, 1>			command_buffers;
@@ -154,11 +150,12 @@ void	Engine::render(
 	fences.compute_in_flight.reset(_core.getDevice());
 
 	command_buffers = { _compute_buffer.getBuffer() };
-	signal_semaphores = { semaphores.compute_finished.getSemaphore() };
+	signal_semaphores =	{ semaphores.compute_finished.getSemaphore() };
 	submit_info.signalSemaphoreCount = 1;
-	wait_stages = {};// { VK_PIPELINE_STAGE_VERTEX_SHADER_BIT };
-	wait_semaphores = {}; //{ semaphores.render_finished.getSemaphore() };
-	submit_info.waitSemaphoreCount = 0;
+
+	wait_stages = { VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT };
+	wait_semaphores = { semaphores.graphics_finished.getSemaphore() };
+	submit_info.waitSemaphoreCount = 1;
 
 	SCOP_DEBUG("Submit compute command buffer");
 	if (vkQueueSubmit(_core.getDevice().getComputeQueue(), 1, &submit_info, fences.compute_in_flight.getFence()) != VK_SUCCESS) {
@@ -169,9 +166,10 @@ void	Engine::render(
 
 	// Graphics ---------------------
 	command_buffers = { _draw_buffer.getBuffer() };
-	signal_semaphores = { semaphores.render_finished.getSemaphore() };
-	submit_info.signalSemaphoreCount = 1;
-	wait_stages = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT };
+	signal_semaphores = { semaphores.render_finished.getSemaphore(), semaphores.graphics_finished.getSemaphore() };
+	submit_info.signalSemaphoreCount = 2;
+
+	wait_stages = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_VERTEX_INPUT_BIT };
 	wait_semaphores = { semaphores.image_available.getSemaphore(), semaphores.compute_finished.getSemaphore() };
 	submit_info.waitSemaphoreCount = 2;
 

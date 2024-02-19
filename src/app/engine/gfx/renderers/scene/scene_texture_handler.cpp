@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/10 22:32:26 by etran             #+#    #+#             */
-/*   Updated: 2024/01/08 16:40:04 by etran            ###   ########.fr       */
+/*   Updated: 2024/01/31 12:19:14 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,7 +60,7 @@ void	SceneTextureHandler::_createTextureImages(scop::core::Device& device) {
 	super::_texture_buffer.setMetaData(data);
 
 	// A layer is an image.
-	const VkDeviceSize	layer_size = image_width * image_width * sizeof(uint32_t);
+	const VkDeviceSize	layer_size = data.getWidth() * data.getHeight() * data.getPixelSize();
 	// Size of the VkImage, including all layers.
 	const VkDeviceSize	image_size = layer_size * data.getLayerCount();
 
@@ -93,7 +93,7 @@ void	SceneTextureHandler::_createTextureImages(scop::core::Device& device) {
 		0);
 
 	// Setup copy command buffer
-	CommandBuffer	command_buffer = CommandPool::createBuffer(device, CommandBufferType::DRAW);
+	CommandBuffer	command_buffer = CommandPool::createCommandBuffer(device, CommandBufferType::DRAW);
 	command_buffer.begin();
 
 	// Transition to transfer destination layout

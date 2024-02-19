@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/23 06:44:38 by etran             #+#    #+#             */
-/*   Updated: 2024/01/05 13:47:11 by etran            ###   ########.fr       */
+/*   Updated: 2024/01/31 12:29:48 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -104,9 +104,10 @@ void	Buffer::copyFrom(
 */
 void	Buffer::copyTo(
 	void* data_dst,
-	std::size_t data_size
+	std::size_t data_size,
+	std::size_t offset
 ) noexcept {
-	memcpy(data_dst, _data, data_size);
+	memcpy(reinterpret_cast<uint8_t*>(data_dst) + offset, _data, data_size);
 }
 
 /**
@@ -173,7 +174,9 @@ void	Buffer::_allocateBuffer(
 	}
 
 	// Bind memory to instance
-	vkBindBufferMemory(device.getLogicalDevice(), _buffer, _memory, 0);
+	if (vkBindBufferMemory(device.getLogicalDevice(), _buffer, _memory, 0) != VK_SUCCESS) {
+		throw std::runtime_error("failed to bind buffer memory");
+	}
 }
 
 } // namespace scop::gfx

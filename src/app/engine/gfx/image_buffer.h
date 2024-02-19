@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/29 08:58:40 by etran             #+#    #+#             */
-/*   Updated: 2023/11/16 22:38:47 by etran            ###   ########.fr       */
+/*   Updated: 2024/01/20 20:26:21 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,7 @@
 
 // Std
 # include <cstddef> // uint32_t
+# include <cassert> // assert
 
 namespace scop::core {
 class Device;
@@ -36,13 +37,58 @@ struct ImageMetaData {
 	uint32_t			depth = 1;
 	uint32_t			mip_count = 1;
 
-
 	VkFormat			getFormat() const noexcept { return format; }
 	uint32_t			getWidth() const noexcept { return width; }
 	uint32_t			getHeight() const noexcept { return height; }
 	uint32_t			getDepth() const noexcept { return depth; }
 	uint32_t			getLayerCount() const noexcept { return layer_count; }
 	uint32_t			getMipCount() const noexcept { return mip_count; }
+
+	constexpr uint32_t	getPixelSize() const noexcept {
+		switch (format) {
+
+			// uint
+			case VK_FORMAT_R8_UINT:
+				return sizeof(uint8_t);
+
+			case VK_FORMAT_R16_UINT:
+			case VK_FORMAT_R8G8_UINT:
+				return sizeof(uint16_t);
+
+			case VK_FORMAT_R8G8B8_UINT:
+			case VK_FORMAT_B8G8R8_UINT:
+				return sizeof(uint8_t) * 3;
+
+			case VK_FORMAT_R32_UINT:
+			case VK_FORMAT_R16G16_UINT:
+			case VK_FORMAT_R8G8B8A8_UINT:
+			case VK_FORMAT_B8G8R8A8_UINT:
+				return sizeof(uint32_t);
+
+			case VK_FORMAT_R16G16B16_UINT:
+				return sizeof(uint16_t) * 3;
+
+			case VK_FORMAT_R64_UINT:
+			case VK_FORMAT_R32G32_UINT:
+			case VK_FORMAT_R16G16B16A16_UINT:
+				return sizeof(uint64_t);
+
+			case VK_FORMAT_R32G32B32_UINT:
+				return sizeof(uint32_t) * 3;
+
+			case VK_FORMAT_R64G64_UINT:
+			case VK_FORMAT_R32G32B32A32_UINT:
+				return sizeof(uint64_t) * 2;
+
+			// sfloat
+			case VK_FORMAT_R8G8B8A8_SRGB:
+				return sizeof(uint32_t);
+
+			default:
+				assert(false);
+				return 0;
+		}
+	}
 };
 
 /**
@@ -112,7 +158,7 @@ public:
 
 private:
 	/* ========================================================================= */
-	/*                               CLASS MEMBERS                               */
+	/*                                    DATA                                   */
 	/* ========================================================================= */
 
 	VkImage				_image;

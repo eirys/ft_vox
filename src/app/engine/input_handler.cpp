@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/16 13:03:48 by etran             #+#    #+#             */
-/*   Updated: 2024/01/08 15:18:05 by etran            ###   ########.fr       */
+/*   Updated: 2024/02/04 18:17:24 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,11 +56,11 @@ void	InputHandler::init(core::Device& device, const vox::GameState& game) {
 	SCOP_DEBUG("Quad count buffer created");
 
 	SCOP_DEBUG("Create vertices data buffer...");
-	_vertices_data_buffer.init(
+	_quad_data_buffer.init(
 		device,
-		(VkDeviceSize)InputBufferSize::VerticesData,
+		(VkDeviceSize)InputBufferSize::QuadData,
 		VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
-		VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+		0);
 	SCOP_DEBUG("Vertices data buffer created");
 }
 
@@ -69,7 +69,7 @@ void	InputHandler::destroy(core::Device& device) {
 
 	_frustum_buffer.destroy(device);
 	_quad_count_buffer.destroy(device);
-	_vertices_data_buffer.destroy(device);
+	_quad_data_buffer.destroy(device);
 }
 
 /* ========================================================================== */
@@ -99,9 +99,9 @@ void	InputHandler::retrieveData() {
 	SCOP_DEBUG("Retrieving data");
 
 // Retrieve quad count
-	uint32_t quad_counts[MAX_RENDER_DISTANCE];
+	uint32_t quad_counts[TOTAL_CHUNKS];
 	_quad_count_buffer.copyTo(quad_counts, (uint32_t)InputBufferSize::QuadCount);
-	for (uint32_t i = 0; i < MAX_RENDER_DISTANCE; ++i) {
+	for (uint32_t i = 0; i < TOTAL_CHUNKS; ++i) {
 		_instances_count += quad_counts[i];
 	}
 
@@ -138,12 +138,12 @@ gfx::Buffer&	InputHandler::getQuadCountBuffer() noexcept {
 	return _quad_count_buffer;
 }
 
-const gfx::Buffer&	InputHandler::getVerticesDataBuffer() const noexcept {
-	return _vertices_data_buffer;
+const gfx::Buffer&	InputHandler::getQuadDataBuffer() const noexcept {
+	return _quad_data_buffer;
 }
 
-gfx::Buffer&	InputHandler::getVerticesDataBuffer() noexcept {
-	return _vertices_data_buffer;
+gfx::Buffer&	InputHandler::getQuadDataBuffer() noexcept {
+	return _quad_data_buffer;
 }
 
 } // namespace scop

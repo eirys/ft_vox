@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/19 16:54:52 by etran             #+#    #+#             */
-/*   Updated: 2024/01/11 14:49:40 by etran            ###   ########.fr       */
+/*   Updated: 2024/01/31 12:44:04 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,13 +26,13 @@
 namespace scop::gfx {
 
 enum class CullingPipelineDescriptors: uint32_t {
-	Frustum = 0,
-	ChunkMap,
-	QuadCount,
-	VerticesData,
+	Frustum		= 0,
+	ChunkMap	= 1,
+	QuadCount	= 2,
+	QuadData	= 3,
 
 	First = Frustum,
-	Last = VerticesData
+	Last = QuadData
 };
 
 constexpr const uint32_t DescriptorSetSize = scop::utils::enumSize<CullingPipelineDescriptors>();
@@ -50,7 +50,7 @@ void CullingDescriptorSet::init(scop::core::Device& device) {
 		super::createLayoutBinding(DescriptorType::UNIFORM_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT, (uint32_t)CullingPipelineDescriptors::Frustum),
 		super::createLayoutBinding(DescriptorType::COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_COMPUTE_BIT, (uint32_t)CullingPipelineDescriptors::ChunkMap),
 		super::createLayoutBinding(DescriptorType::STORAGE_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT, (uint32_t)CullingPipelineDescriptors::QuadCount),
-		super::createLayoutBinding(DescriptorType::STORAGE_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT, (uint32_t)CullingPipelineDescriptors::VerticesData)
+		super::createLayoutBinding(DescriptorType::STORAGE_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT, (uint32_t)CullingPipelineDescriptors::QuadData)
 	};
 
 	VkDescriptorSetLayoutCreateInfo	layout_info{};
@@ -80,21 +80,19 @@ void	CullingDescriptorSet::fill(
 
 	VkDescriptorBufferInfo	quad_count_info{};
 	quad_count_info.buffer = input.getQuadCountBuffer().getBuffer();
-	quad_count_info.offset = (uint32_t)InputBufferOffset::QuadCount;
-	quad_count_info.range = (uint32_t)InputBufferSize::QuadCount;
-	assert(quad_count_info.buffer != VK_NULL_HANDLE);
+	quad_count_info.offset = (VkDeviceSize)InputBufferOffset::QuadCount;
+	quad_count_info.range = (VkDeviceSize)InputBufferSize::QuadCount;
 
-	VkDescriptorBufferInfo	vertices_data_info{};
-	vertices_data_info.buffer = input.getVerticesDataBuffer().getBuffer();
-	vertices_data_info.offset = (uint32_t)InputBufferOffset::VerticesData;
-	vertices_data_info.range = (uint32_t)InputBufferSize::VerticesData;
-	assert(vertices_data_info.buffer != VK_NULL_HANDLE);
+	VkDescriptorBufferInfo	quad_data_info{};
+	quad_data_info.buffer = input.getQuadDataBuffer().getBuffer();
+	quad_data_info.offset = (VkDeviceSize)InputBufferOffset::QuadData;
+	quad_data_info.range = (VkDeviceSize)InputBufferSize::QuadData;
 
 	std::array<VkWriteDescriptorSet, DescriptorSetSize>	writes = {
 		super::createWriteDescriptorSet(DescriptorType::UNIFORM_BUFFER, &frustum_info, (uint32_t)CullingPipelineDescriptors::Frustum),
 		super::createWriteDescriptorSet(DescriptorType::COMBINED_IMAGE_SAMPLER, &chunk_info, (uint32_t)CullingPipelineDescriptors::ChunkMap),
 		super::createWriteDescriptorSet(DescriptorType::STORAGE_BUFFER, &quad_count_info, (uint32_t)CullingPipelineDescriptors::QuadCount),
-		super::createWriteDescriptorSet(DescriptorType::STORAGE_BUFFER, &vertices_data_info, (uint32_t)CullingPipelineDescriptors::VerticesData)
+		super::createWriteDescriptorSet(DescriptorType::STORAGE_BUFFER, &quad_data_info, (uint32_t)CullingPipelineDescriptors::QuadData)
 	};
 
 	vkUpdateDescriptorSets(

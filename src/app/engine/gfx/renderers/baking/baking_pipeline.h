@@ -1,60 +1,84 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   bounding_box.h                                     :+:      :+:    :+:   */
+/*   baking_pipeline.h                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/10/24 14:12:32 by etran             #+#    #+#             */
+/*   Created: 2024/01/19 18:34:15 by etran             #+#    #+#             */
 /*   Updated: 2024/01/20 12:55:47 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
-# include "bounding_object.h"
-# include "bounding_frustum.h"
+// Graphics
+# include <vulkan/vulkan.h>
+
+#include "compute_pipeline.h"
+
+namespace scop {
+class InputHandler;
+}
 
 namespace scop::gfx {
 
-class BoundingBox: public IBoundingObject {
+class TextureHandler;
+
+/**
+ * @brief Bakes the scene visible faces of the each block.
+*/
+class BakingPipeline: public ComputePipeline {
 public:
 	/* ========================================================================= */
 	/*                                  TYPEDEFS                                 */
 	/* ========================================================================= */
 
-	using Plane = BoundingFrustum::Plane;
+	using super = ComputePipeline;
+	using super::DescriptorSetPtr;
+	using TextureHandlerPtr = std::shared_ptr<TextureHandler>;
 
 	/* ========================================================================= */
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
 
-	virtual ~BoundingBox() = default;
+	BakingPipeline();
+	~BakingPipeline() = default;
 
-protected:
-	/* ========================================================================= */
-	/*                                  METHODS                                  */
-	/* ========================================================================= */
-
-	BoundingBox(Vect3 center, Vect3 half_diag);
-
-	BoundingBox() = default;
-	BoundingBox(const BoundingBox& other) = default;
-	BoundingBox(BoundingBox&& other) = default;
-	BoundingBox& operator=(const BoundingBox& other) = default;
-	BoundingBox& operator=(BoundingBox&& other) = default;
+	BakingPipeline(BakingPipeline&& other) = delete;
+	BakingPipeline(const BakingPipeline& other) = delete;
+	BakingPipeline& operator=(BakingPipeline&& other) = delete;
+	BakingPipeline& operator=(const BakingPipeline& other) = delete;
 
 	/* ========================================================================= */
 
-	IntersectionType	_checkPlaneIntersection(const Plane& plane) const;
+	void				init(scop::core::Device& device) override;
+	void				assemble(
+		scop::core::Device& device,
+		VkComputePipelineCreateInfo& info) override;
+	void				plugDescriptor(
+		scop::core::Device& device,
+		const scop::InputHandler& input);
 
+	void				compute(
+		scop::core::Device& device,
+		VkPipelineLayout layout,
+		CommandBuffer& command_buffer) override;
+
+	/* ========================================================================= */
+
+	using super::getPipeline;
+	using super::getDescriptor;
+
+	TextureHandlerPtr	getCullingTextureHandler() const;
+
+private:
 	/* ========================================================================= */
 	/*                                    DATA                                   */
 	/* ========================================================================= */
 
-	Vect3	_half_diag;
-	Vect3	_center;
+	TextureHandlerPtr	_chunk_texture;
 
-}; // class BoundingBox
+}; // class BakingPipeline
 
 } // namespace scop::gfx

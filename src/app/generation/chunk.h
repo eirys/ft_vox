@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/06 12:07:38 by etran             #+#    #+#             */
-/*   Updated: 2023/12/23 01:40:05 by etran            ###   ########.fr       */
+/*   Updated: 2024/01/20 12:55:47 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,7 +62,7 @@ public:
 	std::array<uint8_t, CHUNK_AREA>		generateHeightMap() const noexcept;
 	bool								isVisible(const BoundingFrustum& frustum) const;
 
-	void			fillChunkMap(std::array<uint16_t, CHUNK_VOLUME>& data) const;
+	void			fillChunkMap(std::array<uint32_t, CHUNK_VOLUME>& data) const;
 
 	/* GAMEPLAY ================================================================ */
 
@@ -77,7 +77,7 @@ public:
 
 private:
 	/* ========================================================================= */
-	/*                               CLASS MEMBERS                               */
+	/*                                    DATA                                   */
 	/* ========================================================================= */
 
 	std::vector<Block>	_blocks;

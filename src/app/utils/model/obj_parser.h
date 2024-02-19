@@ -61,7 +61,7 @@ private:
 	typedef		void (ObjParser::*ParseFunction)();
 
 	/* ======================================================================== */
-	/*                               CLASS MEMBERS                              */
+	/*                                         DATA                                           */
 	/* ======================================================================== */
 
 	Model				model_output;
@@ -82,7 +82,7 @@ private:
 
 	static constexpr
 	const std::size_t	nb_line_types = 10;
-	
+
 	/**
 	 * List of possible line type in .obj file.
 	*/

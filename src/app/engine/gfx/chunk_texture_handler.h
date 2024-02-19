@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/24 14:32:13 by etran             #+#    #+#             */
-/*   Updated: 2023/12/28 19:30:41 by etran            ###   ########.fr       */
+/*   Updated: 2024/01/20 20:25:45 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,7 +56,7 @@ public:
 
 private:
 	/* ========================================================================= */
-	/*                               CLASS MEMBERS                               */
+	/*                                    DATA                                   */
 	/* ========================================================================= */
 
 	// Offsets
@@ -98,11 +98,11 @@ public:
 	void			init(scop::core::Device& device) override;
 	void			copyData(
 		scop::core::Device& device,
-		const std::vector<uint16_t>& blocks_data);
+		const std::vector<uint32_t>& blocks_data);
 
 	void			updateData(
 		scop::core::Device& device,
-		const std::vector<uint16_t>& blocks_data,
+		const std::vector<uint32_t>& blocks_data,
 		const Travelator& travelator);
 
 	/* ========================================================================= */

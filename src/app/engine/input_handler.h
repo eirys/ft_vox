@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:15:01 by etran             #+#    #+#             */
-/*   Updated: 2024/01/11 16:48:24 by etran            ###   ########.fr       */
+/*   Updated: 2024/02/04 12:18:47 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,21 +36,15 @@ namespace scop {
 
 enum class InputBufferSize: uint32_t {
 	Frustum			= sizeof(gfx::BoundingFrustum),
-	QuadCount		= sizeof(uint32_t) * DISPATCH_TOTAL,
-	VerticesData	= sizeof(uint32_t) * MAX_RENDER_PYRAMID // * CHUNK_VOLUME * 6
-	// TODO: Overkill, need to be optimized
+	QuadCount		= sizeof(uint32_t) * TOTAL_CHUNKS,
+	QuadData		= sizeof(uint32_t) * TOTAL_CHUNKS * MAX_FACE_COUNT,
 };
 
 enum class InputBufferOffset: uint32_t {
 	Frustum			= 0,
 	QuadCount		= 0,
-	VerticesData	= 0
+	QuadData		= 0
 };
-
-static_assert((uint32_t)InputBufferOffset::QuadCount % 16 == 0);
-static_assert((uint32_t)InputBufferOffset::VerticesData % 16 == 0);
-
-constexpr uint32_t verticesdata_size = (uint32_t)InputBufferSize::VerticesData;
 
 /**
  * @brief Handle input for rendering pipelines.
@@ -93,29 +87,25 @@ public:
 	uint32_t			getInstancesCount() const noexcept;
 	TextureHandlerPtr	getChunkMap() const;
 
-	// const gfx::Buffer&	getInputBuffer() const noexcept;
-	// gfx::Buffer&		getInputBuffer() noexcept;
-
 	const gfx::Buffer&	getFrustumBuffer() const noexcept;
 	gfx::Buffer&		getFrustumBuffer() noexcept;
 	const gfx::Buffer&	getQuadCountBuffer() const noexcept;
 	gfx::Buffer&		getQuadCountBuffer() noexcept;
-	const gfx::Buffer&	getVerticesDataBuffer() const noexcept;
-	gfx::Buffer&		getVerticesDataBuffer() noexcept;
+	const gfx::Buffer&	getQuadDataBuffer() const noexcept;
+	gfx::Buffer&		getQuadDataBuffer() noexcept;
 
 private:
 	/* ========================================================================= */
-	/*                               CLASS MEMBERS                               */
+	/*                                    DATA                                   */
 	/* ========================================================================= */
 
 	gfx::BoundingFrustum	_frustum;
 
 	TextureHandlerPtr		_chunk_texture;
-	// gfx::Buffer				_input_buffer;
 
 	gfx::Buffer				_frustum_buffer;
 	gfx::Buffer				_quad_count_buffer;
-	gfx::Buffer				_vertices_data_buffer;
+	gfx::Buffer				_quad_data_buffer;
 
 
 	const uint32_t			_vertices_count = 4;

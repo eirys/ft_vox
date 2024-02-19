@@ -6,14 +6,13 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/23 10:26:08 by etran             #+#    #+#             */
-/*   Updated: 2023/09/29 16:48:57 by etran            ###   ########.fr       */
+/*   Updated: 2024/01/20 12:47:34 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "perlin_noise.h"
 #include "scop_math.h"
 #include "vector.h"
-#include "cube.h"
 #include "block.h"
 
 #include <cassert> // assert
@@ -139,8 +138,6 @@ const std::vector<float>&	PerlinNoise::getNoiseMap() const noexcept {
 /* ========================================================================== */
 /*                                   PRIVATE                                  */
 /* ========================================================================== */
-
-
 
 /**
  * @brief Generate a random seed when no seed is provided.

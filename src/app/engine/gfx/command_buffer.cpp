@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/04 08:39:55 by etran             #+#    #+#             */
-/*   Updated: 2024/01/08 15:11:47 by etran            ###   ########.fr       */
+/*   Updated: 2024/01/20 11:53:34 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,7 +30,6 @@ CommandBuffer::CommandBuffer(CommandBufferType type):
 
 /**
  * @brief Initialize the command buffer.
- * @todo Change _buffer to std::vector<VkCommandBuffer>.
 */
 void	CommandBuffer::init(scop::core::Device& device) {
 	VkCommandPool	pool = VK_NULL_HANDLE;

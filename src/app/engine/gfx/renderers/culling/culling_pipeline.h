@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/18 20:15:16 by etran             #+#    #+#             */
-/*   Updated: 2024/01/08 14:55:36 by etran            ###   ########.fr       */
+/*   Updated: 2024/01/27 10:36:56 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,6 +25,9 @@ namespace scop::gfx {
 
 class TextureHandler;
 
+/**
+ * @brief Computes chunk culling, occlusion culling and frustum culling.
+*/
 class CullingPipeline: public ComputePipeline {
 public:
 	/* ========================================================================= */
@@ -66,15 +69,6 @@ public:
 
 	using super::getPipeline;
 	using super::getDescriptor;
-
-	TextureHandlerPtr	getCullingTextureHandler() const;
-
-private:
-	/* ========================================================================= */
-	/*                               CLASS MEMBERS                               */
-	/* ========================================================================= */
-
-	TextureHandlerPtr	_culling_texture;
 
 }; // class CullingPipeline
 

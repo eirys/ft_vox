@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/19 11:50:07 by etran             #+#    #+#             */
-/*   Updated: 2024/01/11 16:48:39 by etran            ###   ########.fr       */
+/*   Updated: 2024/01/31 10:34:23 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -76,10 +76,6 @@ void	CullingPipeline::compute(
 	VkPipelineLayout layout,
 	CommandBuffer& command_buffer
 ) {
-	// Make sure previous compute shader is finished
-	vkQueueWaitIdle(device.getComputeQueue());
-
-	command_buffer.reset();
 	command_buffer.begin(0);
 
 	std::array<VkDescriptorSet, 1>	descriptor_sets = { super::_descriptor->getSet() };
@@ -100,12 +96,6 @@ void	CullingPipeline::compute(
 	vkCmdDispatch(command_buffer.getBuffer(), DISPATCH_SIZE, DISPATCH_SIZE, DISPATCH_SIZE);
 
 	command_buffer.end(device);
-}
-
-/* ========================================================================== */
-
-CullingPipeline::TextureHandlerPtr	CullingPipeline::getCullingTextureHandler() const {
-	return _culling_texture;
 }
 
 } // namespace scop::gfx

@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/11 21:28:34 by etran             #+#    #+#             */
-/*   Updated: 2024/01/11 16:29:06 by etran            ###   ########.fr       */
+/*   Updated: 2024/01/20 20:24:59 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,34 +21,19 @@
 namespace vox {
 
 /* ========================================================================== */
-/*                                 BLOCK TYPES                                */
+/*                                 BLOCK FACES                                */
 /* ========================================================================== */
 
-// Total material types possible: 256
-enum class MaterialType: uint8_t {
-	AIR		= EMPTY_BLOCK,
+enum class BlockFace: uint8_t {
+	RIGHT = 0,
+	LEFT,
+	TOP,
+	BOTTOM,
+	FRONT,
+	BACK,
 
-	// Solid
-	GRASS,
-	DIRT,
-	STONE,
-	SAND,
-	SNOW,
-
-	// Directed
-	WOOD,
-
-	// Liquid
-	WATER,
-	LAVA,
-
-	// Transparent
-	GLASS,
-	LEAVES,
-	CLOUD,
-
-	First = AIR,
-	Last = CLOUD
+	First = RIGHT,
+	Last = BACK
 };
 
 /* ========================================================================== */
@@ -58,11 +43,16 @@ enum class MaterialType: uint8_t {
 enum class MaterialGFXProperty: uint8_t {
 	Default				= 0,
 
+	// 4 bits for opacity
 	OPAQUE				= Default,
-	TRANSPARENT			= TRANSPARENT_MASK,
-	ALPHACLIPPED		= ALPHACLIPPED_MASK,
-	LIGHT				= LIGHT_MASK,
+	TRANSPARENT			= TRANSPARENT_MASK,		// Has alpha
+	ALPHACLIPPED		= ALPHACLIPPED_MASK,	// Uses alpha clipping
 
+	// 4 bits for light
+	LIGHT				= LIGHT_MASK,			// Emits light
+
+	OpacityMask			= 0x0F,
+	LightMask			= 0xF0,
 	PropertyShift		= 24
 };
 
@@ -72,7 +62,7 @@ enum class MaterialState: uint8_t {
 	VOID				= Default,
 	SOLID				= 0x01,
 	FLUID				= 0x02,
-	HOT					= 0x03,
+	HOT					= 0x04,
 
 	PropertyShift		= 16
 };
@@ -91,8 +81,10 @@ enum class MaterialAspect: uint8_t {
 	Default				= 0,
 
 	REGULAR				= Default,
-	DIRECTED			= 0x01,
-	COLORED				= 0x02,
+	DIRECTED			= 0x01,	// Given by object direction
+	COLORED				= 0x02,	// Sample from color map
+	VARIATED			= 0x04,	// Sample from noise map
+	BIOME_DEPENDENT		= 0x08, // Sample from biome color map
 
 	PropertyShift		= 0
 };
@@ -126,6 +118,8 @@ enum class MaterialProperty: uint32_t {
 	REGULAR				= (uint32_t)MaterialAspect::REGULAR << (uint32_t)MaterialAspect::PropertyShift,
 	DIRECTED			= (uint32_t)MaterialAspect::DIRECTED << (uint32_t)MaterialAspect::PropertyShift,
 	COLORED				= (uint32_t)MaterialAspect::COLORED << (uint32_t)MaterialAspect::PropertyShift,
+	VARIATED			= (uint32_t)MaterialAspect::VARIATED << (uint32_t)MaterialAspect::PropertyShift,
+	BIOME_DEPENDENT		= (uint32_t)MaterialAspect::BIOME_DEPENDENT << (uint32_t)MaterialAspect::PropertyShift,
 
 	GFXPropertyMask		= 0xFF000000,
 	StateMask			= 0x00FF0000,

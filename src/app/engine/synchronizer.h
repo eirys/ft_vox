@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/18 21:20:17 by etran             #+#    #+#             */
-/*   Updated: 2024/01/07 23:52:35 by etran            ###   ########.fr       */
+/*   Updated: 2024/02/02 23:11:12 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,14 +29,27 @@ public:
 	/*                                  TYPEDEFS                                 */
 	/* ========================================================================= */
 
+	// Semaphores, used for synchronization between GPU commands.
 	struct Semaphores {
+		// Signals that an image is available for rendering.
 		gfx::GfxSemaphore		image_available;
+
+		// Signals that rendering has finished.
 		gfx::GfxSemaphore		render_finished;
+
+		// Signals that compute command has finished.
 		gfx::GfxSemaphore		compute_finished;
+
+		// Signals that graphics command has finished.
+		gfx::GfxSemaphore		graphics_finished;
 	};
 
+	// Fences, used for synchronization between CPU and GPU.
 	struct Fences {
+		// Signals that graphics command is ongoing.
 		gfx::Fence				graphics_in_flight;
+
+		// Signals that compute command is ongoing.
 		gfx::Fence				compute_in_flight;
 	};
 
@@ -72,7 +85,7 @@ public:
 
 private:
 	/* ========================================================================= */
-	/*                               CLASS MEMBERS                               */
+	/*                                    DATA                                   */
 	/* ========================================================================= */
 
 	Semaphores					_semaphores;

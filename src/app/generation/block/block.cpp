@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/19 11:33:58 by etran             #+#    #+#             */
-/*   Updated: 2024/01/11 13:34:22 by etran            ###   ########.fr       */
+/*   Updated: 2024/01/20 20:26:31 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,51 +18,17 @@ namespace vox {
 /*                                   PUBLIC                                   */
 /* ========================================================================== */
 
-Block::Block(const MaterialType type) noexcept: _type(type)  {}
+Block::Block(const MaterialType type) noexcept: _data(type)  {}
 
 /* ========================================================================== */
 
 void	Block::setType(const MaterialType block_type) noexcept {
-	_type = block_type;
+	_data.setType(block_type);
 }
-
-void	Block::setGFXProperty(const MaterialGFXProperty property) noexcept {
-	_gfx = property;
-}
-
-void	Block::setStateProperty(const MaterialState property) noexcept {
-	_state = property;
-}
-
-void	Block::setInteractionProperty(const MaterialInteraction property) noexcept {
-	_interaction = property;
-}
-
-void	Block::setAspectProperty(const MaterialAspect property) noexcept {
-	_aspect = property;
-}
-
 
 MaterialType	Block::getType() const noexcept {
-	return _type;
+	return _data.getType();
 }
-
-MaterialGFXProperty	Block::getGFXProperty() const noexcept {
-	return _gfx;
-}
-
-MaterialState		Block::getStateProperty() const noexcept {
-	return _state;
-}
-
-MaterialInteraction	Block::getInteractionProperty() const noexcept {
-	return _interaction;
-}
-
-MaterialAspect		Block::getAspectProperty() const noexcept {
-	return _aspect;
-}
-
 
 /* ========================================================================== */
 
@@ -73,36 +39,52 @@ MaterialAspect		Block::getAspectProperty() const noexcept {
  * @note Extract properties with packed_data & 0xFF.
 */
 uint16_t	Block::computePackedData() const noexcept {
-	const uint16_t packed_type = (uint16_t)_type << 8;
-	const uint16_t packed_property = (uint16_t)_gfx;
+	const uint16_t packed_type = (uint16_t)_data.getType() << 8;
+	const uint16_t packed_property = (uint16_t)_data.getGFXProperty();
 	return packed_type | packed_property;
 }
 
 Block	Block::computeFromPackedData(const uint16_t packed_data) {
 	const uint8_t type = (packed_data >> 8) & 0xFF;
-	const uint8_t property = packed_data & 0xFF;
 
 	Block block((MaterialType)type);
-	block.setGFXProperty((MaterialGFXProperty)property);
 	return block;
 }
 
 /* GAMEPLAY ================================================================= */
 
 bool	Block::isEmpty() const noexcept {
-	return _type == MaterialType::AIR;
+	return _data.getType() == MaterialType::AIR;
 }
 
 bool	Block::isSolid() const noexcept {
-	return (uint8_t)_state & (uint8_t)MaterialState::SOLID;
+	return (uint8_t)_data.getStateProperty() & (uint8_t)MaterialState::SOLID;
 }
 
 bool	Block::isFluid() const noexcept {
-	return (uint8_t)_state & (uint8_t)MaterialProperty::FLUID;
+	return (uint8_t)_data.getStateProperty() & (uint8_t)MaterialProperty::FLUID;
 }
 
 bool	Block::isDirected() const noexcept {
-	return (uint8_t)_aspect & (uint8_t)MaterialProperty::DIRECTED;
+	return (uint8_t)_data.getAspectProperty() & (uint8_t)MaterialProperty::DIRECTED;
+}
+
+/* GFX ====================================================================== */
+
+bool	Block::isTransparent() const noexcept {
+	return (uint8_t)_data.getGFXProperty() & (uint8_t)MaterialGFXProperty::TRANSPARENT;
+}
+
+bool	Block::isSemiTransparent() const noexcept {
+	return (uint8_t)_data.getGFXProperty() & (uint8_t)MaterialGFXProperty::ALPHACLIPPED;
+}
+
+bool	Block::isOpaque() const noexcept {
+	return (uint8_t)_data.getGFXProperty() & (uint8_t)MaterialGFXProperty::OPAQUE;
+}
+
+bool	Block::isLightSource() const noexcept {
+	return (uint8_t)_data.getGFXProperty() & (uint8_t)MaterialGFXProperty::LIGHT;
 }
 
 /* ========================================================================== */
