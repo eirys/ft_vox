@@ -6,7 +6,7 @@
 #    By: etran <etran@student.42.fr>                +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/04/06 03:40:09 by eli               #+#    #+#              #
-#    Updated: 2024/01/31 12:14:53 by etran            ###   ########.fr        #
+#    Updated: 2024/02/21 11:35:19 by etran            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -25,126 +25,44 @@ SHD_DIR		:=	shaders
 # shader binaries
 SHD_BIN_DIR	:=	$(OBJ_DIR)/shaders
 
-# main
+# ui
 APP_DIR		:=	app
+UI_DIR		:=	$(APP_DIR)/ui
 
-# engine
-ENG_DIR		:=	$(APP_DIR)/engine
-CORE_DIR	:=	$(ENG_DIR)/core
-GFX_DIR		:=	$(ENG_DIR)/gfx
-
-# renderers
-REN_DIR		:=	$(GFX_DIR)/renderers
-CULL_DIR	:=	$(REN_DIR)/culling
-SCENE_DIR	:=	$(REN_DIR)/scene
-SHADOW_DIR	:=	$(REN_DIR)/shadows
-
-# gameplay
-GAME_DIR	:=	$(APP_DIR)/gameplay
-CHAR_DIR	:=	$(GAME_DIR)/character
-
-# generation
-GEN_DIR		:=	$(APP_DIR)/generation
-BLOCK_DIR	:=	$(GEN_DIR)/block
-
-# other
-UTILS_DIR	:=	$(APP_DIR)/utils
-IMG_DIR		:=	$(UTILS_DIR)/img
-MODEL_DIR	:=	$(UTILS_DIR)/model
-
-# tools
-TOOLS_DIR	:=	tools
-MATH_DIR	:=	$(TOOLS_DIR)/math
+# libraries
+LIBS_DIR	:=	libs
+MATH_DIR	:=	$(LIBS_DIR)/math
+DECL_DIR	:=	$(LIBS_DIR)/decl
+IO_DIR		:=	$(LIBS_DIR)/io
 
 # ---------------- SUBDIRECTORIES -------------- #
-SUBDIRS		:=	$(APP_DIR)		\
-				$(ENG_DIR)		\
-				$(CORE_DIR)		\
-				$(GFX_DIR)		\
-				$(REN_DIR)		\
-				$(SCENE_DIR)	\
-				$(SHADOW_DIR)	\
-				$(CULL_DIR)		\
-				$(GAME_DIR)		\
-				$(GEN_DIR)		\
-				$(BLOCK_DIR)	\
-				$(CHAR_DIR)		\
-				$(UTILS_DIR)	\
-				$(IMG_DIR)		\
-				$(MODEL_DIR)	\
-				$(TOOLS_DIR)	\
-				$(MATH_DIR)
+SUBDIRS		:=	$(APP_DIR) \
+				$(UI_DIR) \
+				$(LIBS_DIR) \
+				$(MATH_DIR) \
+				$(DECL_DIR) \
+				$(IO_DIR)
+
 
 OBJ_SUBDIRS	:=	$(addprefix $(OBJ_DIR)/,$(SUBDIRS))
 INC_SUBDIRS	:=	$(addprefix $(SRC_DIR)/,$(SUBDIRS)) \
 				$(SHD_DIR)
 
 # ---------------- SOURCE FILES ---------------- #
-SRC_FILES	:=	$(MATH_DIR)/matrix.cpp \
-				$(MODEL_DIR)/model.cpp \
-				$(MODEL_DIR)/parser.cpp \
-				$(MODEL_DIR)/obj_parser.cpp \
-				$(MODEL_DIR)/mtl_parser.cpp \
-				$(GEN_DIR)/perlin_noise.cpp \
-				$(GEN_DIR)/chunk.cpp \
-				$(GEN_DIR)/world.cpp \
-				$(GEN_DIR)/world_generator.cpp \
-				$(BLOCK_DIR)/block.cpp \
-				$(BLOCK_DIR)/block_data.cpp \
-				$(IMG_DIR)/ppm_loader.cpp \
-				$(IMG_DIR)/image_handler.cpp \
-				$(GAME_DIR)/game_state.cpp \
-				$(GAME_DIR)/clock.cpp \
-				$(CHAR_DIR)/character.cpp \
-				$(CHAR_DIR)/player.cpp \
-				$(ENG_DIR)/window.cpp \
-				$(ENG_DIR)/swap_chain.cpp \
-				$(ENG_DIR)/input_handler.cpp \
-				$(ENG_DIR)/synchronizer.cpp \
-				$(ENG_DIR)/engine.cpp \
-				$(CORE_DIR)/debug_module.cpp \
-				$(CORE_DIR)/device.cpp \
-				$(CORE_DIR)/core.cpp \
-				$(GFX_DIR)/gfx_semaphore.cpp \
-				$(GFX_DIR)/fence.cpp \
-				$(GFX_DIR)/descriptor_pool.cpp \
-				$(GFX_DIR)/descriptor_set.cpp \
-				$(GFX_DIR)/command_pool.cpp \
-				$(GFX_DIR)/render_pass.cpp \
-				$(GFX_DIR)/target.cpp \
-				$(GFX_DIR)/buffer.cpp \
-				$(GFX_DIR)/command_buffer.cpp \
-				$(GFX_DIR)/image_buffer.cpp \
-				$(GFX_DIR)/texture_handler.cpp \
-				$(GFX_DIR)/chunk_texture_handler.cpp \
-				$(REN_DIR)/pipeline_manager.cpp \
-				$(REN_DIR)/graphics_pipeline.cpp \
-				$(REN_DIR)/compute_pipeline.cpp \
-				$(REN_DIR)/pipeline_helpers.cpp \
-				$(CULL_DIR)/bounding_box.cpp \
-				$(CULL_DIR)/bounding_frustum.cpp \
-				$(CULL_DIR)/culling_pipeline.cpp \
-				$(CULL_DIR)/culling_descriptor_set.cpp \
-				$(CULL_DIR)/culling_texture_handler.cpp \
-				$(SCENE_DIR)/scene_render_pass.cpp \
-				$(SCENE_DIR)/scene_descriptor_set.cpp \
-				$(SCENE_DIR)/scene_pipeline.cpp \
-				$(SCENE_DIR)/scene_texture_handler.cpp \
-				$(SCENE_DIR)/scene_target.cpp \
-				$(SHADOW_DIR)/shadows_render_pass.cpp \
-				$(SHADOW_DIR)/shadows_descriptor_set.cpp \
-				$(SHADOW_DIR)/shadows_pipeline.cpp \
-				$(SHADOW_DIR)/shadows_texture_handler.cpp \
-				$(SHADOW_DIR)/shadows_target.cpp \
+SRC_FILES	:=	entrypoint.cpp \
 				$(APP_DIR)/app.cpp \
-				main.cpp
+				$(MATH_DIR)/maths.cpp \
+				$(MATH_DIR)/matrix.cpp \
+				$(UI_DIR)/window.cpp
 
 SRC			:=	$(addprefix $(SRC_DIR)/,$(SRC_FILES))
 OBJ			:=	$(addprefix $(OBJ_DIR)/,$(SRC_FILES:.cpp=.o))
 DEP			:=	$(addprefix $(OBJ_DIR)/,$(SRC_FILES:.cpp=.d))
 
 CXX			:=	clang++
-EXTRA		:=	-Wall -Werror -Wextra
+EXTRA		:=	-Wall \
+				-Werror \
+				-Wextra
 INCLUDES	:=	$(addprefix -I./,$(INC_SUBDIRS))
 
 MACROS		:=	NDEBUG \
@@ -191,7 +109,7 @@ CFLAGS		:=	$(EXTRA) \
 				-MMD \
 				-MP \
 				$(INCLUDES) \
-				-g \
+				-O3 \
 				$(DEFINES)
 
 LDFLAGS		:=	-lglfw \
@@ -204,10 +122,10 @@ LDFLAGS		:=	-lglfw \
 				-lXi
 
 # ------------------- SHADERS ------------------ #
-SHD_FILES	:=	scene.fragment \
-				scene.vertex \
-				shadow.vertex \
-				culling.compute
+# SHD_FILES	:=	scene.fragment \
+# 				scene.vertex \
+# 				shadow.vertex \
+# 				culling.compute
 
 SHD			:=	$(addprefix $(SHD_BIN_DIR)/,$(SHD_FILES))
 SHD_BIN		:=	$(addsuffix .spv,$(SHD))

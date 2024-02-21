@@ -5,87 +5,43 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/06/04 17:17:06 by etran             #+#    #+#             */
-/*   Updated: 2024/01/20 12:55:47 by etran            ###   ########.fr       */
+/*   Created: 2024/02/21 10:27:55 by etran             #+#    #+#             */
+/*   Updated: 2024/02/21 10:56:39 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
-// Graphics
-# include <vulkan/vulkan.h>
+#include "window.h"
 
-# include "game_state.h"
-# include "window.h"
-# include "engine.h"
-# include "timer.h"
+namespace vox {
 
-# ifdef __LINUX
-#  define SCOP_MOVE_SPEED		0.2f
-# else
-#  define SCOP_MOVE_SPEED		0.05f
-# endif
-
-namespace scop {
-
-enum ObjectDirection {
-	MOVE_FORWARD = 0,
-	MOVE_BACKWARD = 1,
-	MOVE_LEFT = 2,
-	MOVE_RIGHT = 3,
-	MOVE_UP = 4,
-	MOVE_DOWN = 5
-};
-
-/**
- * @brief Main class of the program.
-*/
-class App {
+class App final {
 public:
-	/* ========================================================================= */
-	/*                                  METHODS                                  */
-	/* ========================================================================= */
+    /* ========================================================================= */
+    /*                                  METHODS                                  */
+    /* ========================================================================= */
 
-	App();
-	~App();
+    App();
+    ~App();
 
-	App(const App& x) = delete;
-	App(App&& x) = delete;
-	App& operator=(App&& rhs) = delete;
-	App& operator=(const App& rhs) = delete;
+    App(const App& x) = delete;
+    App(App&& x) = delete;
+    App& operator=(App&& rhs) = delete;
+    App& operator=(const App& rhs) = delete;
 
-	/* MAIN FUNCTION =========================================================== */
+    /* ========================================================================= */
 
-	void						run();
-
-	/* ========================================================================= */
-
-	void						resetGame() noexcept;
-	void						toggleMove(ObjectDirection dir) noexcept;
-	void						untoggleMove(ObjectDirection dir) noexcept;
-	void						updateCameraDir(float x, float y) noexcept;
+    void    run();
 
 private:
-	/* ========================================================================= */
-	/*                                    DATA                                   */
-	/* ========================================================================= */
+    /* ========================================================================= */
+    /*                                    DATA                                   */
+    /* ========================================================================= */
 
-	// TODO: Put to engine
-	vox::GameState				_game;
-	scop::Window				_window;
-	scop::Engine				_engine;
-	Timer						_timer;
-
-	// Camera input
-	bool						_keys_pressed_directions[6] = { false };
-	scop::Vect3					_movement{};
-
-	/* ========================================================================= */
-	/*                                  METHODS                                  */
-	/* ========================================================================= */
-
-	void						_updateGame();
+    ui::Window      m_window;
+    // ui::Controller  m_controller;
 
 }; // class App
 
-} // namespace scop
+}  // namespace vox
