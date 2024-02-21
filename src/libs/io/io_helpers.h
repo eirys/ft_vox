@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/15 07:51:09 by etran             #+#    #+#             */
-/*   Updated: 2024/02/21 11:22:29 by etran            ###   ########.fr       */
+/*   Updated: 2024/02/21 11:45:29 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,14 +15,16 @@
 // Std
 # include <fstream>
 # include <vector>
+
 # include "types.h"
 
-namespace scop::utils {
+namespace io {
 
 /**
  * Read binary file and return in vector of char format.
 */
-inline std::vector<u8>	readFile(const std::string& filename) {
+static
+std::vector<u8>	readBinary(const std::string& filename) {
 	// Read file as binary file, at the end of the file
 	std::ifstream	file(filename, std::ios::ate | std::ios::binary);
 
@@ -38,4 +40,4 @@ inline std::vector<u8>	readFile(const std::string& filename) {
 	return buffer;
 }
 
-} // namespace scop::utils
+} // namespace io

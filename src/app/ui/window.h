@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/19 23:59:08 by etran             #+#    #+#             */
-/*   Updated: 2024/02/21 11:20:18 by etran            ###   ########.fr       */
+/*   Updated: 2024/02/21 21:22:51 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,8 +62,7 @@ public:
 
     /* ========================================================================= */
 
-    void                retrieveSize(int& width, int& height) const;
-    bool                mouseActive() const noexcept;
+    bool                isMouseActive() const noexcept;
     GLFWwindow*         getWindow() noexcept;
     GLFWwindow const*   getWindow() const noexcept;
 

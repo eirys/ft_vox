@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/19 23:18:11 by etran             #+#    #+#             */
-/*   Updated: 2023/09/18 11:36:13 by etran            ###   ########.fr       */
+/*   Updated: 2024/02/21 11:48:47 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 
 #include <cstring> // memset
 
-namespace scop {
+namespace math {
 
 /* ========================================================================== */
 /*                                 4X4 MATRIX                                 */
@@ -67,7 +67,7 @@ constexpr float&	Mat4::operator[](std::size_t index) {
 	return mat[index];
 }
 
-constexpr const float&	Mat4::operator[](std::size_t index) const {
+constexpr float	Mat4::operator[](std::size_t index) const {
 	if (index >= 16) {
 		throw std::out_of_range("Matrix index out of range");
 	}
@@ -262,7 +262,7 @@ Mat4	Mat4::transpose() const {
 Mat4	rotate(const Mat4& mat, float angle, const Vect3& axis) noexcept {
 	const float	c = std::cos(angle);
 	const float	s = std::sin(angle);
-	const Vect3	u = scop::normalize(axis);
+	const Vect3	u = math::normalize(axis);
 
 	return mat * Mat4{
 		// Col 1
@@ -295,9 +295,9 @@ Mat4	rotate(const Mat4& mat, float angle, const Vect3& axis) noexcept {
  * 					to the vector from eye to center.
 */
 Mat4	lookAt(const Vect3& eye, const Vect3& center, const Vect3& world_up) noexcept {
-	const Vect3	forward = scop::normalize(center - eye);
-	const Vect3	right = scop::normalize(scop::cross(forward, world_up));
-	const Vect3	up = scop::cross(right, forward);
+	const Vect3	forward = math::normalize(center - eye);
+	const Vect3	right = math::normalize(math::cross(forward, world_up));
+	const Vect3	up = math::cross(right, forward);
 
 	return Mat4{
 		// Col 1
@@ -307,7 +307,7 @@ Mat4	lookAt(const Vect3& eye, const Vect3& center, const Vect3& world_up) noexce
 		// Col 3
 		right.z, up.z, -forward.z, 0,
 		// Col 4
-		scop::dot(-right, eye), scop::dot(-up, eye), scop::dot(forward, eye), 1
+		math::dot(-right, eye), math::dot(-up, eye), math::dot(forward, eye), 1
 	};
 }
 
@@ -325,7 +325,7 @@ Mat4	lookAt(
 		// Col 3
 		cam_right.z, cam_up.z, -cam_front.z, 0,
 		// Col 4
-		scop::dot(-cam_right, eye), scop::dot(-cam_up, eye), scop::dot(cam_front, eye), 1
+		math::dot(-cam_right, eye), math::dot(-cam_up, eye), math::dot(cam_front, eye), 1
 	};
 }
 
@@ -337,8 +337,8 @@ Mat4	lookAt(
  * @param world_up:	up vector, usually (0, 0, 1).
 */
 Mat4	lookAtDir(const Vect3& eye, const Vect3& dir, const Vect3& world_up) noexcept {
-	const Vect3 right = scop::normalize(scop::cross(dir, world_up));
-	const Vect3 up = scop::cross(right, dir);
+	const Vect3 right = math::normalize(math::cross(dir, world_up));
+	const Vect3 up = math::cross(right, dir);
 
 	return Mat4 {
 		// Col 1
@@ -348,7 +348,7 @@ Mat4	lookAtDir(const Vect3& eye, const Vect3& dir, const Vect3& world_up) noexce
 		// Col 3
 		right.z, up.z, -dir.z, 0,
 		// Col 4
-		scop::dot(-right, eye), scop::dot(-up, eye), scop::dot(dir, eye), 1
+		math::dot(-right, eye), math::dot(-up, eye), math::dot(dir, eye), 1
 	};
 }
 
@@ -555,4 +555,4 @@ float	Mat2::det() const {
 	return std::fma(mat[0], mat[3], -std::fma(mat[1], mat[2], 0.0f));
 }
 
-} // namespace scop
+} // namespace math

@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/20 00:02:09 by etran             #+#    #+#             */
-/*   Updated: 2024/02/21 11:19:31 by etran            ###   ########.fr       */
+/*   Updated: 2024/02/21 21:23:15 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -90,5 +90,20 @@ void    Window::toggleMouse() noexcept {
     m_mouseActive = !m_mouseActive;
     glfwSetInputMode(m_window, GLFW_CURSOR, m_mouseActive ? GLFW_CURSOR_NORMAL : GLFW_CURSOR_DISABLED);
 }
+
+/* ========================================================================== */
+
+bool Window::isMouseActive() const noexcept {
+    return m_mouseActive;
+}
+
+GLFWwindow* Window::getWindow() noexcept {
+    return m_window;
+}
+
+GLFWwindow const* Window::getWindow() const noexcept {
+    return m_window;
+}
+
 
 } // namespace ui

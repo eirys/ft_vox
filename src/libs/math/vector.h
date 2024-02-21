@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:16:07 by etran             #+#    #+#             */
-/*   Updated: 2024/01/20 12:55:47 by etran            ###   ########.fr       */
+/*   Updated: 2024/02/21 11:46:23 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,7 @@
 # include <stdexcept> // std::out_of_range
 # include <ostream> // std::ostream
 
-namespace scop {
+namespace math {
 
 struct Vect2 {
 	/* ========================================================================= */
@@ -630,7 +630,7 @@ inline Vect4	fma(const Vect4& a, float b, const Vect4& c) noexcept {
 	);
 }
 
-} // namespace scop
+} // namespace math
 
 /* ========================================================================== */
 /*                                    OTHER                                   */
@@ -660,8 +660,8 @@ Vector	abs(const Vector& vect) noexcept {
 /* HASH FUNCTIONS =========================================================== */
 
 template<>
-struct std::hash<scop::Vect3> {
-	inline std::size_t	operator()(const scop::Vect3& vect) const {
+struct std::hash<math::Vect3> {
+	inline std::size_t	operator()(const math::Vect3& vect) const {
 		return (
 			std::hash<float>()(vect.x) ^
 			std::hash<float>()(vect.y) ^
@@ -671,8 +671,8 @@ struct std::hash<scop::Vect3> {
 };
 
 template<>
-struct std::hash<scop::Vect2> {
-	inline std::size_t	operator()(const scop::Vect2& vect) const {
+struct std::hash<math::Vect2> {
+	inline std::size_t	operator()(const math::Vect2& vect) const {
 		return (
 			std::hash<float>()(vect.x) ^
 			std::hash<float>()(vect.y)
@@ -682,12 +682,12 @@ struct std::hash<scop::Vect2> {
 
 /* IOSTREAM ================================================================= */
 
-inline std::ostream& operator<<(std::ostream& os, const scop::Vect3& vect) {
+inline std::ostream& operator<<(std::ostream& os, const math::Vect3& vect) {
 	os << "{x:" << vect.x << ", y:" << vect.y << ", z:" << vect.z << "}";
 	return os;
 }
 
-inline std::ostream& operator<<(std::ostream& os, const scop::Vect2& vect) {
+inline std::ostream& operator<<(std::ostream& os, const math::Vect2& vect) {
 	os << "{x:" << vect.x << ", y:" << vect.y << "}";
 	return os;
 }

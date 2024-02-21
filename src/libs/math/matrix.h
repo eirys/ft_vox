@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:16:40 by etran             #+#    #+#             */
-/*   Updated: 2024/01/20 12:55:47 by etran            ###   ########.fr       */
+/*   Updated: 2024/02/21 11:48:23 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,7 @@
 
 # include "vector.h"
 
-namespace scop {
+namespace math {
 struct Mat2;
 struct Mat3;
 
@@ -43,8 +43,8 @@ struct Mat4 {
 
 	/* ACCESSORS =============================================================== */
 
-	constexpr float&		operator[](std::size_t index);
-	constexpr const float&	operator[](std::size_t index) const;
+	constexpr float&	operator[](std::size_t index);
+	constexpr float 	operator[](std::size_t index) const;
 
 	/* OPERATORS =============================================================== */
 
@@ -135,4 +135,4 @@ struct Mat2 {
 
 }; // struct Mat2
 
-}; // namespace scop
+}; // namespace math

@@ -6,7 +6,7 @@
 #    By: etran <etran@student.42.fr>                +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/04/06 03:40:09 by eli               #+#    #+#              #
-#    Updated: 2024/02/21 11:35:19 by etran            ###   ########.fr        #
+#    Updated: 2024/02/21 18:16:56 by etran            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -25,9 +25,11 @@ SHD_DIR		:=	shaders
 # shader binaries
 SHD_BIN_DIR	:=	$(OBJ_DIR)/shaders
 
-# ui
+# app
 APP_DIR		:=	app
 UI_DIR		:=	$(APP_DIR)/ui
+ENGINE_DIR	:=	$(APP_DIR)/engine
+CORE_DIR	:=	$(ENGINE_DIR)/core
 
 # libraries
 LIBS_DIR	:=	libs
@@ -38,11 +40,12 @@ IO_DIR		:=	$(LIBS_DIR)/io
 # ---------------- SUBDIRECTORIES -------------- #
 SUBDIRS		:=	$(APP_DIR) \
 				$(UI_DIR) \
+				$(ENGINE_DIR) \
+				$(CORE_DIR) \
 				$(LIBS_DIR) \
 				$(MATH_DIR) \
 				$(DECL_DIR) \
 				$(IO_DIR)
-
 
 OBJ_SUBDIRS	:=	$(addprefix $(OBJ_DIR)/,$(SUBDIRS))
 INC_SUBDIRS	:=	$(addprefix $(SRC_DIR)/,$(SUBDIRS)) \
@@ -51,6 +54,8 @@ INC_SUBDIRS	:=	$(addprefix $(SRC_DIR)/,$(SUBDIRS)) \
 # ---------------- SOURCE FILES ---------------- #
 SRC_FILES	:=	entrypoint.cpp \
 				$(APP_DIR)/app.cpp \
+				$(CORE_DIR)/core.cpp \
+				$(CORE_DIR)/debug_module.cpp \
 				$(MATH_DIR)/maths.cpp \
 				$(MATH_DIR)/matrix.cpp \
 				$(UI_DIR)/window.cpp
