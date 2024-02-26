@@ -1,76 +1,73 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   device.h                                           :+:      :+:    :+:   */
+/*   graphics_command_buffer.h                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/02/21 18:19:47 by etran             #+#    #+#             */
-/*   Updated: 2024/02/23 01:30:23 by etran            ###   ########.fr       */
+/*   Created: 2024/02/23 22:27:11 by etran             #+#    #+#             */
+/*   Updated: 2024/02/24 00:16:12 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
-# include <vulkan/vulkan.h>
+#include "command_buffer.h"
 
 namespace vox {
+class Device;
+} // namespace vox
 
-class Core;
-struct QueueFamilyIndices;
+namespace vox::gfx {
 
-class Device final {
+class GraphicsCommandBuffer final: public CommandBuffer {
 public:
+    /* ====================================================================== */
+    /*                                TYPEDEFS                                */
+    /* ====================================================================== */
+
+    using super = CommandBuffer;
+
     /* ====================================================================== */
     /*                                 METHODS                                */
     /* ====================================================================== */
 
-    Device() = default;
-    ~Device() = default;
+    GraphicsCommandBuffer(const VkCommandPool& pool, const VkQueue& queue):
+        m_pool(pool),
+        m_queue(queue) {}
 
-    Device(Device&& other) = delete;
-    Device(const Device& other) = delete;
-    Device& operator=(Device&& other) = delete;
-    Device& operator=(const Device& other) = delete;
+    ~GraphicsCommandBuffer() = default;
+
+    GraphicsCommandBuffer() = delete;
+    GraphicsCommandBuffer(GraphicsCommandBuffer&& other) = delete;
+    GraphicsCommandBuffer(const GraphicsCommandBuffer& other) = delete;
+    GraphicsCommandBuffer& operator=(GraphicsCommandBuffer&& other) = delete;
+    GraphicsCommandBuffer& operator=(const GraphicsCommandBuffer& other) = delete;
 
     /* ====================================================================== */
 
-    void    init(const Core& core);
-    void    destroy();
+    using super::init;
+    using super::destroy;
 
-    /* ====================================================================== */
-
-    const VkDevice& getDevice() const noexcept;
-    VkDevice&       getDevice() noexcept;
-
-    VkQueue         getGraphicsQueue() const noexcept;
-    VkQueue         getPresentQueue() const noexcept;
-    VkQueue         getComputeQueue() const noexcept;
+    using super::startRecording;
+    using super::reset;
+    using super::getBuffer;
 
 private:
-    /* ====================================================================== */
-    /*                              HELPER CLASS                              */
-    /* ====================================================================== */
-
-    struct QueueFamilies final {
-        VkQueue graphics;
-        VkQueue present;
-        VkQueue compute;
-    };
-
     /* ====================================================================== */
     /*                                  DATA                                  */
     /* ====================================================================== */
 
-    VkDevice        m_device;
-    QueueFamilies   m_queueFamilies;
+    const VkCommandPool&    m_pool;
+    const VkQueue&          m_queue;
 
     /* ====================================================================== */
     /*                                 METHODS                                */
     /* ====================================================================== */
 
-    void    _createLogicalDevice(const Core& core);
+    const VkCommandPool&    _getPool() const override { return m_pool; }
+    const VkQueue&          _getQueue() const override { return m_queue; }
 
-}; // class Device
+}; // class GraphicsCommandBuffer
 
-} // namespace vox
+} // namespace vox::gfx

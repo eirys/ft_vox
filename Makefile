@@ -6,7 +6,7 @@
 #    By: etran <etran@student.42.fr>                +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/04/06 03:40:09 by eli               #+#    #+#              #
-#    Updated: 2024/02/21 18:16:56 by etran            ###   ########.fr        #
+#    Updated: 2024/02/23 22:47:47 by etran            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -31,6 +31,10 @@ UI_DIR		:=	$(APP_DIR)/ui
 ENGINE_DIR	:=	$(APP_DIR)/engine
 CORE_DIR	:=	$(ENGINE_DIR)/core
 
+# gfx
+GFX_DIR		:=	$(ENGINE_DIR)/gfx
+CMD_DIR		:=	$(GFX_DIR)/commands
+
 # libraries
 LIBS_DIR	:=	libs
 MATH_DIR	:=	$(LIBS_DIR)/math
@@ -42,9 +46,11 @@ SUBDIRS		:=	$(APP_DIR) \
 				$(UI_DIR) \
 				$(ENGINE_DIR) \
 				$(CORE_DIR) \
+				$(GFX_DIR) \
 				$(LIBS_DIR) \
 				$(MATH_DIR) \
 				$(DECL_DIR) \
+				$(CMD_DIR) \
 				$(IO_DIR)
 
 OBJ_SUBDIRS	:=	$(addprefix $(OBJ_DIR)/,$(SUBDIRS))
@@ -54,8 +60,12 @@ INC_SUBDIRS	:=	$(addprefix $(SRC_DIR)/,$(SUBDIRS)) \
 # ---------------- SOURCE FILES ---------------- #
 SRC_FILES	:=	entrypoint.cpp \
 				$(APP_DIR)/app.cpp \
+				$(ENGINE_DIR)/engine.cpp \
+				$(CMD_DIR)/command_pool.cpp \
+				$(CMD_DIR)/command_buffer.cpp \
 				$(CORE_DIR)/core.cpp \
 				$(CORE_DIR)/debug_module.cpp \
+				$(CORE_DIR)/device.cpp \
 				$(MATH_DIR)/maths.cpp \
 				$(MATH_DIR)/matrix.cpp \
 				$(UI_DIR)/window.cpp

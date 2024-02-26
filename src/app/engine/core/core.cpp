@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/21 11:53:00 by etran             #+#    #+#             */
-/*   Updated: 2024/02/21 23:59:28 by etran            ###   ########.fr       */
+/*   Updated: 2024/02/23 09:27:26 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -142,8 +142,16 @@ SwapChainSupportDetails Core::querySwapChainSupport() const {
 
 /* ========================================================================== */
 
-const QueueFamilyIndices&  Core::getQueueFamilyIndices() const {
+const QueueFamilyIndices&  Core::getQueueFamilyIndices() const noexcept {
     return m_queueFamilyIndices;
+}
+
+VkPhysicalDevice Core::getPhysicalDevice() const noexcept {
+    return m_vkPhysicalDevice;
+}
+
+u32 Core::getMsaaCount() const noexcept {
+    return m_msaaCount;
 }
 
 /* ========================================================================== */
