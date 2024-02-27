@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/23 09:42:20 by etran             #+#    #+#             */
-/*   Updated: 2024/02/24 00:12:44 by etran            ###   ########.fr       */
+/*   Updated: 2024/02/27 17:33:20 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,13 +15,10 @@
 #include <vulkan/vulkan.h>
 #include "types.h"
 
-namespace vox {
-class Core;
-class Device;
-}
-
 namespace vox::gfx {
 
+class Core;
+class Device;
 class ICommandBuffer;
 
 enum class CommandBufferType: u8 {
@@ -45,15 +42,15 @@ public:
 
     /* ====================================================================== */
 
-    static void             init(const vox::Core& core, const vox::Device& device);
-    static void             destroy(const vox::Device& device);
+    static void             init(const Core& core, const Device& device);
+    static void             destroy(const Device& device);
 
     static ICommandBuffer*  createCommandBuffer(
-        vox::Device& device,
+        Device& device,
         CommandBufferType type,
         VkCommandBufferLevel level = VK_COMMAND_BUFFER_LEVEL_PRIMARY);
     static void             destroyBuffer(
-        vox::Device& device,
+        Device& device,
         ICommandBuffer* buffer);
 
 private:

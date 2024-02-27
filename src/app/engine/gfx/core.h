@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/21 11:52:58 by etran             #+#    #+#             */
-/*   Updated: 2024/02/23 01:33:19 by etran            ###   ########.fr       */
+/*   Updated: 2024/02/27 18:23:54 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,7 +24,7 @@ namespace ui {
 class Window;
 }
 
-namespace vox {
+namespace vox::gfx {
 
 /* ========================================================================== */
 /*                               HELPER OBJECTS                               */
@@ -82,6 +82,7 @@ public:
 
     /* ====================================================================== */
 
+    u32                         findMemoryType(u32 typeFilter, VkMemoryPropertyFlags properties) const;
     SwapChainSupportDetails     querySwapChainSupport() const;
 
 private:
@@ -111,4 +112,4 @@ private:
 
 }; // class Core
 
-} // namespace vox
+} // namespace vox::gfx

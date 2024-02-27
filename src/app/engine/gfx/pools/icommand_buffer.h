@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/23 10:28:53 by etran             #+#    #+#             */
-/*   Updated: 2024/02/24 00:15:40 by etran            ###   ########.fr       */
+/*   Updated: 2024/02/27 17:34:05 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,11 +14,9 @@
 
 #include <vulkan/vulkan.h>
 
-namespace vox {
-class Device;
-}
-
 namespace vox::gfx {
+
+class Device;
 
 class ICommandBuffer {
 public:
@@ -30,11 +28,11 @@ public:
 
     /* ====================================================================== */
 
-    virtual void            init(const vox::Device& device, const VkCommandBufferLevel level) = 0;
-    virtual void            destroy(const vox::Device& device) = 0;
+    virtual void            init(const Device& device, const VkCommandBufferLevel level) = 0;
+    virtual void            destroy(const Device& device) = 0;
 
     virtual void            startRecording(VkCommandBufferUsageFlags flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT) = 0;
-    virtual void            stopRecording(const vox::Device& device, bool await = false) = 0;
+    virtual void            stopRecording(const Device& device, bool await = false) = 0;
     virtual void            reset() = 0;
 
     virtual VkCommandBuffer getBuffer() const noexcept = 0;

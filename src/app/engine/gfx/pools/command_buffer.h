@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/23 20:01:10 by etran             #+#    #+#             */
-/*   Updated: 2024/02/24 00:16:19 by etran            ###   ########.fr       */
+/*   Updated: 2024/02/27 17:32:30 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,11 +27,11 @@ public:
 
     /* ====================================================================== */
 
-    void    init(const vox::Device& device, const VkCommandBufferLevel level) override;
-    void    destroy(const vox::Device& device) override;
+    void    init(const Device& device, const VkCommandBufferLevel level) override;
+    void    destroy(const Device& device) override;
 
     void    startRecording(VkCommandBufferUsageFlags flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT) override;
-    void    stopRecording(const vox::Device& device, bool await = false) override;
+    void    stopRecording(const Device& device, bool await = false) override;
     void    reset() override;
 
     VkCommandBuffer getBuffer() const noexcept override;

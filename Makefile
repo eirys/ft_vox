@@ -6,7 +6,7 @@
 #    By: etran <etran@student.42.fr>                +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/04/06 03:40:09 by eli               #+#    #+#              #
-#    Updated: 2024/02/23 22:47:47 by etran            ###   ########.fr        #
+#    Updated: 2024/02/27 18:18:16 by etran            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -29,11 +29,12 @@ SHD_BIN_DIR	:=	$(OBJ_DIR)/shaders
 APP_DIR		:=	app
 UI_DIR		:=	$(APP_DIR)/ui
 ENGINE_DIR	:=	$(APP_DIR)/engine
-CORE_DIR	:=	$(ENGINE_DIR)/core
 
 # gfx
 GFX_DIR		:=	$(ENGINE_DIR)/gfx
-CMD_DIR		:=	$(GFX_DIR)/commands
+BUF_DIR		:=	$(GFX_DIR)/buffers
+POOL_DIR	:=	$(GFX_DIR)/pools
+PIP_DIR		:=	$(GFX_DIR)/pipelines
 
 # libraries
 LIBS_DIR	:=	libs
@@ -43,15 +44,16 @@ IO_DIR		:=	$(LIBS_DIR)/io
 
 # ---------------- SUBDIRECTORIES -------------- #
 SUBDIRS		:=	$(APP_DIR) \
-				$(UI_DIR) \
-				$(ENGINE_DIR) \
-				$(CORE_DIR) \
-				$(GFX_DIR) \
 				$(LIBS_DIR) \
 				$(MATH_DIR) \
 				$(DECL_DIR) \
-				$(CMD_DIR) \
-				$(IO_DIR)
+				$(UI_DIR) \
+				$(ENGINE_DIR) \
+				$(IO_DIR) \
+				$(GFX_DIR) \
+				$(BUF_DIR) \
+				$(POOL_DIR) \
+				$(PIP_DIR)
 
 OBJ_SUBDIRS	:=	$(addprefix $(OBJ_DIR)/,$(SUBDIRS))
 INC_SUBDIRS	:=	$(addprefix $(SRC_DIR)/,$(SUBDIRS)) \
@@ -61,11 +63,13 @@ INC_SUBDIRS	:=	$(addprefix $(SRC_DIR)/,$(SUBDIRS)) \
 SRC_FILES	:=	entrypoint.cpp \
 				$(APP_DIR)/app.cpp \
 				$(ENGINE_DIR)/engine.cpp \
-				$(CMD_DIR)/command_pool.cpp \
-				$(CMD_DIR)/command_buffer.cpp \
-				$(CORE_DIR)/core.cpp \
-				$(CORE_DIR)/debug_module.cpp \
-				$(CORE_DIR)/device.cpp \
+				$(GFX_DIR)/renderer.cpp \
+				$(GFX_DIR)/core.cpp \
+				$(GFX_DIR)/debug_module.cpp \
+				$(GFX_DIR)/device.cpp \
+				$(POOL_DIR)/command_pool.cpp \
+				$(POOL_DIR)/command_buffer.cpp \
+				$(BUF_DIR)/buffer.cpp \
 				$(MATH_DIR)/maths.cpp \
 				$(MATH_DIR)/matrix.cpp \
 				$(UI_DIR)/window.cpp

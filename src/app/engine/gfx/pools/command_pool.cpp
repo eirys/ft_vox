@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/23 09:54:13 by etran             #+#    #+#             */
-/*   Updated: 2024/02/24 00:19:39 by etran            ###   ########.fr       */
+/*   Updated: 2024/02/27 17:32:30 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,7 +31,7 @@ VkCommandPool CommandPool::m_computePool = VK_NULL_HANDLE;
 /*                                   PUBLIC                                   */
 /* ========================================================================== */
 
-void CommandPool::init(const vox::Core& core, const vox::Device& device) {
+void CommandPool::init(const Core& core, const Device& device) {
     VkCommandPoolCreateInfo poolInfo{};
     poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
     poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;

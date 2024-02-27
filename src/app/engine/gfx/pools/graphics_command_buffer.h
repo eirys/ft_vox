@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   compute_command_buffer.h                           :+:      :+:    :+:   */
+/*   graphics_command_buffer.h                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/02/23 23:09:22 by etran             #+#    #+#             */
-/*   Updated: 2024/02/24 00:17:01 by etran            ###   ########.fr       */
+/*   Created: 2024/02/23 22:27:11 by etran             #+#    #+#             */
+/*   Updated: 2024/02/27 17:34:14 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,13 +14,11 @@
 
 #include "command_buffer.h"
 
-namespace vox {
-class Device;
-} // namespace vox
-
 namespace vox::gfx {
 
-class ComputeCommandBuffer final: public CommandBuffer {
+class Device;
+
+class GraphicsCommandBuffer final: public CommandBuffer {
 public:
     /* ====================================================================== */
     /*                                TYPEDEFS                                */
@@ -32,16 +30,17 @@ public:
     /*                                 METHODS                                */
     /* ====================================================================== */
 
-    ComputeCommandBuffer(const VkCommandPool& pool, const VkQueue& queue):
+    GraphicsCommandBuffer(const VkCommandPool& pool, const VkQueue& queue):
         m_pool(pool),
         m_queue(queue) {}
-    ~ComputeCommandBuffer() = default;
 
-    ComputeCommandBuffer() = delete;
-    ComputeCommandBuffer(ComputeCommandBuffer&& other) = delete;
-    ComputeCommandBuffer(const ComputeCommandBuffer& other) = delete;
-    ComputeCommandBuffer& operator=(ComputeCommandBuffer&& other) = delete;
-    ComputeCommandBuffer& operator=(const ComputeCommandBuffer& other) = delete;
+    ~GraphicsCommandBuffer() = default;
+
+    GraphicsCommandBuffer() = delete;
+    GraphicsCommandBuffer(GraphicsCommandBuffer&& other) = delete;
+    GraphicsCommandBuffer(const GraphicsCommandBuffer& other) = delete;
+    GraphicsCommandBuffer& operator=(GraphicsCommandBuffer&& other) = delete;
+    GraphicsCommandBuffer& operator=(const GraphicsCommandBuffer& other) = delete;
 
     /* ====================================================================== */
 
@@ -64,9 +63,11 @@ private:
     /*                                 METHODS                                */
     /* ====================================================================== */
 
+    inline
     const VkCommandPool&    _getPool() const override { return m_pool; }
+    inline
     const VkQueue&          _getQueue() const override { return m_queue; }
 
-}; // class ComputeCommandBuffer
+}; // class GraphicsCommandBuffer
 
 } // namespace vox::gfx

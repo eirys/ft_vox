@@ -6,15 +6,14 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/21 10:27:55 by etran             #+#    #+#             */
-/*   Updated: 2024/02/21 10:56:39 by etran            ###   ########.fr       */
+/*   Updated: 2024/02/27 18:16:44 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
 #include "window.h"
-
-namespace vox {
+#include "engine.h"
 
 class App final {
 public:
@@ -42,6 +41,6 @@ private:
     ui::Window      m_window;
     // ui::Controller  m_controller;
 
-}; // class App
+    vox::Engine     m_engine;
 
-}  // namespace vox
+}; // class App

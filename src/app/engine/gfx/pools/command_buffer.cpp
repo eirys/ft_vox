@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/23 22:43:14 by etran             #+#    #+#             */
-/*   Updated: 2024/02/24 00:20:50 by etran            ###   ########.fr       */
+/*   Updated: 2024/02/27 17:32:30 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,7 +24,7 @@ namespace vox::gfx {
 /* ========================================================================== */
 
 void CommandBuffer::init(
-    const vox::Device& device,
+    const Device& device,
     VkCommandBufferLevel level
 ) {
     VkCommandBufferAllocateInfo allocInfo{};
@@ -38,7 +38,7 @@ void CommandBuffer::init(
     }
 }
 
-void CommandBuffer::destroy(const vox::Device& device) {
+void CommandBuffer::destroy(const Device& device) {
     vkFreeCommandBuffers(device.getDevice(), _getPool(), 1, &m_buffer);
 }
 
@@ -60,7 +60,7 @@ VkCommandBuffer CommandBuffer::getBuffer() const noexcept {
     return m_buffer;
 }
 
-void CommandBuffer::stopRecording(const vox::Device& device, bool await) {
+void CommandBuffer::stopRecording(const Device& device, bool await) {
     if (vkEndCommandBuffer(m_buffer) != VK_SUCCESS) {
         throw std::runtime_error("failed to record command buffer");
     }

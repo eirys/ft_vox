@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/21 12:30:40 by etran             #+#    #+#             */
-/*   Updated: 2024/02/21 17:25:21 by etran            ###   ########.fr       */
+/*   Updated: 2024/02/27 17:29:21 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,7 @@
 #include <vulkan/vulkan.h>
 #include <array>
 
-namespace vox {
+namespace vox::gfx {
 
 class DebugModule final {
 public:
@@ -60,4 +60,4 @@ private:
 
 }; // class DebugModule
 
-} // namespace vox
+} // namespace vox::gfx

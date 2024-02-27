@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/21 12:30:51 by etran             #+#    #+#             */
-/*   Updated: 2024/02/21 17:27:12 by etran            ###   ########.fr       */
+/*   Updated: 2024/02/27 17:29:26 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 #include <stdexcept>
 #include <iostream>
 
-namespace vox {
+namespace vox::gfx {
 
 /* ========================================================================== */
 /*                               STATIC MEMBERS                               */
@@ -106,4 +106,4 @@ VkDebugUtilsMessengerCreateInfoEXT DebugModule::getMessengerCreateInfo() {
     return createInfo;
 }
 
-} // namespace vox
+} // namespace vox::gfx

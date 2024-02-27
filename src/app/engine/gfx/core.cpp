@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/21 11:53:00 by etran             #+#    #+#             */
-/*   Updated: 2024/02/23 09:27:26 by etran            ###   ########.fr       */
+/*   Updated: 2024/02/27 18:32:09 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,7 @@
 #include <stdexcept>
 #include <set>
 
-namespace vox {
+namespace vox::gfx {
 /* ========================================================================== */
 /*                                   PUBLIC                                   */
 /* ========================================================================== */
@@ -38,6 +38,65 @@ void Core::destroy() {
     m_debugModule.destroy(m_vkInstance);
     vkDestroyInstance(m_vkInstance, nullptr);
 }
+
+/* ========================================================================== */
+
+const QueueFamilyIndices&  Core::getQueueFamilyIndices() const noexcept {
+    return m_queueFamilyIndices;
+}
+
+VkPhysicalDevice Core::getPhysicalDevice() const noexcept {
+    return m_vkPhysicalDevice;
+}
+
+u32 Core::getMsaaCount() const noexcept {
+    return m_msaaCount;
+}
+
+/* ========================================================================== */
+
+u32 Core::findMemoryType(u32 typeFilter, VkMemoryPropertyFlags properties) const {
+    VkPhysicalDeviceMemoryProperties memProperties;
+    vkGetPhysicalDeviceMemoryProperties(m_vkPhysicalDevice, &memProperties);
+
+    for (u32 i = 0; i < memProperties.memoryTypeCount; ++i) {
+        const bool hasProperty = (memProperties.memoryTypes[i].propertyFlags & properties) == properties;
+        const bool isTypeFilter = typeFilter & (1 << i);
+        if (isTypeFilter && hasProperty)
+            return i;
+    }
+    throw std::runtime_error("failed to find suitable memory type");
+}
+
+/* ========================================================================== */
+
+static
+SwapChainSupportDetails _querySwapChainSupport(VkPhysicalDevice physDevice, VkSurfaceKHR surface) {
+    SwapChainSupportDetails details;
+
+    vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physDevice, surface, &details.capabilities);
+
+    u32 formatCount;
+    vkGetPhysicalDeviceSurfaceFormatsKHR(physDevice, surface, &formatCount, nullptr);
+    if (formatCount != 0) {
+        details.formats.resize(formatCount);
+        vkGetPhysicalDeviceSurfaceFormatsKHR(physDevice, surface, &formatCount, details.formats.data());
+    }
+
+    u32 presentModeCount;
+    vkGetPhysicalDeviceSurfacePresentModesKHR(physDevice, surface, &presentModeCount, nullptr);
+    if (presentModeCount != 0) {
+        details.presentModes.resize(presentModeCount);
+        vkGetPhysicalDeviceSurfacePresentModesKHR(physDevice, surface, &presentModeCount, details.presentModes.data());
+    }
+
+    return details;
+}
+
+SwapChainSupportDetails Core::querySwapChainSupport() const {
+    return _querySwapChainSupport(m_vkPhysicalDevice, m_vkSurface);
+}
+
 
 /* ========================================================================== */
 /*                                   PRIVATE                                  */
@@ -109,99 +168,6 @@ void Core::_createInstance() {
 void Core::_createSurface(ui::Window& win) {
     if (glfwCreateWindowSurface(m_vkInstance, win.getWindow(), nullptr, &m_vkSurface) != VK_SUCCESS)
         throw std::runtime_error("Failed to create window surface");
-}
-
-/* ========================================================================== */
-
-static
-SwapChainSupportDetails _querySwapChainSupport(VkPhysicalDevice physDevice, VkSurfaceKHR surface) {
-    SwapChainSupportDetails details;
-
-    vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physDevice, surface, &details.capabilities);
-
-    u32 formatCount;
-    vkGetPhysicalDeviceSurfaceFormatsKHR(physDevice, surface, &formatCount, nullptr);
-    if (formatCount != 0) {
-        details.formats.resize(formatCount);
-        vkGetPhysicalDeviceSurfaceFormatsKHR(physDevice, surface, &formatCount, details.formats.data());
-    }
-
-    u32 presentModeCount;
-    vkGetPhysicalDeviceSurfacePresentModesKHR(physDevice, surface, &presentModeCount, nullptr);
-    if (presentModeCount != 0) {
-        details.presentModes.resize(presentModeCount);
-        vkGetPhysicalDeviceSurfacePresentModesKHR(physDevice, surface, &presentModeCount, details.presentModes.data());
-    }
-
-    return details;
-}
-
-SwapChainSupportDetails Core::querySwapChainSupport() const {
-    return _querySwapChainSupport(m_vkPhysicalDevice, m_vkSurface);
-}
-
-/* ========================================================================== */
-
-const QueueFamilyIndices&  Core::getQueueFamilyIndices() const noexcept {
-    return m_queueFamilyIndices;
-}
-
-VkPhysicalDevice Core::getPhysicalDevice() const noexcept {
-    return m_vkPhysicalDevice;
-}
-
-u32 Core::getMsaaCount() const noexcept {
-    return m_msaaCount;
-}
-
-/* ========================================================================== */
-
-/**
- * @brief Check if the device supports the required extensions.
- * @param physDevice the physical device to check.
- */
-static
-bool _checkDeviceExtensionSupport(VkPhysicalDevice physDevice) {
-    u32 extensionCount;
-    vkEnumerateDeviceExtensionProperties(physDevice, nullptr, &extensionCount, nullptr);
-
-    std::vector<VkExtensionProperties> availableExtensions(extensionCount);
-    vkEnumerateDeviceExtensionProperties(
-        physDevice,
-        nullptr,
-        &extensionCount,
-        availableExtensions.data());
-
-    std::set<std::string> requiredExtensions(Core::DEVICE_EXTENSIONS.begin(), Core::DEVICE_EXTENSIONS.end());
-    for (const VkExtensionProperties& extension: availableExtensions)
-        requiredExtensions.erase(extension.extensionName);
-
-    return requiredExtensions.empty();
-}
-
-/**
- * @brief Check if the physical device is suitable for the application,
- * given the requirements.
- * @param physDevice the physical device to check.
- */
-bool Core::_isDeviceSuitable(VkPhysicalDevice physDevice) const {
-    bool extensionsSupported = _checkDeviceExtensionSupport(physDevice);
-    bool swapChainAdequate = false;
-
-    if (extensionsSupported) {
-        SwapChainSupportDetails swapChainSupport = _querySwapChainSupport(physDevice, m_vkSurface);
-        swapChainAdequate = !swapChainSupport.formats.empty() &&
-                            !swapChainSupport.presentModes.empty();
-    }
-
-    // We want to enable some features
-    VkPhysicalDeviceFeatures supportedFeatures;
-    vkGetPhysicalDeviceFeatures(physDevice, &supportedFeatures);
-
-    return m_queueFamilyIndices.isComplete() &&
-           extensionsSupported &&
-           swapChainAdequate &&
-           supportedFeatures.samplerAnisotropy;
 }
 
 /* ========================================================================== */
@@ -288,4 +254,54 @@ QueueFamilyIndices Core::_findQueueFamilies(VkPhysicalDevice physDevice) const {
     return indices;
 }
 
-} // namespace vox
+/* ========================================================================== */
+
+/**
+ * @brief Check if the device supports the required extensions.
+ * @param physDevice the physical device to check.
+ */
+static
+bool _checkDeviceExtensionSupport(VkPhysicalDevice physDevice) {
+    u32 extensionCount;
+    vkEnumerateDeviceExtensionProperties(physDevice, nullptr, &extensionCount, nullptr);
+
+    std::vector<VkExtensionProperties> availableExtensions(extensionCount);
+    vkEnumerateDeviceExtensionProperties(
+        physDevice,
+        nullptr,
+        &extensionCount,
+        availableExtensions.data());
+
+    std::set<std::string> requiredExtensions(Core::DEVICE_EXTENSIONS.begin(), Core::DEVICE_EXTENSIONS.end());
+    for (const VkExtensionProperties& extension: availableExtensions)
+        requiredExtensions.erase(extension.extensionName);
+
+    return requiredExtensions.empty();
+}
+
+/**
+ * @brief Check if the physical device is suitable for the application,
+ * given the requirements.
+ * @param physDevice the physical device to check.
+ */
+bool Core::_isDeviceSuitable(VkPhysicalDevice physDevice) const {
+    bool extensionsSupported = _checkDeviceExtensionSupport(physDevice);
+    bool swapChainAdequate = false;
+
+    if (extensionsSupported) {
+        SwapChainSupportDetails swapChainSupport = _querySwapChainSupport(physDevice, m_vkSurface);
+        swapChainAdequate = !swapChainSupport.formats.empty() &&
+                            !swapChainSupport.presentModes.empty();
+    }
+
+    // We want to enable some features
+    VkPhysicalDeviceFeatures supportedFeatures;
+    vkGetPhysicalDeviceFeatures(physDevice, &supportedFeatures);
+
+    return m_queueFamilyIndices.isComplete() &&
+           extensionsSupported &&
+           swapChainAdequate &&
+           supportedFeatures.samplerAnisotropy;
+}
+
+} // namespace vox::gfx
