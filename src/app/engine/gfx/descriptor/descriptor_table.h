@@ -6,41 +6,32 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/28 15:42:53 by etran             #+#    #+#             */
-/*   Updated: 2024/02/28 16:19:45 by etran            ###   ########.fr       */
+/*   Updated: 2024/02/28 23:59:42 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
 #include <vector>
-#include "descriptor_set.h"
-#include "types.h"
+
+#include "idescriptor_set.h"
 
 namespace vox::gfx {
 
+class Device;
+
+/**
+ * @brief Descriptor sets table.
+ * @note This class will be used to store all the descriptor sets.
+*/
 class DescriptorTable final {
 public:
-    /* ====================================================================== */
-    /*                                  ENUMS                                 */
-    /* ====================================================================== */
-
-    enum class DescriptorIndex: u32 {
-
-        First = 0,
-        Last = 0
-    };
-
-    /* ====================================================================== */
-    /*                             STATIC MEMBERS                             */
-    /* ====================================================================== */
-
-    static constexpr u32 DESCRIPTOR_TABLE_COUNT = enumSize<DescriptorIndex>();
-
     /* ====================================================================== */
     /*                                 METHODS                                */
     /* ====================================================================== */
 
-    DescriptorTable() = default;
+    DescriptorTable();
+
     ~DescriptorTable() = default;
 
     DescriptorTable(DescriptorTable&& other) = delete;
@@ -50,24 +41,21 @@ public:
 
     /* ====================================================================== */
 
-    void init();
-    void destroy();
+    void init(const Device& device);
+    void destroy(const Device& device);
 
 /* ========================================================================== */
 
-    const DescriptorSet&    operator[](const DescriptorIndex index) const noexcept;
-    DescriptorSet&          operator[](const DescriptorIndex index) noexcept;
+    IDescriptorSet const*    operator[](const u32 index) const noexcept;
+    IDescriptorSet*          operator[](const u32 index) noexcept;
 
 private:
     /* ====================================================================== */
     /*                                  DATA                                  */
     /* ====================================================================== */
 
-    std::vector<DescriptorSet>  m_sets;
+    std::vector<IDescriptorSet*>  m_sets;
 
 }; // class DescriptorTable
-
-
-};
 
 } // namespace vox::gfx

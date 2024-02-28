@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/28 15:27:42 by etran             #+#    #+#             */
-/*   Updated: 2024/02/28 16:14:18 by etran            ###   ########.fr       */
+/*   Updated: 2024/02/28 22:25:57 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,7 +35,7 @@ public:
 
     /* ====================================================================== */
 
-    void init(const Device& device, const DescriptorTable& table);
+    void init(const Device& device, DescriptorTable& table);
     void destroy(const Device& device);
 
 private:
@@ -50,7 +50,7 @@ private:
     /* ====================================================================== */
 
     void _createPool(const Device& device, const DescriptorTable& table);
-    void _allocatePool(const Device& device, const DescriptorTable& table);
+    void _allocatePool(const Device& device, DescriptorTable& table);
 
 }; // class DescriptorPool
 

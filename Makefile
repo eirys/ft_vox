@@ -6,7 +6,7 @@
 #    By: etran <etran@student.42.fr>                +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/04/06 03:40:09 by eli               #+#    #+#              #
-#    Updated: 2024/02/28 15:38:03 by etran            ###   ########.fr        #
+#    Updated: 2024/02/28 23:49:59 by etran            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -34,8 +34,9 @@ ENGINE_DIR	:=	$(APP_DIR)/engine
 GFX_DIR		:=	$(ENGINE_DIR)/gfx
 BUF_DIR		:=	$(GFX_DIR)/buffers
 CMD_DIR		:=	$(GFX_DIR)/command
-DESC_DIR	:=	$(GFX_DIR)/descriptor
 PIP_DIR		:=	$(GFX_DIR)/pipelines
+DESC_DIR	:=	$(GFX_DIR)/descriptor
+SETS_DIR	:=	$(DESC_DIR)/sets
 
 # libraries
 LIBS_DIR	:=	libs
@@ -55,6 +56,7 @@ SUBDIRS		:=	$(APP_DIR) \
 				$(BUF_DIR) \
 				$(CMD_DIR) \
 				$(DESC_DIR) \
+				$(SETS_DIR) \
 				$(PIP_DIR)
 
 OBJ_SUBDIRS	:=	$(addprefix $(OBJ_DIR)/,$(SUBDIRS))
@@ -71,6 +73,9 @@ SRC_FILES	:=	entrypoint.cpp \
 				$(GFX_DIR)/device.cpp \
 				$(CMD_DIR)/command_pool.cpp \
 				$(CMD_DIR)/command_buffer.cpp \
+				$(DESC_DIR)/descriptor_pool.cpp \
+				$(DESC_DIR)/descriptor_table.cpp \
+				$(DESC_DIR)/descriptor_set.cpp \
 				$(BUF_DIR)/buffer.cpp \
 				$(BUF_DIR)/image_buffer.cpp \
 				$(MATH_DIR)/maths.cpp \
