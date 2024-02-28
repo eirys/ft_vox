@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/27 17:14:27 by etran             #+#    #+#             */
-/*   Updated: 2024/02/27 18:34:19 by etran            ###   ########.fr       */
+/*   Updated: 2024/02/27 18:40:51 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,19 +22,22 @@ class Core;
 class Device;
 class ICommandBuffer;
 
+/* ========================================================================== */
+/*                               HELPER OBJECTS                               */
+/* ========================================================================== */
+
+struct BufferMetadata {
+    VkDeviceSize            m_size;
+    VkBufferUsageFlags      m_usage;
+    VkMemoryPropertyFlags   m_properties;
+    VkSharingMode           m_sharingMode;
+};
+
+/**
+ * @brief Wrapper class for VkBuffer and VkDeviceMemory.
+*/
 class Buffer final {
 public:
-    /* ====================================================================== */
-    /*                             HELPER OBJECTS                             */
-    /* ====================================================================== */
-
-    struct BufferMetadata {
-        VkDeviceSize            m_size;
-        VkBufferUsageFlags      m_usage;
-        VkMemoryPropertyFlags   m_properties;
-        VkSharingMode           m_sharingMode;
-    };
-
     /* ====================================================================== */
     /*                                 METHODS                                */
     /* ====================================================================== */

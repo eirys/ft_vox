@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/27 17:40:32 by etran             #+#    #+#             */
-/*   Updated: 2024/02/27 18:32:11 by etran            ###   ########.fr       */
+/*   Updated: 2024/02/28 15:14:36 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -129,7 +129,7 @@ VkBuffer Buffer::getBuffer() const noexcept {
     return m_buffer;
 }
 
-const Buffer::BufferMetadata& Buffer::getMetadata() const noexcept {
+const BufferMetadata& Buffer::getMetadata() const noexcept {
     return m_metadata;
 }
 

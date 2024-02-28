@@ -6,13 +6,14 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/21 11:53:00 by etran             #+#    #+#             */
-/*   Updated: 2024/02/27 18:32:09 by etran            ###   ########.fr       */
+/*   Updated: 2024/02/28 15:16:17 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "core.h"
 #include "types.h"
 #include "window.h"
+#include "image_buffer.h"
 
 #include <GLFW/glfw3.h>
 #include <cstring>
@@ -258,10 +259,9 @@ QueueFamilyIndices Core::_findQueueFamilies(VkPhysicalDevice physDevice) const {
 
 /**
  * @brief Check if the device supports the required extensions.
- * @param physDevice the physical device to check.
  */
 static
-bool _checkDeviceExtensionSupport(VkPhysicalDevice physDevice) {
+bool _hasExpectedExtensions(VkPhysicalDevice physDevice) {
     u32 extensionCount;
     vkEnumerateDeviceExtensionProperties(physDevice, nullptr, &extensionCount, nullptr);
 
@@ -279,29 +279,46 @@ bool _checkDeviceExtensionSupport(VkPhysicalDevice physDevice) {
     return requiredExtensions.empty();
 }
 
+static
+bool _hasExpectedFeatures(const VkPhysicalDevice physDevice) {
+    VkPhysicalDeviceFeatures supportedFeatures;
+    vkGetPhysicalDeviceFeatures(physDevice, &supportedFeatures);
+
+    return supportedFeatures.samplerAnisotropy;
+}
+
+static
+bool _hasExpectedFormatProperties(const VkPhysicalDevice physDevice) {
+    // Dynamic blitting support
+    for (VkFormat format: BLITTED_IMAGE_FORMATS) {
+        VkFormatProperties	properties;
+        vkGetPhysicalDeviceFormatProperties(physDevice, format, &properties);
+        const bool hasLinearTiling = (bool)(properties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT);
+
+        if (!hasLinearTiling) return false;
+    }
+    return true;
+}
+
 /**
  * @brief Check if the physical device is suitable for the application,
  * given the requirements.
  * @param physDevice the physical device to check.
  */
-bool Core::_isDeviceSuitable(VkPhysicalDevice physDevice) const {
-    bool extensionsSupported = _checkDeviceExtensionSupport(physDevice);
-    bool swapChainAdequate = false;
+bool Core::_isDeviceSuitable(const VkPhysicalDevice physDevice) const {
+    const bool  extensionsSupported = _hasExpectedExtensions(physDevice);
+    bool        isSwapChainAdequate = false;
 
     if (extensionsSupported) {
         SwapChainSupportDetails swapChainSupport = _querySwapChainSupport(physDevice, m_vkSurface);
-        swapChainAdequate = !swapChainSupport.formats.empty() &&
-                            !swapChainSupport.presentModes.empty();
+        isSwapChainAdequate = !swapChainSupport.formats.empty() && !swapChainSupport.presentModes.empty();
     }
-
-    // We want to enable some features
-    VkPhysicalDeviceFeatures supportedFeatures;
-    vkGetPhysicalDeviceFeatures(physDevice, &supportedFeatures);
 
     return m_queueFamilyIndices.isComplete() &&
            extensionsSupported &&
-           swapChainAdequate &&
-           supportedFeatures.samplerAnisotropy;
+           isSwapChainAdequate &&
+           _hasExpectedFormatProperties(physDevice) &&
+           _hasExpectedFeatures(physDevice);
 }
 
 } // namespace vox::gfx

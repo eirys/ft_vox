@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/21 11:52:58 by etran             #+#    #+#             */
-/*   Updated: 2024/02/27 18:23:54 by etran            ###   ########.fr       */
+/*   Updated: 2024/02/28 12:03:37 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -108,7 +108,7 @@ private:
     void                _pickPhysicalDevice();
 
     QueueFamilyIndices  _findQueueFamilies(VkPhysicalDevice physDevice) const;
-    bool                _isDeviceSuitable(VkPhysicalDevice physDevice) const;
+    bool                _isDeviceSuitable(const VkPhysicalDevice physDevice) const;
 
 }; // class Core
 

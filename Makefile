@@ -6,7 +6,7 @@
 #    By: etran <etran@student.42.fr>                +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/04/06 03:40:09 by eli               #+#    #+#              #
-#    Updated: 2024/02/27 18:18:16 by etran            ###   ########.fr        #
+#    Updated: 2024/02/28 10:02:07 by etran            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -70,6 +70,7 @@ SRC_FILES	:=	entrypoint.cpp \
 				$(POOL_DIR)/command_pool.cpp \
 				$(POOL_DIR)/command_buffer.cpp \
 				$(BUF_DIR)/buffer.cpp \
+				$(BUF_DIR)/image_buffer.cpp \
 				$(MATH_DIR)/maths.cpp \
 				$(MATH_DIR)/matrix.cpp \
 				$(UI_DIR)/window.cpp

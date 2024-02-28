@@ -6,14 +6,14 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/23 20:01:10 by etran             #+#    #+#             */
-/*   Updated: 2024/02/27 17:32:30 by etran            ###   ########.fr       */
+/*   Updated: 2024/02/27 18:34:47 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
-# include "icommand_buffer.h"
 # include "types.h"
+# include "icommand_buffer.h"
 
 namespace vox::gfx {
 
