@@ -6,7 +6,7 @@
 #    By: etran <etran@student.42.fr>                +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/04/06 03:40:09 by eli               #+#    #+#              #
-#    Updated: 2024/02/28 10:02:07 by etran            ###   ########.fr        #
+#    Updated: 2024/02/28 15:38:03 by etran            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -33,7 +33,8 @@ ENGINE_DIR	:=	$(APP_DIR)/engine
 # gfx
 GFX_DIR		:=	$(ENGINE_DIR)/gfx
 BUF_DIR		:=	$(GFX_DIR)/buffers
-POOL_DIR	:=	$(GFX_DIR)/pools
+CMD_DIR		:=	$(GFX_DIR)/command
+DESC_DIR	:=	$(GFX_DIR)/descriptor
 PIP_DIR		:=	$(GFX_DIR)/pipelines
 
 # libraries
@@ -52,7 +53,8 @@ SUBDIRS		:=	$(APP_DIR) \
 				$(IO_DIR) \
 				$(GFX_DIR) \
 				$(BUF_DIR) \
-				$(POOL_DIR) \
+				$(CMD_DIR) \
+				$(DESC_DIR) \
 				$(PIP_DIR)
 
 OBJ_SUBDIRS	:=	$(addprefix $(OBJ_DIR)/,$(SUBDIRS))
@@ -67,8 +69,8 @@ SRC_FILES	:=	entrypoint.cpp \
 				$(GFX_DIR)/core.cpp \
 				$(GFX_DIR)/debug_module.cpp \
 				$(GFX_DIR)/device.cpp \
-				$(POOL_DIR)/command_pool.cpp \
-				$(POOL_DIR)/command_buffer.cpp \
+				$(CMD_DIR)/command_pool.cpp \
+				$(CMD_DIR)/command_buffer.cpp \
 				$(BUF_DIR)/buffer.cpp \
 				$(BUF_DIR)/image_buffer.cpp \
 				$(MATH_DIR)/maths.cpp \

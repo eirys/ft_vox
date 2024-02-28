@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/23 09:42:20 by etran             #+#    #+#             */
-/*   Updated: 2024/02/27 17:33:20 by etran            ###   ########.fr       */
+/*   Updated: 2024/02/28 15:48:53 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,15 +42,15 @@ public:
 
     /* ====================================================================== */
 
-    static void             init(const Core& core, const Device& device);
-    static void             destroy(const Device& device);
+    void             init(const Core& core, const Device& device);
+    void             destroy(const Device& device);
 
-    static ICommandBuffer*  createCommandBuffer(
-        Device& device,
+    ICommandBuffer*  createCommandBuffer(
+        const Device& device,
         CommandBufferType type,
         VkCommandBufferLevel level = VK_COMMAND_BUFFER_LEVEL_PRIMARY);
-    static void             destroyBuffer(
-        Device& device,
+    void             destroyBuffer(
+        const Device& device,
         ICommandBuffer* buffer);
 
 private:
@@ -58,8 +58,8 @@ private:
     /*                                  DATA                                  */
     /* ====================================================================== */
 
-    static VkCommandPool m_drawPool;
-    static VkCommandPool m_computePool;
+    VkCommandPool m_drawPool = VK_NULL_HANDLE;
+    VkCommandPool m_computePool = VK_NULL_HANDLE;
 
 }; // class CommandPool
 

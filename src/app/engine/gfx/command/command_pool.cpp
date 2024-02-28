@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/23 09:54:13 by etran             #+#    #+#             */
-/*   Updated: 2024/02/27 17:32:30 by etran            ###   ########.fr       */
+/*   Updated: 2024/02/28 15:49:03 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,13 +19,6 @@
 #include <stdexcept> // std::runtime_error
 
 namespace vox::gfx {
-
-/* ========================================================================== */
-/*                               STATIC MEMBERS                               */
-/* ========================================================================== */
-
-VkCommandPool CommandPool::m_drawPool = VK_NULL_HANDLE;
-VkCommandPool CommandPool::m_computePool = VK_NULL_HANDLE;
 
 /* ========================================================================== */
 /*                                   PUBLIC                                   */
@@ -57,7 +50,7 @@ void CommandPool::destroy(const Device& device) {
 /* ========================================================================== */
 
 ICommandBuffer* CommandPool::createCommandBuffer(
-    Device& device,
+    const Device& device,
     CommandBufferType type,
     VkCommandBufferLevel level
 ) {
@@ -72,7 +65,7 @@ ICommandBuffer* CommandPool::createCommandBuffer(
     return buffer;
 }
 
-void CommandPool::destroyBuffer(Device& device, ICommandBuffer* buffer) {
+void CommandPool::destroyBuffer(const Device& device, ICommandBuffer* buffer) {
     buffer->destroy(device);
     delete buffer;
 }
