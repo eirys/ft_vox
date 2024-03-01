@@ -6,13 +6,12 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/21 10:27:55 by etran             #+#    #+#             */
-/*   Updated: 2024/03/01 12:09:11 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/01 23:41:10 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
-#define GLFW_INCLUDE_VULKAN
 #include "window.h"
 #include "engine.h"
 

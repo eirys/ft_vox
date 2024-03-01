@@ -6,7 +6,7 @@
 #    By: etran <etran@student.42.fr>                +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/04/06 03:40:09 by eli               #+#    #+#              #
-#    Updated: 2024/03/01 00:55:27 by etran            ###   ########.fr        #
+#    Updated: 2024/03/01 23:45:07 by etran            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -72,7 +72,6 @@ SRC_FILES	:=	entrypoint.cpp \
 				$(ENGINE_DIR)/engine.cpp \
 				$(GFX_DIR)/renderer.cpp \
 				$(GFX_DIR)/core.cpp \
-				$(GFX_DIR)/debug_module.cpp \
 				$(GFX_DIR)/device.cpp \
 				$(CMD_DIR)/command_pool.cpp \
 				$(CMD_DIR)/command_buffer.cpp \
@@ -96,7 +95,8 @@ EXTRA		?=	-Wall \
 				-Wextra
 INCLUDES	:=	$(addprefix -I./,$(INC_SUBDIRS))
 
-MACROS		:=	NDEBUG \
+MACROS		:=	GLFW_INCLUDE_VULKAN \
+				NDEBUG \
 				__DEBUG \
 				__LOG \
 				__INFO \
@@ -135,7 +135,7 @@ MACROS		:=	NDEBUG \
 DEFINES		:=	$(addprefix -D,$(MACROS))
 
 CFLAGS		:=	$(EXTRA) \
-				-std=c++17 \
+				-std=c++20 \
 				-MMD \
 				-MP \
 				$(INCLUDES) \

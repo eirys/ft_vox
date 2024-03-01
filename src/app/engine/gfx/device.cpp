@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/21 23:37:02 by etran             #+#    #+#             */
-/*   Updated: 2024/03/01 12:08:20 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/01 22:51:26 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -234,9 +234,9 @@ void Device::_createLogicalDevice() {
     deviceInfo.enabledExtensionCount = static_cast<u32>(DEVICE_EXTENSIONS.size());
     deviceInfo.ppEnabledExtensionNames = DEVICE_EXTENSIONS.data();
 
-    if (DebugModule::ENABLE_VALIDATION_LAYERS) {
-        deviceInfo.enabledLayerCount = static_cast<u32>(DebugModule::VALIDATION_LAYERS.size());
-        deviceInfo.ppEnabledLayerNames = DebugModule::VALIDATION_LAYERS.data();
+    if (Core::ENABLE_VALIDATION_LAYERS) {
+        deviceInfo.enabledLayerCount = (u32)(Core::VALIDATION_LAYERS.size());
+        deviceInfo.ppEnabledLayerNames = Core::VALIDATION_LAYERS.data();
     }
 
     if (vkCreateDevice(m_vkPhysicalDevice, &deviceInfo, nullptr, &m_vkLogicalDevice) != VK_SUCCESS) {
