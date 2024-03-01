@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/20 00:02:09 by etran             #+#    #+#             */
-/*   Updated: 2024/03/01 01:04:30 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/01 02:07:35 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,6 +26,7 @@ Window::Window() {
 
     // disable OpenGL context creation
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+    glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 
     // create a window pointer
     m_window = glfwCreateWindow(WIDTH, HEIGHT, TITLE, nullptr, nullptr);
@@ -35,7 +36,6 @@ Window::Window() {
     // set pointer to window to `this` instance pointer
     // so we can access it from the callback functions
     glfwSetWindowUserPointer(m_window, this);
-
     // Setup event callbacks
     // glfwSetFramebufferSizeCallback(m_window, framebufferResizeCallback);
     // glfwSetKeyCallback(m_window, keyCallback);
@@ -46,9 +46,7 @@ Window::Window() {
 }
 
 Window::~Window() {
-    if (m_window != nullptr) {
-        glfwDestroyWindow(m_window);
-    }
+    glfwDestroyWindow(m_window);
     // Remove glfw instance
     glfwTerminate();
 }

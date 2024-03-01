@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/21 12:30:51 by etran             #+#    #+#             */
-/*   Updated: 2024/03/01 01:52:07 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/01 02:25:55 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,10 +60,21 @@ VkBool32 _debugCallback(
     const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
     void* pUserData
 ) {
-    (void)messageSeverity;
     (void)messageType;
     (void)pUserData;
-    std::cerr << "[validation layer] " << pCallbackData->pMessage << std::endl;
+
+    static const char* severity[4] = {
+        "VERBOSE",
+        "INFO",
+        "WARNING",
+        "ERROR" };
+
+    const int index = (messageSeverity == VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT) ? 0 :
+                      (messageSeverity == VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT) ? 1 :
+                      (messageSeverity == VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT) ? 2 : 3;
+
+    std::cerr   << "[* VK_VL | " << severity[index] << " *] "
+                << pCallbackData->pMessage << std::endl;
     return VK_FALSE;
 }
 
@@ -76,20 +87,14 @@ void DebugModule::init(VkInstance instance) {
     if (!ENABLE_VALIDATION_LAYERS) return;
 
     VkDebugUtilsMessengerCreateInfoEXT debugInfo = getMessengerCreateInfo();
-    if (_createDebugUtilsMessengerExt(instance, &debugInfo, nullptr, &m_debugMessenger) != VK_SUCCESS) {
+    if (_createDebugUtilsMessengerExt(instance, &debugInfo, nullptr, &m_debugMessenger) != VK_SUCCESS)
         throw std::runtime_error("failed to set up debug messenger");
-    }
 }
 
 void DebugModule::destroy(VkInstance instance) {
     if (!ENABLE_VALIDATION_LAYERS) return;
+
     _destroyDebugUtilsMessengerExt(instance, m_debugMessenger, nullptr);
-    // if (ENABLE_VALIDATION_LAYERS) {
-    //     auto func = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT");
-    //     if (func != nullptr) {
-    //         func(instance, m_debugMessenger, nullptr);
-    //     }
-    // }
 }
 
 VkDebugUtilsMessengerCreateInfoEXT DebugModule::getMessengerCreateInfo() {
@@ -100,6 +105,7 @@ VkDebugUtilsMessengerCreateInfoEXT DebugModule::getMessengerCreateInfo() {
         VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
     #ifdef __VERBOSE
     createInfo.messageSeverity |= VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT;
+    createInfo.messageSeverity |= VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT;
     #endif
 
     createInfo.messageType =

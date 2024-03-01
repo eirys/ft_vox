@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/23 09:29:35 by etran             #+#    #+#             */
-/*   Updated: 2024/03/01 00:39:04 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/01 02:02:23 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,13 +22,13 @@ namespace vox::gfx {
 
 void Renderer::init(ui::Window& window) {
     m_core.init(window);
-    m_device.init(m_core);
+    // m_device.init(m_core);
     // _createPipelines();
 }
 
 void Renderer::destroy() {
     // _destroyPipelines();
-    m_device.destroy();
+    // m_device.destroy();
     m_core.destroy();
 }
 
