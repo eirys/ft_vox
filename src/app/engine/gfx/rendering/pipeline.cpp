@@ -1,18 +1,21 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   renderer.cpp                                       :+:      :+:    :+:   */
+/*   pipeline.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/02/23 09:29:35 by etran             #+#    #+#             */
-/*   Updated: 2024/03/01 00:39:04 by etran            ###   ########.fr       */
+/*   Created: 2024/02/29 22:13:57 by etran             #+#    #+#             */
+/*   Updated: 2024/02/29 22:30:59 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "renderer.h"
-#include "pipeline_decl.h"
-#include "scene_pipeline.h"
+#include "pipeline.h"
+#include "device.h"
+#include "io_helpers.h"
+
+#include <string>
+#include <stdexcept>
 
 namespace vox::gfx {
 
@@ -20,32 +23,26 @@ namespace vox::gfx {
 /*                                   PUBLIC                                   */
 /* ========================================================================== */
 
-void Renderer::init(ui::Window& window) {
-    m_core.init(window);
-    m_device.init(m_core);
-    // _createPipelines();
-}
-
-void Renderer::destroy() {
-    // _destroyPipelines();
-    m_device.destroy();
-    m_core.destroy();
+VkPipeline Pipeline::getPipeline() const noexcept {
+    return m_pipeline;
 }
 
 /* ========================================================================== */
-/*                                   PRIVATE                                  */
+/*                                  PROTECTED                                 */
 /* ========================================================================== */
 
-void Renderer::_createPipelines() {
-    m_pipelines.reserve(PIPELINE_COUNT);
-    m_pipelines[(u32)PipelineIndex::ScenePipeline] = new ScenePipeline();
+VkShaderModule Pipeline::_createShaderModule(const Device& device, const char* binPath) const {
+    const std::vector<u8>   bin = io::readBinary(binPath);
+    VkShaderModule          shaderModule;
 
-    for (Pipeline* pipeline: m_pipelines) pipeline->init(m_device);
-}
+    VkShaderModuleCreateInfo moduleInfo = {};
+    moduleInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+    moduleInfo.codeSize = bin.size();
+    moduleInfo.pCode = (u32*)bin.data();
 
-void Renderer::_destroyPipelines() {
-    for (Pipeline* pipeline: m_pipelines) pipeline->destroy(m_device);
-    for (Pipeline* pipeline: m_pipelines) delete pipeline;
+    if (vkCreateShaderModule(device.getDevice(), &moduleInfo, nullptr, &shaderModule) != VK_SUCCESS)
+        throw std::runtime_error("failed to create shader module");
+    return shaderModule;
 }
 
 } // namespace vox::gfx

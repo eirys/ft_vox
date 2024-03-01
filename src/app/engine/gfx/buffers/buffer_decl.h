@@ -1,22 +1,35 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   io_helpers.h                                       :+:      :+:    :+:   */
+/*   buffer_decl.h                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/01/15 07:51:09 by etran             #+#    #+#             */
-/*   Updated: 2024/02/29 22:22:53 by etran            ###   ########.fr       */
+/*   Created: 2024/03/01 00:07:00 by etran             #+#    #+#             */
+/*   Updated: 2024/03/01 00:10:01 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
-# include <vector>
-# include "types.h"
+#include <vulkan/vulkan.h>
 
-namespace io {
+#include "types.h"
+#include "enum.h"
 
-std::vector<u8>	readBinary(const char* filename);
+namespace vox::gfx {
 
-} // namespace io
+enum class BlittedImageBuffers: u32 {
+    Textures = 0,
+
+    First = Textures,
+    Last = Textures
+};
+
+constexpr u32       BLITTED_IMAGE_COUNT = enumSize<BlittedImageBuffers>();
+
+constexpr VkFormat  BLITTED_IMAGE_FORMATS[BLITTED_IMAGE_COUNT] = {
+    VK_FORMAT_R8G8B8A8_SRGB // Textures
+};
+
+} // namespace vox::gfx

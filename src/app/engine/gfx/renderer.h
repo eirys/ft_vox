@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/21 12:17:21 by etran             #+#    #+#             */
-/*   Updated: 2024/02/27 18:17:19 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/01 00:11:16 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,8 +15,20 @@
 #include "core.h"
 #include "device.h"
 
+namespace ui {
+
+class Window;
+
+} // namespace ui
+
+
 namespace vox::gfx {
 
+class Pipeline;
+
+/**
+ * @brief Holds all the pipelines and render the scene.
+ */
 class Renderer final {
 public:
     /* ====================================================================== */
@@ -33,7 +45,7 @@ public:
 
     /* ====================================================================== */
 
-    void init();
+    void init(ui::Window& window);
     void destroy();
 
     void render();
@@ -43,8 +55,17 @@ private:
     /*                                  DATA                                  */
     /* ====================================================================== */
 
-    Core      m_core;
-    Device    m_device;
+    Core                    m_core;
+    Device                  m_device;
+
+    std::vector<Pipeline*>  m_pipelines;
+
+    /* ====================================================================== */
+    /*                                 METHODS                                */
+    /* ====================================================================== */
+
+    void    _createPipelines();
+    void    _destroyPipelines();
 
 }; // class Renderer
 

@@ -6,7 +6,7 @@
 #    By: etran <etran@student.42.fr>                +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/04/06 03:40:09 by eli               #+#    #+#              #
-#    Updated: 2024/02/28 23:49:59 by etran            ###   ########.fr        #
+#    Updated: 2024/03/01 00:55:27 by etran            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -34,9 +34,10 @@ ENGINE_DIR	:=	$(APP_DIR)/engine
 GFX_DIR		:=	$(ENGINE_DIR)/gfx
 BUF_DIR		:=	$(GFX_DIR)/buffers
 CMD_DIR		:=	$(GFX_DIR)/command
-PIP_DIR		:=	$(GFX_DIR)/pipelines
 DESC_DIR	:=	$(GFX_DIR)/descriptor
 SETS_DIR	:=	$(DESC_DIR)/sets
+RENDER_DIR	:=	$(GFX_DIR)/rendering
+PIP_DIR		:=	$(RENDER_DIR)/pipelines
 
 # libraries
 LIBS_DIR	:=	libs
@@ -57,6 +58,7 @@ SUBDIRS		:=	$(APP_DIR) \
 				$(CMD_DIR) \
 				$(DESC_DIR) \
 				$(SETS_DIR) \
+				$(RENDER_DIR) \
 				$(PIP_DIR)
 
 OBJ_SUBDIRS	:=	$(addprefix $(OBJ_DIR)/,$(SUBDIRS))
@@ -66,6 +68,7 @@ INC_SUBDIRS	:=	$(addprefix $(SRC_DIR)/,$(SUBDIRS)) \
 # ---------------- SOURCE FILES ---------------- #
 SRC_FILES	:=	entrypoint.cpp \
 				$(APP_DIR)/app.cpp \
+				$(IO_DIR)/io_helpers.cpp \
 				$(ENGINE_DIR)/engine.cpp \
 				$(GFX_DIR)/renderer.cpp \
 				$(GFX_DIR)/core.cpp \
@@ -76,6 +79,7 @@ SRC_FILES	:=	entrypoint.cpp \
 				$(DESC_DIR)/descriptor_pool.cpp \
 				$(DESC_DIR)/descriptor_table.cpp \
 				$(DESC_DIR)/descriptor_set.cpp \
+				$(RENDER_DIR)/pipeline.cpp \
 				$(BUF_DIR)/buffer.cpp \
 				$(BUF_DIR)/image_buffer.cpp \
 				$(MATH_DIR)/maths.cpp \
@@ -87,13 +91,12 @@ OBJ			:=	$(addprefix $(OBJ_DIR)/,$(SRC_FILES:.cpp=.o))
 DEP			:=	$(addprefix $(OBJ_DIR)/,$(SRC_FILES:.cpp=.d))
 
 CXX			:=	clang++
-EXTRA		:=	-Wall \
+EXTRA		?=	-Wall \
 				-Werror \
 				-Wextra
 INCLUDES	:=	$(addprefix -I./,$(INC_SUBDIRS))
 
 MACROS		:=	NDEBUG \
-				SHD_BIN_DIR=\"$(SHD_BIN_DIR)/\" \
 				__DEBUG \
 				__LOG \
 				__INFO \

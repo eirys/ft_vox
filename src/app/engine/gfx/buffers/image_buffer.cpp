@@ -6,13 +6,12 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/27 18:36:30 by etran             #+#    #+#             */
-/*   Updated: 2024/02/28 15:15:03 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/01 00:04:40 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "image_buffer.h"
 #include "device.h"
-#include "core.h"
 #include "icommand_buffer.h"
 #include "buffer.h"
 
@@ -24,11 +23,7 @@ namespace vox::gfx {
 /*                                   PUBLIC                                   */
 /* ========================================================================== */
 
-void ImageBuffer::init(
-    const Core& core,
-    const Device& device,
-    ImageMetaData&& metadata
-) {
+void ImageBuffer::init(const Device& device, ImageMetaData&& metadata) {
     m_metadata = std::move(metadata);
 
     VkImageCreateInfo imageInfo{};
@@ -55,7 +50,7 @@ void ImageBuffer::init(
     VkMemoryAllocateInfo allocInfo{};
     allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
     allocInfo.allocationSize = memRequirements.size;
-    allocInfo.memoryTypeIndex = core.findMemoryType(memRequirements.memoryTypeBits, m_metadata.m_properties);
+    allocInfo.memoryTypeIndex = device.findMemoryType(memRequirements.memoryTypeBits, m_metadata.m_properties);
 
     if (vkAllocateMemory(device.getDevice(), &allocInfo, nullptr, &m_memory) != VK_SUCCESS) {
         throw std::runtime_error("failed to allocate image memory");

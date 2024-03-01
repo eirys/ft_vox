@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/27 18:36:32 by etran             #+#    #+#             */
-/*   Updated: 2024/02/28 15:15:16 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/01 00:08:13 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,14 +14,16 @@
 
 #include <vulkan/vulkan.h>
 #include "types.h"
-#include "enum.h"
 
 namespace vox::gfx {
 
-class Core;
 class Device;
 class ICommandBuffer;
 class Buffer;
+
+/* ========================================================================== */
+/*                               HELPER OBJECTS                               */
+/* ========================================================================== */
 
 struct ImageMetaData {
     VkFormat                m_format;
@@ -50,18 +52,6 @@ struct ImageMetaData {
     u32 getPixelSize() const noexcept;
 };
 
-enum class BlittedImageBuffers: u32 {
-    Textures = 0,
-
-    First = Textures,
-    Last = Textures
-};
-
-constexpr u32       BLITTED_IMAGE_COUNT = enumSize<BlittedImageBuffers>();
-constexpr VkFormat  BLITTED_IMAGE_FORMATS[BLITTED_IMAGE_COUNT] = {
-    VK_FORMAT_R8G8B8A8_SRGB // Textures
-};
-
 /**
  * @brief Wrapper class for VkImage, VkDeviceMemory and VkImageView
  */
@@ -80,7 +70,7 @@ public:
 
     /* ====================================================================== */
 
-    void init(const Core& core, const Device& device, ImageMetaData&& metadata);
+    void init(const Device& device, ImageMetaData&& metadata);
     void destroy(const Device& device);
 
     /* ====================================================================== */

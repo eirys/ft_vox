@@ -6,13 +6,12 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/27 17:40:32 by etran             #+#    #+#             */
-/*   Updated: 2024/02/28 15:14:36 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/01 00:08:23 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "buffer.h"
 #include "device.h"
-#include "core.h"
 #include "icommand_buffer.h"
 
 #include <cstring>
@@ -20,14 +19,14 @@
 
 namespace vox::gfx {
 
+/* ========================================================================== */
+/*                                   PUBLIC                                   */
+/* ========================================================================== */
+
 /**
  * @brief Creates buffer and bind allocated memory.
  */
-void Buffer::init(
-    const Core& core,
-    const Device& device,
-    BufferMetadata&& metadata
-) {
+void Buffer::init(const Device& device, BufferMetadata&& metadata) {
     m_metadata = std::move(metadata);
 
     VkBufferCreateInfo bufferInfo = {};
@@ -46,7 +45,7 @@ void Buffer::init(
     VkMemoryAllocateInfo allocInfo = {};
     allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
     allocInfo.allocationSize = memRequirements.size;
-    allocInfo.memoryTypeIndex = core.findMemoryType(memRequirements.memoryTypeBits, m_metadata.m_properties);
+    allocInfo.memoryTypeIndex = device.findMemoryType(memRequirements.memoryTypeBits, m_metadata.m_properties);
 
     if (vkAllocateMemory(device.getDevice(), &allocInfo, nullptr, &m_memory) != VK_SUCCESS) {
         throw std::runtime_error("failed to allocate buffer memory");

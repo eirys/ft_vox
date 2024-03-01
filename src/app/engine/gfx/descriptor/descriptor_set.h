@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/28 16:16:09 by etran             #+#    #+#             */
-/*   Updated: 2024/02/29 00:04:25 by etran            ###   ########.fr       */
+/*   Updated: 2024/02/29 22:41:00 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,14 +37,14 @@ public:
     const PoolSizes&        getSizes() const noexcept override;
     VkDescriptorSetLayout   getLayout() const noexcept override;
     VkDescriptorSet         getSet() const noexcept override;
-    DescriptorIndex         getSetIndex() const noexcept override;
+    DescriptorSetIndex      getSetIndex() const noexcept override;
 
 protected:
     /* ====================================================================== */
     /*                                 METHODS                                */
     /* ====================================================================== */
 
-    DescriptorSet(const DescriptorIndex index);
+    DescriptorSet(const DescriptorSetIndex index);
 
     DescriptorSet() = delete;
     DescriptorSet(DescriptorSet&& other) = delete;
@@ -75,7 +75,7 @@ private:
     VkDescriptorSetLayout   m_layout = VK_NULL_HANDLE;
     VkDescriptorSet         m_set = VK_NULL_HANDLE;
 
-    DescriptorIndex         m_index;
+    DescriptorSetIndex      m_index;
 
 }; // class DescriptorSet
 

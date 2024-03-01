@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/31 17:48:20 by etran             #+#    #+#             */
-/*   Updated: 2024/02/21 11:42:46 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/01 00:49:46 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,25 +28,25 @@
 /* ========================================================================== */
 
 #if defined(__DEBUG) || defined(__LOG) || defined(__INFO)
-# include <ostream>
+# include <iostream>
 #endif
 
 #ifndef __RELEASE
 	#ifdef __DEBUG // For dev debug
-	# define SCOP_DEBUG(X) std::cerr << "[[DEBUG]] " << X << __NL
+	# define LDEBUG(X) std::cerr << "[[DEBUG]] " << X << __NL
 	#else
-	# define SCOP_DEBUG(X)
+	# define LDEBUG(X)
 	#endif // __DEBUG
 #endif // __RELEASE
 
 #ifdef __INFO // For user/dev info
-# define SCOP_INFO(X) std::cerr << "[[INFO]] " << X << __NL
+# define LINFO(X) std::cerr << "[[INFO]] " << X << __NL
 #else
-# define SCOP_INFO(X)
+# define LINFO(X)
 #endif // __INFO
 
 #ifdef __LOG // For user log
-#  define SCOP_LOG(X) std::cerr << "[[LOG]] " << X << __NL
+#  define LLOG(X) std::cerr << "[[LOG]] " << X << __NL
 #else
-#  define SCOP_LOG(X)
+#  define LLOG(X)
 #endif // __LOG

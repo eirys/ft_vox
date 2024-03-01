@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/20 00:02:09 by etran             #+#    #+#             */
-/*   Updated: 2024/02/21 21:23:15 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/01 01:04:30 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,17 +21,16 @@ namespace ui {
 
 Window::Window() {
     // initialize glfw
-    if (!glfwInit()) {
+    if (!glfwInit())
         throw std::runtime_error("Failed to initialize GLFW");
-    }
+
     // disable OpenGL context creation
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 
     // create a window pointer
     m_window = glfwCreateWindow(WIDTH, HEIGHT, TITLE, nullptr, nullptr);
-    if (!m_window) {
+    if (!m_window)
         throw std::runtime_error("Failed to create window");
-    }
 
     // set pointer to window to `this` instance pointer
     // so we can access it from the callback functions

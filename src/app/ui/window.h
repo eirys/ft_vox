@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/19 23:59:08 by etran             #+#    #+#             */
-/*   Updated: 2024/02/21 21:22:51 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/01 01:01:29 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,8 +46,8 @@ public:
     Window();
     ~Window();
 
-    Window(const Window& x) = delete;
     Window(Window&& x) = delete;
+    Window(const Window& x) = delete;
     Window& operator=(Window&& rhs) = delete;
     Window& operator=(const Window& rhs) = delete;
 

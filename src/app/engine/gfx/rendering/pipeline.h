@@ -1,68 +1,69 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   idescriptor_set.h                                  :+:      :+:    :+:   */
+/*   pipeline.h                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/02/28 20:41:22 by etran             #+#    #+#             */
-/*   Updated: 2024/02/29 22:40:45 by etran            ###   ########.fr       */
+/*   Created: 2024/02/28 15:26:02 by etran             #+#    #+#             */
+/*   Updated: 2024/03/01 00:31:37 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
 #include <vulkan/vulkan.h>
-#include <array>
-
-#include "types.h"
-#include "enum.h"
-#include "descriptor_decl.h"
 
 namespace vox::gfx {
 
 class Device;
+class IPipelineRenderInfo;
+class ICommandBuffer;
 
-class IDescriptorSet {
+class Pipeline {
 public:
-    /* ====================================================================== */
-    /*                                TYPEDEFS                                */
-    /* ====================================================================== */
-
-    using PoolSizes = std::array<VkDescriptorPoolSize, DESCRIPTOR_TYPE_COUNT>;
-
     /* ====================================================================== */
     /*                                 METHODS                                */
     /* ====================================================================== */
 
-    virtual ~IDescriptorSet() = default;
+    virtual ~Pipeline() = default;
 
     /* ====================================================================== */
 
     virtual void    init(const Device& device) = 0;
     virtual void    destroy(const Device& device) = 0;
 
-    virtual void    setDescriptorSet(const VkDescriptorSet set) noexcept = 0;
+    virtual void    record(
+        const VkPipelineLayout layout,
+        const ICommandBuffer* cmdBuffer,
+        const IPipelineRenderInfo* drawInfo) = 0;
 
     /* ====================================================================== */
 
-    virtual const PoolSizes&        getSizes() const noexcept = 0;
-    virtual VkDescriptorSetLayout   getLayout() const noexcept = 0;
-    virtual VkDescriptorSet         getSet() const noexcept = 0;
-    virtual DescriptorSetIndex      getSetIndex() const noexcept = 0;
+    VkPipeline      getPipeline() const noexcept;
 
 protected:
+    /* ====================================================================== */
+    /*                                  DATA                                  */
+    /* ====================================================================== */
+
+    VkPipeline      m_pipeline = VK_NULL_HANDLE;
+
     /* ====================================================================== */
     /*                                 METHODS                                */
     /* ====================================================================== */
 
-    IDescriptorSet() = default;
+    Pipeline() = default;
 
-    IDescriptorSet(IDescriptorSet&& other) = delete;
-    IDescriptorSet(const IDescriptorSet& other) = delete;
-    IDescriptorSet& operator=(IDescriptorSet&& other) = delete;
-    IDescriptorSet& operator=(const IDescriptorSet& other) = delete;
+    Pipeline(Pipeline&& other) = delete;
+    Pipeline(const Pipeline& other) = delete;
+    Pipeline& operator=(Pipeline&& other) = delete;
+    Pipeline& operator=(const Pipeline& other) = delete;
 
-}; // class IDescriptorSet
+    /* ====================================================================== */
+
+    VkShaderModule  _createShaderModule(const Device& device, const char* binPath) const;
+
+}; // class Pipeline
 
 } // namespace vox::gfx

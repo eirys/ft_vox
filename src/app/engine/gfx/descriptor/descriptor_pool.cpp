@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/28 16:00:20 by etran             #+#    #+#             */
-/*   Updated: 2024/02/28 23:24:34 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/01 00:03:24 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,7 +51,7 @@ void DescriptorPool::_createPool(const Device& device, const DescriptorTable& ta
     // possiblePoolSizes[(u32)DescriptorTypeIndex::SampledImage].type = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
 
     for (u32 setIndex = 0; setIndex < DESCRIPTOR_TABLE_SIZE; ++setIndex) {
-        const IDescriptorSet::PoolSizes& setSize = table[setIndex]->getSizes();
+        const IDescriptorSet::PoolSizes& setSize = table[(DescriptorSetIndex)setIndex]->getSizes();
 
         for (u32 typeIndex = (u32)DescriptorTypeIndex::First; typeIndex <= (u32)DescriptorTypeIndex::Last; ++typeIndex)
             possiblePoolSizes[typeIndex].descriptorCount += setSize[typeIndex].descriptorCount;
@@ -85,7 +85,7 @@ void DescriptorPool::_allocatePool(const Device& device, DescriptorTable& table)
     layouts.reserve(DESCRIPTOR_TABLE_SIZE);
 
     for (u32 i = 0; i < DESCRIPTOR_TABLE_SIZE; ++i)
-        layouts.emplace_back(table[i]->getLayout());
+        layouts.emplace_back(table[(DescriptorSetIndex)i]->getLayout());
 
     VkDescriptorSetAllocateInfo allocInfo{};
     allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
@@ -98,7 +98,7 @@ void DescriptorPool::_allocatePool(const Device& device, DescriptorTable& table)
     }
 
     for (u32 i = 0; i < DESCRIPTOR_TABLE_SIZE; ++i)
-        table[i]->setDescriptorSet(descriptorSets[i]);
+        table[(DescriptorSetIndex)i]->setDescriptorSet(descriptorSets[i]);
 }
 
 } // namespace vox::gfx

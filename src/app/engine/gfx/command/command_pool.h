@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/23 09:42:20 by etran             #+#    #+#             */
-/*   Updated: 2024/02/28 15:48:53 by etran            ###   ########.fr       */
+/*   Updated: 2024/02/29 23:58:23 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,6 @@
 
 namespace vox::gfx {
 
-class Core;
 class Device;
 class ICommandBuffer;
 
@@ -42,16 +41,16 @@ public:
 
     /* ====================================================================== */
 
-    void             init(const Core& core, const Device& device);
+    void             init(const Device& device);
     void             destroy(const Device& device);
 
     ICommandBuffer*  createCommandBuffer(
         const Device& device,
-        CommandBufferType type,
-        VkCommandBufferLevel level = VK_COMMAND_BUFFER_LEVEL_PRIMARY);
+        const CommandBufferType type,
+        const VkCommandBufferLevel level = VK_COMMAND_BUFFER_LEVEL_PRIMARY) const;
     void             destroyBuffer(
         const Device& device,
-        ICommandBuffer* buffer);
+        ICommandBuffer* buffer) const;
 
 private:
     /* ====================================================================== */

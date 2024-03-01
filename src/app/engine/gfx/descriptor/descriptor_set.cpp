@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/28 19:54:32 by etran             #+#    #+#             */
-/*   Updated: 2024/02/29 00:04:33 by etran            ###   ########.fr       */
+/*   Updated: 2024/02/29 22:39:23 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,7 @@ namespace vox::gfx {
 /*                                   PUBLIC                                   */
 /* ========================================================================== */
 
-DescriptorSet::DescriptorSet(const DescriptorIndex index): m_index(index) {}
+DescriptorSet::DescriptorSet(const DescriptorSetIndex index): m_index(index) {}
 
 /* ========================================================================== */
 
@@ -45,7 +45,7 @@ const DescriptorSet::PoolSizes& DescriptorSet::getSizes() const noexcept {
     return m_poolSizes;
 }
 
-DescriptorIndex DescriptorSet::getSetIndex() const noexcept {
+DescriptorSetIndex DescriptorSet::getSetIndex() const noexcept {
     return m_index;
 }
 

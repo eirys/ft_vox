@@ -6,21 +6,22 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/21 11:53:00 by etran             #+#    #+#             */
-/*   Updated: 2024/02/28 15:16:17 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/01 01:56:23 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "core.h"
-#include "types.h"
 #include "window.h"
-#include "image_buffer.h"
 
 #include <GLFW/glfw3.h>
 #include <cstring>
 #include <stdexcept>
-#include <set>
+#include <vector>
+
+#include "debug.h"
 
 namespace vox::gfx {
+
 /* ========================================================================== */
 /*                                   PUBLIC                                   */
 /* ========================================================================== */
@@ -30,7 +31,7 @@ void Core::init(ui::Window& win) {
     m_debugModule.init(m_vkInstance);
 
     _createSurface(win);
-    _pickPhysicalDevice();
+    // _pickPhysicalDevice();
 }
 
 void Core::destroy() {
@@ -42,62 +43,69 @@ void Core::destroy() {
 
 /* ========================================================================== */
 
-const QueueFamilyIndices&  Core::getQueueFamilyIndices() const noexcept {
-    return m_queueFamilyIndices;
+// const QueueFamilyIndices&  Core::getQueueFamilyIndices() const noexcept {
+//     return m_queueFamilyIndices;
+// }
+
+// VkPhysicalDevice Core::getPhysicalDevice() const noexcept {
+//     return m_vkPhysicalDevice;
+// }
+
+VkInstance Core::getInstance() const noexcept {
+    return m_vkInstance;
 }
 
-VkPhysicalDevice Core::getPhysicalDevice() const noexcept {
-    return m_vkPhysicalDevice;
+VkSurfaceKHR Core::getSurface() const noexcept {
+    return m_vkSurface;
 }
 
-u32 Core::getMsaaCount() const noexcept {
-    return m_msaaCount;
-}
+// u32 Core::getMsaaCount() const noexcept {
+//     return m_msaaCount;
+// }
+
+// /* ========================================================================== */
+
+// u32 Core::findMemoryType(u32 typeFilter, VkMemoryPropertyFlags properties) const {
+//     VkPhysicalDeviceMemoryProperties memProperties;
+//     vkGetPhysicalDeviceMemoryProperties(m_vkPhysicalDevice, &memProperties);
+
+//     for (u32 i = 0; i < memProperties.memoryTypeCount; ++i) {
+//         const bool hasProperty = (memProperties.memoryTypes[i].propertyFlags & properties) == properties;
+//         const bool isTypeFilter = typeFilter & (1 << i);
+//         if (isTypeFilter && hasProperty)
+//             return i;
+//     }
+//     throw std::runtime_error("failed to find suitable memory type");
+// }
 
 /* ========================================================================== */
 
-u32 Core::findMemoryType(u32 typeFilter, VkMemoryPropertyFlags properties) const {
-    VkPhysicalDeviceMemoryProperties memProperties;
-    vkGetPhysicalDeviceMemoryProperties(m_vkPhysicalDevice, &memProperties);
+// static
+// SwapChainSupportDetails _querySwapChainSupport(VkPhysicalDevice physDevice, VkSurfaceKHR surface) {
+//     SwapChainSupportDetails details;
 
-    for (u32 i = 0; i < memProperties.memoryTypeCount; ++i) {
-        const bool hasProperty = (memProperties.memoryTypes[i].propertyFlags & properties) == properties;
-        const bool isTypeFilter = typeFilter & (1 << i);
-        if (isTypeFilter && hasProperty)
-            return i;
-    }
-    throw std::runtime_error("failed to find suitable memory type");
-}
+//     vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physDevice, surface, &details.capabilities);
 
-/* ========================================================================== */
+//     u32 formatCount;
+//     vkGetPhysicalDeviceSurfaceFormatsKHR(physDevice, surface, &formatCount, nullptr);
+//     if (formatCount != 0) {
+//         details.formats.resize(formatCount);
+//         vkGetPhysicalDeviceSurfaceFormatsKHR(physDevice, surface, &formatCount, details.formats.data());
+//     }
 
-static
-SwapChainSupportDetails _querySwapChainSupport(VkPhysicalDevice physDevice, VkSurfaceKHR surface) {
-    SwapChainSupportDetails details;
+//     u32 presentModeCount;
+//     vkGetPhysicalDeviceSurfacePresentModesKHR(physDevice, surface, &presentModeCount, nullptr);
+//     if (presentModeCount != 0) {
+//         details.presentModes.resize(presentModeCount);
+//         vkGetPhysicalDeviceSurfacePresentModesKHR(physDevice, surface, &presentModeCount, details.presentModes.data());
+//     }
 
-    vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physDevice, surface, &details.capabilities);
+//     return details;
+// }
 
-    u32 formatCount;
-    vkGetPhysicalDeviceSurfaceFormatsKHR(physDevice, surface, &formatCount, nullptr);
-    if (formatCount != 0) {
-        details.formats.resize(formatCount);
-        vkGetPhysicalDeviceSurfaceFormatsKHR(physDevice, surface, &formatCount, details.formats.data());
-    }
-
-    u32 presentModeCount;
-    vkGetPhysicalDeviceSurfacePresentModesKHR(physDevice, surface, &presentModeCount, nullptr);
-    if (presentModeCount != 0) {
-        details.presentModes.resize(presentModeCount);
-        vkGetPhysicalDeviceSurfacePresentModesKHR(physDevice, surface, &presentModeCount, details.presentModes.data());
-    }
-
-    return details;
-}
-
-SwapChainSupportDetails Core::querySwapChainSupport() const {
-    return _querySwapChainSupport(m_vkPhysicalDevice, m_vkSurface);
-}
-
+// SwapChainSupportDetails Core::querySwapChainSupport() const {
+//     return _querySwapChainSupport(m_vkPhysicalDevice, m_vkSurface);
+// }
 
 /* ========================================================================== */
 /*                                   PRIVATE                                  */
@@ -160,8 +168,10 @@ void Core::_createInstance() {
         instanceInfo.pNext = (VkDebugUtilsMessengerCreateInfoEXT*)&debugCreateInfo;
     }
 
+    LDEBUG("Creating");
     if (vkCreateInstance(&instanceInfo, nullptr, &m_vkInstance) != VK_SUCCESS)
         throw std::runtime_error("Failed to create instance");
+    LDEBUG("Vulkan instance created");
 }
 
 /* ========================================================================== */
@@ -173,152 +183,152 @@ void Core::_createSurface(ui::Window& win) {
 
 /* ========================================================================== */
 
-/**
- * @brief Get the maximum sample count supported by the physical device.
-*/
-static
-VkSampleCountFlagBits _getMaxUsableSampleCount(VkPhysicalDevice physDevice) {
-    VkPhysicalDeviceProperties physicalDeviceProperties;
-    vkGetPhysicalDeviceProperties(physDevice, &physicalDeviceProperties);
+// /**
+//  * @brief Get the maximum sample count supported by the physical device.
+// */
+// static
+// VkSampleCountFlagBits _getMaxUsableSampleCount(VkPhysicalDevice physDevice) {
+//     VkPhysicalDeviceProperties physicalDeviceProperties;
+//     vkGetPhysicalDeviceProperties(physDevice, &physicalDeviceProperties);
 
-    VkSampleCountFlags counts = physicalDeviceProperties.limits.framebufferColorSampleCounts &
-                                physicalDeviceProperties.limits.framebufferDepthSampleCounts;
+//     VkSampleCountFlags counts = physicalDeviceProperties.limits.framebufferColorSampleCounts &
+//                                 physicalDeviceProperties.limits.framebufferDepthSampleCounts;
 
-    constexpr VkSampleCountFlagBits countsArray[] = {
-        VK_SAMPLE_COUNT_64_BIT,
-        VK_SAMPLE_COUNT_32_BIT,
-        VK_SAMPLE_COUNT_16_BIT,
-        VK_SAMPLE_COUNT_8_BIT,
-        VK_SAMPLE_COUNT_4_BIT,
-        VK_SAMPLE_COUNT_2_BIT };
+//     constexpr VkSampleCountFlagBits countsArray[] = {
+//         VK_SAMPLE_COUNT_64_BIT,
+//         VK_SAMPLE_COUNT_32_BIT,
+//         VK_SAMPLE_COUNT_16_BIT,
+//         VK_SAMPLE_COUNT_8_BIT,
+//         VK_SAMPLE_COUNT_4_BIT,
+//         VK_SAMPLE_COUNT_2_BIT };
 
-    for (VkSampleCountFlagBits count: countsArray) {
-        if (counts & count)
-            return count;
-    }
-    return VK_SAMPLE_COUNT_1_BIT;
-}
+//     for (VkSampleCountFlagBits count: countsArray) {
+//         if (counts & count)
+//             return count;
+//     }
+//     return VK_SAMPLE_COUNT_1_BIT;
+// }
 
-void Core::_pickPhysicalDevice() {
-    u32 physDeviceCount = 0;
-    vkEnumeratePhysicalDevices(m_vkInstance, &physDeviceCount, nullptr);
+// void Core::_pickPhysicalDevice() {
+//     u32 physDeviceCount = 0;
+//     vkEnumeratePhysicalDevices(m_vkInstance, &physDeviceCount, nullptr);
 
-    if (physDeviceCount == 0)
-        throw std::runtime_error("Failed to find GPUs with Vulkan support");
+//     if (physDeviceCount == 0)
+//         throw std::runtime_error("Failed to find GPUs with Vulkan support");
 
-    std::vector<VkPhysicalDevice> physDevices(physDeviceCount);
-    vkEnumeratePhysicalDevices(m_vkInstance, &physDeviceCount, physDevices.data());
+//     std::vector<VkPhysicalDevice> physDevices(physDeviceCount);
+//     vkEnumeratePhysicalDevices(m_vkInstance, &physDeviceCount, physDevices.data());
 
-    for (const VkPhysicalDevice& physDevice : physDevices) {
-        m_queueFamilyIndices = _findQueueFamilies(physDevice);
-        if (_isDeviceSuitable(physDevice)) {
-            m_vkPhysicalDevice = physDevice;
-            m_msaaCount = _getMaxUsableSampleCount(physDevice);
-            return;
-        }
-    }
-    throw std::runtime_error("Failed to find a suitable GPU");
-}
-
-/* ========================================================================== */
-
-static
-std::vector<VkQueueFamilyProperties> _retrieveQueueProperties(VkPhysicalDevice physDevice) {
-    u32 queueFamilyCount = 0;
-    vkGetPhysicalDeviceQueueFamilyProperties(physDevice, &queueFamilyCount, nullptr);
-    std::vector<VkQueueFamilyProperties> queueProperties(queueFamilyCount);
-    vkGetPhysicalDeviceQueueFamilyProperties(physDevice, &queueFamilyCount, queueProperties.data());
-    return queueProperties;
-}
-
-QueueFamilyIndices Core::_findQueueFamilies(VkPhysicalDevice physDevice) const {
-    QueueFamilyIndices indices;
-    std::vector<VkQueueFamilyProperties> queueProperties = _retrieveQueueProperties(physDevice);
-
-    for (u32 i = 0; i < queueProperties.size() && !indices.isComplete(); ++i) {
-        const VkQueueFamilyProperties& queueFamily = queueProperties[i];
-
-        // Graphics
-        if (queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT)
-            indices.graphicsFamily = i;
-
-        // Compute
-        if (queueFamily.queueFlags & VK_QUEUE_COMPUTE_BIT)
-            indices.computeFamily = i;
-
-        // Present
-        VkBool32 presentSupport = false;
-        vkGetPhysicalDeviceSurfaceSupportKHR(physDevice, i, m_vkSurface, &presentSupport);
-        if (presentSupport)
-            indices.presentFamily = i;
-    }
-    return indices;
-}
+//     for (const VkPhysicalDevice& physDevice : physDevices) {
+//         m_queueFamilyIndices = _findQueueFamilies(physDevice);
+//         if (_isDeviceSuitable(physDevice)) {
+//             m_vkPhysicalDevice = physDevice;
+//             m_msaaCount = _getMaxUsableSampleCount(physDevice);
+//             return;
+//         }
+//     }
+//     throw std::runtime_error("Failed to find a suitable GPU");
+// }
 
 /* ========================================================================== */
 
-/**
- * @brief Check if the device supports the required extensions.
- */
-static
-bool _hasExpectedExtensions(VkPhysicalDevice physDevice) {
-    u32 extensionCount;
-    vkEnumerateDeviceExtensionProperties(physDevice, nullptr, &extensionCount, nullptr);
+// static
+// std::vector<VkQueueFamilyProperties> _retrieveQueueProperties(VkPhysicalDevice physDevice) {
+//     u32 queueFamilyCount = 0;
+//     vkGetPhysicalDeviceQueueFamilyProperties(physDevice, &queueFamilyCount, nullptr);
+//     std::vector<VkQueueFamilyProperties> queueProperties(queueFamilyCount);
+//     vkGetPhysicalDeviceQueueFamilyProperties(physDevice, &queueFamilyCount, queueProperties.data());
+//     return queueProperties;
+// }
 
-    std::vector<VkExtensionProperties> availableExtensions(extensionCount);
-    vkEnumerateDeviceExtensionProperties(
-        physDevice,
-        nullptr,
-        &extensionCount,
-        availableExtensions.data());
+// QueueFamilyIndices Core::_findQueueFamilies(VkPhysicalDevice physDevice) const {
+//     QueueFamilyIndices indices;
+//     std::vector<VkQueueFamilyProperties> queueProperties = _retrieveQueueProperties(physDevice);
 
-    std::set<std::string> requiredExtensions(Core::DEVICE_EXTENSIONS.begin(), Core::DEVICE_EXTENSIONS.end());
-    for (const VkExtensionProperties& extension: availableExtensions)
-        requiredExtensions.erase(extension.extensionName);
+//     for (u32 i = 0; i < queueProperties.size() && !indices.isComplete(); ++i) {
+//         const VkQueueFamilyProperties& queueFamily = queueProperties[i];
 
-    return requiredExtensions.empty();
-}
+//         // Graphics
+//         if (queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT)
+//             indices.graphicsFamily = i;
 
-static
-bool _hasExpectedFeatures(const VkPhysicalDevice physDevice) {
-    VkPhysicalDeviceFeatures supportedFeatures;
-    vkGetPhysicalDeviceFeatures(physDevice, &supportedFeatures);
+//         // Compute
+//         if (queueFamily.queueFlags & VK_QUEUE_COMPUTE_BIT)
+//             indices.computeFamily = i;
 
-    return supportedFeatures.samplerAnisotropy;
-}
+//         // Present
+//         VkBool32 presentSupport = false;
+//         vkGetPhysicalDeviceSurfaceSupportKHR(physDevice, i, m_vkSurface, &presentSupport);
+//         if (presentSupport)
+//             indices.presentFamily = i;
+//     }
+//     return indices;
+// }
 
-static
-bool _hasExpectedFormatProperties(const VkPhysicalDevice physDevice) {
-    // Dynamic blitting support
-    for (VkFormat format: BLITTED_IMAGE_FORMATS) {
-        VkFormatProperties	properties;
-        vkGetPhysicalDeviceFormatProperties(physDevice, format, &properties);
-        const bool hasLinearTiling = (bool)(properties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT);
+/* ========================================================================== */
 
-        if (!hasLinearTiling) return false;
-    }
-    return true;
-}
+// /**
+//  * @brief Check if the device supports the required extensions.
+//  */
+// static
+// bool _hasExpectedExtensions(VkPhysicalDevice physDevice) {
+//     u32 extensionCount;
+//     vkEnumerateDeviceExtensionProperties(physDevice, nullptr, &extensionCount, nullptr);
 
-/**
- * @brief Check if the physical device is suitable for the application,
- * given the requirements.
- * @param physDevice the physical device to check.
- */
-bool Core::_isDeviceSuitable(const VkPhysicalDevice physDevice) const {
-    const bool  extensionsSupported = _hasExpectedExtensions(physDevice);
-    bool        isSwapChainAdequate = false;
+//     std::vector<VkExtensionProperties> availableExtensions(extensionCount);
+//     vkEnumerateDeviceExtensionProperties(
+//         physDevice,
+//         nullptr,
+//         &extensionCount,
+//         availableExtensions.data());
 
-    if (extensionsSupported) {
-        SwapChainSupportDetails swapChainSupport = _querySwapChainSupport(physDevice, m_vkSurface);
-        isSwapChainAdequate = !swapChainSupport.formats.empty() && !swapChainSupport.presentModes.empty();
-    }
+//     std::set<std::string> requiredExtensions(Core::DEVICE_EXTENSIONS.begin(), Core::DEVICE_EXTENSIONS.end());
+//     for (const VkExtensionProperties& extension: availableExtensions)
+//         requiredExtensions.erase(extension.extensionName);
 
-    return m_queueFamilyIndices.isComplete() &&
-           extensionsSupported &&
-           isSwapChainAdequate &&
-           _hasExpectedFormatProperties(physDevice) &&
-           _hasExpectedFeatures(physDevice);
-}
+//     return requiredExtensions.empty();
+// }
+
+// static
+// bool _hasExpectedFeatures(const VkPhysicalDevice physDevice) {
+//     VkPhysicalDeviceFeatures supportedFeatures;
+//     vkGetPhysicalDeviceFeatures(physDevice, &supportedFeatures);
+
+//     return supportedFeatures.samplerAnisotropy;
+// }
+
+// static
+// bool _hasExpectedFormatProperties(const VkPhysicalDevice physDevice) {
+//     // Dynamic blitting support
+//     for (VkFormat format: BLITTED_IMAGE_FORMATS) {
+//         VkFormatProperties	properties;
+//         vkGetPhysicalDeviceFormatProperties(physDevice, format, &properties);
+//         const bool hasLinearTiling = (bool)(properties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT);
+
+//         if (!hasLinearTiling) return false;
+//     }
+//     return true;
+// }
+
+// /**
+//  * @brief Check if the physical device is suitable for the application,
+//  * given the requirements.
+//  * @param physDevice the physical device to check.
+//  */
+// bool Core::_isDeviceSuitable(const VkPhysicalDevice physDevice) const {
+//     const bool  extensionsSupported = _hasExpectedExtensions(physDevice);
+//     bool        isSwapChainAdequate = false;
+
+//     if (extensionsSupported) {
+//         SwapChainSupportDetails swapChainSupport = _querySwapChainSupport(physDevice, m_vkSurface);
+//         isSwapChainAdequate = !swapChainSupport.formats.empty() && !swapChainSupport.presentModes.empty();
+//     }
+
+//     return m_queueFamilyIndices.isComplete() &&
+//            extensionsSupported &&
+//            isSwapChainAdequate &&
+//            _hasExpectedFormatProperties(physDevice) &&
+//            _hasExpectedFeatures(physDevice);
+// }
 
 } // namespace vox::gfx

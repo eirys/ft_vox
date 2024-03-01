@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/28 15:42:53 by etran             #+#    #+#             */
-/*   Updated: 2024/02/28 23:59:42 by etran            ###   ########.fr       */
+/*   Updated: 2024/02/29 22:40:22 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,8 +31,7 @@ public:
     /* ====================================================================== */
 
     DescriptorTable();
-
-    ~DescriptorTable() = default;
+    ~DescriptorTable();
 
     DescriptorTable(DescriptorTable&& other) = delete;
     DescriptorTable(const DescriptorTable& other) = delete;
@@ -46,8 +45,8 @@ public:
 
 /* ========================================================================== */
 
-    IDescriptorSet const*    operator[](const u32 index) const noexcept;
-    IDescriptorSet*          operator[](const u32 index) noexcept;
+    IDescriptorSet const*    operator[](const DescriptorSetIndex index) const noexcept;
+    IDescriptorSet*          operator[](const DescriptorSetIndex index) noexcept;
 
 private:
     /* ====================================================================== */

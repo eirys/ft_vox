@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/28 19:55:31 by etran             #+#    #+#             */
-/*   Updated: 2024/02/29 00:01:37 by etran            ###   ########.fr       */
+/*   Updated: 2024/02/29 22:40:11 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,12 @@ namespace vox::gfx {
 
 DescriptorTable::DescriptorTable() {
     m_sets.reserve(DESCRIPTOR_TABLE_SIZE);
-    m_sets[(u32)DescriptorIndex::Mvp] = new MVPSet();
+    m_sets[(u32)DescriptorSetIndex::Mvp] = new MVPSet();
+}
+
+DescriptorTable::~DescriptorTable() {
+    for (const IDescriptorSet* set : m_sets)
+        delete set;
 }
 
 /* ========================================================================== */
@@ -38,12 +43,12 @@ void DescriptorTable::destroy(const Device& device) {
 
 /* ========================================================================== */
 
-IDescriptorSet const* DescriptorTable::operator[](const u32 index) const noexcept {
-    return m_sets[index];
+IDescriptorSet const* DescriptorTable::operator[](const DescriptorSetIndex index) const noexcept {
+    return m_sets[(u32)index];
 }
 
-IDescriptorSet* DescriptorTable::operator[](const u32 index) noexcept {
-    return m_sets[index];
+IDescriptorSet* DescriptorTable::operator[](const DescriptorSetIndex index) noexcept {
+    return m_sets[(u32)index];
 }
 
 } // namespace vox::gfx

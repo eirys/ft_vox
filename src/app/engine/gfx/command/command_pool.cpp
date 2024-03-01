@@ -6,13 +6,12 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/23 09:54:13 by etran             #+#    #+#             */
-/*   Updated: 2024/02/28 15:49:03 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/01 00:00:16 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "command_pool.h"
 #include "device.h"
-#include "core.h"
 #include "graphics_command_buffer.h"
 #include "compute_command_buffer.h"
 
@@ -24,12 +23,12 @@ namespace vox::gfx {
 /*                                   PUBLIC                                   */
 /* ========================================================================== */
 
-void CommandPool::init(const Core& core, const Device& device) {
+void CommandPool::init(const Device& device) {
     VkCommandPoolCreateInfo poolInfo{};
     poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
     poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
 
-    QueueFamilyIndices queueFamilyIndices = core.getQueueFamilyIndices();
+    QueueFamilyIndices queueFamilyIndices = device.getQueueFamilyIndices();
 
     poolInfo.queueFamilyIndex = queueFamilyIndices.graphicsFamily.value();
     if (vkCreateCommandPool(device.getDevice(), &poolInfo, nullptr, &m_drawPool) != VK_SUCCESS) {
@@ -51,9 +50,9 @@ void CommandPool::destroy(const Device& device) {
 
 ICommandBuffer* CommandPool::createCommandBuffer(
     const Device& device,
-    CommandBufferType type,
-    VkCommandBufferLevel level
-) {
+    const CommandBufferType type,
+    const VkCommandBufferLevel level
+) const {
     ICommandBuffer* buffer = nullptr;
 
     switch (type) {
@@ -65,7 +64,7 @@ ICommandBuffer* CommandPool::createCommandBuffer(
     return buffer;
 }
 
-void CommandPool::destroyBuffer(const Device& device, ICommandBuffer* buffer) {
+void CommandPool::destroyBuffer(const Device& device, ICommandBuffer* buffer) const {
     buffer->destroy(device);
     delete buffer;
 }

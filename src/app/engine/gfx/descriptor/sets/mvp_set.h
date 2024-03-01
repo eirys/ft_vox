@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/28 23:38:00 by etran             #+#    #+#             */
-/*   Updated: 2024/02/29 00:04:37 by etran            ###   ########.fr       */
+/*   Updated: 2024/02/29 22:40:32 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,7 +30,7 @@ public:
     /*                                 METHODS                                */
     /* ====================================================================== */
 
-    MVPSet(): super(DescriptorIndex::Mvp) {}
+    MVPSet(): super(DescriptorSetIndex::Mvp) {}
 
     void init(const Device& device) override {
         (void)device;
