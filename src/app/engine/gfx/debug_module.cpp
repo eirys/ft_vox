@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/21 12:30:51 by etran             #+#    #+#             */
-/*   Updated: 2024/03/01 02:25:55 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/01 11:46:56 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,14 +15,6 @@
 #include <iostream>
 
 namespace vox::gfx {
-
-/* ========================================================================== */
-/*                               STATIC MEMBERS                               */
-/* ========================================================================== */
-
-const std::array<const char*, 1>	DebugModule::sm_validationLayers = {
-    "VK_LAYER_KHRONOS_validation"
-};
 
 /* ========================================================================== */
 /*                                    OTHER                                   */
@@ -63,7 +55,7 @@ VkBool32 _debugCallback(
     (void)messageType;
     (void)pUserData;
 
-    static const char* severity[4] = {
+    static constexpr std::array<const char*, 4> severityIndicator = {
         "VERBOSE",
         "INFO",
         "WARNING",
@@ -73,7 +65,7 @@ VkBool32 _debugCallback(
                       (messageSeverity == VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT) ? 1 :
                       (messageSeverity == VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT) ? 2 : 3;
 
-    std::cerr   << "[* VK_VL | " << severity[index] << " *] "
+    std::cerr   << "[* VK_VL | " << severityIndicator[index] << " *] "
                 << pCallbackData->pMessage << std::endl;
     return VK_FALSE;
 }

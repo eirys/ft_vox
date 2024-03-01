@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/21 11:53:00 by etran             #+#    #+#             */
-/*   Updated: 2024/03/01 01:56:23 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/01 12:07:43 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -124,26 +124,46 @@ std::vector<const char*> _getRequiredExtensions() {
 }
 
 static
-void _checkValidationLayerSupport() {
-    u32 layerCount;
-    vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
+bool	_hasValidationLayerSupport() {
+	uint32_t	layer_count;
+	vkEnumerateInstanceLayerProperties(&layer_count, nullptr);
 
-    std::vector<VkLayerProperties> availableLayers(layerCount);
-    vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
+	std::vector<VkLayerProperties>	available_layers(layer_count);
+	vkEnumerateInstanceLayerProperties(&layer_count, available_layers.data());
 
-    for (const char* layerName : DebugModule::sm_validationLayers) {
-        for (const VkLayerProperties& layerProperties: availableLayers) {
-            if (strcmp(layerName, layerProperties.layerName) == 0) {
-                return;
-            }
-        }
-    }
-    throw std::runtime_error("Validation layers requested, but not available");
+	bool	supported = false;
+	for (const char* layer_name: DebugModule::VALIDATION_LAYERS) {
+		for (const VkLayerProperties& layer_properties: available_layers) {
+			if (!strcmp(layer_name, layer_properties.layerName)) {
+				supported = true;
+				break;
+			}
+		}
+	}
+	return supported;
 }
 
+// static
+// bool _hasValidationLayerSupport() {
+//     u32 layerCount;
+//     vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
+
+//     std::vector<VkLayerProperties> availableLayers(layerCount);
+//     vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
+
+//     for (const char* layerName : DebugModule::VALIDATION_LAYERS) {
+//         for (const VkLayerProperties& layerProperties: availableLayers) {
+//             if (strcmp(layerName, layerProperties.layerName) == 0) {
+//                 return true;
+//             }
+//         }
+//     }
+//     return false;
+// }
+
 void Core::_createInstance() {
-    if (DebugModule::ENABLE_VALIDATION_LAYERS)
-        _checkValidationLayerSupport();
+    if (DebugModule::ENABLE_VALIDATION_LAYERS && !_hasValidationLayerSupport())
+        throw std::runtime_error("Validation layers requested, but not available");
 
     VkApplicationInfo appInfo{};
     appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
@@ -163,9 +183,12 @@ void Core::_createInstance() {
 
     if (DebugModule::ENABLE_VALIDATION_LAYERS) {
         VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo = DebugModule::getMessengerCreateInfo();
-        instanceInfo.enabledLayerCount = static_cast<u32>(DebugModule::sm_validationLayers.size());
-        instanceInfo.ppEnabledLayerNames = DebugModule::sm_validationLayers.data();
+        instanceInfo.enabledLayerCount = static_cast<u32>(DebugModule::VALIDATION_LAYERS.size());
+        instanceInfo.ppEnabledLayerNames = DebugModule::VALIDATION_LAYERS.data();
         instanceInfo.pNext = (VkDebugUtilsMessengerCreateInfoEXT*)&debugCreateInfo;
+    } else {
+        instanceInfo.enabledExtensionCount = 0;
+        instanceInfo.pNext = nullptr;
     }
 
     LDEBUG("Creating");
