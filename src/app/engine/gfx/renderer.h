@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/21 12:17:21 by etran             #+#    #+#             */
-/*   Updated: 2024/03/01 00:11:16 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/02 00:44:51 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 
 #include "core.h"
 #include "device.h"
+#include "pipeline_decl.h"
 
 namespace ui {
 
@@ -58,7 +59,7 @@ private:
     Core                    m_core;
     Device                  m_device;
 
-    std::vector<Pipeline*>  m_pipelines;
+    std::array<Pipeline*, PIPELINE_COUNT>  m_pipelines;
 
     /* ====================================================================== */
     /*                                 METHODS                                */

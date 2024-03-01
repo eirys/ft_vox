@@ -6,14 +6,13 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/21 11:53:00 by etran             #+#    #+#             */
-/*   Updated: 2024/03/01 23:53:20 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/02 00:23:08 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "core.h"
 #include "window.h"
 
-#include <GLFW/glfw3.h>
 #include <cstring>
 #include <stdexcept>
 #include <vector>
@@ -188,10 +187,8 @@ void Core::_createInstance() {
         instanceInfo.pNext = &debugCreateInfo;
     }
 
-    LDEBUG("Creating");
     if (vkCreateInstance(&instanceInfo, nullptr, &m_vkInstance) != VK_SUCCESS)
         throw std::runtime_error("Failed to create instance");
-    LDEBUG("Vulkan instance created");
 }
 
 /* ========================================================================== */

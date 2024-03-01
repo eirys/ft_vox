@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/21 10:35:09 by etran             #+#    #+#             */
-/*   Updated: 2024/03/01 00:27:42 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/02 00:32:08 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,7 +27,11 @@ App::~App() {
 /* ========================================================================== */
 
 void    App::run() {
-    while (m_window.isAlive()) {
+    // while (m_window.isAlive()) {
+    //     m_window.pollEvents();
+    // }
+
+    if(m_window.isAlive())
         m_window.pollEvents();
-    }
+
 }

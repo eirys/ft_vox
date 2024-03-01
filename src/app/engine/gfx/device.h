@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/21 18:19:47 by etran             #+#    #+#             */
-/*   Updated: 2024/03/01 00:02:12 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/02 00:26:47 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -109,13 +109,6 @@ private:
 
     void                _pickPhysicalDevice(const Core& core);
     void                _createLogicalDevice();
-
-    // QueueFamilyIndices  _findQueueFamilies(
-    //     const VkSurfaceKHR surface,
-    //     const VkPhysicalDevice physDevice) const;
-    bool                _isDeviceSuitable(
-        const VkPhysicalDevice physDevice,
-        const VkSurfaceKHR surface) const;
 
 }; // class Device
 
