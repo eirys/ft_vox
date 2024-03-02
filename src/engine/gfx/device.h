@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/21 18:19:47 by etran             #+#    #+#             */
-/*   Updated: 2024/03/02 00:26:47 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/02 12:07:38 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -71,9 +71,7 @@ public:
 
     /* ====================================================================== */
 
-    const VkDevice& getDevice() const noexcept;
-    VkDevice&       getDevice() noexcept;
-
+    VkDevice        getDevice() const noexcept;
     VkQueue         getGraphicsQueue() const noexcept;
     VkQueue         getPresentQueue() const noexcept;
     VkQueue         getComputeQueue() const noexcept;
@@ -87,9 +85,9 @@ private:
     /* ====================================================================== */
 
     struct QueueFamilies final {
-        VkQueue graphics;
-        VkQueue present;
-        VkQueue compute;
+        VkQueue m_graphics = VK_NULL_HANDLE;
+        VkQueue m_present = VK_NULL_HANDLE;
+        VkQueue m_compute = VK_NULL_HANDLE;
     };
 
     /* ====================================================================== */
@@ -99,9 +97,9 @@ private:
     VkPhysicalDevice    m_vkPhysicalDevice = VK_NULL_HANDLE;
     VkDevice            m_vkLogicalDevice = VK_NULL_HANDLE;
 
+    QueueFamilyIndices  m_queueFamilyIndices;
     QueueFamilies       m_queueFamilies;
     u32                 m_msaaCount = 1;
-    QueueFamilyIndices  m_queueFamilyIndices;
 
     /* ====================================================================== */
     /*                                 METHODS                                */

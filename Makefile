@@ -6,7 +6,7 @@
 #    By: etran <etran@student.42.fr>                +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/04/06 03:40:09 by eli               #+#    #+#              #
-#    Updated: 2024/03/02 00:32:33 by etran            ###   ########.fr        #
+#    Updated: 2024/03/02 12:43:12 by etran            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -25,18 +25,20 @@ SHD_DIR		:=	shaders
 # shader binaries
 SHD_BIN_DIR	:=	$(OBJ_DIR)/shaders
 
-# app
-APP_DIR		:=	app
-UI_DIR		:=	$(APP_DIR)/ui
-ENGINE_DIR	:=	$(APP_DIR)/engine
+# engine
+ENGINE_DIR	:=	engine
+
+# ui
+UI_DIR		:=	$(ENGINE_DIR)/ui
 
 # gfx
 GFX_DIR		:=	$(ENGINE_DIR)/gfx
 BUF_DIR		:=	$(GFX_DIR)/buffers
 CMD_DIR		:=	$(GFX_DIR)/command
 DESC_DIR	:=	$(GFX_DIR)/descriptor
-SETS_DIR	:=	$(DESC_DIR)/sets
+SYNC_DIR	:=	$(GFX_DIR)/sync
 RENDER_DIR	:=	$(GFX_DIR)/rendering
+SETS_DIR	:=	$(DESC_DIR)/sets
 PIP_DIR		:=	$(RENDER_DIR)/pipelines
 
 # libraries
@@ -46,12 +48,11 @@ DECL_DIR	:=	$(LIBS_DIR)/decl
 IO_DIR		:=	$(LIBS_DIR)/io
 
 # ---------------- SUBDIRECTORIES -------------- #
-SUBDIRS		:=	$(APP_DIR) \
-				$(LIBS_DIR) \
+SUBDIRS		:=	$(LIBS_DIR) \
 				$(MATH_DIR) \
 				$(DECL_DIR) \
-				$(UI_DIR) \
 				$(ENGINE_DIR) \
+				$(UI_DIR) \
 				$(IO_DIR) \
 				$(GFX_DIR) \
 				$(BUF_DIR) \
@@ -59,6 +60,7 @@ SUBDIRS		:=	$(APP_DIR) \
 				$(DESC_DIR) \
 				$(SETS_DIR) \
 				$(RENDER_DIR) \
+				$(SYNC_DIR) \
 				$(PIP_DIR)
 
 OBJ_SUBDIRS	:=	$(addprefix $(OBJ_DIR)/,$(SUBDIRS))
@@ -67,7 +69,6 @@ INC_SUBDIRS	:=	$(addprefix $(SRC_DIR)/,$(SUBDIRS)) \
 
 # ---------------- SOURCE FILES ---------------- #
 SRC_FILES	:=	entrypoint.cpp \
-				$(APP_DIR)/app.cpp \
 				$(IO_DIR)/io_helpers.cpp \
 				$(ENGINE_DIR)/engine.cpp \
 				$(GFX_DIR)/renderer.cpp \
@@ -81,6 +82,8 @@ SRC_FILES	:=	entrypoint.cpp \
 				$(RENDER_DIR)/pipeline.cpp \
 				$(BUF_DIR)/buffer.cpp \
 				$(BUF_DIR)/image_buffer.cpp \
+				$(SYNC_DIR)/fence.cpp \
+				$(SYNC_DIR)/gfx_semaphore.cpp \
 				$(MATH_DIR)/maths.cpp \
 				$(MATH_DIR)/matrix.cpp \
 				$(UI_DIR)/window.cpp

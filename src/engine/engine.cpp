@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/27 18:17:53 by etran             #+#    #+#             */
-/*   Updated: 2024/03/02 00:31:02 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/02 12:44:17 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,15 +20,23 @@ namespace vox {
 /*                                   PUBLIC                                   */
 /* ========================================================================== */
 
-void Engine::init(ui::Window& window) {
-    m_renderer.init(window);
+Engine::Engine() {
+    m_renderer.init(m_window);
 
     LINFO("Engine initialized.");
 }
 
-void Engine::destroy() {
+Engine::~Engine() {
     m_renderer.destroy();
+
     LINFO("Engine destroyed.");
+}
+
+/* ========================================================================== */
+
+void Engine::run() {
+    while (m_window.isAlive())
+        m_window.pollEvents();
 }
 
 } // namespace vox

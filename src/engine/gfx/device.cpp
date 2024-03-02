@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/21 23:37:02 by etran             #+#    #+#             */
-/*   Updated: 2024/03/02 00:27:28 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/02 12:07:52 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -87,24 +87,20 @@ u32 Device::findMemoryType(const u32 typeFilter, const VkMemoryPropertyFlags pro
 
 /* ========================================================================== */
 
-const VkDevice& Device::getDevice() const noexcept {
-    return m_vkLogicalDevice;
-}
-
-VkDevice& Device::getDevice() noexcept {
+VkDevice Device::getDevice() const noexcept {
     return m_vkLogicalDevice;
 }
 
 VkQueue Device::getGraphicsQueue() const noexcept {
-    return m_queueFamilies.graphics;
+    return m_queueFamilies.m_graphics;
 }
 
 VkQueue Device::getPresentQueue() const noexcept {
-    return m_queueFamilies.present;
+    return m_queueFamilies.m_present;
 }
 
 VkQueue Device::getComputeQueue() const noexcept {
-    return m_queueFamilies.compute;
+    return m_queueFamilies.m_compute;
 }
 
 u32 Device::getMsaaCount() const noexcept {
@@ -312,9 +308,9 @@ void Device::_createLogicalDevice() {
         throw std::runtime_error("Failed to create logical device!");
     }
 
-    vkGetDeviceQueue(m_vkLogicalDevice, m_queueFamilyIndices.graphicsFamily.value(), 0, &m_queueFamilies.graphics);
-    vkGetDeviceQueue(m_vkLogicalDevice, m_queueFamilyIndices.presentFamily.value(), 0, &m_queueFamilies.present);
-    vkGetDeviceQueue(m_vkLogicalDevice, m_queueFamilyIndices.computeFamily.value(), 0, &m_queueFamilies.compute);
+    vkGetDeviceQueue(m_vkLogicalDevice, m_queueFamilyIndices.graphicsFamily.value(), 0, &m_queueFamilies.m_graphics);
+    vkGetDeviceQueue(m_vkLogicalDevice, m_queueFamilyIndices.presentFamily.value(), 0, &m_queueFamilies.m_present);
+    vkGetDeviceQueue(m_vkLogicalDevice, m_queueFamilyIndices.computeFamily.value(), 0, &m_queueFamilies.m_compute);
 }
 
 } // namespace vox::gfx

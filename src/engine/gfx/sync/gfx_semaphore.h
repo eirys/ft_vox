@@ -1,73 +1,60 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   renderer.h                                         :+:      :+:    :+:   */
+/*   gfx_semaphore.h                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/02/21 12:17:21 by etran             #+#    #+#             */
-/*   Updated: 2024/03/02 00:44:51 by etran            ###   ########.fr       */
+/*   Created: 2024/03/02 10:43:33 by etran             #+#    #+#             */
+/*   Updated: 2024/03/02 12:31:38 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
-#include "core.h"
-#include "device.h"
-#include "pipeline_decl.h"
-
-namespace ui {
-
-class Window;
-
-} // namespace ui
-
+#include <vulkan/vulkan.h>
 
 namespace vox::gfx {
 
-class Pipeline;
+class Device;
 
 /**
- * @brief Holds all the pipelines and render the scene.
- */
-class Renderer final {
+ * @brief Manager for VkSemaphores. Synchronizes GPU commands.
+*/
+class GfxSemaphore final {
 public:
     /* ====================================================================== */
     /*                                 METHODS                                */
     /* ====================================================================== */
 
-    Renderer() = default;
-    ~Renderer() = default;
+    GfxSemaphore() = default;
+    ~GfxSemaphore() = default;
 
-    Renderer(Renderer&& other) = delete;
-    Renderer(const Renderer& other) = delete;
-    Renderer& operator=(Renderer&& other) = delete;
-    Renderer& operator=(const Renderer& other) = delete;
+    GfxSemaphore(GfxSemaphore&& other) = delete;
+    GfxSemaphore(const GfxSemaphore& other) = delete;
+    GfxSemaphore& operator=(GfxSemaphore&& other) = delete;
+    GfxSemaphore& operator=(const GfxSemaphore& other) = delete;
 
     /* ====================================================================== */
 
-    void init(ui::Window& window);
-    void destroy();
+    void init(const Device& device);
+    void destroy(const Device& device);
 
-    void render();
+    /* ====================================================================== */
+
+    void signal(const VkQueue queue);
+
+    /* ====================================================================== */
+
+    VkSemaphore getSemaphore() const noexcept;
 
 private:
     /* ====================================================================== */
     /*                                  DATA                                  */
     /* ====================================================================== */
 
-    Core                    m_core;
-    Device                  m_device;
+    VkSemaphore m_semaphore;
 
-    std::array<Pipeline*, PIPELINE_COUNT>  m_pipelines;
-
-    /* ====================================================================== */
-    /*                                 METHODS                                */
-    /* ====================================================================== */
-
-    void    _createPipelines();
-    void    _destroyPipelines();
-
-}; // class Renderer
+}; // class GfxSemaphore
 
 } // namespace vox::gfx

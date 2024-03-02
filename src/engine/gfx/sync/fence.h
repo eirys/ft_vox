@@ -1,53 +1,62 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   engine.h                                           :+:      :+:    :+:   */
+/*   fence.h                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/02/27 18:15:33 by etran             #+#    #+#             */
-/*   Updated: 2024/03/01 00:27:11 by etran            ###   ########.fr       */
+/*   Created: 2024/03/02 11:11:32 by etran             #+#    #+#             */
+/*   Updated: 2024/03/02 12:25:37 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
-#include "renderer.h"
+#include <vulkan/vulkan.h>
+#include "types.h"
 
-namespace ui {
+namespace vox::gfx {
 
-class Window;
+class Device;
 
-}
-
-namespace vox {
-
-class Engine final {
+/**
+ * @brief Manager for VkFences. Synchronizes CPU and GPU.
+*/
+class Fence final {
 public:
     /* ====================================================================== */
     /*                                 METHODS                                */
     /* ====================================================================== */
 
-    Engine() = default;
-    ~Engine() = default;
+    Fence() = default;
+    ~Fence() = default;
 
-    Engine(Engine&& other) = delete;
-    Engine(const Engine& other) = delete;
-    Engine& operator=(Engine&& other) = delete;
-    Engine& operator=(const Engine& other) = delete;
+    Fence(Fence&& other) = delete;
+    Fence(const Fence& other) = delete;
+    Fence& operator=(Fence&& other) = delete;
+    Fence& operator=(const Fence& other) = delete;
 
     /* ====================================================================== */
 
-    void    init(ui::Window& window);
-    void    destroy();
+    void init(const Device& device);
+    void destroy(const Device& device);
+
+    /* ====================================================================== */
+
+    void await(const Device& device, const u64 timeout = UINT64_MAX) const;
+    void reset(const Device& device) const;
+
+    /* ====================================================================== */
+
+    VkFence getFence() const noexcept;
 
 private:
     /* ====================================================================== */
     /*                                  DATA                                  */
     /* ====================================================================== */
 
-    gfx::Renderer   m_renderer;
+    VkFence m_fence = VK_NULL_HANDLE;
 
-}; // class Engine
+}; // class Fence
 
-} // namespace vox
+} // namespace vox::gfx
