@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/21 23:37:02 by etran             #+#    #+#             */
-/*   Updated: 2024/03/02 12:07:52 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/04 00:30:35 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -84,6 +84,8 @@ u32 Device::findMemoryType(const u32 typeFilter, const VkMemoryPropertyFlags pro
     }
     throw std::runtime_error("failed to find suitable memory type");
 }
+
+/* ========================================================================== */
 
 /* ========================================================================== */
 
@@ -209,13 +211,33 @@ bool _hasExpectedFeatures(const VkPhysicalDevice physDevice) {
 static
 bool _hasExpectedFormatProperties(const VkPhysicalDevice physDevice) {
     // Dynamic blitting support
-    for (VkFormat format: BLITTED_IMAGE_FORMATS) {
+    for (const VkFormat format: BLITTED_IMAGE_FORMATS) {
         VkFormatProperties	properties;
         vkGetPhysicalDeviceFormatProperties(physDevice, format, &properties);
         const bool hasLinearTiling = (bool)(properties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT);
 
         if (!hasLinearTiling) return false;
     }
+
+    // Swap chain support for depth format
+    for (const VkFormat format: SwapChain::DEPTH_FORMAT_CANDIDATES) {
+        VkFormatProperties	properties;
+        vkGetPhysicalDeviceFormatProperties(physDevice, format, &properties);
+
+        VkFormatFeatureFlags features = 0;
+        switch (SwapChain::DEPTH_TILING) {
+            case VK_IMAGE_TILING_OPTIMAL:   features = properties.optimalTilingFeatures; break;
+            case VK_IMAGE_TILING_LINEAR:    features = properties.linearTilingFeatures; break;
+            default: break;
+        }
+
+        const bool hasRequiredSwapChainFeatures = (bool)(features & SwapChain::DEPTH_FEATURES);
+        if (hasRequiredSwapChainFeatures) {
+            SwapChain::setDepthFormat(format);
+            break;
+        }
+    }
+
     return true;
 }
 

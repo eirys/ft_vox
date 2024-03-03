@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/27 17:14:27 by etran             #+#    #+#             */
-/*   Updated: 2024/03/01 00:06:15 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/02 20:37:26 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,7 @@ class ICommandBuffer;
 /*                               HELPER OBJECTS                               */
 /* ========================================================================== */
 
-struct BufferMetadata {
+struct BufferMetadata final {
     VkDeviceSize            m_size;
     VkBufferUsageFlags      m_usage;
     VkMemoryPropertyFlags   m_properties;

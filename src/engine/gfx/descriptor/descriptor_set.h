@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/28 16:16:09 by etran             #+#    #+#             */
-/*   Updated: 2024/02/29 22:41:00 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/02 21:52:21 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,14 +57,12 @@ protected:
     VkDescriptorSetLayoutBinding    _createLayoutBinding(
         const DescriptorTypeIndex typeIndex,
         const ShaderVisibility shaderStage,
-        const u32 bindingIndex,
-        const u32 count = 1);
+        const u32 bindingIndex);
 
     VkWriteDescriptorSet            _createWriteDescriptorSet(
         const DescriptorTypeIndex typeIndex,
         const void* descriptorInfo,
-        const u32 bindingIndex,
-        const u32 count = 1) const;
+        const u32 bindingIndex) const;
 
 private:
     /* ====================================================================== */

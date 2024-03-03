@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/28 19:54:32 by etran             #+#    #+#             */
-/*   Updated: 2024/02/29 22:39:23 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/02 21:52:11 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,13 +56,12 @@ DescriptorSetIndex DescriptorSet::getSetIndex() const noexcept {
 VkDescriptorSetLayoutBinding DescriptorSet::_createLayoutBinding(
     const DescriptorTypeIndex typeIndex,
     const ShaderVisibility shaderStage,
-    const u32 bindingIndex,
-    const u32 count
+    const u32 bindingIndex
 ) {
     VkDescriptorSetLayoutBinding layoutBinding = {};
     layoutBinding.binding = bindingIndex;
     layoutBinding.stageFlags = (VkShaderStageFlagBits)shaderStage;
-    layoutBinding.descriptorCount = count;
+    layoutBinding.descriptorCount = 1;
     layoutBinding.descriptorType = DESCRIPTOR_TYPES[(u32)typeIndex];
 
     ++m_poolSizes[(u32)typeIndex].descriptorCount;
@@ -73,15 +72,14 @@ VkDescriptorSetLayoutBinding DescriptorSet::_createLayoutBinding(
 VkWriteDescriptorSet DescriptorSet::_createWriteDescriptorSet(
     const DescriptorTypeIndex typeIndex,
     const void* descriptorInfo,
-    const u32 bindingIndex,
-    const u32 count
+    const u32 bindingIndex
 ) const {
     VkWriteDescriptorSet writeDescriptorSet = {};
     writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
     writeDescriptorSet.dstSet = m_set;
     writeDescriptorSet.dstBinding = bindingIndex;
     writeDescriptorSet.dstArrayElement = 0;
-    writeDescriptorSet.descriptorCount = count;
+    writeDescriptorSet.descriptorCount = 1;
     writeDescriptorSet.descriptorType = DESCRIPTOR_TYPES[(u32)typeIndex];
 
     switch (typeIndex) {

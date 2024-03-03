@@ -6,7 +6,7 @@
 #    By: etran <etran@student.42.fr>                +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/04/06 03:40:09 by eli               #+#    #+#              #
-#    Updated: 2024/03/02 12:43:12 by etran            ###   ########.fr        #
+#    Updated: 2024/03/02 21:49:12 by etran            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -40,6 +40,7 @@ SYNC_DIR	:=	$(GFX_DIR)/sync
 RENDER_DIR	:=	$(GFX_DIR)/rendering
 SETS_DIR	:=	$(DESC_DIR)/sets
 PIP_DIR		:=	$(RENDER_DIR)/pipelines
+PASS_DIR	:=	$(RENDER_DIR)/passes
 
 # libraries
 LIBS_DIR	:=	libs
@@ -80,6 +81,7 @@ SRC_FILES	:=	entrypoint.cpp \
 				$(DESC_DIR)/descriptor_table.cpp \
 				$(DESC_DIR)/descriptor_set.cpp \
 				$(RENDER_DIR)/pipeline.cpp \
+				$(RENDER_DIR)/render_pass.cpp \
 				$(BUF_DIR)/buffer.cpp \
 				$(BUF_DIR)/image_buffer.cpp \
 				$(SYNC_DIR)/fence.cpp \

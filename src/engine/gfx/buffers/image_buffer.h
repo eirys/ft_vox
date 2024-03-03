@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/27 18:36:32 by etran             #+#    #+#             */
-/*   Updated: 2024/03/01 00:08:13 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/02 20:37:14 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,7 @@ class Buffer;
 /*                               HELPER OBJECTS                               */
 /* ========================================================================== */
 
-struct ImageMetaData {
+struct ImageMetaData final {
     VkFormat                m_format;
     u32                     m_queueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
     VkImageType             m_imageType = VK_IMAGE_TYPE_2D;
