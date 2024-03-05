@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/20 00:02:09 by etran             #+#    #+#             */
-/*   Updated: 2024/03/01 02:07:35 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/04 16:28:33 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,7 +29,7 @@ Window::Window() {
     glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 
     // create a window pointer
-    m_window = glfwCreateWindow(WIDTH, HEIGHT, TITLE, nullptr, nullptr);
+    m_window = glfwCreateWindow(m_width, m_height, TITLE, nullptr, nullptr);
     if (!m_window)
         throw std::runtime_error("Failed to create window");
 
@@ -86,6 +86,10 @@ bool    Window::isAlive() const {
 void    Window::toggleMouse() noexcept {
     m_mouseActive = !m_mouseActive;
     glfwSetInputMode(m_window, GLFW_CURSOR, m_mouseActive ? GLFW_CURSOR_NORMAL : GLFW_CURSOR_DISABLED);
+}
+
+void Window::retrieveFramebufferSize(int& width, int& height) const {
+    glfwGetFramebufferSize(m_window, &width, &height);
 }
 
 /* ========================================================================== */

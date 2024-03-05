@@ -6,7 +6,7 @@
 #    By: etran <etran@student.42.fr>                +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/04/06 03:40:09 by eli               #+#    #+#              #
-#    Updated: 2024/03/02 21:49:12 by etran            ###   ########.fr        #
+#    Updated: 2024/03/04 15:09:47 by etran            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -75,6 +75,7 @@ SRC_FILES	:=	entrypoint.cpp \
 				$(GFX_DIR)/renderer.cpp \
 				$(GFX_DIR)/core.cpp \
 				$(GFX_DIR)/device.cpp \
+				$(GFX_DIR)/swap_chain.cpp \
 				$(CMD_DIR)/command_pool.cpp \
 				$(CMD_DIR)/command_buffer.cpp \
 				$(DESC_DIR)/descriptor_pool.cpp \

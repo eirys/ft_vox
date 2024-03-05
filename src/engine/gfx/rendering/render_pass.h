@@ -6,20 +6,21 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/02 19:56:22 by etran             #+#    #+#             */
-/*   Updated: 2024/03/02 21:54:50 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/05 10:47:16 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
 #include <vulkan/vulkan.h>
+#include <vector>
 #include "types.h"
+#include "image_buffer.h"
 
 namespace vox::gfx {
 
 class Device;
-class ImageBuffer;
-class RenderPassUpdateInfo;
+class RenderPassInfo;
 
 class RenderPass {
 public:
@@ -31,14 +32,10 @@ public:
 
     /* ====================================================================== */
 
-    virtual void    init(const Device& device) = 0;
+    virtual void    init(const Device& device, const RenderPassInfo& info) = 0;
     virtual void    destroy(const Device& device) = 0;
 
-    /* ====================================================================== */
-
-    virtual void    updateResources(
-        const Device& device,
-        const RenderPassUpdateInfo& updateInfo) = 0;
+    virtual void    updateResources(const Device& device, const RenderPassInfo& info) = 0;
 
     /* ====================================================================== */
 
@@ -46,14 +43,20 @@ public:
     u32             getWidth() const noexcept;
     u32             getHeight() const noexcept;
 
+    const std::vector<VkFramebuffer>&   getTargets() const noexcept;
+    const std::vector<ImageBuffer>&     getResources() const noexcept;
+
 protected:
     /* ====================================================================== */
     /*                                  DATA                                  */
     /* ====================================================================== */
 
-    VkRenderPass    m_vkRenderPass = VK_NULL_HANDLE;
-    u32             m_width = 0;
-    u32             m_height = 0;
+    VkRenderPass                m_vkRenderPass = VK_NULL_HANDLE;
+    std::vector<VkFramebuffer>  m_targets;
+    std::vector<ImageBuffer>    m_resources;
+
+    u32                         m_width = 0;
+    u32                         m_height = 0;
 
     /* ====================================================================== */
     /*                                 METHODS                                */

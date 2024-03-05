@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/23 09:54:13 by etran             #+#    #+#             */
-/*   Updated: 2024/03/01 00:00:16 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/05 11:03:40 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,12 +30,12 @@ void CommandPool::init(const Device& device) {
 
     QueueFamilyIndices queueFamilyIndices = device.getQueueFamilyIndices();
 
-    poolInfo.queueFamilyIndex = queueFamilyIndices.graphicsFamily.value();
+    poolInfo.queueFamilyIndex = queueFamilyIndices.m_graphicsFamily.value();
     if (vkCreateCommandPool(device.getDevice(), &poolInfo, nullptr, &m_drawPool) != VK_SUCCESS) {
         throw std::runtime_error("failed to create graphics command pool");
     }
 
-    poolInfo.queueFamilyIndex = queueFamilyIndices.computeFamily.value();
+    poolInfo.queueFamilyIndex = queueFamilyIndices.m_computeFamily.value();
     if (vkCreateCommandPool(device.getDevice(), &poolInfo, nullptr, &m_computePool) != VK_SUCCESS) {
         throw std::runtime_error("failed to create compute command pool");
     }

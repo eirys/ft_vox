@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/21 23:37:02 by etran             #+#    #+#             */
-/*   Updated: 2024/03/04 00:30:35 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/04 16:23:46 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 #include "core.h"
 #include "types.h"
 #include "buffer_decl.h"
+#include "swap_chain.h"
 
 #include <set>
 #include <array>
@@ -47,20 +48,20 @@ static
 SwapChainSupportDetails _querySwapChainSupport(const VkPhysicalDevice physDevice, const VkSurfaceKHR surface) {
     SwapChainSupportDetails details;
 
-    vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physDevice, surface, &details.capabilities);
+    vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physDevice, surface, &details.m_capabilities);
 
     u32 formatCount;
     vkGetPhysicalDeviceSurfaceFormatsKHR(physDevice, surface, &formatCount, nullptr);
     if (formatCount != 0) {
-        details.formats.resize(formatCount);
-        vkGetPhysicalDeviceSurfaceFormatsKHR(physDevice, surface, &formatCount, details.formats.data());
+        details.m_formats.resize(formatCount);
+        vkGetPhysicalDeviceSurfaceFormatsKHR(physDevice, surface, &formatCount, details.m_formats.data());
     }
 
     u32 presentModeCount;
     vkGetPhysicalDeviceSurfacePresentModesKHR(physDevice, surface, &presentModeCount, nullptr);
     if (presentModeCount != 0) {
-        details.presentModes.resize(presentModeCount);
-        vkGetPhysicalDeviceSurfacePresentModesKHR(physDevice, surface, &presentModeCount, details.presentModes.data());
+        details.m_presentModes.resize(presentModeCount);
+        vkGetPhysicalDeviceSurfacePresentModesKHR(physDevice, surface, &presentModeCount, details.m_presentModes.data());
     }
 
     return details;
@@ -137,17 +138,17 @@ QueueFamilyIndices _findQueueFamilies(const VkSurfaceKHR surface, const VkPhysic
 
         // Graphics
         if (queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT)
-            indices.graphicsFamily = i;
+            indices.m_graphicsFamily = i;
 
         // Compute
         if (queueFamily.queueFlags & VK_QUEUE_COMPUTE_BIT)
-            indices.computeFamily = i;
+            indices.m_computeFamily = i;
 
         // Present
         VkBool32 presentSupport = false;
         vkGetPhysicalDeviceSurfaceSupportKHR(physDevice, i, surface, &presentSupport);
         if (presentSupport)
-            indices.presentFamily = i;
+            indices.m_presentFamily = i;
     }
     return indices;
 }
@@ -257,7 +258,7 @@ bool _isDeviceSuitable(
 
     if (extensionsSupported) {
         SwapChainSupportDetails swapChainSupport = _querySwapChainSupport(physDevice, surface);
-        isSwapChainAdequate = !swapChainSupport.formats.empty() && !swapChainSupport.presentModes.empty();
+        isSwapChainAdequate = !swapChainSupport.m_formats.empty() && !swapChainSupport.m_presentModes.empty();
     }
 
     return queueFamilyIndices.isComplete() &&
@@ -293,9 +294,9 @@ void Device::_pickPhysicalDevice(const Core& core) {
 
 void Device::_createLogicalDevice() {
     const std::set<u32>         uniqueQueueFamilies = {
-        m_queueFamilyIndices.graphicsFamily.value(),
-        m_queueFamilyIndices.presentFamily.value(),
-        m_queueFamilyIndices.computeFamily.value()
+        m_queueFamilyIndices.m_graphicsFamily.value(),
+        m_queueFamilyIndices.m_presentFamily.value(),
+        m_queueFamilyIndices.m_computeFamily.value()
     };
 
     std::vector<VkDeviceQueueCreateInfo>    queueCreateInfos;
@@ -330,9 +331,9 @@ void Device::_createLogicalDevice() {
         throw std::runtime_error("Failed to create logical device!");
     }
 
-    vkGetDeviceQueue(m_vkLogicalDevice, m_queueFamilyIndices.graphicsFamily.value(), 0, &m_queueFamilies.m_graphics);
-    vkGetDeviceQueue(m_vkLogicalDevice, m_queueFamilyIndices.presentFamily.value(), 0, &m_queueFamilies.m_present);
-    vkGetDeviceQueue(m_vkLogicalDevice, m_queueFamilyIndices.computeFamily.value(), 0, &m_queueFamilies.m_compute);
+    vkGetDeviceQueue(m_vkLogicalDevice, m_queueFamilyIndices.m_graphicsFamily.value(), 0, &m_queueFamilies.m_graphics);
+    vkGetDeviceQueue(m_vkLogicalDevice, m_queueFamilyIndices.m_presentFamily.value(), 0, &m_queueFamilies.m_present);
+    vkGetDeviceQueue(m_vkLogicalDevice, m_queueFamilyIndices.m_computeFamily.value(), 0, &m_queueFamilies.m_compute);
 }
 
 } // namespace vox::gfx

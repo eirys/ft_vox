@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/21 18:19:47 by etran             #+#    #+#             */
-/*   Updated: 2024/03/03 21:33:06 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/04 16:24:10 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,21 +28,21 @@ class Core;
 /* ========================================================================== */
 
 struct QueueFamilyIndices final {
-    std::optional<u32>  graphicsFamily;
-    std::optional<u32>  presentFamily;
-    std::optional<u32>  computeFamily;
+    std::optional<u32>  m_graphicsFamily;
+    std::optional<u32>  m_presentFamily;
+    std::optional<u32>  m_computeFamily;
 
     bool isComplete() const {
-        return  graphicsFamily.has_value() &&
-                computeFamily.has_value() &&
-                presentFamily.has_value();
+        return  m_graphicsFamily.has_value() &&
+                m_computeFamily.has_value() &&
+                m_presentFamily.has_value();
     }
 };
 
 struct SwapChainSupportDetails final {
-    VkSurfaceCapabilitiesKHR        capabilities;
-    std::vector<VkSurfaceFormatKHR> formats;
-    std::vector<VkPresentModeKHR>   presentModes;
+    VkSurfaceCapabilitiesKHR        m_capabilities;
+    std::vector<VkSurfaceFormatKHR> m_formats;
+    std::vector<VkPresentModeKHR>   m_presentModes;
 };
 
 class Device final {
