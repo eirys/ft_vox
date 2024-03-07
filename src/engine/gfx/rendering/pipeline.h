@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/28 15:26:02 by etran             #+#    #+#             */
-/*   Updated: 2024/03/01 00:31:37 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/07 09:54:34 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,7 @@ namespace vox::gfx {
 class Device;
 class IPipelineRenderInfo;
 class ICommandBuffer;
+class RenderPass;
 
 class Pipeline {
 public:
@@ -40,7 +41,8 @@ public:
 
     /* ====================================================================== */
 
-    VkPipeline      getPipeline() const noexcept;
+    VkPipeline          getPipeline() const noexcept;
+    virtual RenderPass* getRenderPass() const noexcept = 0;
 
 protected:
     /* ====================================================================== */

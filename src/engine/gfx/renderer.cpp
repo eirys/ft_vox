@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/23 09:29:35 by etran             #+#    #+#             */
-/*   Updated: 2024/03/02 12:36:46 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/07 12:23:05 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,7 @@ namespace vox::gfx {
 void Renderer::init(ui::Window& window) {
     m_core.init(window);
     m_device.init(m_core);
+    m_swapChain.init(m_core, m_device, window);
 
     _createPipelines();
     _createFences();
@@ -37,9 +38,14 @@ void Renderer::destroy() {
     _destroyFences();
     _destroyPipelines();
 
+    m_swapChain.destroy(m_device);
     m_device.destroy();
     m_core.destroy();
     LINFO("Renderer destroyed.");
+}
+
+void Renderer::waitIdle() const {
+    m_device.idle();
 }
 
 /* ========================================================================== */

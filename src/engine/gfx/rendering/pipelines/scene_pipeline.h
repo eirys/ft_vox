@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/29 23:49:38 by etran             #+#    #+#             */
-/*   Updated: 2024/03/01 00:31:59 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/07 10:24:43 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,20 +16,38 @@
 
 namespace vox::gfx {
 
+class SceneRenderPass;
+
 class ScenePipeline final: public Pipeline {
 public:
+    /* ====================================================================== */
+    /*                                TYPEDEFS                                */
+    /* ====================================================================== */
 
-    void    init(const Device& device) {
-        (void)device;
-    }
-    void    destroy(const Device& device) { (void)device; }
+    using super = Pipeline;
+
+    /* ====================================================================== */
+    /*                                 METHODS                                */
+    /* ====================================================================== */
+
+    void    init(const Device& device) override;
+    void    destroy(const Device& device) override;
 
     void    record(
         const VkPipelineLayout layout,
         const ICommandBuffer* cmdBuffer,
-        const IPipelineRenderInfo* drawInfo) { (void)layout, (void)cmdBuffer, (void)drawInfo; }
+        const IPipelineRenderInfo* drawInfo) override;
+
+    /* ====================================================================== */
+
+    RenderPass* getRenderPass() const noexcept override;
 
 private:
+    /* ====================================================================== */
+    /*                                  DATA                                  */
+    /* ====================================================================== */
+
+    SceneRenderPass* m_renderPass = nullptr;
 
 }; // class ScenePipeline
 

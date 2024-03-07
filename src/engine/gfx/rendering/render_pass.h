@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/02 19:56:22 by etran             #+#    #+#             */
-/*   Updated: 2024/03/05 10:47:16 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/07 11:45:29 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,8 +20,31 @@
 namespace vox::gfx {
 
 class Device;
-class RenderPassInfo;
 
+/* ========================================================================== */
+/*                               HELPER OBJECTS                               */
+/* ========================================================================== */
+
+struct RenderPassInfo {
+    virtual ~RenderPassInfo() = default;
+
+    // Resources
+    std::vector<VkFormat>               m_formats;
+    std::vector<VkSampleCountFlagBits>  m_samples;
+
+    // Render pass
+    u32 m_renderPassWidth;
+    u32 m_renderPassHeight;
+
+    // Framebuffer
+    u32 m_targetCount;
+    u32 m_targetWidth;
+    u32 m_targetHeight;
+};
+
+/**
+ * @brief Wrapper class for a Vulkan render pass.
+*/
 class RenderPass {
 public:
     /* ====================================================================== */

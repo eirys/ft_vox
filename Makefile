@@ -6,7 +6,7 @@
 #    By: etran <etran@student.42.fr>                +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/04/06 03:40:09 by eli               #+#    #+#              #
-#    Updated: 2024/03/04 15:09:47 by etran            ###   ########.fr        #
+#    Updated: 2024/03/07 10:16:42 by etran            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -60,8 +60,9 @@ SUBDIRS		:=	$(LIBS_DIR) \
 				$(CMD_DIR) \
 				$(DESC_DIR) \
 				$(SETS_DIR) \
-				$(RENDER_DIR) \
 				$(SYNC_DIR) \
+				$(RENDER_DIR) \
+				$(PASS_DIR) \
 				$(PIP_DIR)
 
 OBJ_SUBDIRS	:=	$(addprefix $(OBJ_DIR)/,$(SUBDIRS))
@@ -83,6 +84,8 @@ SRC_FILES	:=	entrypoint.cpp \
 				$(DESC_DIR)/descriptor_set.cpp \
 				$(RENDER_DIR)/pipeline.cpp \
 				$(RENDER_DIR)/render_pass.cpp \
+				$(PIP_DIR)/scene_pipeline.cpp \
+				$(PASS_DIR)/scene_render_pass.cpp \
 				$(BUF_DIR)/buffer.cpp \
 				$(BUF_DIR)/image_buffer.cpp \
 				$(SYNC_DIR)/fence.cpp \

@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/21 12:17:21 by etran             #+#    #+#             */
-/*   Updated: 2024/03/05 10:10:05 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/07 12:20:52 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,6 +53,7 @@ public:
     void init(ui::Window& window);
     void destroy();
 
+    void waitIdle() const;
     void render();
 
 private:

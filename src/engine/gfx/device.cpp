@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/21 23:37:02 by etran             #+#    #+#             */
-/*   Updated: 2024/03/04 16:23:46 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/07 12:22:01 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,6 +40,10 @@ void Device::init(const Core& core) {
 
 void Device::destroy() {
     vkDestroyDevice(m_vkLogicalDevice, nullptr);
+}
+
+void Device::idle() const {
+    vkDeviceWaitIdle(m_vkLogicalDevice);
 }
 
 /* ========================================================================== */

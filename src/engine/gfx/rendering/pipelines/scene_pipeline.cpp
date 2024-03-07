@@ -1,43 +1,46 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   engine.cpp                                         :+:      :+:    :+:   */
+/*   scene_pipeline.cpp                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/02/27 18:17:53 by etran             #+#    #+#             */
-/*   Updated: 2024/03/07 12:22:22 by etran            ###   ########.fr       */
+/*   Created: 2024/03/07 09:48:27 by etran             #+#    #+#             */
+/*   Updated: 2024/03/07 10:17:58 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "engine.h"
+#include "scene_pipeline.h"
+#include "scene_render_pass.h"
 
-#include "debug.h"
-
-namespace vox {
+namespace vox::gfx {
 
 /* ========================================================================== */
 /*                                   PUBLIC                                   */
 /* ========================================================================== */
 
-Engine::Engine() {
-    m_renderer.init(m_window);
-
-    LINFO("Engine initialized.");
+void ScenePipeline::init(const Device& device) {
+    m_renderPass = new SceneRenderPass();
+    m_renderPass->init(device);
 }
 
-Engine::~Engine() {
-    m_renderer.destroy();
-
-    LINFO("Engine destroyed.");
+void ScenePipeline::destroy(const Device& device) {
+    m_renderPass->destroy(device);
+    delete m_renderPass;
 }
 
-/* ========================================================================== */
+void ScenePipeline::record(
+    const VkPipelineLayout layout,
+    const ICommandBuffer* cmdBuffer,
+    const IPipelineRenderInfo* drawInfo
+) {
 
-void Engine::run() {
-    while (m_window.isAlive())
-        m_window.pollEvents();
-    m_renderer.waitIdle();
 }
 
-} // namespace vox
+/* ====================================================================== */
+
+RenderPass* ScenePipeline::getRenderPass() const noexcept {
+    return nullptr;
+}
+
+} // namespace vox::gfx
