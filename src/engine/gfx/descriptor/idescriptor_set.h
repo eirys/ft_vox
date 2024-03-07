@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/28 20:41:22 by etran             #+#    #+#             */
-/*   Updated: 2024/02/29 22:40:45 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/07 15:15:28 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,6 +22,7 @@
 namespace vox::gfx {
 
 class Device;
+class GameState;
 
 class IDescriptorSet {
 public:
@@ -42,6 +43,7 @@ public:
     virtual void    init(const Device& device) = 0;
     virtual void    destroy(const Device& device) = 0;
 
+    virtual void    fill(const Device& device, const GameState& state) = 0;
     virtual void    setDescriptorSet(const VkDescriptorSet set) noexcept = 0;
 
     /* ====================================================================== */

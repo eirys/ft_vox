@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/27 18:17:53 by etran             #+#    #+#             */
-/*   Updated: 2024/03/07 12:22:22 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/07 15:43:58 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,7 @@ namespace vox {
 /* ========================================================================== */
 
 Engine::Engine() {
-    m_renderer.init(m_window);
+    m_renderer.init(m_window, m_game);
 
     LINFO("Engine initialized.");
 }

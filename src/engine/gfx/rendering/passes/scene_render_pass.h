@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/07 10:08:33 by etran             #+#    #+#             */
-/*   Updated: 2024/03/07 13:34:53 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/07 16:06:25 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -73,19 +73,20 @@ public:
 
     /* ====================================================================== */
 
-    void    init(const Device& device, const RenderPassInfo& info) override;
+    void    init(const Device& device, const RenderPassInfo* info) override;
     void    destroy(const Device& device) override;
 
-    void    updateResources(const Device& device, const RenderPassInfo& info) override;
+    void    updateResources(const Device& device, const RenderPassInfo* info) override;
+    void    begin(const ICommandBuffer* cmdBuffer, const RecordInfo& recordInfo) override;
 
 private:
     /* ====================================================================== */
     /*                                 METHODS                                */
     /* ====================================================================== */
 
-    void    _createRenderPass(const Device& device, const RenderPassInfo& info);
-    void    _createResources(const Device& device, const RenderPassInfo& info);
-    void    _createTarget(const Device& device, const RenderPassInfo& info);
+    void    _createRenderPass(const Device& device, const RenderPassInfo* info);
+    void    _createResources(const Device& device, const RenderPassInfo* info);
+    void    _createTarget(const Device& device, const RenderPassInfo* info);
 
     void    _destroyTarget(const Device& device);
     void    _destroyResources(const Device& device);

@@ -6,42 +6,67 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/07 09:48:27 by etran             #+#    #+#             */
-/*   Updated: 2024/03/07 14:32:46 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/07 20:25:22 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "scene_pipeline.h"
 #include "scene_render_pass.h"
 #include "device.h"
+#include "icommand_buffer.h"
+#include "descriptor_table.h"
 
 #include <array>
 #include <stdexcept>
 
+#include "debug.h"
+
 namespace vox::gfx {
+
+enum class SceneDescriptorSet: u32 {
+    Mvp = 0,
+
+    First = Mvp,
+    Last = Mvp
+};
+
+static constexpr u32 DESCRIPTOR_SET_COUNT = enumSize<SceneDescriptorSet>();
 
 /* ========================================================================== */
 /*                                   PUBLIC                                   */
 /* ========================================================================== */
 
-void ScenePipeline::init(const Device& device, const RenderPassInfo& info) {
+ScenePipeline::ScenePipeline() {
     m_renderPass = new SceneRenderPass();
-    m_renderPass->init(device, info);
 }
 
-void ScenePipeline::destroy(const Device& device) {
-    m_renderPass->destroy(device);
+ScenePipeline::~ScenePipeline() {
     delete m_renderPass;
 }
 
 /* ========================================================================== */
 
+void ScenePipeline::init(const Device& device, const RenderPassInfo* info) {
+    m_renderPass->init(device, info);
+
+    LDEBUG("Scene pipeline initialized.");
+}
+
+void ScenePipeline::destroy(const Device& device) {
+    m_renderPass->destroy(device);
+
+    LDEBUG("Scene pipeline destroyed.");
+}
+
+/* ========================================================================== */
+
 void ScenePipeline::assemble(const Device& device, const VkPipelineLayout& pipelineLayout) {
-    VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
-    vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-    vertexInputInfo.vertexBindingDescriptionCount = 0;
-    vertexInputInfo.pVertexBindingDescriptions = nullptr;
-    vertexInputInfo.vertexAttributeDescriptionCount = 0;
-    vertexInputInfo.pVertexAttributeDescriptions = nullptr;
+    VkPipelineVertexInputStateCreateInfo vertexInput{};
+    vertexInput.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+    vertexInput.vertexBindingDescriptionCount = 0;
+    vertexInput.pVertexBindingDescriptions = nullptr;
+    vertexInput.vertexAttributeDescriptionCount = 0;
+    vertexInput.pVertexAttributeDescriptions = nullptr;
 
     VkPipelineInputAssemblyStateCreateInfo inputAssembly{};
     inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
@@ -59,7 +84,7 @@ void ScenePipeline::assemble(const Device& device, const VkPipelineLayout& pipel
     rasterizer.rasterizerDiscardEnable = VK_FALSE;
     rasterizer.polygonMode = VK_POLYGON_MODE_FILL;
     rasterizer.lineWidth = 1.0f;
-    rasterizer.frontFace = VK_FRONT_FACE_CLOCKWISE;
+    rasterizer.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
     rasterizer.depthBiasEnable = VK_FALSE;
     rasterizer.depthBiasConstantFactor = 0.0f;
     rasterizer.depthBiasClamp = 0.0f;
@@ -100,27 +125,34 @@ void ScenePipeline::assemble(const Device& device, const VkPipelineLayout& pipel
     depthStencil.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
     depthStencil.depthTestEnable = VK_TRUE;
     depthStencil.depthWriteEnable = VK_TRUE;
-    depthStencil.depthCompareOp = VK_COMPARE_OP_LESS;
     depthStencil.depthBoundsTestEnable = VK_FALSE;
     depthStencil.minDepthBounds = 0.0f;
     depthStencil.maxDepthBounds = 1.0f;
     depthStencil.stencilTestEnable = VK_FALSE;
+    depthStencil.depthCompareOp = VK_COMPARE_OP_LESS;
 
-    std::array<VkDynamicState, 2> dynamicStates = { VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR };
+    const std::array<VkDynamicState, 2> dynamicStates = { VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR };
     VkPipelineDynamicStateCreateInfo dynamicState{};
     dynamicState.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
     dynamicState.dynamicStateCount = (u32)dynamicStates.size();
     dynamicState.pDynamicStates = dynamicStates.data();
 
     std::array<VkPipelineShaderStageCreateInfo, SHADER_STAGE_COUNT> shaderStages{};
-    shaderStages[(u32)ShaderStage::Vertex] = _loadShader(device, ShaderType::VS, "shaders/scene.vert.spv");
-    shaderStages[(u32)ShaderStage::Fragment] = _loadShader(device, ShaderType::FS, "shaders/scene.frag.spv");
+    const VkShaderModule vertexModule = _createShaderModule(device, "obj/shaders/scene.vertex.spv");
+    shaderStages[(u32)ShaderStage::Vertex].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+    shaderStages[(u32)ShaderStage::Vertex].stage = (VkShaderStageFlagBits)ShaderType::VS;
+    shaderStages[(u32)ShaderStage::Vertex].module = vertexModule;
+    shaderStages[(u32)ShaderStage::Vertex].pName = "main";
+
+    const VkShaderModule fragmentModule = _createShaderModule(device, "obj/shaders/scene.fragment.spv");
+    shaderStages[(u32)ShaderStage::Fragment].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+    shaderStages[(u32)ShaderStage::Fragment].stage = (VkShaderStageFlagBits)ShaderType::FS;
+    shaderStages[(u32)ShaderStage::Fragment].module = fragmentModule;
+    shaderStages[(u32)ShaderStage::Fragment].pName = "main";
 
     VkGraphicsPipelineCreateInfo pipelineInfo{};
     pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-    pipelineInfo.stageCount = SHADER_STAGE_COUNT;
-    pipelineInfo.pStages = shaderStages.data();
-    pipelineInfo.pVertexInputState = &vertexInputInfo;
+    pipelineInfo.pVertexInputState = &vertexInput;
     pipelineInfo.pInputAssemblyState = &inputAssembly;
     pipelineInfo.pViewportState = &viewportState;
     pipelineInfo.pRasterizationState = &rasterizer;
@@ -128,22 +160,80 @@ void ScenePipeline::assemble(const Device& device, const VkPipelineLayout& pipel
     pipelineInfo.pDepthStencilState = &depthStencil;
     pipelineInfo.pColorBlendState = &colorBlend;
     pipelineInfo.pDynamicState = &dynamicState;
-    pipelineInfo.layout = pipelineLayout;
     pipelineInfo.renderPass = m_renderPass->getRenderPass();
+    pipelineInfo.stageCount = SHADER_STAGE_COUNT;
+    pipelineInfo.pStages = shaderStages.data();
+    pipelineInfo.layout = pipelineLayout;
     pipelineInfo.subpass = 0;
     pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
     pipelineInfo.basePipelineIndex = -1;
 
-    if (vkCreateGraphicsPipelines(device.getDevice(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &m_pipeline) != VK_SUCCESS)
-        throw std::runtime_error("Failed to create graphics pipeline.");
+    VkResult res = vkCreateGraphicsPipelines(device.getDevice(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &m_pipeline);
+    if (res!=VK_SUCCESS)
+    {
+        switch (res) {
+            case VK_ERROR_OUT_OF_HOST_MEMORY:
+                LLOG("VK_ERROR_OUT_OF_HOST_MEMORY");
+                break;
+            case VK_ERROR_OUT_OF_DEVICE_MEMORY:
+                LLOG("VK_ERROR_OUT_OF_DEVICE_MEMORY");
+                break;
+            case VK_ERROR_INVALID_SHADER_NV:
+                LLOG("VK_ERROR_INVALID_SHADER_NV");
+                break;
+            case VK_PIPELINE_COMPILE_REQUIRED_EXT:
+                LLOG("VK_PIPELINE_COMPILE_REQUIRED_EXT");
+                break;
+            default:
+                LLOG("Unknown error: " << res);
+                break;
+        }
+        throw std::runtime_error("Failed to assemble graphics pipeline.");
+    }
+
+    vkDestroyShaderModule(device.getDevice(), vertexModule, nullptr);
+    vkDestroyShaderModule(device.getDevice(), fragmentModule, nullptr);
 }
 
 void ScenePipeline::record(
     const VkPipelineLayout layout,
+    const DescriptorTable& descriptorTable,
     const ICommandBuffer* cmdBuffer,
-    const IPipelineRenderInfo& drawInfo
+    const RecordInfo& drawInfo
 ) {
+    m_renderPass->begin(cmdBuffer, drawInfo);
 
+    VkViewport viewport{};
+    viewport.width = (f32)m_renderPass->getWidth();
+    viewport.height = (f32)m_renderPass->getHeight();
+    viewport.minDepth = 0.0f;
+    viewport.maxDepth = 1.0f;
+    vkCmdSetViewport(cmdBuffer->getBuffer(), 0, 1, &viewport);
+
+    VkRect2D scissor{};
+    scissor.offset = { 0, 0 };
+    scissor.extent = { m_renderPass->getWidth(), m_renderPass->getHeight() };
+    vkCmdSetScissor(cmdBuffer->getBuffer(), 0, 1, &scissor);
+
+    std::array<VkDescriptorSet, DESCRIPTOR_SET_COUNT> descriptorSets = { descriptorTable[DescriptorSetIndex::Mvp]->getSet() };
+
+    vkCmdBindDescriptorSets(
+        cmdBuffer->getBuffer(),
+        VK_PIPELINE_BIND_POINT_GRAPHICS,
+        layout,
+        (u32)SceneDescriptorSet::Mvp,
+        DESCRIPTOR_SET_COUNT, descriptorSets.data(),
+        0, nullptr);
+
+    vkCmdBindPipeline(
+        cmdBuffer->getBuffer(),
+        VK_PIPELINE_BIND_POINT_GRAPHICS,
+        m_pipeline);
+
+    // For now, draw a quad
+    vkCmdDraw(cmdBuffer->getBuffer(), 4, 1, 0, 0);
+
+    m_renderPass->end(cmdBuffer);
 }
 
 } // namespace vox::gfx

@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/28 16:00:20 by etran             #+#    #+#             */
-/*   Updated: 2024/03/01 00:03:24 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/07 20:29:56 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,23 +44,11 @@ void DescriptorPool::_createPool(const Device& device, const DescriptorTable& ta
     for (u32 typeIndex = (u32)DescriptorTypeIndex::First; typeIndex <= (u32)DescriptorTypeIndex::Last; ++typeIndex)
         possiblePoolSizes[typeIndex].type = DESCRIPTOR_TYPES[typeIndex];
 
-    // possiblePoolSizes[(u32)DescriptorTypeIndex::UniformBuffer].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    // possiblePoolSizes[(u32)DescriptorTypeIndex::CombinedImageSampler].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-    // possiblePoolSizes[(u32)DescriptorTypeIndex::StorageBuffer].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-    // possiblePoolSizes[(u32)DescriptorTypeIndex::StorageImage].type = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
-    // possiblePoolSizes[(u32)DescriptorTypeIndex::SampledImage].type = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
-
     for (u32 setIndex = 0; setIndex < DESCRIPTOR_TABLE_SIZE; ++setIndex) {
         const IDescriptorSet::PoolSizes& setSize = table[(DescriptorSetIndex)setIndex]->getSizes();
 
         for (u32 typeIndex = (u32)DescriptorTypeIndex::First; typeIndex <= (u32)DescriptorTypeIndex::Last; ++typeIndex)
             possiblePoolSizes[typeIndex].descriptorCount += setSize[typeIndex].descriptorCount;
-
-        // possiblePoolSizes[0].descriptorCount += setSize.uniformBuffer;
-        // possiblePoolSizes[1].descriptorCount += setSize.combinedImageSampler;
-        // possiblePoolSizes[2].descriptorCount += setSize.storageBuffer;
-        // possiblePoolSizes[3].descriptorCount += setSize.storageImage;
-        // possiblePoolSizes[4].descriptorCount += setSize.sampledImage;
     }
 
     std::vector<VkDescriptorPoolSize> poolSizes;

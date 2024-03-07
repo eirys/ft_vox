@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/23 22:27:11 by etran             #+#    #+#             */
-/*   Updated: 2024/02/27 17:34:14 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/07 14:43:51 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,14 +42,14 @@ public:
     GraphicsCommandBuffer& operator=(GraphicsCommandBuffer&& other) = delete;
     GraphicsCommandBuffer& operator=(const GraphicsCommandBuffer& other) = delete;
 
-    /* ====================================================================== */
+    // /* ====================================================================== */
 
-    using super::init;
-    using super::destroy;
+    // using super::init;
+    // using super::destroy;
 
-    using super::startRecording;
-    using super::reset;
-    using super::getBuffer;
+    // using super::startRecording;
+    // using super::reset;
+    // using super::getBuffer;
 
 private:
     /* ====================================================================== */

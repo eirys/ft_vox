@@ -1,23 +1,25 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   mvp_data.h                                         :+:      :+:    :+:   */
+/*   render_decl.h                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/03/07 13:46:39 by etran             #+#    #+#             */
-/*   Updated: 2024/03/07 13:49:11 by etran            ###   ########.fr       */
+/*   Created: 2024/03/07 14:55:18 by etran             #+#    #+#             */
+/*   Updated: 2024/03/07 14:57:04 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
-#include "ubo.h"
+#include "types.h"
 
-namespace vox::gfx::ubo {
+namespace vox::gfx {
 
-class MvpData final: public Ubo {
+struct RecordInfo {
+    virtual ~RecordInfo() = default;
 
-}; // class MvpData
+    u32 m_targetIndex = 0;
+};
 
-} // namespace vox::gfx::ubo
+} // namespace vox::gfx

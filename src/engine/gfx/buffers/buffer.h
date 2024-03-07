@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/27 17:14:27 by etran             #+#    #+#             */
-/*   Updated: 2024/03/02 20:37:26 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/07 15:31:28 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,7 +29,7 @@ struct BufferMetadata final {
     VkDeviceSize            m_size;
     VkBufferUsageFlags      m_usage;
     VkMemoryPropertyFlags   m_properties;
-    VkSharingMode           m_sharingMode;
+    VkSharingMode           m_sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 };
 
 /**

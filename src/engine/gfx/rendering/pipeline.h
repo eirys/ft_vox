@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/28 15:26:02 by etran             #+#    #+#             */
-/*   Updated: 2024/03/07 14:32:55 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/07 16:13:02 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,9 +19,11 @@
 namespace vox::gfx {
 
 class Device;
-class IPipelineRenderInfo;
 class ICommandBuffer;
 class RenderPass;
+class DescriptorTable;
+
+struct RecordInfo;
 struct RenderPassInfo;
 
 class Pipeline {
@@ -34,14 +36,15 @@ public:
 
     /* ====================================================================== */
 
-    virtual void    init(const Device& device, const RenderPassInfo& info) = 0;
+    virtual void    init(const Device& device, const RenderPassInfo* info) = 0;
     virtual void    destroy(const Device& device) = 0;
     virtual void    assemble(const Device& device, const VkPipelineLayout& pipelineLayout) = 0;
 
     virtual void    record(
         const VkPipelineLayout layout,
+        const DescriptorTable& descriptorTable,
         const ICommandBuffer* cmdBuffer,
-        const IPipelineRenderInfo& drawInfo) = 0;
+        const RecordInfo& recordInfo) = 0;
 
     /* ====================================================================== */
 
@@ -67,10 +70,7 @@ protected:
 
     /* ====================================================================== */
 
-    VkPipelineShaderStageCreateInfo  _loadShader(
-        const Device& device,
-        const ShaderType shaderType,
-        const char* binPath) const;
+    VkShaderModule  _createShaderModule(const Device& device, const char* binPath) const;
 
 }; // class Pipeline
 

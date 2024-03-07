@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/29 23:49:38 by etran             #+#    #+#             */
-/*   Updated: 2024/03/07 14:32:52 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/07 16:06:19 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,7 +30,7 @@ public:
     /*                                  ENUMS                                 */
     /* ====================================================================== */
 
-    enum class ShaderStage {
+    enum class ShaderStage: u32 {
         Vertex = 0,
         Fragment,
 
@@ -42,14 +42,25 @@ public:
     /*                                 METHODS                                */
     /* ====================================================================== */
 
-    void    init(const Device& device, const RenderPassInfo& info) override;
+    ScenePipeline();
+    ~ScenePipeline();
+
+    ScenePipeline(ScenePipeline&& other) = delete;
+    ScenePipeline(const ScenePipeline& other) = delete;
+    ScenePipeline& operator=(ScenePipeline&& other) = delete;
+    ScenePipeline& operator=(const ScenePipeline& other) = delete;
+
+    /* ====================================================================== */
+
+    void    init(const Device& device, const RenderPassInfo* info) override;
     void    destroy(const Device& device) override;
     void    assemble(const Device& device, const VkPipelineLayout& pipelineLayout) override;
 
     void    record(
         const VkPipelineLayout layout,
+        const DescriptorTable& descriptorTable,
         const ICommandBuffer* cmdBuffer,
-        const IPipelineRenderInfo& drawInfo) override;
+        const RecordInfo& drawInfo) override;
 
 private:
     /* ====================================================================== */

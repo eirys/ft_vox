@@ -6,15 +6,19 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/07 10:15:26 by etran             #+#    #+#             */
-/*   Updated: 2024/03/07 13:30:06 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/07 16:08:04 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "scene_render_pass.h"
 #include "device.h"
+#include "render_decl.h"
+#include "icommand_buffer.h"
 
 #include <array>
 #include <stdexcept>
+
+#include "debug.h"
 
 namespace vox::gfx {
 
@@ -22,35 +26,60 @@ namespace vox::gfx {
 /*                                   PUBLIC                                   */
 /* ========================================================================== */
 
-void SceneRenderPass::init(const Device& device, const RenderPassInfo& info) {
+void SceneRenderPass::init(const Device& device, const RenderPassInfo* info) {
     _createRenderPass(device, info);
     _createResources(device, info);
     _createTarget(device, info);
+
+    LDEBUG("Scene render pass initialized");
 }
 
 void SceneRenderPass::destroy(const Device& device) {
     _destroyTarget(device);
     _destroyResources(device);
     vkDestroyRenderPass(device.getDevice(), m_vkRenderPass, nullptr);
+
+    LDEBUG("Scene render pass destroyed");
 }
 
-void SceneRenderPass::updateResources(const Device& device, const RenderPassInfo& info) {
+/* ========================================================================== */
+
+void SceneRenderPass::updateResources(const Device& device, const RenderPassInfo* info) {
     _destroyTarget(device);
     _destroyResources(device);
     _createResources(device, info);
     _createTarget(device, info);
 }
 
+void SceneRenderPass::begin(const ICommandBuffer* cmdBuffer, const RecordInfo& recordInfo) {
+    std::array<VkClearValue, RESOURCE_COUNT> clearValues{};
+    clearValues[(u32)SceneAttachment::Color].color = {{ 0.0f, 0.0f, 0.0f, 1.0f }};
+    clearValues[(u32)SceneAttachment::Depth].depthStencil = { 1.0f, 0 };
+
+    VkRenderPassBeginInfo beginInfo{};
+    beginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+    beginInfo.renderPass = m_vkRenderPass;
+    beginInfo.framebuffer = m_targets[recordInfo.m_targetIndex];
+    beginInfo.renderArea.offset = { 0, 0 };
+    beginInfo.renderArea.extent = { m_width, m_height };
+    beginInfo.clearValueCount = (u32)clearValues.size();
+    beginInfo.pClearValues = clearValues.data();
+
+    vkCmdBeginRenderPass(cmdBuffer->getBuffer(), &beginInfo, VK_SUBPASS_CONTENTS_INLINE);
+}
+
 /* ========================================================================== */
 /*                                   PRIVATE                                  */
 /* ========================================================================== */
 
-void SceneRenderPass::_createRenderPass(const Device& device, const RenderPassInfo& info) {
+void SceneRenderPass::_createRenderPass(const Device& device, const RenderPassInfo* info) {
     // Attachments
+    const SceneRenderPassInfo* scenePassInfo = dynamic_cast<const SceneRenderPassInfo*>(info);
+
     std::array<VkAttachmentDescription, ATTACHMENT_COUNT> attachments{};
 
-    attachments[(u32)SceneAttachment::Color].format = info.m_formats[(u32)SceneResource::ColorImage];
-    attachments[(u32)SceneAttachment::Color].samples = info.m_samples[(u32)SceneResource::ColorImage];
+    attachments[(u32)SceneAttachment::Color].format = scenePassInfo->m_formats[(u32)SceneResource::ColorImage];
+    attachments[(u32)SceneAttachment::Color].samples = scenePassInfo->m_samples[(u32)SceneResource::ColorImage];
     attachments[(u32)SceneAttachment::Color].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
     attachments[(u32)SceneAttachment::Color].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
     attachments[(u32)SceneAttachment::Color].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
@@ -58,8 +87,8 @@ void SceneRenderPass::_createRenderPass(const Device& device, const RenderPassIn
     attachments[(u32)SceneAttachment::Color].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
     attachments[(u32)SceneAttachment::Color].finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
-    attachments[(u32)SceneAttachment::Depth].format = info.m_formats[(u32)SceneResource::DepthImage];
-    attachments[(u32)SceneAttachment::Depth].samples = info.m_samples[(u32)SceneResource::DepthImage];
+    attachments[(u32)SceneAttachment::Depth].format = scenePassInfo->m_formats[(u32)SceneResource::DepthImage];
+    attachments[(u32)SceneAttachment::Depth].samples = scenePassInfo->m_samples[(u32)SceneResource::DepthImage];
     attachments[(u32)SceneAttachment::Depth].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
     attachments[(u32)SceneAttachment::Depth].storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
     attachments[(u32)SceneAttachment::Depth].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
@@ -67,7 +96,7 @@ void SceneRenderPass::_createRenderPass(const Device& device, const RenderPassIn
     attachments[(u32)SceneAttachment::Depth].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
     attachments[(u32)SceneAttachment::Depth].finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
-    attachments[(u32)SceneAttachment::ColorResolve].format = info.m_formats[(u32)SceneResource::ColorImage];
+    attachments[(u32)SceneAttachment::ColorResolve].format = scenePassInfo->m_formats[(u32)SceneResource::ColorImage];
     attachments[(u32)SceneAttachment::ColorResolve].samples = VK_SAMPLE_COUNT_1_BIT; // For resolve, we only need 1 sample
     attachments[(u32)SceneAttachment::ColorResolve].loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
     attachments[(u32)SceneAttachment::ColorResolve].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
@@ -118,17 +147,19 @@ void SceneRenderPass::_createRenderPass(const Device& device, const RenderPassIn
         throw std::runtime_error("failed to create scene render pass");
 }
 
-void SceneRenderPass::_createResources(const Device& device, const RenderPassInfo& info) {
-    m_width = info.m_renderPassWidth;
-    m_height = info.m_renderPassHeight;
+void SceneRenderPass::_createResources(const Device& device, const RenderPassInfo* info) {
+    const SceneRenderPassInfo* scenePassInfo = dynamic_cast<const SceneRenderPassInfo*>(info);
 
-    m_resources.resize(RESOURCE_COUNT);
+    m_width = scenePassInfo->m_renderPassWidth;
+    m_height = scenePassInfo->m_renderPassHeight;
+
+    m_resources.reserve(RESOURCE_COUNT);
 
     ImageMetaData colorImageMetaData{};
     colorImageMetaData.m_width = m_width;
     colorImageMetaData.m_height = m_height;
-    colorImageMetaData.m_format = info.m_formats[(u32)SceneResource::ColorImage];
-    colorImageMetaData.m_sampleCount = info.m_samples[(u32)SceneResource::ColorImage];
+    colorImageMetaData.m_format = scenePassInfo->m_formats[(u32)SceneResource::ColorImage];
+    colorImageMetaData.m_sampleCount = scenePassInfo->m_samples[(u32)SceneResource::ColorImage];
     colorImageMetaData.m_usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT;
     colorImageMetaData.m_aspectFlags = VK_IMAGE_ASPECT_COLOR_BIT;
     m_resources[(u32)SceneResource::ColorImage].init(device, std::move(colorImageMetaData));
@@ -136,32 +167,32 @@ void SceneRenderPass::_createResources(const Device& device, const RenderPassInf
     ImageMetaData depthImageMetaData{};
     depthImageMetaData.m_width = m_width;
     depthImageMetaData.m_height = m_height;
-    depthImageMetaData.m_format = info.m_formats[(u32)SceneResource::DepthImage];
-    depthImageMetaData.m_sampleCount = info.m_samples[(u32)SceneResource::DepthImage];
+    depthImageMetaData.m_format = scenePassInfo->m_formats[(u32)SceneResource::DepthImage];
+    depthImageMetaData.m_sampleCount = scenePassInfo->m_samples[(u32)SceneResource::DepthImage];
     depthImageMetaData.m_usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
     depthImageMetaData.m_aspectFlags = VK_IMAGE_ASPECT_DEPTH_BIT;
     m_resources[(u32)SceneResource::DepthImage].init(device, std::move(depthImageMetaData));
 }
 
-void SceneRenderPass::_createTarget(const Device& device, const RenderPassInfo& info) {
-    const SceneRenderPassInfo& scenePassInfo = dynamic_cast<const SceneRenderPassInfo&>(info);
+void SceneRenderPass::_createTarget(const Device& device, const RenderPassInfo* info) {
+    const SceneRenderPassInfo* scenePassInfo = dynamic_cast<const SceneRenderPassInfo*>(info);
 
-    m_targets.resize(scenePassInfo.m_targetCount);
+    m_targets.reserve(scenePassInfo->m_targetCount);
 
     std::array<VkImageView, ATTACHMENT_COUNT> attachments = {
         m_resources[(u32)SceneAttachment::Color].getView(),
         m_resources[(u32)SceneAttachment::Depth].getView() };
 
-    for (u32 i = 0; i < scenePassInfo.m_targetCount; ++i) {
-        attachments[(u32)SceneAttachment::ColorResolve] = scenePassInfo.m_swapChainImageViews[i];
+    for (u32 i = 0; i < scenePassInfo->m_targetCount; ++i) {
+        attachments[(u32)SceneAttachment::ColorResolve] = scenePassInfo->m_swapChainImageViews[i];
 
         VkFramebufferCreateInfo framebufferInfo{};
         framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
         framebufferInfo.renderPass = m_vkRenderPass;
         framebufferInfo.attachmentCount = ATTACHMENT_COUNT;
         framebufferInfo.pAttachments = attachments.data();
-        framebufferInfo.width = scenePassInfo.m_targetWidth;
-        framebufferInfo.height = scenePassInfo.m_targetHeight;
+        framebufferInfo.width = scenePassInfo->m_targetWidth;
+        framebufferInfo.height = scenePassInfo->m_targetHeight;
         framebufferInfo.layers = 1;
 
         VkFramebuffer* target = m_targets.data() + i;

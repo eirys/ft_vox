@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/28 15:42:53 by etran             #+#    #+#             */
-/*   Updated: 2024/03/07 13:42:14 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/07 15:14:50 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,7 @@
 namespace vox::gfx {
 
 class Device;
+class GameState;
 
 /**
  * @brief Descriptor sets table.
@@ -42,6 +43,8 @@ public:
 
     void init(const Device& device);
     void destroy(const Device& device);
+
+    void fill(const Device& device, const GameState& state);
 
 /* ========================================================================== */
 

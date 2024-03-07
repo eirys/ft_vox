@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/21 12:17:21 by etran             #+#    #+#             */
-/*   Updated: 2024/03/07 14:00:10 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/07 20:35:18 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,8 @@
 #include "gfx_semaphore.h"
 #include "swap_chain.h"
 #include "descriptor_table.h"
+#include "descriptor_pool.h"
+#include "command_pool.h"
 
 namespace ui {
 
@@ -51,7 +53,7 @@ public:
 
     /* ====================================================================== */
 
-    void init(ui::Window& window);
+    void init(ui::Window& window, const GameState& game);
     void destroy();
 
     void waitIdle() const;
@@ -59,34 +61,56 @@ public:
 
 private:
     /* ====================================================================== */
+    /*                                  ENUMS                                 */
+    /* ====================================================================== */
+
+    enum class CommandBufferIndex: u32 {
+        Draw = 0,
+        // Compute,
+
+        First = Draw,
+        Last = Draw
+    };
+
+    /* ====================================================================== */
+    /*                             STATIC MEMBERS                             */
+    /* ====================================================================== */
+
+    static constexpr u32    CMD_BUFFER_COUNT = enumSize<CommandBufferIndex>();
+
+    /* ====================================================================== */
     /*                                  DATA                                  */
     /* ====================================================================== */
 
     Core                                    m_core;
     Device                                  m_device;
     SwapChain                               m_swapChain;
+    CommandPool                             m_commandPool;
+    DescriptorPool                          m_descriptorPool;
 
-    std::array<Fence, FENCE_COUNT>          m_fences;
-    std::array<GfxSemaphore, FENCE_COUNT>   m_semaphores;
-
-    std::array<Pipeline*, PIPELINE_COUNT>   m_pipelines;
-    VkPipelineLayout                        m_pipelineLayout;
+    std::array<Fence, FENCE_COUNT>                  m_fences;
+    std::array<GfxSemaphore, FENCE_COUNT>           m_semaphores;
+    std::array<ICommandBuffer*, CMD_BUFFER_COUNT>   m_commandBuffers;
+    std::array<Pipeline*, PIPELINE_COUNT>           m_pipelines;
 
     DescriptorTable                         m_descriptorTable;
+    VkPipelineLayout                        m_pipelineLayout;
 
     /* ====================================================================== */
     /*                                 METHODS                                */
     /* ====================================================================== */
 
+    void    _createCommandBuffers();
     void    _createPipelines();
     void    _createPipelineLayout();
     void    _createGfxSemaphores();
     void    _createFences();
 
-    void    _destroyGfxSemaphores();
     void    _destroyFences();
+    void    _destroyGfxSemaphores();
     void    _destroyPipelineLayout();
     void    _destroyPipelines();
+    void    _destroyCommandBuffers();
 
 }; // class Renderer
 

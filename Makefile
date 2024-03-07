@@ -6,7 +6,7 @@
 #    By: etran <etran@student.42.fr>                +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/04/06 03:40:09 by eli               #+#    #+#              #
-#    Updated: 2024/03/07 13:48:34 by etran            ###   ########.fr        #
+#    Updated: 2024/03/07 15:38:24 by etran            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -164,8 +164,8 @@ LDFLAGS		:=	-lglfw \
 				-lXi
 
 # ------------------- SHADERS ------------------ #
-# SHD_FILES	:=	scene.fragment \
-# 				scene.vertex \
+SHD_FILES	:=	scene.fragment \
+				scene.vertex
 # 				shadow.vertex \
 # 				culling.compute
 
@@ -197,7 +197,7 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
 	@$(CXX) $(CFLAGS) -c $< -o $@
 
 # Compile shader binaries
-$(SHD_BIN_DIR)/%.spv: $(SHD_DIR)/glsl/%.glsl
+$(SHD_BIN_DIR)/%.spv: $(SHD_DIR)/%.glsl
 	@mkdir -p $(OBJ_DIR) $(SHD_BIN_DIR)
 	@echo "Compiling shader $<..."
 	@$(GLSLC) -fshader-stage=$(subst .,,$(suffix $(basename $<))) $< -o $@

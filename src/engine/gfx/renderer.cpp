@@ -6,14 +6,14 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/23 09:29:35 by etran             #+#    #+#             */
-/*   Updated: 2024/03/07 14:05:59 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/07 20:42:00 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "renderer.h"
+
 #include "scene_pipeline.h"
 #include "scene_render_pass.h"
-#include "render_pass.h"
 
 #include "debug.h"
 
@@ -33,19 +33,30 @@ Renderer::~Renderer() {
 
 /* ========================================================================== */
 
-void Renderer::init(ui::Window& window) {
+void Renderer::init(ui::Window& window, const GameState& game) {
     m_core.init(window);
     m_device.init(m_core);
     m_swapChain.init(m_core, m_device, window);
+    m_commandPool.init(m_device);
+
+    _createCommandBuffers();
+
+    m_descriptorTable.init(m_device);
 
     _createPipelines();
     _createFences();
     _createGfxSemaphores();
 
+    m_descriptorTable.fill(m_device, game);
+    m_descriptorPool.init(m_device, m_descriptorTable);
+
     LINFO("Renderer initialized.");
 }
 
 void Renderer::destroy() {
+    m_descriptorPool.destroy(m_device);
+    m_descriptorTable.destroy(m_device);
+
     _destroyGfxSemaphores();
     _destroyFences();
     _destroyPipelines();
@@ -56,16 +67,26 @@ void Renderer::destroy() {
     LINFO("Renderer destroyed.");
 }
 
+/* ========================================================================== */
+
 void Renderer::waitIdle() const {
     m_device.idle();
+}
+
+void Renderer::render() {
+
 }
 
 /* ========================================================================== */
 /*                                   PRIVATE                                  */
 /* ========================================================================== */
 
+void Renderer::_createCommandBuffers() {
+    m_commandBuffers[(u32)CommandBufferIndex::Draw] = m_commandPool.createCommandBuffer(m_device, CommandBufferType::DRAW);
+}
+
 void Renderer::_createPipelines() {
-    std::array<RenderPassInfo, PIPELINE_COUNT> passInfos;
+    std::array<RenderPassInfo*, PIPELINE_COUNT> passInfos;
     SceneRenderPassInfo scenePassInfo(m_swapChain.getImageViews());
     scenePassInfo.m_formats.reserve(SceneRenderPass::RESOURCE_COUNT);
     scenePassInfo.m_formats[(u32)SceneResource::ColorImage] = m_swapChain.getImageFormat();
@@ -78,7 +99,7 @@ void Renderer::_createPipelines() {
     scenePassInfo.m_targetCount = m_swapChain.getImageViews().size();
     scenePassInfo.m_targetWidth = m_swapChain.getImageExtent().width;
     scenePassInfo.m_targetHeight = m_swapChain.getImageExtent().height;
-    passInfos[(u32)PipelineIndex::ScenePipeline] = scenePassInfo;
+    passInfos[(u32)PipelineIndex::ScenePipeline] = &scenePassInfo;
 
     for (u32 i = 0; i < PIPELINE_COUNT; ++i) m_pipelines[i]->init(m_device, passInfos[i]);
 
@@ -111,6 +132,10 @@ void Renderer::_createFences() {
 }
 
 /* ========================================================================== */
+
+void Renderer::_destroyCommandBuffers() {
+    for (u32 i = 0; i < CMD_BUFFER_COUNT; ++i) m_commandPool.destroyBuffer(m_device, m_commandBuffers[i]);
+}
 
 void Renderer::_destroyPipelines() {
     _destroyPipelineLayout();

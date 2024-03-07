@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/02 19:56:22 by etran             #+#    #+#             */
-/*   Updated: 2024/03/07 11:45:29 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/07 16:05:02 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,12 +14,15 @@
 
 #include <vulkan/vulkan.h>
 #include <vector>
+
 #include "types.h"
 #include "image_buffer.h"
 
 namespace vox::gfx {
 
 class Device;
+class ICommandBuffer;
+struct RecordInfo;
 
 /* ========================================================================== */
 /*                               HELPER OBJECTS                               */
@@ -55,10 +58,12 @@ public:
 
     /* ====================================================================== */
 
-    virtual void    init(const Device& device, const RenderPassInfo& info) = 0;
+    virtual void    init(const Device& device, const RenderPassInfo* info) = 0;
     virtual void    destroy(const Device& device) = 0;
 
-    virtual void    updateResources(const Device& device, const RenderPassInfo& info) = 0;
+    virtual void    updateResources(const Device& device, const RenderPassInfo* info) = 0;
+    virtual void    begin(const ICommandBuffer* cmdBuffer, const RecordInfo& recordInfo) = 0;
+    void            end(const ICommandBuffer* cmdBuffer);
 
     /* ====================================================================== */
 
