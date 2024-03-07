@@ -6,11 +6,13 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/29 22:37:23 by etran             #+#    #+#             */
-/*   Updated: 2024/02/29 23:44:52 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/07 14:27:54 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
+
+#include <vulkan/vulkan.h>
 
 #include "types.h"
 #include "enum.h"
@@ -28,5 +30,11 @@ enum class PipelineIndex: u32 {
 };
 
 constexpr u32 PIPELINE_COUNT = enumSize<PipelineIndex>();
+
+enum class ShaderType: u8 {
+    VS = VK_SHADER_STAGE_VERTEX_BIT,
+    FS = VK_SHADER_STAGE_FRAGMENT_BIT,
+    CS = VK_SHADER_STAGE_COMPUTE_BIT
+};
 
 } // namespace vox::gfx

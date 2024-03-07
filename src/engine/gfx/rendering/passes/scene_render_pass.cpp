@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/07 10:15:26 by etran             #+#    #+#             */
-/*   Updated: 2024/03/07 12:22:41 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/07 13:30:06 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,60 +47,53 @@ void SceneRenderPass::updateResources(const Device& device, const RenderPassInfo
 
 void SceneRenderPass::_createRenderPass(const Device& device, const RenderPassInfo& info) {
     // Attachments
-    VkAttachmentDescription colorAttachment{};
-    colorAttachment.format = info.m_formats[(u32)SceneResource::ColorImage];
-    colorAttachment.samples = info.m_samples[(u32)SceneResource::ColorImage];
-    colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-    colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-    colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-    colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-    colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    colorAttachment.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+    std::array<VkAttachmentDescription, ATTACHMENT_COUNT> attachments{};
 
-    VkAttachmentDescription depthAttachment{};
-    depthAttachment.format = info.m_formats[(u32)SceneResource::DepthImage];
-    depthAttachment.samples = info.m_samples[(u32)SceneResource::DepthImage];
-    depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-    depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-    depthAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-    depthAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-    depthAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    depthAttachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+    attachments[(u32)SceneAttachment::Color].format = info.m_formats[(u32)SceneResource::ColorImage];
+    attachments[(u32)SceneAttachment::Color].samples = info.m_samples[(u32)SceneResource::ColorImage];
+    attachments[(u32)SceneAttachment::Color].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+    attachments[(u32)SceneAttachment::Color].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+    attachments[(u32)SceneAttachment::Color].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+    attachments[(u32)SceneAttachment::Color].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+    attachments[(u32)SceneAttachment::Color].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    attachments[(u32)SceneAttachment::Color].finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
-    VkAttachmentDescription colorAttachmentResolve{};
-    colorAttachmentResolve.format = info.m_formats[(u32)SceneResource::ColorImage];
-    colorAttachmentResolve.samples = VK_SAMPLE_COUNT_1_BIT; // For resolve, we only need 1 sample
-    colorAttachmentResolve.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-    colorAttachmentResolve.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-    colorAttachmentResolve.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-    colorAttachmentResolve.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-    colorAttachmentResolve.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    colorAttachmentResolve.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+    attachments[(u32)SceneAttachment::Depth].format = info.m_formats[(u32)SceneResource::DepthImage];
+    attachments[(u32)SceneAttachment::Depth].samples = info.m_samples[(u32)SceneResource::DepthImage];
+    attachments[(u32)SceneAttachment::Depth].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+    attachments[(u32)SceneAttachment::Depth].storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+    attachments[(u32)SceneAttachment::Depth].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+    attachments[(u32)SceneAttachment::Depth].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+    attachments[(u32)SceneAttachment::Depth].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    attachments[(u32)SceneAttachment::Depth].finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
-    std::array<VkAttachmentDescription, 3> attachments = {
-        colorAttachment,
-        depthAttachment,
-        colorAttachmentResolve };
+    attachments[(u32)SceneAttachment::ColorResolve].format = info.m_formats[(u32)SceneResource::ColorImage];
+    attachments[(u32)SceneAttachment::ColorResolve].samples = VK_SAMPLE_COUNT_1_BIT; // For resolve, we only need 1 sample
+    attachments[(u32)SceneAttachment::ColorResolve].loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+    attachments[(u32)SceneAttachment::ColorResolve].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+    attachments[(u32)SceneAttachment::ColorResolve].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+    attachments[(u32)SceneAttachment::ColorResolve].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+    attachments[(u32)SceneAttachment::ColorResolve].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    attachments[(u32)SceneAttachment::ColorResolve].finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 
     // Subpasses
-    VkAttachmentReference colorAttachmentRef{};
-    colorAttachmentRef.attachment = (u32)SceneResource::ColorImage;
-    colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+    std::array<VkAttachmentReference, ATTACHMENT_COUNT> attachmentRefs{};
 
-    VkAttachmentReference depthAttachmentRef{};
-    depthAttachmentRef.attachment = (u32)SceneResource::DepthImage;
-    depthAttachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+    attachmentRefs[(u32)SceneAttachment::Color].attachment = (u32)SceneAttachment::Color;
+    attachmentRefs[(u32)SceneAttachment::Color].layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
-    VkAttachmentReference colorAttachmentResolveRef{};
-    colorAttachmentResolveRef.attachment = (u32)SceneResource::Last + 1;
-    colorAttachmentResolveRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+    attachmentRefs[(u32)SceneAttachment::Depth].attachment = (u32)SceneAttachment::Depth;
+    attachmentRefs[(u32)SceneAttachment::Depth].layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
+    attachmentRefs[(u32)SceneAttachment::ColorResolve].attachment = (u32)SceneAttachment::ColorResolve;
+    attachmentRefs[(u32)SceneAttachment::ColorResolve].layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
     VkSubpassDescription subpass{};
     subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
     subpass.colorAttachmentCount = 1;
-    subpass.pColorAttachments = &colorAttachmentRef;
-    subpass.pDepthStencilAttachment = &depthAttachmentRef;
-    subpass.pResolveAttachments = &colorAttachmentResolveRef;
+    subpass.pColorAttachments = &attachmentRefs[(u32)SceneAttachment::Color];
+    subpass.pDepthStencilAttachment = &attachmentRefs[(u32)SceneAttachment::Depth];
+    subpass.pResolveAttachments = &attachmentRefs[(u32)SceneAttachment::ColorResolve];
 
     // Subpass dependency
     VkSubpassDependency dependency{};
@@ -153,22 +146,22 @@ void SceneRenderPass::_createResources(const Device& device, const RenderPassInf
 void SceneRenderPass::_createTarget(const Device& device, const RenderPassInfo& info) {
     const SceneRenderPassInfo& scenePassInfo = dynamic_cast<const SceneRenderPassInfo&>(info);
 
-    m_targets.resize(scenePassInfo.m_swapChainImageViews.size());
+    m_targets.resize(scenePassInfo.m_targetCount);
 
-    std::array<VkImageView, 3> attachments = {
-        m_resources[(u32)SceneResource::ColorImage].getView(),
-        m_resources[(u32)SceneResource::DepthImage].getView() };
+    std::array<VkImageView, ATTACHMENT_COUNT> attachments = {
+        m_resources[(u32)SceneAttachment::Color].getView(),
+        m_resources[(u32)SceneAttachment::Depth].getView() };
 
-    for (u32 i = 0; i < m_targets.size(); ++i) {
-        attachments[2] = scenePassInfo.m_swapChainImageViews[i];
+    for (u32 i = 0; i < scenePassInfo.m_targetCount; ++i) {
+        attachments[(u32)SceneAttachment::ColorResolve] = scenePassInfo.m_swapChainImageViews[i];
 
         VkFramebufferCreateInfo framebufferInfo{};
         framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
         framebufferInfo.renderPass = m_vkRenderPass;
-        framebufferInfo.attachmentCount = (u32)attachments.size();
+        framebufferInfo.attachmentCount = ATTACHMENT_COUNT;
         framebufferInfo.pAttachments = attachments.data();
-        framebufferInfo.width = m_width;
-        framebufferInfo.height = m_height;
+        framebufferInfo.width = scenePassInfo.m_targetWidth;
+        framebufferInfo.height = scenePassInfo.m_targetHeight;
         framebufferInfo.layers = 1;
 
         VkFramebuffer* target = m_targets.data() + i;

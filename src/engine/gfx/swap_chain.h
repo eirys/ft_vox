@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/03 21:16:45 by etran             #+#    #+#             */
-/*   Updated: 2024/03/05 09:49:56 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/07 13:21:05 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,12 +62,15 @@ public:
     bool    acquireNextImage(const Device& device, const GfxSemaphore& semaphore);
     bool    submitImage(const Device& device, const GfxSemaphore& semaphore) const;
 
-    static
-    void    setDepthFormat(const VkFormat format) noexcept;
-
     /* ====================================================================== */
 
-    u32     getImageIndex() const noexcept;
+    VkFormat                        getImageFormat() const noexcept;
+    const std::vector<VkImageView>& getImageViews() const noexcept;
+    u32                             getImageIndex() const noexcept;
+    VkExtent2D                      getImageExtent() const noexcept;
+
+    static void     setDepthFormat(const VkFormat format) noexcept;
+    static VkFormat getDepthFormat() noexcept;
 
 private:
     /* ====================================================================== */

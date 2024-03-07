@@ -6,12 +6,14 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/23 09:29:35 by etran             #+#    #+#             */
-/*   Updated: 2024/03/07 12:23:05 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/07 14:05:59 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "renderer.h"
 #include "scene_pipeline.h"
+#include "scene_render_pass.h"
+#include "render_pass.h"
 
 #include "debug.h"
 
@@ -19,6 +21,16 @@ namespace vox::gfx {
 
 /* ========================================================================== */
 /*                                   PUBLIC                                   */
+/* ========================================================================== */
+
+Renderer::Renderer() {
+    m_pipelines[(u32)PipelineIndex::ScenePipeline] = new ScenePipeline();
+}
+
+Renderer::~Renderer() {
+    for (u32 i = 0; i < PIPELINE_COUNT; ++i) delete m_pipelines[i];
+}
+
 /* ========================================================================== */
 
 void Renderer::init(ui::Window& window) {
@@ -53,9 +65,41 @@ void Renderer::waitIdle() const {
 /* ========================================================================== */
 
 void Renderer::_createPipelines() {
-    m_pipelines[(u32)PipelineIndex::ScenePipeline] = new ScenePipeline();
+    std::array<RenderPassInfo, PIPELINE_COUNT> passInfos;
+    SceneRenderPassInfo scenePassInfo(m_swapChain.getImageViews());
+    scenePassInfo.m_formats.reserve(SceneRenderPass::RESOURCE_COUNT);
+    scenePassInfo.m_formats[(u32)SceneResource::ColorImage] = m_swapChain.getImageFormat();
+    scenePassInfo.m_formats[(u32)SceneResource::DepthImage] = m_swapChain.getDepthFormat();
+    scenePassInfo.m_samples.reserve(SceneRenderPass::RESOURCE_COUNT);
+    scenePassInfo.m_samples[(u32)SceneResource::ColorImage] = m_device.getMsaaCount();
+    scenePassInfo.m_samples[(u32)SceneResource::DepthImage] = m_device.getMsaaCount();
+    scenePassInfo.m_renderPassWidth = m_swapChain.getImageExtent().width;
+    scenePassInfo.m_renderPassHeight = m_swapChain.getImageExtent().height;
+    scenePassInfo.m_targetCount = m_swapChain.getImageViews().size();
+    scenePassInfo.m_targetWidth = m_swapChain.getImageExtent().width;
+    scenePassInfo.m_targetHeight = m_swapChain.getImageExtent().height;
+    passInfos[(u32)PipelineIndex::ScenePipeline] = scenePassInfo;
 
-    for (Pipeline* pipeline: m_pipelines) pipeline->init(m_device);
+    for (u32 i = 0; i < PIPELINE_COUNT; ++i) m_pipelines[i]->init(m_device, passInfos[i]);
+
+    _createPipelineLayout();
+
+    for (u32 i = 0; i < PIPELINE_COUNT; ++i) m_pipelines[i]->assemble(m_device, m_pipelineLayout);
+}
+
+void Renderer::_createPipelineLayout() {
+    std::array<VkDescriptorSetLayout, DESCRIPTOR_TABLE_SIZE> setLayouts;
+    setLayouts[(u32)DescriptorSetIndex::Mvp] = m_descriptorTable[DescriptorSetIndex::Mvp]->getLayout();
+
+    VkPipelineLayoutCreateInfo layoutInfo{};
+    layoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+    layoutInfo.setLayoutCount = DESCRIPTOR_TABLE_SIZE;
+    layoutInfo.pSetLayouts = setLayouts.data();
+    layoutInfo.pushConstantRangeCount = 0;
+    layoutInfo.pPushConstantRanges = nullptr;
+
+    if (vkCreatePipelineLayout(m_device.getDevice(), &layoutInfo, nullptr, &m_pipelineLayout) != VK_SUCCESS)
+        throw std::runtime_error("Failed to create pipeline layout.");
 }
 
 void Renderer::_createGfxSemaphores() {
@@ -69,10 +113,13 @@ void Renderer::_createFences() {
 /* ========================================================================== */
 
 void Renderer::_destroyPipelines() {
-    for (u32 i = 0; i < PIPELINE_COUNT; i++) {
-        m_pipelines[i]->destroy(m_device);
-        delete m_pipelines[i];
-    }
+    _destroyPipelineLayout();
+
+    for (u32 i = 0; i < PIPELINE_COUNT; i++) m_pipelines[i]->destroy(m_device);
+}
+
+void Renderer::_destroyPipelineLayout() {
+    vkDestroyPipelineLayout(m_device.getDevice(), m_pipelineLayout, nullptr);
 }
 
 void Renderer::_destroyGfxSemaphores() {

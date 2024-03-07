@@ -6,7 +6,7 @@
 #    By: etran <etran@student.42.fr>                +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/04/06 03:40:09 by eli               #+#    #+#              #
-#    Updated: 2024/03/07 10:16:42 by etran            ###   ########.fr        #
+#    Updated: 2024/03/07 13:48:34 by etran            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -39,6 +39,7 @@ DESC_DIR	:=	$(GFX_DIR)/descriptor
 SYNC_DIR	:=	$(GFX_DIR)/sync
 RENDER_DIR	:=	$(GFX_DIR)/rendering
 SETS_DIR	:=	$(DESC_DIR)/sets
+UBO_DIR		:=	$(DESC_DIR)/ubo
 PIP_DIR		:=	$(RENDER_DIR)/pipelines
 PASS_DIR	:=	$(RENDER_DIR)/passes
 
@@ -60,6 +61,7 @@ SUBDIRS		:=	$(LIBS_DIR) \
 				$(CMD_DIR) \
 				$(DESC_DIR) \
 				$(SETS_DIR) \
+				$(UBO_DIR) \
 				$(SYNC_DIR) \
 				$(RENDER_DIR) \
 				$(PASS_DIR) \

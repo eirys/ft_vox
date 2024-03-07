@@ -6,13 +6,13 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/28 15:42:53 by etran             #+#    #+#             */
-/*   Updated: 2024/02/29 22:40:22 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/07 13:42:14 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
-#include <vector>
+#include <array>
 
 #include "idescriptor_set.h"
 
@@ -53,7 +53,7 @@ private:
     /*                                  DATA                                  */
     /* ====================================================================== */
 
-    std::vector<IDescriptorSet*>  m_sets;
+    std::array<IDescriptorSet*, DESCRIPTOR_TABLE_SIZE>  m_sets{};
 
 }; // class DescriptorTable
 

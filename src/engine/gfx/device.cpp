@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/21 23:37:02 by etran             #+#    #+#             */
-/*   Updated: 2024/03/07 12:22:01 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/07 12:31:54 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -110,7 +110,7 @@ VkQueue Device::getComputeQueue() const noexcept {
     return m_queueFamilies.m_compute;
 }
 
-u32 Device::getMsaaCount() const noexcept {
+VkSampleCountFlagBits Device::getMsaaCount() const noexcept {
     return m_msaaCount;
 }
 

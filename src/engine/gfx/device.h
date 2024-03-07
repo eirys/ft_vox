@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/21 18:19:47 by etran             #+#    #+#             */
-/*   Updated: 2024/03/07 12:22:08 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/07 13:21:26 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -72,11 +72,11 @@ public:
 
     /* ====================================================================== */
 
-    VkDevice        getDevice() const noexcept;
-    VkQueue         getGraphicsQueue() const noexcept;
-    VkQueue         getPresentQueue() const noexcept;
-    VkQueue         getComputeQueue() const noexcept;
-    u32             getMsaaCount() const noexcept;
+    VkDevice                    getDevice() const noexcept;
+    VkQueue                     getGraphicsQueue() const noexcept;
+    VkQueue                     getPresentQueue() const noexcept;
+    VkQueue                     getComputeQueue() const noexcept;
+    VkSampleCountFlagBits       getMsaaCount() const noexcept;
 
     const QueueFamilyIndices&   getQueueFamilyIndices() const noexcept;
 
@@ -95,12 +95,12 @@ private:
     /*                                  DATA                                  */
     /* ====================================================================== */
 
-    VkPhysicalDevice    m_vkPhysicalDevice = VK_NULL_HANDLE;
-    VkDevice            m_vkLogicalDevice = VK_NULL_HANDLE;
+    VkPhysicalDevice        m_vkPhysicalDevice = VK_NULL_HANDLE;
+    VkDevice                m_vkLogicalDevice = VK_NULL_HANDLE;
 
-    QueueFamilyIndices  m_queueFamilyIndices;
-    QueueFamilies       m_queueFamilies;
-    u32                 m_msaaCount = 1;
+    QueueFamilyIndices      m_queueFamilyIndices;
+    QueueFamilies           m_queueFamilies;
+    VkSampleCountFlagBits   m_msaaCount = VK_SAMPLE_COUNT_1_BIT;
 
     /* ====================================================================== */
     /*                                 METHODS                                */

@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/28 15:26:02 by etran             #+#    #+#             */
-/*   Updated: 2024/03/07 09:54:34 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/07 14:32:55 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,12 +14,15 @@
 
 #include <vulkan/vulkan.h>
 
+#include "pipeline_decl.h"
+
 namespace vox::gfx {
 
 class Device;
 class IPipelineRenderInfo;
 class ICommandBuffer;
 class RenderPass;
+struct RenderPassInfo;
 
 class Pipeline {
 public:
@@ -31,18 +34,18 @@ public:
 
     /* ====================================================================== */
 
-    virtual void    init(const Device& device) = 0;
+    virtual void    init(const Device& device, const RenderPassInfo& info) = 0;
     virtual void    destroy(const Device& device) = 0;
+    virtual void    assemble(const Device& device, const VkPipelineLayout& pipelineLayout) = 0;
 
     virtual void    record(
         const VkPipelineLayout layout,
         const ICommandBuffer* cmdBuffer,
-        const IPipelineRenderInfo* drawInfo) = 0;
+        const IPipelineRenderInfo& drawInfo) = 0;
 
     /* ====================================================================== */
 
     VkPipeline          getPipeline() const noexcept;
-    virtual RenderPass* getRenderPass() const noexcept = 0;
 
 protected:
     /* ====================================================================== */
@@ -64,7 +67,10 @@ protected:
 
     /* ====================================================================== */
 
-    VkShaderModule  _createShaderModule(const Device& device, const char* binPath) const;
+    VkPipelineShaderStageCreateInfo  _loadShader(
+        const Device& device,
+        const ShaderType shaderType,
+        const char* binPath) const;
 
 }; // class Pipeline
 

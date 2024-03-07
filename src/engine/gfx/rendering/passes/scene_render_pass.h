@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/07 10:08:33 by etran             #+#    #+#             */
-/*   Updated: 2024/03/07 11:46:50 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/07 13:34:53 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,6 +29,15 @@ enum class SceneResource: u32 {
     Last = DepthImage
 };
 
+enum class SceneAttachment: u32 {
+    Color = 0,
+    Depth,
+    ColorResolve,
+
+    First = Color,
+    Last = ColorResolve
+};
+
 /* ========================================================================== */
 /*                               HELPER OBJECTS                               */
 /* ========================================================================== */
@@ -44,7 +53,24 @@ struct SceneRenderPassInfo final: public RenderPassInfo {
 class SceneRenderPass final: public RenderPass {
 public:
     /* ====================================================================== */
+    /*                             STATIC MEMBERS                             */
+    /* ====================================================================== */
+
+    static constexpr u32    RESOURCE_COUNT = enumSize<SceneResource>();
+    static constexpr u32    ATTACHMENT_COUNT = enumSize<SceneAttachment>();
+
+    /* ====================================================================== */
     /*                                 METHODS                                */
+    /* ====================================================================== */
+
+    SceneRenderPass() = default;
+    ~SceneRenderPass() = default;
+
+    SceneRenderPass(SceneRenderPass&& other) = delete;
+    SceneRenderPass(const SceneRenderPass& other) = delete;
+    SceneRenderPass& operator=(SceneRenderPass&& other) = delete;
+    SceneRenderPass& operator=(const SceneRenderPass& other) = delete;
+
     /* ====================================================================== */
 
     void    init(const Device& device, const RenderPassInfo& info) override;
@@ -54,11 +80,7 @@ public:
 
 private:
     /* ====================================================================== */
-    /*                             STATIC MEMBERS                             */
-    /* ====================================================================== */
-
-    static constexpr u32    RESOURCE_COUNT = enumSize<SceneResource>();
-
+    /*                                 METHODS                                */
     /* ====================================================================== */
 
     void    _createRenderPass(const Device& device, const RenderPassInfo& info);

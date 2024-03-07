@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/04 00:33:46 by etran             #+#    #+#             */
-/*   Updated: 2024/03/05 10:09:13 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/07 13:21:29 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -81,14 +81,30 @@ bool SwapChain::submitImage(const Device& device, const GfxSemaphore& semaphore)
 
 /* ========================================================================== */
 
-void SwapChain::setDepthFormat(const VkFormat format) noexcept {
-    ms_depthFormat = format;
+VkFormat SwapChain::getImageFormat() const noexcept {
+    return m_imageFormat;
+}
+
+const std::vector<VkImageView>& SwapChain::getImageViews() const noexcept {
+    return m_imageViews;
+}
+
+u32 SwapChain::getImageIndex() const noexcept {
+    return m_imageIndex;
+}
+
+VkExtent2D SwapChain::getImageExtent() const noexcept {
+    return m_imageExtent;
 }
 
 /* ========================================================================== */
 
-u32 SwapChain::getImageIndex() const noexcept {
-    return m_imageIndex;
+void SwapChain::setDepthFormat(const VkFormat format) noexcept {
+    ms_depthFormat = format;
+}
+
+VkFormat SwapChain::getDepthFormat() noexcept {
+    return ms_depthFormat;
 }
 
 /* ========================================================================== */

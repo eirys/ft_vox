@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/28 19:55:31 by etran             #+#    #+#             */
-/*   Updated: 2024/02/29 22:40:11 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/07 13:52:14 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,6 @@ namespace vox::gfx {
 /* ========================================================================== */
 
 DescriptorTable::DescriptorTable() {
-    m_sets.reserve(DESCRIPTOR_TABLE_SIZE);
     m_sets[(u32)DescriptorSetIndex::Mvp] = new MVPSet();
 }
 
@@ -32,13 +31,11 @@ DescriptorTable::~DescriptorTable() {
 /* ========================================================================== */
 
 void DescriptorTable::init(const Device& device) {
-    for (IDescriptorSet* set : m_sets)
-        set->init(device);
+    for (IDescriptorSet* set : m_sets) set->init(device);
 }
 
 void DescriptorTable::destroy(const Device& device) {
-    for (IDescriptorSet* set : m_sets)
-        set->destroy(device);
+    for (IDescriptorSet* set : m_sets) set->destroy(device);
 }
 
 /* ========================================================================== */
