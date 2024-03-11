@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/07 09:48:27 by etran             #+#    #+#             */
-/*   Updated: 2024/03/07 20:25:22 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/11 14:30:02 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,6 +54,7 @@ void ScenePipeline::init(const Device& device, const RenderPassInfo* info) {
 
 void ScenePipeline::destroy(const Device& device) {
     m_renderPass->destroy(device);
+    vkDestroyPipeline(device.getDevice(), m_pipeline, nullptr);
 
     LDEBUG("Scene pipeline destroyed.");
 }
@@ -88,7 +89,7 @@ void ScenePipeline::assemble(const Device& device, const VkPipelineLayout& pipel
     rasterizer.depthBiasEnable = VK_FALSE;
     rasterizer.depthBiasConstantFactor = 0.0f;
     rasterizer.depthBiasClamp = 0.0f;
-    rasterizer.cullMode = VK_CULL_MODE_BACK_BIT;
+    rasterizer.cullMode = VK_CULL_MODE_NONE;
     rasterizer.depthBiasSlopeFactor = 0.0f;
 
     VkPipelineMultisampleStateCreateInfo multisample{};
@@ -168,31 +169,13 @@ void ScenePipeline::assemble(const Device& device, const VkPipelineLayout& pipel
     pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
     pipelineInfo.basePipelineIndex = -1;
 
-    VkResult res = vkCreateGraphicsPipelines(device.getDevice(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &m_pipeline);
-    if (res!=VK_SUCCESS)
-    {
-        switch (res) {
-            case VK_ERROR_OUT_OF_HOST_MEMORY:
-                LLOG("VK_ERROR_OUT_OF_HOST_MEMORY");
-                break;
-            case VK_ERROR_OUT_OF_DEVICE_MEMORY:
-                LLOG("VK_ERROR_OUT_OF_DEVICE_MEMORY");
-                break;
-            case VK_ERROR_INVALID_SHADER_NV:
-                LLOG("VK_ERROR_INVALID_SHADER_NV");
-                break;
-            case VK_PIPELINE_COMPILE_REQUIRED_EXT:
-                LLOG("VK_PIPELINE_COMPILE_REQUIRED_EXT");
-                break;
-            default:
-                LLOG("Unknown error: " << res);
-                break;
-        }
+    if (vkCreateGraphicsPipelines(device.getDevice(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &m_pipeline) != VK_SUCCESS)
         throw std::runtime_error("Failed to assemble graphics pipeline.");
-    }
 
     vkDestroyShaderModule(device.getDevice(), vertexModule, nullptr);
     vkDestroyShaderModule(device.getDevice(), fragmentModule, nullptr);
+
+    LDEBUG("Scene pipeline assembled: " << m_pipeline);
 }
 
 void ScenePipeline::record(

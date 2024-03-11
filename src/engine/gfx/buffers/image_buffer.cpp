@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/27 18:36:30 by etran             #+#    #+#             */
-/*   Updated: 2024/03/01 00:04:40 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/11 14:28:47 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,7 @@
 #include "buffer.h"
 
 #include <stdexcept>
+#include "debug.h"
 
 namespace vox::gfx {
 
@@ -72,11 +73,16 @@ void ImageBuffer::init(const Device& device, ImageMetaData&& metadata) {
     if (vkCreateImageView(device.getDevice(), &viewInfo, nullptr, &m_view) != VK_SUCCESS) {
         throw std::runtime_error("failed to create texture image view");
     }
+    LDEBUG("Initialized " << __NL
+    << "  - image buffer " << m_image << __NL
+    << "  - View: " << m_view << __NL
+    << "  - Memory: " << m_memory << __NL);
 }
 
 void ImageBuffer::destroy(const Device& device) {
     vkDestroyImage(device.getDevice(), m_image, nullptr);
     vkFreeMemory(device.getDevice(), m_memory, nullptr);
+    vkDestroyImageView(device.getDevice(), m_view, nullptr);
 }
 
 /* ========================================================================== */

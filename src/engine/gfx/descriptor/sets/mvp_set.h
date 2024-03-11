@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/28 23:38:00 by etran             #+#    #+#             */
-/*   Updated: 2024/03/07 15:46:08 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/11 14:07:36 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,6 +18,7 @@
 #include "device.h"
 #include "buffer.h"
 #include <stdexcept>
+#include "debug.h"
 
 namespace vox::gfx {
 
@@ -28,7 +29,7 @@ public:
     /*                                  ENUMS                                 */
     /* ====================================================================== */
 
-    enum class Field: u32 {
+    enum class BindingIndex: u32 {
         MvpMatrix = 0,
 
         First = MvpMatrix,
@@ -57,18 +58,20 @@ public:
         m_buffer.map(device);
         m_buffer.copyFrom(&m_data);
 
-        std::array<VkDescriptorSetLayoutBinding, FIELD_COUNT> bindings = {
-            _createLayoutBinding(DescriptorTypeIndex::UniformBuffer, ShaderVisibility::VS, (u32)Field::MvpMatrix)
+        std::array<VkDescriptorSetLayoutBinding, BINDING_COUNT> bindings = {
+            _createLayoutBinding(DescriptorTypeIndex::UniformBuffer, ShaderVisibility::VS, (u32)BindingIndex::MvpMatrix)
         };
 
         VkDescriptorSetLayoutCreateInfo layoutInfo{};
         layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-        layoutInfo.bindingCount = FIELD_COUNT;
+        layoutInfo.bindingCount = BINDING_COUNT;
         layoutInfo.pBindings = bindings.data();
 
         if (vkCreateDescriptorSetLayout(device.getDevice(), &layoutInfo, nullptr, &m_layout) != VK_SUCCESS) {
             throw std::runtime_error("failed to create descriptor set layout!");
         }
+
+        LDEBUG("MVP descriptor set layout created");
     }
 
     void fill(const Device& device, const GameState& state) override {
@@ -79,11 +82,19 @@ public:
         bufferInfo.offset = 0;
         bufferInfo.range = sizeof(ubo::MvpUbo);
 
-        std::array<VkWriteDescriptorSet, FIELD_COUNT> descriptorWrites = {
-            _createWriteDescriptorSet(DescriptorTypeIndex::UniformBuffer, &bufferInfo, (u32)Field::MvpMatrix)
+        std::array<VkWriteDescriptorSet, BINDING_COUNT> descriptorWrites = {
+            _createWriteDescriptorSet(DescriptorTypeIndex::UniformBuffer, &bufferInfo, (u32)BindingIndex::MvpMatrix)
         };
 
-        vkUpdateDescriptorSets(device.getDevice(), FIELD_COUNT, descriptorWrites.data(), 0, nullptr);
+        vkUpdateDescriptorSets(device.getDevice(), BINDING_COUNT, descriptorWrites.data(), 0, nullptr);
+        LDEBUG("MVP descriptor set filled");
+    }
+
+    void    destroy(const Device& device) override {
+        m_buffer.unmap(device);
+        m_buffer.destroy(device);
+        vkDestroyDescriptorSetLayout(device.getDevice(), m_layout, nullptr);
+        LDEBUG("MVP descriptor set destroyed");
     }
 
 private:
@@ -91,7 +102,7 @@ private:
     /*                             STATIC MEMBERS                             */
     /* ====================================================================== */
 
-    static constexpr u32 FIELD_COUNT = enumSize<Field>();
+    static constexpr u32 BINDING_COUNT = enumSize<BindingIndex>();
 
     /* ====================================================================== */
     /*                                  DATA                                  */

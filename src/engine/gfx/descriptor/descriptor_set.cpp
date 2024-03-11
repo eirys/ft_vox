@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/28 19:54:32 by etran             #+#    #+#             */
-/*   Updated: 2024/03/02 21:52:11 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/11 14:07:16 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,10 +22,6 @@ namespace vox::gfx {
 DescriptorSet::DescriptorSet(const DescriptorSetIndex index): m_index(index) {}
 
 /* ========================================================================== */
-
-void DescriptorSet::destroy(const Device& device) {
-    vkDestroyDescriptorSetLayout(device.getDevice(), m_layout, nullptr);
-}
 
 void DescriptorSet::setDescriptorSet(const VkDescriptorSet set) noexcept {
     m_set = set;

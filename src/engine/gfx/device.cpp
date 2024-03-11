@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/21 23:37:02 by etran             #+#    #+#             */
-/*   Updated: 2024/03/07 12:31:54 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/11 14:09:55 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,8 @@
 #include <set>
 #include <array>
 #include <stdexcept>
+
+#include "debug.h"
 
 namespace vox::gfx {
 
@@ -36,10 +38,12 @@ std::array<const char*, 1>  DEVICE_EXTENSIONS = { VK_KHR_SWAPCHAIN_EXTENSION_NAM
 void Device::init(const Core& core) {
     _pickPhysicalDevice(core);
     _createLogicalDevice();
+    LDEBUG("Device created.");
 }
 
 void Device::destroy() {
     vkDestroyDevice(m_vkLogicalDevice, nullptr);
+    LDEBUG("Device destroyed.");
 }
 
 void Device::idle() const {
@@ -98,15 +102,15 @@ VkDevice Device::getDevice() const noexcept {
     return m_vkLogicalDevice;
 }
 
-VkQueue Device::getGraphicsQueue() const noexcept {
+const VkQueue& Device::getGraphicsQueue() const noexcept {
     return m_queueFamilies.m_graphics;
 }
 
-VkQueue Device::getPresentQueue() const noexcept {
+const VkQueue& Device::getPresentQueue() const noexcept {
     return m_queueFamilies.m_present;
 }
 
-VkQueue Device::getComputeQueue() const noexcept {
+const VkQueue& Device::getComputeQueue() const noexcept {
     return m_queueFamilies.m_compute;
 }
 
@@ -304,6 +308,7 @@ void Device::_createLogicalDevice() {
     };
 
     std::vector<VkDeviceQueueCreateInfo>    queueCreateInfos;
+    queueCreateInfos.reserve(uniqueQueueFamilies.size());
 
     for (u32 queueFamiliy: uniqueQueueFamilies) {
         const f32 queuePriority = 1.0f;

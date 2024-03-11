@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/02 11:11:32 by etran             #+#    #+#             */
-/*   Updated: 2024/03/02 12:25:37 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/11 13:51:05 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,7 +38,7 @@ public:
 
     /* ====================================================================== */
 
-    void init(const Device& device);
+    void init(const Device& device, const VkFenceCreateFlags flags = 0);
     void destroy(const Device& device);
 
     /* ====================================================================== */

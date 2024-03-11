@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/23 20:01:10 by etran             #+#    #+#             */
-/*   Updated: 2024/02/27 18:34:47 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/11 14:03:19 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 
 # include "types.h"
 # include "icommand_buffer.h"
+# include "fence.h"
 
 namespace vox::gfx {
 
@@ -30,8 +31,16 @@ public:
     void    init(const Device& device, const VkCommandBufferLevel level) override;
     void    destroy(const Device& device) override;
 
-    void    startRecording(VkCommandBufferUsageFlags flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT) override;
-    void    stopRecording(const Device& device, bool await = false) override;
+    void    startRecording(VkCommandBufferUsageFlags flags = 0) override;
+    void    stopRecording() override;
+    void    awaitEndOfRecording(const Device& device) override;
+
+    void    submitRecording(
+        const std::vector<VkSemaphore> waitSemaphores,
+        const std::vector<VkPipelineStageFlags> waitStages,
+        const std::vector<VkSemaphore> signalSemaphore,
+        const Fence& fence) override;
+
     void    reset() override;
 
     VkCommandBuffer getBuffer() const noexcept override;
@@ -42,6 +51,7 @@ protected:
     /* ====================================================================== */
 
     VkCommandBuffer     m_buffer;
+    Fence               m_awaitFence;
 
     /* ====================================================================== */
     /*                                 METHODS                                */

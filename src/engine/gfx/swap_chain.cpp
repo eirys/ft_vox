@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/04 00:33:46 by etran             #+#    #+#             */
-/*   Updated: 2024/03/07 13:21:29 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/11 14:13:20 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,6 +18,8 @@
 
 #include <limits>
 #include <stdexcept>
+
+#include "debug.h"
 
 namespace vox::gfx {
 
@@ -37,12 +39,16 @@ void SwapChain::init(const Core& core, const Device& device, const ui::Window& w
 
     _createSwapChain(core, device, window);
     _createImages(device);
+
+    LDEBUG("Swap chain initialized.");
 }
 
 void SwapChain::destroy(const Device& device) {
     for (u32 i = 0; i < m_imageViews.size(); ++i)
         vkDestroyImageView(device.getDevice(), m_imageViews[i], nullptr);
     vkDestroySwapchainKHR(device.getDevice(), m_swapChain, nullptr);
+
+    LDEBUG("Swap chain destroyed.");
 }
 
 /* ========================================================================== */

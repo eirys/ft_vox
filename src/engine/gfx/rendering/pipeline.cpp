@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/29 22:13:57 by etran             #+#    #+#             */
-/*   Updated: 2024/03/07 20:05:14 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/11 09:03:27 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,8 @@
 
 #include <string>
 #include <stdexcept>
+
+#include "debug.h"
 
 namespace vox::gfx {
 

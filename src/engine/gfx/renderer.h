@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/21 12:17:21 by etran             #+#    #+#             */
-/*   Updated: 2024/03/07 20:35:18 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/11 12:31:29 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -89,7 +89,7 @@ private:
     DescriptorPool                          m_descriptorPool;
 
     std::array<Fence, FENCE_COUNT>                  m_fences;
-    std::array<GfxSemaphore, FENCE_COUNT>           m_semaphores;
+    std::array<GfxSemaphore, SEMAPHORE_COUNT>       m_semaphores;
     std::array<ICommandBuffer*, CMD_BUFFER_COUNT>   m_commandBuffers;
     std::array<Pipeline*, PIPELINE_COUNT>           m_pipelines;
 

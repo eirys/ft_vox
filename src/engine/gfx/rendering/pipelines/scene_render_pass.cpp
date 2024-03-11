@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/07 10:15:26 by etran             #+#    #+#             */
-/*   Updated: 2024/03/07 16:08:04 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/11 14:29:18 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,8 @@
 #include <stdexcept>
 
 #include "debug.h"
+
+#include <cassert>
 
 namespace vox::gfx {
 
@@ -38,8 +40,6 @@ void SceneRenderPass::destroy(const Device& device) {
     _destroyTarget(device);
     _destroyResources(device);
     vkDestroyRenderPass(device.getDevice(), m_vkRenderPass, nullptr);
-
-    LDEBUG("Scene render pass destroyed");
 }
 
 /* ========================================================================== */
@@ -177,7 +177,7 @@ void SceneRenderPass::_createResources(const Device& device, const RenderPassInf
 void SceneRenderPass::_createTarget(const Device& device, const RenderPassInfo* info) {
     const SceneRenderPassInfo* scenePassInfo = dynamic_cast<const SceneRenderPassInfo*>(info);
 
-    m_targets.reserve(scenePassInfo->m_targetCount);
+    m_targets.resize(scenePassInfo->m_targetCount);
 
     std::array<VkImageView, ATTACHMENT_COUNT> attachments = {
         m_resources[(u32)SceneAttachment::Color].getView(),
@@ -206,7 +206,7 @@ void SceneRenderPass::_destroyTarget(const Device& device) {
 }
 
 void SceneRenderPass::_destroyResources(const Device& device) {
-    for (ImageBuffer& resource: m_resources) resource.destroy(device);
+    for (u32 i = 0; i < RESOURCE_COUNT; ++i) m_resources[i].destroy(device);
 }
 
 } // namespace vox::gfx

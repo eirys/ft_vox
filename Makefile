@@ -6,7 +6,7 @@
 #    By: etran <etran@student.42.fr>                +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/04/06 03:40:09 by eli               #+#    #+#              #
-#    Updated: 2024/03/07 15:38:24 by etran            ###   ########.fr        #
+#    Updated: 2024/03/11 13:51:47 by etran            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -41,7 +41,6 @@ RENDER_DIR	:=	$(GFX_DIR)/rendering
 SETS_DIR	:=	$(DESC_DIR)/sets
 UBO_DIR		:=	$(DESC_DIR)/ubo
 PIP_DIR		:=	$(RENDER_DIR)/pipelines
-PASS_DIR	:=	$(RENDER_DIR)/passes
 
 # libraries
 LIBS_DIR	:=	libs
@@ -64,7 +63,6 @@ SUBDIRS		:=	$(LIBS_DIR) \
 				$(UBO_DIR) \
 				$(SYNC_DIR) \
 				$(RENDER_DIR) \
-				$(PASS_DIR) \
 				$(PIP_DIR)
 
 OBJ_SUBDIRS	:=	$(addprefix $(OBJ_DIR)/,$(SUBDIRS))
@@ -87,7 +85,7 @@ SRC_FILES	:=	entrypoint.cpp \
 				$(RENDER_DIR)/pipeline.cpp \
 				$(RENDER_DIR)/render_pass.cpp \
 				$(PIP_DIR)/scene_pipeline.cpp \
-				$(PASS_DIR)/scene_render_pass.cpp \
+				$(PIP_DIR)/scene_render_pass.cpp \
 				$(BUF_DIR)/buffer.cpp \
 				$(BUF_DIR)/image_buffer.cpp \
 				$(SYNC_DIR)/fence.cpp \
@@ -101,57 +99,35 @@ OBJ			:=	$(addprefix $(OBJ_DIR)/,$(SRC_FILES:.cpp=.o))
 DEP			:=	$(addprefix $(OBJ_DIR)/,$(SRC_FILES:.cpp=.d))
 
 CXX			:=	clang++
-EXTRA		?=	-Wall \
-				-Werror \
-				-Wextra
-INCLUDES	:=	$(addprefix -I./,$(INC_SUBDIRS))
-
-MACROS		:=	GLFW_INCLUDE_VULKAN \
-				NDEBUG \
+MACROS		?=	GLFW_INCLUDE_VULKAN \
 				__DEBUG \
 				__LOG \
 				__INFO \
 				__LINUX \
 				VOX_CPP
+DEFINES		:=	$(addprefix -D,$(MACROS))
 
 ## All macros:
+## SHD_BIN_DIR : Must be defined to the directory where the shader binaries will be stored.
+## __RELEASE : Enables release build, disables debug logs.
+## __VERBOSE : Enables verbose Vulkan validation layers.
+## __DEBUG : For debug logs.
+## __LOG : Enables logging, messages meant for the user.
+## __INFO : Enables info messages, for both the user and the developer.
+## __LINUX : Enables Linux-specific code.
+## VOX_CPP : Enables C++ code.
+## NDEBUG : Disables assertions (if using <cassert>).
 
-## SHD_BIN_DIR
-## Must be defined to the directory where the shader binaries will be stored.
-
-## __RELEASE
-## Enables release build, disables debug logs.
-
-## __VERBOSE
-## Enables verbose Vulkan validation layers.
-
-## __DEBUG
-## For debug logs.
-
-## __LOG
-## Enables logging, messages meant for the user.
-
-## __INFO
-## Enables info messages, for both the user and the developer.
-
-## __LINUX
-## Enables Linux-specific code.
-
-## VOX_CPP
-## Enables C++ code.
-
-## NDEBUG
-## Disables assertions (if using <cassert>).
-
-DEFINES		:=	$(addprefix -D,$(MACROS))
+EXTRA		?=	-Wall \
+				-Werror \
+				-Wextra
+INCLUDES	:=	$(addprefix -I./,$(INC_SUBDIRS))
 
 CFLAGS		:=	$(EXTRA) \
 				-std=c++20 \
 				-MMD \
 				-MP \
-				-g \
 				$(INCLUDES) \
-				-O3 \
 				$(DEFINES)
 
 LDFLAGS		:=	-lglfw \
@@ -166,8 +142,6 @@ LDFLAGS		:=	-lglfw \
 # ------------------- SHADERS ------------------ #
 SHD_FILES	:=	scene.fragment \
 				scene.vertex
-# 				shadow.vertex \
-# 				culling.compute
 
 SHD			:=	$(addprefix $(SHD_BIN_DIR)/,$(SHD_FILES))
 SHD_BIN		:=	$(addsuffix .spv,$(SHD))
@@ -201,6 +175,10 @@ $(SHD_BIN_DIR)/%.spv: $(SHD_DIR)/%.glsl
 	@mkdir -p $(OBJ_DIR) $(SHD_BIN_DIR)
 	@echo "Compiling shader $<..."
 	@$(GLSLC) -fshader-stage=$(subst .,,$(suffix $(basename $<))) $< -o $@
+
+.PHONY: run
+run: all
+	@./$(NAME)
 
 .PHONY: shaders
 shaders: $(SHD_BIN)

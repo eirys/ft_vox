@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/28 19:55:31 by etran             #+#    #+#             */
-/*   Updated: 2024/03/07 15:47:03 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/10 23:01:12 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,8 +25,7 @@ DescriptorTable::DescriptorTable() {
 }
 
 DescriptorTable::~DescriptorTable() {
-    for (const IDescriptorSet* set : m_sets)
-        delete set;
+    for (u32 i = 0; i < DESCRIPTOR_TABLE_SIZE; ++i) delete m_sets[i];
 }
 
 /* ========================================================================== */

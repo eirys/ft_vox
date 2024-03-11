@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/23 23:09:22 by etran             #+#    #+#             */
-/*   Updated: 2024/03/07 14:43:46 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/11 09:26:49 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,15 +40,6 @@ public:
     ComputeCommandBuffer(const ComputeCommandBuffer& other) = delete;
     ComputeCommandBuffer& operator=(ComputeCommandBuffer&& other) = delete;
     ComputeCommandBuffer& operator=(const ComputeCommandBuffer& other) = delete;
-
-    // /* ====================================================================== */
-
-    // using super::init;
-    // using super::destroy;
-
-    // using super::startRecording;
-    // using super::reset;
-    // using super::getBuffer;
 
 private:
     /* ====================================================================== */

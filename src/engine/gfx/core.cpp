@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/21 11:53:00 by etran             #+#    #+#             */
-/*   Updated: 2024/03/02 00:23:08 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/11 13:18:47 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,14 +52,13 @@ void _destroyDebugUtilsMessengerExt(
         func(instance, debugMessenger, pAllocator);
 }
 
-static VKAPI_ATTR VKAPI_CALL
-VkBool32 _debugCallback(
+static
+VKAPI_ATTR VkBool32 VKAPI_CALL _debugCallback(
     VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
     VkDebugUtilsMessageTypeFlagsEXT messageType,
     const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
     void* pUserData
 ) {
-    (void)messageType;
     (void)pUserData;
 
     static constexpr std::array<const char*, 4> severityIndicator = {
@@ -68,11 +67,21 @@ VkBool32 _debugCallback(
         "WARNING",
         "ERROR" };
 
-    const int index = (messageSeverity == VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT) ? 0 :
-                      (messageSeverity == VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT) ? 1 :
-                      (messageSeverity == VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT) ? 2 : 3;
+    static constexpr std::array<const char*, 4> typeIndicator = {
+        "General",
+        "Validation",
+        "Performance" };
 
-    std::cerr   << "[* VK_VL | " << severityIndicator[index] << " *] "
+    const u32 severityIndex =
+        (messageSeverity == VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT) ? 0 :
+        (messageSeverity == VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT) ? 1 :
+        (messageSeverity == VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT) ? 2 : 3;
+
+    const u32 typeIndex =
+        (messageType == VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT) ? 0 :
+        (messageType == VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT) ? 1 : 2;
+
+    std::cerr   << "[*VK_VL*][" << typeIndicator[typeIndex] << "::" << severityIndicator[severityIndex] <<  "] "
                 << pCallbackData->pMessage << std::endl;
     return VK_FALSE;
 }
@@ -85,6 +94,8 @@ void Core::init(ui::Window& win) {
     _createInstance();
     _setupDebugMessenger();
     _createSurface(win);
+
+    LDEBUG("Core initialized");
 }
 
 void Core::destroy() {
@@ -109,24 +120,21 @@ VkSurfaceKHR Core::getSurface() const noexcept {
 
 static
 constexpr VkDebugUtilsMessengerCreateInfoEXT _getMessengerCreateInfo() {
-    constexpr VkDebugUtilsMessengerCreateInfoEXT createInfo {
-        .sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT,
-        .pNext = nullptr,
-        .flags = 0,
-        .messageSeverity =
+    VkDebugUtilsMessengerCreateInfoEXT createInfo {};
+    createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
+    createInfo.messageSeverity =
             VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT |
-            #ifdef __VERBOSE
-            VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT |
-            VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT |
-            #endif
-            VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT,
-        .messageType =
+            VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
+#ifdef __VERBOSE
+    createInfo.messageSeverity |=
+            VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT;
+#endif
+    createInfo.messageType =
             VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT |
             VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
-            VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT,
-        .pfnUserCallback = _debugCallback,
-        .pUserData = nullptr,
-    };
+            VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
+    createInfo.pfnUserCallback = _debugCallback;
+    createInfo.pUserData = nullptr;
 
     return createInfo;
 }
@@ -152,12 +160,16 @@ bool _hasValidationLayerSupport() {
     vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
 
     for (const char* layerName : Core::VALIDATION_LAYERS) {
+        bool layerFound = false;
         for (const VkLayerProperties& layerProperties: availableLayers) {
-            if (strcmp(layerName, layerProperties.layerName) == 0)
-                return true;
+            if (strcmp(layerName, layerProperties.layerName) == 0) {
+                layerFound = true;
+                break;
+            }
         }
+        if (!layerFound) return false;
     }
-    return false;
+    return true;
 }
 
 void Core::_createInstance() {
@@ -180,11 +192,15 @@ void Core::_createInstance() {
     instanceInfo.enabledExtensionCount = (u32)(extensions.size());
     instanceInfo.ppEnabledExtensionNames = extensions.data();
 
+    VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo;
     if (ENABLE_VALIDATION_LAYERS) {
-        constexpr VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo = _getMessengerCreateInfo();
+        debugCreateInfo = _getMessengerCreateInfo();
         instanceInfo.enabledLayerCount = (u32)VALIDATION_LAYERS.size();
         instanceInfo.ppEnabledLayerNames = VALIDATION_LAYERS.data();
-        instanceInfo.pNext = &debugCreateInfo;
+        instanceInfo.pNext = (VkDebugUtilsMessengerCreateInfoEXT*)&debugCreateInfo;
+    } else {
+        instanceInfo.enabledLayerCount = 0;
+        instanceInfo.pNext = nullptr;
     }
 
     if (vkCreateInstance(&instanceInfo, nullptr, &m_vkInstance) != VK_SUCCESS)

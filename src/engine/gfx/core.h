@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/21 11:52:58 by etran             #+#    #+#             */
-/*   Updated: 2024/03/02 00:22:37 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/11 11:26:35 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,7 +31,7 @@ public:
 
     static constexpr std::array<const char*, 1> VALIDATION_LAYERS = { "VK_LAYER_KHRONOS_validation" };
 
-#ifdef __RELEASE
+#ifndef __RELEASE
     static constexpr bool   ENABLE_VALIDATION_LAYERS = true;
 #else
     static constexpr bool   ENABLE_VALIDATION_LAYERS = false;

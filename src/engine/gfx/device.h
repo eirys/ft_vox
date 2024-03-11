@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/21 18:19:47 by etran             #+#    #+#             */
-/*   Updated: 2024/03/07 13:21:26 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/11 13:45:23 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -73,9 +73,9 @@ public:
     /* ====================================================================== */
 
     VkDevice                    getDevice() const noexcept;
-    VkQueue                     getGraphicsQueue() const noexcept;
-    VkQueue                     getPresentQueue() const noexcept;
-    VkQueue                     getComputeQueue() const noexcept;
+    const VkQueue&              getGraphicsQueue() const noexcept;
+    const VkQueue&              getPresentQueue() const noexcept;
+    const VkQueue&              getComputeQueue() const noexcept;
     VkSampleCountFlagBits       getMsaaCount() const noexcept;
 
     const QueueFamilyIndices&   getQueueFamilyIndices() const noexcept;

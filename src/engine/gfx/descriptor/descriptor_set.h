@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/28 16:16:09 by etran             #+#    #+#             */
-/*   Updated: 2024/03/07 15:22:55 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/11 14:07:19 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,7 +29,6 @@ public:
 
     /* ====================================================================== */
 
-    void    destroy(const Device& device) override;
     void    setDescriptorSet(const VkDescriptorSet set) noexcept override;
 
     /* ====================================================================== */
@@ -75,7 +74,7 @@ private:
     /*                                  DATA                                  */
     /* ====================================================================== */
 
-    PoolSizes               m_poolSizes;
+    PoolSizes               m_poolSizes{};
     VkDescriptorSet         m_set = VK_NULL_HANDLE;
 
     DescriptorSetIndex      m_index;

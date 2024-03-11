@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/02 11:30:58 by etran             #+#    #+#             */
-/*   Updated: 2024/03/02 12:26:16 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/11 13:48:45 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,10 +21,10 @@ namespace vox::gfx {
 /*                                   PUBLIC                                   */
 /* ========================================================================== */
 
-void Fence::init(const Device& device) {
+void Fence::init(const Device& device, const VkFenceCreateFlags flags) {
     VkFenceCreateInfo fenceInfo{};
     fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-    fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+    fenceInfo.flags = flags;
 
     if (vkCreateFence(device.getDevice(), &fenceInfo, nullptr, &m_fence) != VK_SUCCESS)
         throw std::runtime_error("failed to create fence");

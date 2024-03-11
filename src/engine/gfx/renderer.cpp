@@ -6,14 +6,15 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/23 09:29:35 by etran             #+#    #+#             */
-/*   Updated: 2024/03/07 20:42:00 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/11 14:10:38 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "renderer.h"
-
 #include "scene_pipeline.h"
 #include "scene_render_pass.h"
+#include "icommand_buffer.h"
+#include "render_decl.h"
 
 #include "debug.h"
 
@@ -47,24 +48,27 @@ void Renderer::init(ui::Window& window, const GameState& game) {
     _createFences();
     _createGfxSemaphores();
 
-    m_descriptorTable.fill(m_device, game);
     m_descriptorPool.init(m_device, m_descriptorTable);
+    m_descriptorTable.fill(m_device, game);
 
-    LINFO("Renderer initialized.");
+    LDEBUG("Renderer initialized.");
 }
 
 void Renderer::destroy() {
-    m_descriptorPool.destroy(m_device);
     m_descriptorTable.destroy(m_device);
+    m_descriptorPool.destroy(m_device);
 
     _destroyGfxSemaphores();
     _destroyFences();
     _destroyPipelines();
+    _destroyCommandBuffers();
 
+    m_commandPool.destroy(m_device);
     m_swapChain.destroy(m_device);
     m_device.destroy();
     m_core.destroy();
-    LINFO("Renderer destroyed.");
+
+    LDEBUG("Renderer destroyed.");
 }
 
 /* ========================================================================== */
@@ -74,7 +78,41 @@ void Renderer::waitIdle() const {
 }
 
 void Renderer::render() {
+    // Retrieve swap chain image ------
+    m_fences[(u32)FenceIndex::DrawInFlight].await(m_device);
+    if (m_swapChain.acquireNextImage(m_device, m_semaphores[(u32)SemaphoreIndex::ImageAvailable]) == false)
+        // TODO: Handle this error
+        return;
+    m_fences[(u32)FenceIndex::DrawInFlight].reset(m_device);
+    // --------------------------------
 
+    // Record command buffer ---------
+    RecordInfo  recordInfo{};
+    recordInfo.m_targetIndex = m_swapChain.getImageIndex();
+
+    ICommandBuffer* const drawBuffer = m_commandBuffers[(u32)CommandBufferIndex::Draw];
+    drawBuffer->reset();
+    drawBuffer->startRecording();
+    m_pipelines[(u32)PipelineIndex::ScenePipeline]->record(
+        m_pipelineLayout,
+        m_descriptorTable,
+        drawBuffer,
+        recordInfo);
+    drawBuffer->stopRecording();
+    // --------------------------------
+
+    // Submit command buffer ---------
+    static const std::vector<VkSemaphore>           signalSemaphores = { m_semaphores[(u32)SemaphoreIndex::RenderFinished].getSemaphore() };
+    static const std::vector<VkSemaphore>           waitSemaphores = { m_semaphores[(u32)SemaphoreIndex::ImageAvailable].getSemaphore() };
+    static const std::vector<VkPipelineStageFlags>  waitStages = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
+    drawBuffer->submitRecording(waitSemaphores, waitStages, signalSemaphores, m_fences[(u32)FenceIndex::DrawInFlight]);
+    // --------------------------------
+
+    // Present image ------------------
+    if (m_swapChain.submitImage(m_device, m_semaphores[(u32)SemaphoreIndex::RenderFinished]) == false)
+        // TODO: Handle this error
+        return;
+    // --------------------------------
 }
 
 /* ========================================================================== */
@@ -88,10 +126,10 @@ void Renderer::_createCommandBuffers() {
 void Renderer::_createPipelines() {
     std::array<RenderPassInfo*, PIPELINE_COUNT> passInfos;
     SceneRenderPassInfo scenePassInfo(m_swapChain.getImageViews());
-    scenePassInfo.m_formats.reserve(SceneRenderPass::RESOURCE_COUNT);
+    scenePassInfo.m_formats.resize(SceneRenderPass::RESOURCE_COUNT, VK_FORMAT_UNDEFINED);
     scenePassInfo.m_formats[(u32)SceneResource::ColorImage] = m_swapChain.getImageFormat();
     scenePassInfo.m_formats[(u32)SceneResource::DepthImage] = m_swapChain.getDepthFormat();
-    scenePassInfo.m_samples.reserve(SceneRenderPass::RESOURCE_COUNT);
+    scenePassInfo.m_samples.resize(SceneRenderPass::RESOURCE_COUNT, VK_SAMPLE_COUNT_1_BIT);
     scenePassInfo.m_samples[(u32)SceneResource::ColorImage] = m_device.getMsaaCount();
     scenePassInfo.m_samples[(u32)SceneResource::DepthImage] = m_device.getMsaaCount();
     scenePassInfo.m_renderPassWidth = m_swapChain.getImageExtent().width;
@@ -128,7 +166,7 @@ void Renderer::_createGfxSemaphores() {
 }
 
 void Renderer::_createFences() {
-    for (Fence& fence : m_fences) fence.init(m_device);
+    for (Fence& fence : m_fences) fence.init(m_device, VK_FENCE_CREATE_SIGNALED_BIT);
 }
 
 /* ========================================================================== */
