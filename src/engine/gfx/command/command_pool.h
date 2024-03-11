@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/23 09:42:20 by etran             #+#    #+#             */
-/*   Updated: 2024/02/29 23:58:23 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/11 18:18:37 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,8 +57,8 @@ private:
     /*                                  DATA                                  */
     /* ====================================================================== */
 
-    VkCommandPool m_drawPool = VK_NULL_HANDLE;
-    VkCommandPool m_computePool = VK_NULL_HANDLE;
+    VkCommandPool   m_drawPool = VK_NULL_HANDLE;
+    VkCommandPool   m_computePool = VK_NULL_HANDLE;
 
 }; // class CommandPool
 

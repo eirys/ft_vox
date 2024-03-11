@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/23 20:01:10 by etran             #+#    #+#             */
-/*   Updated: 2024/03/11 14:03:19 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/11 20:34:05 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,9 +31,9 @@ public:
     void    init(const Device& device, const VkCommandBufferLevel level) override;
     void    destroy(const Device& device) override;
 
-    void    startRecording(VkCommandBufferUsageFlags flags = 0) override;
-    void    stopRecording() override;
-    void    awaitEndOfRecording(const Device& device) override;
+    void    startRecording(VkCommandBufferUsageFlags flags = 0) const override;
+    void    stopRecording() const override;
+    void    awaitEndOfRecording(const Device& device) const override;
 
     void    submitRecording(
         const std::vector<VkSemaphore> waitSemaphores,

@@ -1,52 +1,47 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   engine.h                                           :+:      :+:    :+:   */
+/*   game_texture_sampler.h                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/02/27 18:15:33 by etran             #+#    #+#             */
-/*   Updated: 2024/03/11 16:57:37 by etran            ###   ########.fr       */
+/*   Created: 2024/03/11 17:33:50 by etran             #+#    #+#             */
+/*   Updated: 2024/03/11 21:06:07 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
-#include "window.h"
-#include "renderer.h"
-#include "game_state.h"
+#include "texture_sampler.h"
 
-namespace vox {
+namespace vox::gfx {
 
-class Engine final {
+class GameTextureSampler final: public TextureSampler {
 public:
     /* ====================================================================== */
     /*                                 METHODS                                */
     /* ====================================================================== */
 
-    Engine();
-    ~Engine();
+    GameTextureSampler() = default;
+    ~GameTextureSampler() = default;
 
-    Engine(Engine&& other) = delete;
-    Engine(const Engine& other) = delete;
-    Engine& operator=(Engine&& other) = delete;
-    Engine& operator=(const Engine& other) = delete;
+    GameTextureSampler(GameTextureSampler&& other) = delete;
+    GameTextureSampler(const GameTextureSampler& other) = delete;
+    GameTextureSampler& operator=(GameTextureSampler&& other) = delete;
+    GameTextureSampler& operator=(const GameTextureSampler& other) = delete;
 
     /* ====================================================================== */
 
-    void    run();
+    void    init(const Device& device, const ICommandBuffer* cmdBuffer) override;
+    void    destroy(const Device& device) override;
 
 private:
     /* ====================================================================== */
-    /*                                  DATA                                  */
+    /*                                 METHODS                                */
     /* ====================================================================== */
 
-    ui::Window      m_window;
-    // ui::Controller  m_controller;
-    gfx::Renderer   m_renderer;
+    void    _createSampler(const Device& device);
 
-    gfx::GameState  m_game;
+}; // class GameTextureSampler
 
-}; // class Engine
-
-} // namespace vox
+} // namespace vox::gfx

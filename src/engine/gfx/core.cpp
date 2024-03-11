@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/21 11:53:00 by etran             #+#    #+#             */
-/*   Updated: 2024/03/11 13:18:47 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/11 14:35:44 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,27 +61,40 @@ VKAPI_ATTR VkBool32 VKAPI_CALL _debugCallback(
 ) {
     (void)pUserData;
 
+#ifndef __VERBOSE
+    if (messageType != VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT)
+        return VK_FALSE;
+#endif
+
     static constexpr std::array<const char*, 4> severityIndicator = {
         "VERBOSE",
         "INFO",
         "WARNING",
         "ERROR" };
 
+#ifdef __VERBOSE
     static constexpr std::array<const char*, 4> typeIndicator = {
         "General",
         "Validation",
         "Performance" };
+#endif
 
     const u32 severityIndex =
         (messageSeverity == VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT) ? 0 :
         (messageSeverity == VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT) ? 1 :
         (messageSeverity == VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT) ? 2 : 3;
 
+#ifdef __VERBOSE
     const u32 typeIndex =
         (messageType == VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT) ? 0 :
         (messageType == VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT) ? 1 : 2;
+#endif
 
-    std::cerr   << "[*VK_VL*][" << typeIndicator[typeIndex] << "::" << severityIndicator[severityIndex] <<  "] "
+    std::cerr   << "[*VK_VL*]["
+#ifdef __VERBOSE
+                << typeIndicator[typeIndex] << "::"
+#endif
+                << severityIndicator[severityIndex] <<  "] "
                 << pCallbackData->pMessage << std::endl;
     return VK_FALSE;
 }

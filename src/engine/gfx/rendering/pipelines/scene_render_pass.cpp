@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/07 10:15:26 by etran             #+#    #+#             */
-/*   Updated: 2024/03/11 14:29:18 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/12 00:12:04 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -145,6 +145,7 @@ void SceneRenderPass::_createRenderPass(const Device& device, const RenderPassIn
 
     if (vkCreateRenderPass(device.getDevice(), &renderPassInfo, nullptr, &m_vkRenderPass) != VK_SUCCESS)
         throw std::runtime_error("failed to create scene render pass");
+    LDEBUG("Scene render pass created.");
 }
 
 void SceneRenderPass::_createResources(const Device& device, const RenderPassInfo* info) {
@@ -153,7 +154,7 @@ void SceneRenderPass::_createResources(const Device& device, const RenderPassInf
     m_width = scenePassInfo->m_renderPassWidth;
     m_height = scenePassInfo->m_renderPassHeight;
 
-    m_resources.reserve(RESOURCE_COUNT);
+    m_resources.resize(RESOURCE_COUNT);
 
     ImageMetaData colorImageMetaData{};
     colorImageMetaData.m_width = m_width;
@@ -162,7 +163,8 @@ void SceneRenderPass::_createResources(const Device& device, const RenderPassInf
     colorImageMetaData.m_sampleCount = scenePassInfo->m_samples[(u32)SceneResource::ColorImage];
     colorImageMetaData.m_usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT;
     colorImageMetaData.m_aspectFlags = VK_IMAGE_ASPECT_COLOR_BIT;
-    m_resources[(u32)SceneResource::ColorImage].init(device, std::move(colorImageMetaData));
+    m_resources[(u32)SceneResource::ColorImage].initImage(device, std::move(colorImageMetaData));
+    m_resources[(u32)SceneResource::ColorImage].initView(device);
 
     ImageMetaData depthImageMetaData{};
     depthImageMetaData.m_width = m_width;
@@ -171,7 +173,10 @@ void SceneRenderPass::_createResources(const Device& device, const RenderPassInf
     depthImageMetaData.m_sampleCount = scenePassInfo->m_samples[(u32)SceneResource::DepthImage];
     depthImageMetaData.m_usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
     depthImageMetaData.m_aspectFlags = VK_IMAGE_ASPECT_DEPTH_BIT;
-    m_resources[(u32)SceneResource::DepthImage].init(device, std::move(depthImageMetaData));
+    m_resources[(u32)SceneResource::DepthImage].initImage(device, std::move(depthImageMetaData));
+    m_resources[(u32)SceneResource::DepthImage].initView(device);
+
+    LDEBUG("Scene render pass resources created.");
 }
 
 void SceneRenderPass::_createTarget(const Device& device, const RenderPassInfo* info) {

@@ -6,7 +6,7 @@
 #    By: etran <etran@student.42.fr>                +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/04/06 03:40:09 by eli               #+#    #+#              #
-#    Updated: 2024/03/11 13:51:47 by etran            ###   ########.fr        #
+#    Updated: 2024/03/11 17:46:23 by etran            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -27,12 +27,12 @@ SHD_BIN_DIR	:=	$(OBJ_DIR)/shaders
 
 # engine
 ENGINE_DIR	:=	engine
-
-# ui
+GFX_DIR		:=	$(ENGINE_DIR)/gfx
+PROC_DIR	:=	$(ENGINE_DIR)/procedural
 UI_DIR		:=	$(ENGINE_DIR)/ui
+GAME_DIR	:=	$(ENGINE_DIR)/game
 
 # gfx
-GFX_DIR		:=	$(ENGINE_DIR)/gfx
 BUF_DIR		:=	$(GFX_DIR)/buffers
 CMD_DIR		:=	$(GFX_DIR)/command
 DESC_DIR	:=	$(GFX_DIR)/descriptor
@@ -40,6 +40,7 @@ SYNC_DIR	:=	$(GFX_DIR)/sync
 RENDER_DIR	:=	$(GFX_DIR)/rendering
 SETS_DIR	:=	$(DESC_DIR)/sets
 UBO_DIR		:=	$(DESC_DIR)/ubo
+SAMPLER_DIR	:=	$(DESC_DIR)/sampler
 PIP_DIR		:=	$(RENDER_DIR)/pipelines
 
 # libraries
@@ -53,10 +54,13 @@ SUBDIRS		:=	$(LIBS_DIR) \
 				$(MATH_DIR) \
 				$(DECL_DIR) \
 				$(ENGINE_DIR) \
+				$(GAME_DIR) \
+				$(GFX_DIR) \
+				$(PROC_DIR) \
 				$(UI_DIR) \
 				$(IO_DIR) \
-				$(GFX_DIR) \
 				$(BUF_DIR) \
+				$(SAMPLER_DIR) \
 				$(CMD_DIR) \
 				$(DESC_DIR) \
 				$(SETS_DIR) \
@@ -79,6 +83,8 @@ SRC_FILES	:=	entrypoint.cpp \
 				$(GFX_DIR)/swap_chain.cpp \
 				$(CMD_DIR)/command_pool.cpp \
 				$(CMD_DIR)/command_buffer.cpp \
+				$(SAMPLER_DIR)/game_texture_sampler.cpp \
+				$(SETS_DIR)/mvp_set.cpp \
 				$(DESC_DIR)/descriptor_pool.cpp \
 				$(DESC_DIR)/descriptor_table.cpp \
 				$(DESC_DIR)/descriptor_set.cpp \
@@ -90,6 +96,7 @@ SRC_FILES	:=	entrypoint.cpp \
 				$(BUF_DIR)/image_buffer.cpp \
 				$(SYNC_DIR)/fence.cpp \
 				$(SYNC_DIR)/gfx_semaphore.cpp \
+				$(PROC_DIR)/perlin_noise.cpp \
 				$(MATH_DIR)/maths.cpp \
 				$(MATH_DIR)/matrix.cpp \
 				$(UI_DIR)/window.cpp

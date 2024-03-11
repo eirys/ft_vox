@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/21 12:17:21 by etran             #+#    #+#             */
-/*   Updated: 2024/03/11 12:31:29 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/11 20:09:11 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,7 +57,7 @@ public:
     void destroy();
 
     void waitIdle() const;
-    void render();
+    void render(const GameState& game);
 
 private:
     /* ====================================================================== */
@@ -66,10 +66,11 @@ private:
 
     enum class CommandBufferIndex: u32 {
         Draw = 0,
+        Transfer,
         // Compute,
 
         First = Draw,
-        Last = Draw
+        Last = Transfer
     };
 
     /* ====================================================================== */

@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/23 22:43:14 by etran             #+#    #+#             */
-/*   Updated: 2024/03/11 14:03:21 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/11 20:33:50 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,7 +52,7 @@ void CommandBuffer::reset() {
     vkResetCommandBuffer(m_buffer, 0);
 }
 
-void CommandBuffer::startRecording(VkCommandBufferUsageFlags flags) {
+void CommandBuffer::startRecording(VkCommandBufferUsageFlags flags) const {
     VkCommandBufferBeginInfo beginInfo = {};
     beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
     beginInfo.flags = flags;
@@ -62,13 +62,13 @@ void CommandBuffer::startRecording(VkCommandBufferUsageFlags flags) {
     }
 }
 
-void CommandBuffer::stopRecording() {
+void CommandBuffer::stopRecording() const {
     if (vkEndCommandBuffer(m_buffer) != VK_SUCCESS) {
         throw std::runtime_error("failed to record command buffer");
     }
 }
 
-void CommandBuffer::awaitEndOfRecording(const Device& device) {
+void CommandBuffer::awaitEndOfRecording(const Device& device) const {
     VkSubmitInfo submitInfo{};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
     submitInfo.commandBufferCount = 1;

@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/19 23:59:08 by etran             #+#    #+#             */
-/*   Updated: 2024/03/04 16:28:31 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/11 15:16:10 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,10 +59,12 @@ public:
     // bool    resized() const noexcept;
     // void    toggleFrameBufferResized(bool resized) noexcept;
     void    toggleMouse() noexcept;
+    void    toggleUpdate() noexcept;
     void    retrieveFramebufferSize(int& width, int& height) const;
 
     /* ========================================================================= */
     bool                isMouseActive() const noexcept;
+    bool                needsUpdate() const noexcept;
     GLFWwindow*         getWindow() noexcept;
     GLFWwindow const*   getWindow() const noexcept;
 
@@ -75,6 +77,8 @@ private:
     u32             m_width = WIDTH;
     u32             m_height = HEIGHT;
     bool            m_mouseActive = true;
+
+    bool            m_isUpdated = true;
 
 }; // class Window
 

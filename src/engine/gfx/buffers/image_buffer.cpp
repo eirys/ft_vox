@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/27 18:36:30 by etran             #+#    #+#             */
-/*   Updated: 2024/03/11 14:28:47 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/12 00:16:21 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,7 @@
 #include "buffer.h"
 
 #include <stdexcept>
+#include <cmath>
 #include "debug.h"
 
 namespace vox::gfx {
@@ -24,7 +25,7 @@ namespace vox::gfx {
 /*                                   PUBLIC                                   */
 /* ========================================================================== */
 
-void ImageBuffer::init(const Device& device, ImageMetaData&& metadata) {
+void ImageBuffer::initImage(const Device& device, ImageMetaData&& metadata) {
     m_metadata = std::move(metadata);
 
     VkImageCreateInfo imageInfo{};
@@ -35,7 +36,7 @@ void ImageBuffer::init(const Device& device, ImageMetaData&& metadata) {
     imageInfo.arrayLayers = m_metadata.m_layerCount;
     imageInfo.format = m_metadata.m_format;
     imageInfo.tiling = m_metadata.m_tiling;
-    imageInfo.initialLayout = m_metadata.m_layout;
+    imageInfo.initialLayout = m_metadata.m_layoutData.m_layout;
     imageInfo.usage = m_metadata.m_usage;
     imageInfo.samples = m_metadata.m_sampleCount;
     imageInfo.flags = m_metadata.m_flags;
@@ -59,6 +60,11 @@ void ImageBuffer::init(const Device& device, ImageMetaData&& metadata) {
         throw std::runtime_error("failed to bind image memory");
     }
 
+    LDEBUG("Image buffer initialized: " << "image::" << m_image
+            << " | memory::" << m_memory);
+}
+
+void ImageBuffer::initView(const Device& device) {
     VkImageViewCreateInfo viewInfo{};
     viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
     viewInfo.image = m_image;
@@ -73,10 +79,8 @@ void ImageBuffer::init(const Device& device, ImageMetaData&& metadata) {
     if (vkCreateImageView(device.getDevice(), &viewInfo, nullptr, &m_view) != VK_SUCCESS) {
         throw std::runtime_error("failed to create texture image view");
     }
-    LDEBUG("Initialized " << __NL
-    << "  - image buffer " << m_image << __NL
-    << "  - View: " << m_view << __NL
-    << "  - Memory: " << m_memory << __NL);
+
+    LDEBUG("Image view initialized: " << " view::" << m_view );
 }
 
 void ImageBuffer::destroy(const Device& device) {
@@ -91,38 +95,54 @@ void ImageBuffer::destroy(const Device& device) {
  * @brief Sets the layout of the image. Updates the metadata.
  */
 void ImageBuffer::setLayout(
-    ICommandBuffer* cmdBuffer,
-    const VkImageSubresourceRange& subresourceRange,
-    const VkImageLayout newLayout,
-    const VkAccessFlags newAccessMask,
-    const VkPipelineStageFlags newStageMask,
+    const ICommandBuffer* cmdBuffer,
+    const LayoutData& newData,
+    const LayoutData* otherData,
+    const VkImageSubresourceRange* subresourceRange,
     const u32 newQueueFamilyIndex
 ) {
+    VkImageSubresourceRange range{};
+    if (subresourceRange == nullptr) {
+        range.aspectMask = m_metadata.m_aspectFlags;
+        range.baseMipLevel = 0;
+        range.baseArrayLayer = 0;
+        range.levelCount = m_metadata.m_mipCount;
+        range.layerCount = m_metadata.m_layerCount;
+    } else {
+        range = *subresourceRange;
+    }
+
+    LayoutData oldData{};
+    if (otherData == nullptr) {
+        oldData = m_metadata.m_layoutData;
+    } else {
+        oldData = *otherData;
+    }
+
     VkImageMemoryBarrier barrier{};
     barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-    barrier.subresourceRange = subresourceRange;
+    barrier.subresourceRange = range;
     barrier.image = m_image;
 
-    barrier.oldLayout = m_metadata.m_layout;
-    barrier.srcAccessMask = m_metadata.m_accessMask;
+    barrier.oldLayout = oldData.m_layout;
+    barrier.srcAccessMask = oldData.m_accessMask;
     barrier.srcQueueFamilyIndex = m_metadata.m_queueFamilyIndex;
 
-    barrier.newLayout = newLayout;
-    barrier.dstAccessMask = newAccessMask;
+    barrier.newLayout = newData.m_layout;
+    barrier.dstAccessMask = newData.m_accessMask;
     barrier.dstQueueFamilyIndex = newQueueFamilyIndex;
 
     vkCmdPipelineBarrier(
         cmdBuffer->getBuffer(),
-        m_metadata.m_stageMask, newStageMask,
+        oldData.m_stageMask, newData.m_stageMask,
         0,
         0, nullptr,
         0, nullptr,
         1, &barrier);
 
-    m_metadata.m_layout = newLayout;
-    m_metadata.m_accessMask = newAccessMask;
+    if (subresourceRange == nullptr)
+        m_metadata.m_layoutData = newData;
     m_metadata.m_queueFamilyIndex = newQueueFamilyIndex;
-    m_metadata.m_stageMask = newStageMask;
 }
 
 /**
@@ -130,13 +150,19 @@ void ImageBuffer::setLayout(
  * @note Assumes all layers have the same size.
  * @note Assumes there are no mipmaps.
  */
-void ImageBuffer::copyFrom(ICommandBuffer* cmdBuffer, const Buffer& srcBuffer) {
+void ImageBuffer::copyFrom(const ICommandBuffer* cmdBuffer, const Buffer& srcBuffer) {
+    constexpr LayoutData transferLayout {
+        VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+        VK_ACCESS_TRANSFER_WRITE_BIT,
+        VK_PIPELINE_STAGE_TRANSFER_BIT };
+    setLayout(cmdBuffer, transferLayout);
+
     std::vector<VkBufferImageCopy> regions;
-    regions.reserve(m_metadata.m_mipCount);
+    regions.reserve(m_metadata.m_layerCount);
 
     for (u32 layer = 0; layer < m_metadata.m_layerCount; ++layer) {
         VkBufferImageCopy region{};
-        region.bufferOffset = m_metadata.m_layerSize * layer;
+        region.bufferOffset = m_metadata.getLayerSize() * m_metadata.getPixelSize() * layer;
         region.imageExtent = { m_metadata.m_width, m_metadata.m_height, m_metadata.m_depth };
         region.imageSubresource.aspectMask = m_metadata.m_aspectFlags;
         region.imageSubresource.mipLevel = 0;
@@ -145,21 +171,25 @@ void ImageBuffer::copyFrom(ICommandBuffer* cmdBuffer, const Buffer& srcBuffer) {
         regions.emplace_back(region);
     }
 
-    constexpr VkImageLayout newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
     vkCmdCopyBufferToImage(
         cmdBuffer->getBuffer(),
         srcBuffer.getBuffer(),
         m_image,
-        newLayout,
-        (u32)regions.size(),
+        m_metadata.m_layoutData.m_layout,
+        m_metadata.m_layerCount,
         regions.data());
 
-    m_metadata.m_layout = newLayout;
+    LDEBUG("Copied buffer to image.");
 }
 
-void ImageBuffer::generateMipmap(ICommandBuffer* cmdBuffer) {
+void ImageBuffer::generateMipmap(const ICommandBuffer* cmdBuffer) {
     VkImageSubresourceRange subresourceRange{};
     subresourceRange.aspectMask = m_metadata.m_aspectFlags;
+
+    constexpr LayoutData dstLayoutData {
+        VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+        VK_ACCESS_TRANSFER_WRITE_BIT,
+        VK_PIPELINE_STAGE_TRANSFER_BIT };
 
     for (u32 layer = 0; layer < m_metadata.m_layerCount; ++layer) {
         for (u32 level = 1; level < m_metadata.m_mipCount; ++level) {
@@ -192,42 +222,44 @@ void ImageBuffer::generateMipmap(ICommandBuffer* cmdBuffer) {
             subresourceRange.levelCount = 1;
             subresourceRange.layerCount = 1;
 
-            setLayout(
-                cmdBuffer,
-                subresourceRange,
+            constexpr LayoutData srcLayoutData {
+                VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                VK_ACCESS_TRANSFER_WRITE_BIT,
+                VK_PIPELINE_STAGE_TRANSFER_BIT };
+            constexpr LayoutData midLayoutData {
                 VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
                 VK_ACCESS_TRANSFER_READ_BIT,
-                VK_PIPELINE_STAGE_TRANSFER_BIT);
+                VK_PIPELINE_STAGE_TRANSFER_BIT };
+
+            setLayout(
+                cmdBuffer,
+                midLayoutData,
+                &srcLayoutData,
+                &subresourceRange);
 
             // Perform blit
             vkCmdBlitImage(
                 cmdBuffer->getBuffer(),
-                m_image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-                m_image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                m_image, midLayoutData.m_layout,
+                m_image, dstLayoutData.m_layout,
                 1, &blit,
                 VK_FILTER_LINEAR);
 
             setLayout(
                 cmdBuffer,
-                subresourceRange,
-                VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-                VK_ACCESS_TRANSFER_WRITE_BIT,
-                VK_PIPELINE_STAGE_TRANSFER_BIT);
+                dstLayoutData,
+                &midLayoutData,
+                &subresourceRange);
         }
     }
 
-    // // Revert layout to shader read layout
-    // subresourceRange.baseMipLevel = 0;
-    // subresourceRange.baseArrayLayer = 0;
-    // subresourceRange.levelCount = m_metadata.m_mipCount;
-    // subresourceRange.layerCount = m_metadata.m_layerCount;
+    constexpr LayoutData shaderLayoutData {
+        VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+        VK_ACCESS_SHADER_READ_BIT,
+        VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT };
+    setLayout(cmdBuffer, shaderLayoutData, &dstLayoutData);
 
-    // setLayout(
-    //     cmdBuffer,
-    //     subresourceRange,
-    //     VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-    //     VK_ACCESS_TRANSFER_READ_BIT,
-    //     VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT);
+    LDEBUG("Generated mipmaps.");
 }
 
 /* ========================================================================== */
@@ -291,6 +323,14 @@ constexpr u32  ImageMetaData::getPixelSize() const noexcept {
         default:
             return 0;
     }
+}
+
+constexpr u32  ImageMetaData::getLayerSize() const noexcept {
+    return m_width * m_height;
+}
+
+void ImageMetaData::computeMipCount() {
+	m_mipCount = 1 + (u32)std::floor(std::log2(m_width));
 }
 
 } // namespace vox::gfx

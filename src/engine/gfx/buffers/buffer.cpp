@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/27 17:40:32 by etran             #+#    #+#             */
-/*   Updated: 2024/03/01 00:08:23 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/12 00:16:37 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,8 @@
 
 #include <cstring>
 #include <stdexcept>
+
+#include "debug.h"
 
 namespace vox::gfx {
 
@@ -52,11 +54,14 @@ void Buffer::init(const Device& device, BufferMetadata&& metadata) {
     } else if (vkBindBufferMemory(device.getDevice(), m_buffer, m_memory, 0) != VK_SUCCESS) {
         throw std::runtime_error("failed to bind buffer memory");
     }
+
+    LDEBUG("Buffer created: buffer::"<<m_buffer<<" | memory::"<<m_memory);
 }
 
 void Buffer::destroy(const Device& device) {
     vkDestroyBuffer(device.getDevice(), m_buffer, nullptr);
     vkFreeMemory(device.getDevice(), m_memory, nullptr);
+    LDEBUG("Buffer destroyed.");
 }
 
 /* ========================================================================== */
@@ -99,6 +104,8 @@ void Buffer::copyFrom(const void* src, const u32 size) {
 
 void Buffer::copyFrom(const void* src) {
     memcpy(m_data, src, m_metadata.m_size);
+
+    LDEBUG("Buffer copied from CPU.");
 }
 
 /**

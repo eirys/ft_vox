@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/21 23:37:02 by etran             #+#    #+#             */
-/*   Updated: 2024/03/11 14:09:55 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/11 23:24:12 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -77,6 +77,12 @@ SwapChainSupportDetails _querySwapChainSupport(const VkPhysicalDevice physDevice
 
 SwapChainSupportDetails Device::querySwapChainSupport(const Core& core) const {
     return _querySwapChainSupport(m_vkPhysicalDevice, core.getSurface());
+}
+
+VkPhysicalDeviceProperties Device::queryDeviceProperties() const {
+    VkPhysicalDeviceProperties	properties{};
+    vkGetPhysicalDeviceProperties(m_vkPhysicalDevice, &properties);
+    return properties;
 }
 
 /* ========================================================================== */

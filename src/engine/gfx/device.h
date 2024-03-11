@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/21 18:19:47 by etran             #+#    #+#             */
-/*   Updated: 2024/03/11 13:45:23 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/11 23:23:29 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -69,6 +69,7 @@ public:
 
     u32                         findMemoryType(const u32 typeFilter, const VkMemoryPropertyFlags properties) const;
     SwapChainSupportDetails     querySwapChainSupport(const Core& core) const;
+    VkPhysicalDeviceProperties  queryDeviceProperties() const;
 
     /* ====================================================================== */
 

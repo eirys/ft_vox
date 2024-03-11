@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/23 09:29:35 by etran             #+#    #+#             */
-/*   Updated: 2024/03/11 14:10:38 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/11 21:11:22 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,7 +42,7 @@ void Renderer::init(ui::Window& window, const GameState& game) {
 
     _createCommandBuffers();
 
-    m_descriptorTable.init(m_device);
+    m_descriptorTable.init(m_device, m_commandBuffers[(u32)CommandBufferIndex::Transfer]);
 
     _createPipelines();
     _createFences();
@@ -77,7 +77,9 @@ void Renderer::waitIdle() const {
     m_device.idle();
 }
 
-void Renderer::render() {
+void Renderer::render(const GameState& game) {
+    m_descriptorTable.update(game);
+
     // Retrieve swap chain image ------
     m_fences[(u32)FenceIndex::DrawInFlight].await(m_device);
     if (m_swapChain.acquireNextImage(m_device, m_semaphores[(u32)SemaphoreIndex::ImageAvailable]) == false)
@@ -121,6 +123,9 @@ void Renderer::render() {
 
 void Renderer::_createCommandBuffers() {
     m_commandBuffers[(u32)CommandBufferIndex::Draw] = m_commandPool.createCommandBuffer(m_device, CommandBufferType::DRAW);
+    m_commandBuffers[(u32)CommandBufferIndex::Transfer] = m_commandPool.createCommandBuffer(m_device, CommandBufferType::DRAW);
+
+    LDEBUG("Command buffers created.");
 }
 
 void Renderer::_createPipelines() {
@@ -144,6 +149,8 @@ void Renderer::_createPipelines() {
     _createPipelineLayout();
 
     for (u32 i = 0; i < PIPELINE_COUNT; ++i) m_pipelines[i]->assemble(m_device, m_pipelineLayout);
+
+    LDEBUG("Pipelines created.");
 }
 
 void Renderer::_createPipelineLayout() {

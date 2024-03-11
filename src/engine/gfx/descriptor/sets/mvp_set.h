@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/28 23:38:00 by etran             #+#    #+#             */
-/*   Updated: 2024/03/11 14:07:36 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/11 20:18:28 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,15 +14,11 @@
 
 #include "descriptor_set.h"
 #include "mvp_ubo.h"
-
-#include "device.h"
 #include "buffer.h"
-#include <stdexcept>
-#include "debug.h"
+#include "game_texture_sampler.h"
 
 namespace vox::gfx {
 
-// Placeholder
 class MVPSet final: public DescriptorSet {
 public:
     /* ====================================================================== */
@@ -30,10 +26,11 @@ public:
     /* ====================================================================== */
 
     enum class BindingIndex: u32 {
-        MvpMatrix = 0,
+        TextureIndex = 0,
+        TextureSampler,
 
-        First = MvpMatrix,
-        Last = MvpMatrix
+        First = TextureIndex,
+        Last = TextureSampler
     };
 
     /* ====================================================================== */
@@ -48,54 +45,11 @@ public:
 
     MVPSet(): super(DescriptorSetIndex::Mvp) {}
 
-    void init(const Device& device) override {
-        BufferMetadata metadata{};
-        metadata.m_size = sizeof(ubo::MvpUbo);
-        metadata.m_usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
-        metadata.m_properties = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
+    void    init(const Device& device, const ICommandBuffer* cmdBuffer) override;
+    void    destroy(const Device& device) override;
 
-        m_buffer.init(device, std::move(metadata));
-        m_buffer.map(device);
-        m_buffer.copyFrom(&m_data);
-
-        std::array<VkDescriptorSetLayoutBinding, BINDING_COUNT> bindings = {
-            _createLayoutBinding(DescriptorTypeIndex::UniformBuffer, ShaderVisibility::VS, (u32)BindingIndex::MvpMatrix)
-        };
-
-        VkDescriptorSetLayoutCreateInfo layoutInfo{};
-        layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-        layoutInfo.bindingCount = BINDING_COUNT;
-        layoutInfo.pBindings = bindings.data();
-
-        if (vkCreateDescriptorSetLayout(device.getDevice(), &layoutInfo, nullptr, &m_layout) != VK_SUCCESS) {
-            throw std::runtime_error("failed to create descriptor set layout!");
-        }
-
-        LDEBUG("MVP descriptor set layout created");
-    }
-
-    void fill(const Device& device, const GameState& state) override {
-        (void)state;
-
-        VkDescriptorBufferInfo bufferInfo{};
-        bufferInfo.buffer = m_buffer.getBuffer();
-        bufferInfo.offset = 0;
-        bufferInfo.range = sizeof(ubo::MvpUbo);
-
-        std::array<VkWriteDescriptorSet, BINDING_COUNT> descriptorWrites = {
-            _createWriteDescriptorSet(DescriptorTypeIndex::UniformBuffer, &bufferInfo, (u32)BindingIndex::MvpMatrix)
-        };
-
-        vkUpdateDescriptorSets(device.getDevice(), BINDING_COUNT, descriptorWrites.data(), 0, nullptr);
-        LDEBUG("MVP descriptor set filled");
-    }
-
-    void    destroy(const Device& device) override {
-        m_buffer.unmap(device);
-        m_buffer.destroy(device);
-        vkDestroyDescriptorSetLayout(device.getDevice(), m_layout, nullptr);
-        LDEBUG("MVP descriptor set destroyed");
-    }
+    void    fill(const Device& device, const GameState& state) override;
+    void    update(const GameState& state);
 
 private:
     /* ====================================================================== */
@@ -108,8 +62,15 @@ private:
     /*                                  DATA                                  */
     /* ====================================================================== */
 
-    Buffer      m_buffer;
-    ubo::MvpUbo m_data;
+    Buffer              m_buffer;
+    GameTextureSampler  m_texture;
+    ubo::MvpUbo         m_data;
+
+    /* ====================================================================== */
+    /*                                 METHODS                                */
+    /* ====================================================================== */
+
+    void    _createBuffers(const Device& device, const ICommandBuffer* cmdBuffer);
 
 };
 
