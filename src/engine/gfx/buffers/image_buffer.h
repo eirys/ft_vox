@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/27 18:36:32 by etran             #+#    #+#             */
-/*   Updated: 2024/03/12 00:11:02 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/12 15:43:58 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,7 +51,7 @@ struct ImageMetaData final {
     u32 m_layerCount = 1;
 
     constexpr
-    u32 getPixelSize() const noexcept;
+    u32 getPixelSize() const;
 
     constexpr
     u32 getLayerSize() const noexcept;

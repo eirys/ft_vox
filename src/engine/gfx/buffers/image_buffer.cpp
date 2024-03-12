@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/27 18:36:30 by etran             #+#    #+#             */
-/*   Updated: 2024/03/12 11:23:58 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/12 15:43:53 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -280,7 +280,7 @@ const ImageMetaData& ImageBuffer::getMetaData() const noexcept {
 /*                                    OTHER                                   */
 /* ========================================================================== */
 
-constexpr u32  ImageMetaData::getPixelSize() const noexcept {
+constexpr u32  ImageMetaData::getPixelSize() const {
     switch (m_format) {
         // uint
         case VK_FORMAT_R8_UINT:
@@ -288,7 +288,7 @@ constexpr u32  ImageMetaData::getPixelSize() const noexcept {
 
         case VK_FORMAT_R16_UINT:
         case VK_FORMAT_R8G8_UINT:
-            return sizeof(u8);
+            return sizeof(u8) * 2;
 
         case VK_FORMAT_R8G8B8_UINT:
         case VK_FORMAT_B8G8R8_UINT:
@@ -321,6 +321,7 @@ constexpr u32  ImageMetaData::getPixelSize() const noexcept {
             return sizeof(u32);
 
         default:
+            throw std::runtime_error("pixel format not supported");
             return 0;
     }
 }

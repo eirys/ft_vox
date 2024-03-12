@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:13:52 by etran             #+#    #+#             */
-/*   Updated: 2024/03/11 21:55:11 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/12 13:59:32 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -89,6 +89,7 @@ public:
 
 	std::vector<uint32_t>		toPixels() const;
     void                        copyToBuffer(u32* buffer) const;
+    void                        debug(const std::string& outfile) const;
 
 	float						noiseAt(std::size_t x) const noexcept;
 	float						noiseAt(

@@ -6,13 +6,15 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/23 10:26:08 by etran             #+#    #+#             */
-/*   Updated: 2024/03/11 21:55:14 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/12 15:54:04 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "perlin_noise.h"
 #include "maths.h"
 #include "vector.h"
+
+#include <fstream>
 // #include "block.h"
 
 #include <cassert> // assert
@@ -90,10 +92,23 @@ std::vector<uint32_t>	PerlinNoise::toPixels() const {
 }
 
 void PerlinNoise::copyToBuffer(u32* buffer) const {
-	for (std::size_t i = 0; i < width * height; ++i) {
-		// Convert to grayscale
-		buffer[i] = (u32)(noise_map[i] * 255);
-	}
+    for (u32 i = 0; i < width * height; ++i) {
+        const u8 val = (u8)(noise_map[i] * 255.0);
+        buffer[i] = val;
+    }
+}
+
+/**
+ * @brief Save the noise map to a ppm file.
+*/
+void PerlinNoise::debug(const std::string& outfile) const {
+    std::ofstream file(outfile);
+    file << "P6\n" << width << " " << height << "\n255\n";
+    for (std::size_t i = 0; i < width * height; ++i) {
+        file << (char)(noise_map[i] * 255);
+        file << (char)(noise_map[i] * 255);
+        file << (char)(noise_map[i] * 255);
+    }
 }
 
 float	PerlinNoise::noiseAt(std::size_t x) const noexcept {

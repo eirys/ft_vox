@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/11 17:46:33 by etran             #+#    #+#             */
-/*   Updated: 2024/03/12 11:47:50 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/12 15:55:50 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,9 +27,9 @@ void GameTextureSampler::init(
     const ICommandBuffer* cmdBuffer
 ) {
     ImageMetaData textureData{};
-    textureData.m_format = VK_FORMAT_R8G8B8_SRGB;
-    textureData.m_width = 100;
-    textureData.m_height = 100;
+    textureData.m_format = VK_FORMAT_R8G8B8A8_SRGB;
+    textureData.m_width = 300;
+    textureData.m_height = 200;
     textureData.m_layerCount = 2;
     textureData.m_usage = VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
     textureData.m_viewType = VK_IMAGE_VIEW_TYPE_2D_ARRAY;
@@ -42,13 +42,18 @@ void GameTextureSampler::init(
     info.width = m_imageBuffer.getMetaData().m_width;
     info.height = m_imageBuffer.getMetaData().m_height;
     info.layers = 4;
-    info.frequency_0 = 0.1f;
+    info.frequency_0 = 0.03f;
     info.frequency_mult = 2.0f;
     info.amplitude_mult = 0.5f;
 
-    static std::array<proc::PerlinNoise, 2> noises = {
-        proc::PerlinNoise(info),
-        proc::PerlinNoise(info)
+    auto addSeed = [&info](const u32 seed) -> proc::NoiseMapInfo {
+        info.seed = seed;
+        return info;
+    };
+
+    static std::array<proc::PerlinNoise,2> noises = {
+        proc::PerlinNoise(addSeed(0)),
+        proc::PerlinNoise(addSeed(1))
     };
 
     std::vector<u32>    pixels;
@@ -93,15 +98,15 @@ void GameTextureSampler::_createSampler(const Device& device) {
     samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
     samplerInfo.magFilter = VK_FILTER_LINEAR;
     samplerInfo.minFilter = VK_FILTER_LINEAR;
-    samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-    samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-    samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-    samplerInfo.anisotropyEnable = VK_TRUE;
-    samplerInfo.maxAnisotropy = device.queryDeviceProperties().limits.maxSamplerAnisotropy;
+    samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER;
+    samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER;
+    samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER;
+    samplerInfo.anisotropyEnable = VK_FALSE; //VK_TRUE;
+    samplerInfo.maxAnisotropy = 0; //device.queryDeviceProperties().limits.maxSamplerAnisotropy;
     samplerInfo.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
     samplerInfo.unnormalizedCoordinates = VK_FALSE;
     samplerInfo.compareEnable = VK_FALSE;
-    samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
+    samplerInfo.compareOp = VK_COMPARE_OP_NEVER;
     samplerInfo.mipLodBias = 0.0f;
     samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
     samplerInfo.minLod = 0.0f;
