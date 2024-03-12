@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/20 00:02:09 by etran             #+#    #+#             */
-/*   Updated: 2024/03/12 00:12:46 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/12 11:15:46 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,8 @@ void keyCallback(GLFWwindow* win, int key, int scancode, int action, int mods) {
 
     const bool isPressed = action == GLFW_PRESS;
     switch (key) {
-        case GLFW_KEY_ESCAPE:   if (isPressed) glfwSetWindowShouldClose(win, GLFW_TRUE); break;
+        case GLFW_KEY_ESCAPE:   if (isPressed) glfwSetWindowShouldClose(win, GLFW_TRUE); return;
+
         case GLFW_KEY_M:        if (isPressed) window->toggleMouse(); break;
         default:                break;
     }

@@ -1,9 +1,9 @@
 #version 450
 
-layout(location = 0) out vec4 outColor;
+layout(location = 0) out uvec4 uvwc;
 
 layout(set = 0, binding = 0) uniform UniformBufferObject {
-    uint color;
+    uint data;
 } ubo;
 
 const vec2 quadpos[4] = {
@@ -15,10 +15,12 @@ const vec2 quadpos[4] = {
 
 void main() {
     gl_Position = vec4(quadpos[gl_VertexIndex], 0.0, 1.0);
-    outColor = vec4(
-        float((ubo.color >> 16) & 0xFF) / 255.0,
-        float((ubo.color >> 8) & 0xFF) / 255.0,
-        float(ubo.color & 0xFF) / 255.0,
-        float((ubo.color >> 24) & 0xFF) / 255.0
-    );
+
+    uint index = ubo.data >> 24;
+    uint color = ubo.data & 0xFFffFF;
+
+    uvwc = uvec4(
+        quadpos[gl_VertexIndex],
+        index,
+        color);
 }

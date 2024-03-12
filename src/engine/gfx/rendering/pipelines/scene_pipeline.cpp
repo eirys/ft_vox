@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/07 09:48:27 by etran             #+#    #+#             */
-/*   Updated: 2024/03/11 14:30:02 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/12 11:39:58 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -204,14 +204,18 @@ void ScenePipeline::record(
         cmdBuffer->getBuffer(),
         VK_PIPELINE_BIND_POINT_GRAPHICS,
         layout,
-        (u32)SceneDescriptorSet::Mvp,
+        (u32)SceneDescriptorSet::First,
         DESCRIPTOR_SET_COUNT, descriptorSets.data(),
         0, nullptr);
+
+    LDEBUG("Bound descriptors");
 
     vkCmdBindPipeline(
         cmdBuffer->getBuffer(),
         VK_PIPELINE_BIND_POINT_GRAPHICS,
         m_pipeline);
+
+    LDEBUG("Bound pipeline");
 
     // For now, draw a quad
     vkCmdDraw(cmdBuffer->getBuffer(), 4, 1, 0, 0);

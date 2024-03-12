@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/23 10:28:53 by etran             #+#    #+#             */
-/*   Updated: 2024/03/11 20:34:14 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/12 11:45:30 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,8 +33,7 @@ public:
     virtual void            init(const Device& device, const VkCommandBufferLevel level) = 0;
     virtual void            destroy(const Device& device) = 0;
 
-    virtual void            reset() = 0;
-
+    virtual void            reset() const = 0;
     virtual void            startRecording(VkCommandBufferUsageFlags flags = 0) const = 0;
     virtual void            stopRecording() const = 0;
     virtual void            awaitEndOfRecording(const Device& device) const = 0;

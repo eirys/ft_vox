@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/07 10:15:26 by etran             #+#    #+#             */
-/*   Updated: 2024/03/12 00:12:04 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/12 11:13:04 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,6 +66,8 @@ void SceneRenderPass::begin(const ICommandBuffer* cmdBuffer, const RecordInfo& r
     beginInfo.pClearValues = clearValues.data();
 
     vkCmdBeginRenderPass(cmdBuffer->getBuffer(), &beginInfo, VK_SUBPASS_CONTENTS_INLINE);
+
+    LDEBUG("Begining render pass " << m_vkRenderPass);
 }
 
 /* ========================================================================== */

@@ -6,12 +6,13 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/02 21:26:12 by etran             #+#    #+#             */
-/*   Updated: 2024/03/07 14:59:42 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/12 11:12:29 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "render_pass.h"
 #include "icommand_buffer.h"
+#include "debug.h"
 
 namespace vox::gfx {
 
@@ -21,6 +22,7 @@ namespace vox::gfx {
 
 void RenderPass::end(const ICommandBuffer* cmdBuffer) {
     vkCmdEndRenderPass(cmdBuffer->getBuffer());
+    LDEBUG("Ending render pass " << m_vkRenderPass);
 }
 
 VkRenderPass RenderPass::getRenderPass() const noexcept {

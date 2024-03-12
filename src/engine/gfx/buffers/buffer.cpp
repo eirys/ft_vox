@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/27 17:40:32 by etran             #+#    #+#             */
-/*   Updated: 2024/03/12 00:16:37 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/12 10:57:55 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,7 +61,7 @@ void Buffer::init(const Device& device, BufferMetadata&& metadata) {
 void Buffer::destroy(const Device& device) {
     vkDestroyBuffer(device.getDevice(), m_buffer, nullptr);
     vkFreeMemory(device.getDevice(), m_memory, nullptr);
-    LDEBUG("Buffer destroyed.");
+    LDEBUG("Buffer destroyed:" << m_buffer);
 }
 
 /* ========================================================================== */
@@ -105,7 +105,7 @@ void Buffer::copyFrom(const void* src, const u32 size) {
 void Buffer::copyFrom(const void* src) {
     memcpy(m_data, src, m_metadata.m_size);
 
-    LDEBUG("Buffer copied from CPU.");
+    LDEBUG("Buffer " << m_buffer << " copied from CPU.");
 }
 
 /**

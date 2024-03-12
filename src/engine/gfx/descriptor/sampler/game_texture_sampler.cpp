@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/11 17:46:33 by etran             #+#    #+#             */
-/*   Updated: 2024/03/12 00:17:03 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/12 11:47:50 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,10 +67,12 @@ void GameTextureSampler::init(
     stagingBuffer.copyFrom(pixels.data());
     stagingBuffer.unmap(device);
 
+    cmdBuffer->reset();
     cmdBuffer->startRecording();
     m_imageBuffer.copyFrom(cmdBuffer, stagingBuffer);
     m_imageBuffer.generateMipmap(cmdBuffer);
     cmdBuffer->stopRecording();
+    cmdBuffer->awaitEndOfRecording(device);
     stagingBuffer.destroy(device);
 
     m_imageBuffer.initView(device);

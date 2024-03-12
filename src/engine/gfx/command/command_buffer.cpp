@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/23 22:43:14 by etran             #+#    #+#             */
-/*   Updated: 2024/03/11 20:33:50 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/12 11:45:17 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 #include "graphics_command_buffer.h"
 #include "compute_command_buffer.h"
 #include "gfx_semaphore.h"
+#include "debug.h"
 
 #include <stdexcept>
 
@@ -48,7 +49,7 @@ void CommandBuffer::destroy(const Device& device) {
 
 /* ========================================================================== */
 
-void CommandBuffer::reset() {
+void CommandBuffer::reset() const {
     vkResetCommandBuffer(m_buffer, 0);
 }
 
@@ -60,12 +61,14 @@ void CommandBuffer::startRecording(VkCommandBufferUsageFlags flags) const {
     if (vkBeginCommandBuffer(m_buffer, &beginInfo) != VK_SUCCESS) {
         throw std::runtime_error("failed to begin recording command buffer");
     }
+    LDEBUG("Started recording...");
 }
 
 void CommandBuffer::stopRecording() const {
     if (vkEndCommandBuffer(m_buffer) != VK_SUCCESS) {
         throw std::runtime_error("failed to record command buffer");
     }
+    LDEBUG("Stopped recording...");
 }
 
 void CommandBuffer::awaitEndOfRecording(const Device& device) const {

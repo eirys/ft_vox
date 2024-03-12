@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/11 16:12:13 by etran             #+#    #+#             */
-/*   Updated: 2024/03/11 22:49:44 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/12 11:35:46 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,7 @@ void MVPSet::init(const Device& device, const ICommandBuffer* cmdBuffer) {
 
     std::array<VkDescriptorSetLayoutBinding, BINDING_COUNT> bindings = {
         _createLayoutBinding(DescriptorTypeIndex::UniformBuffer, ShaderVisibility::VS, (u32)BindingIndex::TextureIndex),
-        _createLayoutBinding(DescriptorTypeIndex::CombinedImageSampler, ShaderVisibility::VS, (u32)BindingIndex::TextureSampler)
+        _createLayoutBinding(DescriptorTypeIndex::CombinedImageSampler, ShaderVisibility::FS, (u32)BindingIndex::TextureSampler)
     };
 
     VkDescriptorSetLayoutCreateInfo layoutInfo{};
@@ -72,7 +72,7 @@ void MVPSet::destroy(const Device& device) {
 }
 
 void MVPSet::update(const GameState& state) {
-    m_data.pack(state.color);
+    m_data.pack(state.color, state.index);
     m_buffer.copyFrom(&m_data);
 }
 

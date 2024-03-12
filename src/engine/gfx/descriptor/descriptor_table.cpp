@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/28 19:55:31 by etran             #+#    #+#             */
-/*   Updated: 2024/03/11 21:13:01 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/12 11:24:55 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,6 +51,7 @@ void DescriptorTable::fill(const Device& device, const GameState& state) {
 void DescriptorTable::update(const GameState& state) {
     MVPSet* mvp = (MVPSet*)m_sets[(u32)DescriptorSetIndex::Mvp];
     mvp->update(state);
+
 }
 
 /* ========================================================================== */

@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/27 18:36:30 by etran             #+#    #+#             */
-/*   Updated: 2024/03/12 00:16:21 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/12 11:23:58 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -80,7 +80,7 @@ void ImageBuffer::initView(const Device& device) {
         throw std::runtime_error("failed to create texture image view");
     }
 
-    LDEBUG("Image view initialized: " << " view::" << m_view );
+    LDEBUG("Image view initialized: view::" << m_view );
 }
 
 void ImageBuffer::destroy(const Device& device) {
@@ -179,7 +179,7 @@ void ImageBuffer::copyFrom(const ICommandBuffer* cmdBuffer, const Buffer& srcBuf
         m_metadata.m_layerCount,
         regions.data());
 
-    LDEBUG("Copied buffer to image.");
+    LDEBUG("Copied buffer to image::" << m_image);
 }
 
 void ImageBuffer::generateMipmap(const ICommandBuffer* cmdBuffer) {
@@ -259,7 +259,7 @@ void ImageBuffer::generateMipmap(const ICommandBuffer* cmdBuffer) {
         VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT };
     setLayout(cmdBuffer, shaderLayoutData, &dstLayoutData);
 
-    LDEBUG("Generated mipmaps.");
+    LDEBUG("Generated mipmaps for image::" << m_image);
 }
 
 /* ========================================================================== */
