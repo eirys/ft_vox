@@ -6,7 +6,7 @@
 #    By: etran <etran@student.42.fr>                +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/04/06 03:40:09 by eli               #+#    #+#              #
-#    Updated: 2024/03/11 17:46:23 by etran            ###   ########.fr        #
+#    Updated: 2024/03/14 17:53:09 by etran            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -157,6 +157,9 @@ SHD_BIN		:=	$(addsuffix .spv,$(SHD))
 GLSLC		:=	glslc
 RM			:=	rm -rf
 
+DOCKER		:=	docker compose
+COMPOSEFILE	:=	docker-compose.yml
+
 # ============================================================================ #
 #                                     RULES                                    #
 # ============================================================================ #
@@ -184,15 +187,23 @@ $(SHD_BIN_DIR)/%.spv: $(SHD_DIR)/%.glsl
 	@$(GLSLC) -fshader-stage=$(subst .,,$(suffix $(basename $<))) $< -o $@
 
 .PHONY: run
-run: all
-	@./$(NAME)
+run: build
+	$(DOCKER) -f $(COMPOSEFILE) up -d
+
+.PHONY: build
+build:
+	$(DOCKER) -f $(COMPOSEFILE) build
+
+.PHONY: down
+down:
+	$(DOCKER) -f $(COMPOSEFILE) down
 
 .PHONY: shaders
 shaders: $(SHD_BIN)
 
 .PHONY: clean_shaders
 clean_shaders:
-	@${RM} $(SHD_BIN_DIR)
+	@$(RM) $(SHD_BIN_DIR)
 	@echo "Removed shader binaries."
 
 .PHONY: shaders_re
@@ -200,12 +211,12 @@ shaders_re: clean_shaders $(SHD_BIN)
 
 .PHONY: clean
 clean:
-	@${RM} $(OBJ_DIR)
+	@$(RM) $(OBJ_DIR)
 	@echo "Cleaning object files and dependencies."
 
 .PHONY: fclean
 fclean: clean
-	@${RM} $(NAME)
+	@$(RM) $(NAME)
 	@echo "Removed $(NAME)."
 
 .PHONY: re

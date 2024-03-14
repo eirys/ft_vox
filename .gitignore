@@ -7,3 +7,6 @@
 !README.md
 !Makefile
 !LICENSE
+!Dockerfile
+!docker-compose.yml
+!dev.sh
