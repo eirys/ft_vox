@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/27 17:14:27 by etran             #+#    #+#             */
-/*   Updated: 2024/03/07 15:31:28 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/15 18:00:55 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,7 +61,7 @@ public:
     void copyTo(void* dst);
     void copyTo(void* dst, const u32 size);
     void copyFrom(const void* src);
-    void copyFrom(const void* src, const u32 size);
+    void copyFrom(const void* src, const u32 size, const u32 offset);
 
     void copyBuffer(
         ICommandBuffer* cmdBuffer,

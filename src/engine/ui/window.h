@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/19 23:59:08 by etran             #+#    #+#             */
-/*   Updated: 2024/03/12 15:45:16 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/15 21:04:54 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,15 @@ namespace ui {
 */
 class Window final {
 public:
+    /* ====================================================================== */
+    /*                             HELPER OBJECTS                             */
+    /* ====================================================================== */
+
+    struct MousePos {
+        double x;
+        double y;
+    };
+
     /* ========================================================================= */
     /*                                  TYPEDEF                                  */
     /* ========================================================================= */
@@ -61,8 +70,10 @@ public:
     void    toggleMouse() noexcept;
     void    toggleUpdate() noexcept;
     void    retrieveFramebufferSize(int& width, int& height) const;
+    void    updateMousePos(double x, double y) noexcept;
 
     /* ========================================================================= */
+    const MousePos&     getMousePos() const noexcept;
     bool                isMouseActive() const noexcept;
     bool                needsUpdate() const noexcept;
     GLFWwindow*         getWindow() noexcept;
@@ -74,10 +85,10 @@ private:
     /* ========================================================================= */
 
     GLFWwindow*     m_window = nullptr;
+    MousePos        m_mousePos = {0.0, (double)HEIGHT / 2.0};
     u32             m_width = WIDTH;
     u32             m_height = HEIGHT;
-    bool            m_mouseActive = true;
-
+    bool            m_mouseActive = false;
     bool            m_isUpdated = true;
 
 }; // class Window

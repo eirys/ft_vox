@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/28 15:42:53 by etran             #+#    #+#             */
-/*   Updated: 2024/03/11 18:31:04 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/15 18:50:42 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,10 +16,13 @@
 
 #include "idescriptor_set.h"
 
+namespace game {
+class GameState;
+}
+
 namespace vox::gfx {
 
 class Device;
-class GameState;
 class ICommandBuffer;
 
 /**
@@ -45,13 +48,16 @@ public:
     void init(const Device& device, const ICommandBuffer* cmdBuffer);
     void destroy(const Device& device);
 
-    void fill(const Device& device, const GameState& state);
-    void update(const GameState& state);
+    void fill(const Device& device);
+    void update(const game::GameState& state);
 
 /* ========================================================================== */
 
     IDescriptorSet const*    operator[](const DescriptorSetIndex index) const noexcept;
     IDescriptorSet*          operator[](const DescriptorSetIndex index) noexcept;
+
+    IDescriptorSet const*    operator[](const u32 index) const noexcept;
+    IDescriptorSet*          operator[](const u32 index) noexcept;
 
 private:
     /* ====================================================================== */

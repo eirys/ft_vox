@@ -6,7 +6,7 @@
 #    By: etran <etran@student.42.fr>                +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/04/06 03:40:09 by eli               #+#    #+#              #
-#    Updated: 2024/03/14 17:53:09 by etran            ###   ########.fr        #
+#    Updated: 2024/03/15 22:51:59 by etran            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -28,9 +28,12 @@ SHD_BIN_DIR	:=	$(OBJ_DIR)/shaders
 # engine
 ENGINE_DIR	:=	engine
 GFX_DIR		:=	$(ENGINE_DIR)/gfx
-PROC_DIR	:=	$(ENGINE_DIR)/procedural
 UI_DIR		:=	$(ENGINE_DIR)/ui
 GAME_DIR	:=	$(ENGINE_DIR)/game
+WORLD_DIR	:=	$(GAME_DIR)/world
+
+# procedural
+PROC_DIR	:=	procedural
 
 # gfx
 BUF_DIR		:=	$(GFX_DIR)/buffers
@@ -39,7 +42,6 @@ DESC_DIR	:=	$(GFX_DIR)/descriptor
 SYNC_DIR	:=	$(GFX_DIR)/sync
 RENDER_DIR	:=	$(GFX_DIR)/rendering
 SETS_DIR	:=	$(DESC_DIR)/sets
-UBO_DIR		:=	$(DESC_DIR)/ubo
 SAMPLER_DIR	:=	$(DESC_DIR)/sampler
 PIP_DIR		:=	$(RENDER_DIR)/pipelines
 
@@ -54,9 +56,7 @@ SUBDIRS		:=	$(LIBS_DIR) \
 				$(MATH_DIR) \
 				$(DECL_DIR) \
 				$(ENGINE_DIR) \
-				$(GAME_DIR) \
 				$(GFX_DIR) \
-				$(PROC_DIR) \
 				$(UI_DIR) \
 				$(IO_DIR) \
 				$(BUF_DIR) \
@@ -64,10 +64,12 @@ SUBDIRS		:=	$(LIBS_DIR) \
 				$(CMD_DIR) \
 				$(DESC_DIR) \
 				$(SETS_DIR) \
-				$(UBO_DIR) \
 				$(SYNC_DIR) \
 				$(RENDER_DIR) \
-				$(PIP_DIR)
+				$(PIP_DIR) \
+				$(PROC_DIR) \
+				$(GAME_DIR) \
+				$(WORLD_DIR)
 
 OBJ_SUBDIRS	:=	$(addprefix $(OBJ_DIR)/,$(SUBDIRS))
 INC_SUBDIRS	:=	$(addprefix $(SRC_DIR)/,$(SUBDIRS)) \
@@ -85,6 +87,7 @@ SRC_FILES	:=	entrypoint.cpp \
 				$(CMD_DIR)/command_buffer.cpp \
 				$(SAMPLER_DIR)/game_texture_sampler.cpp \
 				$(SETS_DIR)/mvp_set.cpp \
+				$(SETS_DIR)/world_set.cpp \
 				$(DESC_DIR)/descriptor_pool.cpp \
 				$(DESC_DIR)/descriptor_table.cpp \
 				$(DESC_DIR)/descriptor_set.cpp \
@@ -99,6 +102,10 @@ SRC_FILES	:=	entrypoint.cpp \
 				$(PROC_DIR)/perlin_noise.cpp \
 				$(MATH_DIR)/maths.cpp \
 				$(MATH_DIR)/matrix.cpp \
+				$(GAME_DIR)/game_state.cpp \
+				$(WORLD_DIR)/world.cpp \
+				$(WORLD_DIR)/chunk.cpp \
+				$(UI_DIR)/controller.cpp \
 				$(UI_DIR)/window.cpp
 
 SRC			:=	$(addprefix $(SRC_DIR)/,$(SRC_FILES))
@@ -106,8 +113,7 @@ OBJ			:=	$(addprefix $(OBJ_DIR)/,$(SRC_FILES:.cpp=.o))
 DEP			:=	$(addprefix $(OBJ_DIR)/,$(SRC_FILES:.cpp=.d))
 
 CXX			:=	clang++
-MACROS		?=	GLFW_INCLUDE_VULKAN \
-				__DEBUG \
+MACROS		:=	GLFW_INCLUDE_VULKAN \
 				__LOG \
 				__INFO \
 				__LINUX \
@@ -125,15 +131,16 @@ DEFINES		:=	$(addprefix -D,$(MACROS))
 ## VOX_CPP : Enables C++ code.
 ## NDEBUG : Disables assertions (if using <cassert>).
 
-EXTRA		?=	-Wall \
-				-Werror \
-				-Wextra
+# EXTRA		?=	-Wall \
+# 				-Werror \
+# 				-Wextra
 INCLUDES	:=	$(addprefix -I./,$(INC_SUBDIRS))
 
 CFLAGS		:=	$(EXTRA) \
 				-std=c++20 \
 				-MMD \
 				-MP \
+				-O3 \
 				$(INCLUDES) \
 				$(DEFINES)
 
@@ -154,11 +161,8 @@ SHD			:=	$(addprefix $(SHD_BIN_DIR)/,$(SHD_FILES))
 SHD_BIN		:=	$(addsuffix .spv,$(SHD))
 
 # -------------------- MISC -------------------- #
-GLSLC		:=	glslc
+GLSLC		?=	glslc
 RM			:=	rm -rf
-
-DOCKER		:=	docker compose
-COMPOSEFILE	:=	docker-compose.yml
 
 # ============================================================================ #
 #                                     RULES                                    #
@@ -185,18 +189,6 @@ $(SHD_BIN_DIR)/%.spv: $(SHD_DIR)/%.glsl
 	@mkdir -p $(OBJ_DIR) $(SHD_BIN_DIR)
 	@echo "Compiling shader $<..."
 	@$(GLSLC) -fshader-stage=$(subst .,,$(suffix $(basename $<))) $< -o $@
-
-.PHONY: run
-run: build
-	$(DOCKER) -f $(COMPOSEFILE) up -d
-
-.PHONY: build
-build:
-	$(DOCKER) -f $(COMPOSEFILE) build
-
-.PHONY: down
-down:
-	$(DOCKER) -f $(COMPOSEFILE) down
 
 .PHONY: shaders
 shaders: $(SHD_BIN)

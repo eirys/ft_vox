@@ -1,53 +1,55 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   engine.h                                           :+:      :+:    :+:   */
+/*   chunk.h                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/02/27 18:15:33 by etran             #+#    #+#             */
-/*   Updated: 2024/03/15 20:29:58 by etran            ###   ########.fr       */
+/*   Created: 2024/03/15 13:29:06 by etran             #+#    #+#             */
+/*   Updated: 2024/03/15 20:58:27 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
-#include "controller.h"
-#include "window.h"
-#include "renderer.h"
-#include "game_state.h"
+#include <array>
 
-namespace vox {
+#include "types.h"
+#include "game_decl.h"
 
-class Engine final {
+namespace proc {
+class PerlinNoise;
+}
+
+namespace game {
+
+class Chunk final {
 public:
+    /* ====================================================================== */
+    /*                                TYPEDEFS                                */
+    /* ====================================================================== */
+
+    using Block = u8;
+
     /* ====================================================================== */
     /*                                 METHODS                                */
     /* ====================================================================== */
 
-    Engine();
-    ~Engine();
+    void    generate(const proc::PerlinNoise& noise, const u32 offsetX, const u32 offsetZ) noexcept;
 
-    Engine(Engine&& other) = delete;
-    Engine(const Engine& other) = delete;
-    Engine& operator=(Engine&& other) = delete;
-    Engine& operator=(const Engine& other) = delete;
+    u8&     operator[](const u32 index) noexcept;
+    u8      operator[](const u32 index) const noexcept;
 
-    /* ====================================================================== */
-
-    void    run();
+    const std::array<u32, CHUNK_AREA>&    getHeights() const;
 
 private:
     /* ====================================================================== */
     /*                                  DATA                                  */
     /* ====================================================================== */
 
-    ui::Window      m_window;
-    ui::Controller  m_controller;
-    gfx::Renderer   m_renderer;
+    std::array<Block, CHUNK_VOLUME>         m_blocks = {};
+    std::array<u32, CHUNK_AREA> m_heights = {};
 
-    game::GameState  m_game;
+}; // class Chunk
 
-}; // class Engine
-
-} // namespace vox
+} // namespace game

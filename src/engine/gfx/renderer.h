@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/21 12:17:21 by etran             #+#    #+#             */
-/*   Updated: 2024/03/11 20:09:11 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/15 15:26:21 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,11 +24,12 @@
 #include "command_pool.h"
 
 namespace ui {
-
 class Window;
+}
 
-} // namespace ui
-
+namespace game {
+class GameState;
+}
 
 namespace vox::gfx {
 
@@ -53,11 +54,11 @@ public:
 
     /* ====================================================================== */
 
-    void init(ui::Window& window, const GameState& game);
+    void init(ui::Window& window, const game::GameState& game);
     void destroy();
 
     void waitIdle() const;
-    void render(const GameState& game);
+    void render(const game::GameState& game);
 
 private:
     /* ====================================================================== */

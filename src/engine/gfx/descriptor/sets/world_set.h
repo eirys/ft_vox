@@ -1,48 +1,42 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   mvp_set.h                                          :+:      :+:    :+:   */
+/*   world_set.h                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/02/28 23:38:00 by etran             #+#    #+#             */
-/*   Updated: 2024/03/15 17:38:33 by etran            ###   ########.fr       */
+/*   Created: 2024/03/15 16:21:18 by etran             #+#    #+#             */
+/*   Updated: 2024/03/15 17:45:18 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
 #include "descriptor_set.h"
-#include "mvp_ubo.h"
 #include "buffer.h"
-#include "game_texture_sampler.h"
 
 namespace vox::gfx {
 
-class MVPSet final: public DescriptorSet {
+class WorldSet final: public DescriptorSet {
 public:
     /* ====================================================================== */
     /*                                  ENUMS                                 */
     /* ====================================================================== */
 
     enum class BindingIndex: u32 {
-        Self = 0,
+        BlockPos = 0,
 
-        First = Self,
-        Last = Self
+        Textures,
+
+        First = BlockPos,
+        Last = BlockPos
     };
-
-    /* ====================================================================== */
-    /*                                TYPEDEFS                                */
-    /* ====================================================================== */
-
-    using super = DescriptorSet;
 
     /* ====================================================================== */
     /*                                 METHODS                                */
     /* ====================================================================== */
 
-    MVPSet(): super(DescriptorSetIndex::Mvp) {}
+    WorldSet(): DescriptorSet(DescriptorSetIndex::WorldData) {}
 
     void    init(const Device& device, const ICommandBuffer* cmdBuffer) override;
     void    destroy(const Device& device) override;
@@ -61,10 +55,8 @@ private:
     /*                                  DATA                                  */
     /* ====================================================================== */
 
-    Buffer              m_mvpDataBuffer;
-    // GameTextureSampler  m_texture;
-    ubo::MvpUbo         m_data;
+    Buffer   m_blockPosBuffer;
 
-};
+}; // class WorldSet
 
 } // namespace vox::gfx

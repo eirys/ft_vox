@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/11 16:56:28 by etran             #+#    #+#             */
-/*   Updated: 2024/03/12 10:45:39 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/15 21:00:42 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,24 +14,36 @@
 
 #include "vector.h"
 #include "types.h"
+#include "world.h"
 
-namespace vox::gfx {
+namespace ui {
+class Controller;
+}
+
+namespace game {
 
 class GameState final {
 public:
-    math::Vect3 color;
-    u32         index = 0;
+    /* ====================================================================== */
+    /*                                 METHODS                                */
+    /* ====================================================================== */
 
-    void update() {
-        constexpr math::Vect3 colors[2] = {
-            {200.0f, 0.0f, 0.0f},
-            {0.0f, 200.0f, 0.0f}
-        };
+    GameState();
 
-        index = (index + 1) % 2;
-        color = colors[index];
-    }
+    void update(const ui::Controller& controller);
+
+    World&              getWorld() noexcept;
+    const World&        getWorld() const noexcept;
+    const math::Vect3&  getPlayerCamera() const noexcept;
+
+private:
+    /* ====================================================================== */
+    /*                                  DATA                                  */
+    /* ====================================================================== */
+
+    World       m_world;
+    math::Vect3 m_playerCamera = {0.0f, 0.0f, 1.0f};
 
 };
 
-}
+} // namespace game

@@ -1,12 +1,4 @@
-FROM ubuntu:18.04
-
-COPY assets         /app/assets
-COPY shaders        /app/shaders
-COPY src            /app/src
-
-COPY dev.sh         /app
-COPY install.tgz    /app
-COPY Makefile       /app
+FROM ubuntu:22.04
 
 WORKDIR /app
 
@@ -14,16 +6,21 @@ WORKDIR /app
 RUN apt update -y && \
 apt install -y \
     make \
-    software-properties-common && \
 # Install glslc
+    software-properties-common && \
 add-apt-repository ppa:ubuntu-toolchain-r/test -y && \
 apt upgrade libstdc++6 -y && \
-tar xvf install.tgz && \
-alias glslc="/install/bin/glslc" && \
-rm -rf install.tgz && \
-# Run dev.sh
-chmod +x /app/dev.sh && \
+# Cleanup
 apt autoremove -y && \
-apt autoclean -y
+apt autoclean -y && \
+useradd \
+    -rm \
+    -d /home/vox_user \
+    -s /bin/bash \
+    -g root \
+    -G sudo \
+    -u 1000 vox_user
 
-ENTRYPOINT ["/app/dev.sh"]
+USER vox_user
+
+ENTRYPOINT [ "./dev.sh" ]

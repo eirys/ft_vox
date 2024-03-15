@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/07 09:48:27 by etran             #+#    #+#             */
-/*   Updated: 2024/03/12 13:55:32 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/15 22:21:36 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,15 +19,18 @@
 #include <array>
 #include <stdexcept>
 
+#include "game_decl.h"
+
 #include "debug.h"
 
 namespace vox::gfx {
 
 enum class SceneDescriptorSet: u32 {
     Mvp = 0,
+    WorldData,
 
     First = Mvp,
-    Last = Mvp
+    Last = WorldData
 };
 
 static constexpr u32 DESCRIPTOR_SET_COUNT = enumSize<SceneDescriptorSet>();
@@ -89,7 +92,7 @@ void ScenePipeline::assemble(const Device& device, const VkPipelineLayout& pipel
     rasterizer.depthBiasEnable = VK_FALSE;
     rasterizer.depthBiasConstantFactor = 0.0f;
     rasterizer.depthBiasClamp = 0.0f;
-    rasterizer.cullMode = VK_CULL_MODE_BACK_BIT;
+    rasterizer.cullMode = VK_CULL_MODE_NONE;
     rasterizer.depthBiasSlopeFactor = 0.0f;
 
     VkPipelineMultisampleStateCreateInfo multisample{};
@@ -198,7 +201,9 @@ void ScenePipeline::record(
     scissor.extent = { m_renderPass->getWidth(), m_renderPass->getHeight() };
     vkCmdSetScissor(cmdBuffer->getBuffer(), 0, 1, &scissor);
 
-    std::array<VkDescriptorSet, DESCRIPTOR_SET_COUNT> descriptorSets = { descriptorTable[DescriptorSetIndex::Mvp]->getSet() };
+    std::array<VkDescriptorSet, DESCRIPTOR_SET_COUNT> descriptorSets = {
+        descriptorTable[DescriptorSetIndex::Mvp]->getSet(),
+        descriptorTable[DescriptorSetIndex::WorldData]->getSet() };
 
     vkCmdBindDescriptorSets(
         cmdBuffer->getBuffer(),
@@ -208,17 +213,16 @@ void ScenePipeline::record(
         DESCRIPTOR_SET_COUNT, descriptorSets.data(),
         0, nullptr);
 
-    LDEBUG("Bound descriptors");
-
     vkCmdBindPipeline(
         cmdBuffer->getBuffer(),
         VK_PIPELINE_BIND_POINT_GRAPHICS,
         m_pipeline);
 
-    LDEBUG("Bound pipeline");
-
     // For now, draw a quad
-    vkCmdDraw(cmdBuffer->getBuffer(), 4, 1, 0, 0);
+    constexpr u32 INSTANCES = WORLD_SIZE * CHUNK_AREA;
+
+    LDEBUG("Drawing " << INSTANCES << " instances");
+    vkCmdDraw(cmdBuffer->getBuffer(), 4, INSTANCES, 0, 0);
 
     m_renderPass->end(cmdBuffer);
 }

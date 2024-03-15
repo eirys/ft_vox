@@ -1,41 +1,35 @@
 #version 450
 
-layout(location = 0) out vec4 uvwc;
+layout(set = 0, binding = 0) uniform ViewProjData {
+    mat4 inner;
+} viewProj;
 
-layout(set = 0, binding = 0) uniform UniformBufferObject {
-    uint data;
-} ubo;
+layout(set = 1, binding = 0) uniform WorldData {
+    uint heights[1*1][16*16];
+} world;
 
 const vec2 quadpos[4] = {
-    { -1.0, -1.0 },
-    {  1.0, -1.0 },
-    { -1.0,  1.0 },
-    {  1.0,  1.0 },
-};
-
-const vec3 colors[4] = {
-    {0.,0.,0.},
-    {1.,0.,0.},
-    {0.,1.,0.},
-    {0.,0.,1.},
-};
-
-const vec2 uvs[4] = {
     { 0.0, 0.0 },
+    { 1.0, 0.0 },
     { 0.0, 1.0 },
     { 1.0, 1.0 },
-    { 1.0, 0.0 },
 };
 
 void main() {
-    gl_Position = vec4(quadpos[gl_VertexIndex], 0.0, 1.0);
+    const uint chunkSize = 16;
+    const uint worldSize = 1;
 
-    uint index = ubo.data >> 24;
-    uint color = ubo.data & 0xFFffFF;
+    uint localIndex = gl_InstanceIndex % (chunkSize * chunkSize);
+    uint chunkIndex = gl_InstanceIndex / (chunkSize * chunkSize);
 
-    uvwc = vec4(
-        quadpos[gl_VertexIndex] * 0.5 + vec2(0.5),
-        float(index),
-        // colors[gl_VertexIndex],
-        float(color));
+    uvec2 localPos = uvec2(localIndex % chunkSize, localIndex / chunkSize);
+    uvec2 chunkPos = uvec2(chunkIndex % worldSize, chunkIndex / worldSize);
+
+    uvec2 worldPos2d = chunkPos * chunkSize + localPos;
+    uint height = world.heights[chunkIndex][localIndex];
+
+    vec2 posXZ = quadpos[gl_VertexIndex] + vec2(worldPos2d);
+    vec3 worldPos = vec3(posXZ.x, float(height), posXZ.y);
+
+    gl_Position = viewProj.inner * vec4(worldPos, 1.0);
 }

@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/20 00:02:09 by etran             #+#    #+#             */
-/*   Updated: 2024/03/12 11:15:46 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/15 21:10:22 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,6 +28,17 @@ void keyCallback(GLFWwindow* win, int key, int scancode, int action, int mods) {
     }
 
     if (isPressed) window->toggleUpdate();
+}
+
+static
+void cursorPositionCallback(GLFWwindow* win, double xpos, double ypos) {
+    Window* window = static_cast<Window*>(glfwGetWindowUserPointer(win));
+
+    if (window->isMouseActive())
+        return;
+
+    window->updateMousePos(xpos, ypos);
+    window->toggleUpdate();
 }
 
 /* ========================================================================== */
@@ -54,7 +65,7 @@ Window::Window() {
     // Setup event callbacks
     // glfwSetFramebufferSizeCallback(m_window, framebufferResizeCallback);
     glfwSetKeyCallback(m_window, keyCallback);
-    // glfwSetCursorPosCallback(m_window, cursorPositionCallback);
+    glfwSetCursorPosCallback(m_window, cursorPositionCallback);
 
     // Disable cursor
     glfwSetInputMode(m_window, GLFW_CURSOR, m_mouseActive ? GLFW_CURSOR_NORMAL : GLFW_CURSOR_DISABLED);
@@ -111,7 +122,15 @@ void Window::retrieveFramebufferSize(int& width, int& height) const {
     glfwGetFramebufferSize(m_window, &width, &height);
 }
 
+void Window::updateMousePos(double x, double y) noexcept {
+    m_mousePos = {x, y};
+}
+
 /* ========================================================================== */
+
+const Window::MousePos& Window::getMousePos() const noexcept {
+    return m_mousePos;
+}
 
 bool Window::isMouseActive() const noexcept {
     return m_mouseActive;
@@ -128,9 +147,5 @@ GLFWwindow* Window::getWindow() noexcept {
 GLFWwindow const* Window::getWindow() const noexcept {
     return m_window;
 }
-
-/* ========================================================================== */
-/*                                   PRIVATE                                  */
-/* ========================================================================== */
 
 } // namespace ui

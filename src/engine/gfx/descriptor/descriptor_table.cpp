@@ -6,12 +6,14 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/28 19:55:31 by etran             #+#    #+#             */
-/*   Updated: 2024/03/12 11:24:55 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/15 21:14:48 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "descriptor_table.h"
 #include "mvp_set.h"
+#include "world_set.h"
+
 #include "debug.h"
 
 namespace vox::gfx {
@@ -22,6 +24,7 @@ namespace vox::gfx {
 
 DescriptorTable::DescriptorTable() {
     m_sets[(u32)DescriptorSetIndex::Mvp] = new MVPSet();
+    m_sets[(u32)DescriptorSetIndex::WorldData] = new WorldSet();
 }
 
 DescriptorTable::~DescriptorTable() {
@@ -42,16 +45,18 @@ void DescriptorTable::destroy(const Device& device) {
     LINFO("Descriptor table destroyed.");
 }
 
-void DescriptorTable::fill(const Device& device, const GameState& state) {
-    for (u32 i = 0; i < DESCRIPTOR_TABLE_SIZE; ++i) m_sets[i]->fill(device, state);
+void DescriptorTable::fill(const Device& device) {
+    for (u32 i = 0; i < DESCRIPTOR_TABLE_SIZE; ++i) m_sets[i]->fill(device);
 
     LINFO("Descriptor table flled up.");
 }
 
-void DescriptorTable::update(const GameState& state) {
+void DescriptorTable::update(const game::GameState& state) {
     MVPSet* mvp = (MVPSet*)m_sets[(u32)DescriptorSetIndex::Mvp];
     mvp->update(state);
 
+    WorldSet* world = (WorldSet*)m_sets[(u32)DescriptorSetIndex::WorldData];
+    world->update(state);
 }
 
 /* ========================================================================== */
@@ -61,6 +66,14 @@ IDescriptorSet const* DescriptorTable::operator[](const DescriptorSetIndex index
 }
 
 IDescriptorSet* DescriptorTable::operator[](const DescriptorSetIndex index) noexcept {
+    return m_sets[(u32)index];
+}
+
+IDescriptorSet const* DescriptorTable::operator[](const u32 index) const noexcept {
+    return m_sets[(u32)index];
+}
+
+IDescriptorSet* DescriptorTable::operator[](const u32 index) noexcept {
     return m_sets[(u32)index];
 }
 

@@ -1,31 +1,22 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   maths.h                                            :+:      :+:    :+:   */
+/*   game_decl.h                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/02/21 11:25:05 by etran             #+#    #+#             */
-/*   Updated: 2024/03/15 18:49:02 by etran            ###   ########.fr       */
+/*   Created: 2024/03/15 13:35:46 by etran             #+#    #+#             */
+/*   Updated: 2024/03/15 22:10:01 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
-# include <cmath>
-# include "types.h"
+# define CHUNK_SIZE     16
+# define CHUNK_HEIGHT   16 // Temporary value, will be changed to 256
+# define CHUNK_AREA     (CHUNK_SIZE * CHUNK_SIZE) // 256
+# define CHUNK_VOLUME   (CHUNK_AREA * CHUNK_HEIGHT) // 4096
 
-namespace math {
-
-f32     radians(f32 degrees) noexcept;
-f32     dregrees(f32 radians) noexcept;
-f32     smoothen(const f32 x) noexcept;
-f32     generateRandomf32();
-void    generateVibrantColor(f32& red, f32& green, f32& blue);
-
-template <typename T>
-f32           lerp(T x, T y, f32 t) noexcept {
-	return std::fma(t, y - x, x);
-}
-
-} // namespace math
+# define WORLD_WIDTH    1
+# define WORLD_DEPTH    1
+# define WORLD_SIZE     (WORLD_WIDTH * WORLD_DEPTH)

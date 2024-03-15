@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/23 09:29:35 by etran             #+#    #+#             */
-/*   Updated: 2024/03/11 21:11:22 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/15 18:51:06 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,7 +34,7 @@ Renderer::~Renderer() {
 
 /* ========================================================================== */
 
-void Renderer::init(ui::Window& window, const GameState& game) {
+void Renderer::init(ui::Window& window, const game::GameState& game) {
     m_core.init(window);
     m_device.init(m_core);
     m_swapChain.init(m_core, m_device, window);
@@ -49,7 +49,7 @@ void Renderer::init(ui::Window& window, const GameState& game) {
     _createGfxSemaphores();
 
     m_descriptorPool.init(m_device, m_descriptorTable);
-    m_descriptorTable.fill(m_device, game);
+    m_descriptorTable.fill(m_device);
 
     LDEBUG("Renderer initialized.");
 }
@@ -77,7 +77,7 @@ void Renderer::waitIdle() const {
     m_device.idle();
 }
 
-void Renderer::render(const GameState& game) {
+void Renderer::render(const game::GameState& game) {
     m_descriptorTable.update(game);
 
     // Retrieve swap chain image ------
@@ -155,7 +155,8 @@ void Renderer::_createPipelines() {
 
 void Renderer::_createPipelineLayout() {
     std::array<VkDescriptorSetLayout, DESCRIPTOR_TABLE_SIZE> setLayouts;
-    setLayouts[(u32)DescriptorSetIndex::Mvp] = m_descriptorTable[DescriptorSetIndex::Mvp]->getLayout();
+    for (u32 i = 0; i < DESCRIPTOR_TABLE_SIZE; ++i)
+        setLayouts[i] = m_descriptorTable[i]->getLayout();
 
     VkPipelineLayoutCreateInfo layoutInfo{};
     layoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;

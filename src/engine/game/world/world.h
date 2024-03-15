@@ -1,33 +1,39 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ubo.h                                              :+:      :+:    :+:   */
+/*   world.h                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/03/07 13:47:01 by etran             #+#    #+#             */
-/*   Updated: 2024/03/07 13:47:45 by etran            ###   ########.fr       */
+/*   Created: 2024/03/15 15:24:42 by etran             #+#    #+#             */
+/*   Updated: 2024/03/15 17:51:11 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
-namespace vox::gfx::ubo {
+#include "chunk.h"
 
-class Ubo {
+namespace game {
+
+class World final {
 public:
     /* ====================================================================== */
     /*                                 METHODS                                */
     /* ====================================================================== */
 
-    Ubo() = default;
-    ~Ubo() = default;
+    void init(const u32 seed);
 
-    Ubo(Ubo&& other) = delete;
-    Ubo(const Ubo& other) = delete;
-    Ubo& operator=(Ubo&& other) = delete;
-    Ubo& operator=(const Ubo& other) = delete;
+    const std::array<Chunk, WORLD_SIZE>&    getChunks() const noexcept;
+    std::array<Chunk, WORLD_SIZE>&          getChunks() noexcept;
 
-}; // class Ubo
+private:
+    /* ====================================================================== */
+    /*                                  DATA                                  */
+    /* ====================================================================== */
 
-} // namespace vox::gfx::ubo
+    std::array<Chunk, WORLD_SIZE>   m_chunks;
+
+}; // class World
+
+} // namespace game

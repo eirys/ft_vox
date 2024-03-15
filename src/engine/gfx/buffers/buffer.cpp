@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/27 17:40:32 by etran             #+#    #+#             */
-/*   Updated: 2024/03/12 10:57:55 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/15 18:03:08 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -98,8 +98,9 @@ void Buffer::copyTo(void* dst) {
  * @brief Copies data from CPU src buffer.
  * @attention Must be mapped first.
  */
-void Buffer::copyFrom(const void* src, const u32 size) {
-    memcpy(m_data, src, size);
+void Buffer::copyFrom(const void* src, const u32 size, const u32 offset) {
+    u8* data = (u8*)m_data;
+    memcpy(data + offset, src, size);
 }
 
 void Buffer::copyFrom(const void* src) {

@@ -1,46 +1,44 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   render_pass.cpp                                    :+:      :+:    :+:   */
+/*   game_state.cpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/03/02 21:26:12 by etran             #+#    #+#             */
-/*   Updated: 2024/03/15 21:13:09 by etran            ###   ########.fr       */
+/*   Created: 2024/03/15 13:46:03 by etran             #+#    #+#             */
+/*   Updated: 2024/03/15 20:39:02 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "render_pass.h"
-#include "icommand_buffer.h"
+#include "game_state.h"
+#include "controller.h"
 
-namespace vox::gfx {
+namespace game {
 
 /* ========================================================================== */
 /*                                   PUBLIC                                   */
 /* ========================================================================== */
 
-void RenderPass::end(const ICommandBuffer* cmdBuffer) {
-    vkCmdEndRenderPass(cmdBuffer->getBuffer());
+GameState::GameState() {
+    m_world.init(42);
 }
 
-VkRenderPass RenderPass::getRenderPass() const noexcept {
-    return m_vkRenderPass;
+/* ========================================================================== */
+
+void GameState::update(const ui::Controller& controller) {
+    m_playerCamera = controller.computeView();
 }
 
-u32 RenderPass::getWidth() const noexcept {
-    return m_width;
+const math::Vect3& GameState::getPlayerCamera() const noexcept {
+    return m_playerCamera;
 }
 
-u32 RenderPass::getHeight() const noexcept {
-    return m_height;
+World& GameState::getWorld() noexcept {
+    return m_world;
 }
 
-const std::vector<VkFramebuffer>& RenderPass::getTargets() const noexcept {
-    return m_targets;
+const World& GameState::getWorld() const noexcept {
+    return m_world;
 }
 
-const std::vector<ImageBuffer>& RenderPass::getResources() const noexcept {
-    return m_resources;
-}
-
-} // namespace vox::gfx
+} // namespace game

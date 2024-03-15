@@ -6,13 +6,15 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/11 16:12:13 by etran             #+#    #+#             */
-/*   Updated: 2024/03/12 11:35:46 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/15 22:15:56 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "mvp_set.h"
 #include "device.h"
 #include "game_state.h"
+#include "matrix.h"
+#include "maths.h"
 
 #include <stdexcept>
 
@@ -21,11 +23,16 @@
 namespace vox::gfx {
 
 void MVPSet::init(const Device& device, const ICommandBuffer* cmdBuffer) {
-    _createBuffers(device, cmdBuffer);
+    BufferMetadata bufferData{};
+    bufferData.m_size = sizeof(ubo::MvpUbo);
+    bufferData.m_usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
+    bufferData.m_properties = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
+    m_mvpDataBuffer.init(device, std::move(bufferData));
+    m_mvpDataBuffer.map(device);
 
     std::array<VkDescriptorSetLayoutBinding, BINDING_COUNT> bindings = {
-        _createLayoutBinding(DescriptorTypeIndex::UniformBuffer, ShaderVisibility::VS, (u32)BindingIndex::TextureIndex),
-        _createLayoutBinding(DescriptorTypeIndex::CombinedImageSampler, ShaderVisibility::FS, (u32)BindingIndex::TextureSampler)
+        _createLayoutBinding(DescriptorTypeIndex::UniformBuffer, ShaderVisibility::VS, (u32)BindingIndex::Self),
+        // _createLayoutBinding(DescriptorTypeIndex::CombinedImageSampler, ShaderVisibility::FS, (u32)BindingIndex::TextureSampler)
     };
 
     VkDescriptorSetLayoutCreateInfo layoutInfo{};
@@ -40,58 +47,57 @@ void MVPSet::init(const Device& device, const ICommandBuffer* cmdBuffer) {
     LDEBUG("MVP descriptor set layout created");
 }
 
-void MVPSet::fill(const Device& device, const GameState& state) {
-    (void)state;
+void MVPSet::destroy(const Device& device) {
+    m_mvpDataBuffer.unmap(device);
+    m_mvpDataBuffer.destroy(device);
+    // m_texture.destroy(device);
+    vkDestroyDescriptorSetLayout(device.getDevice(), m_layout, nullptr);
 
+    LDEBUG("MVP descriptor set destroyed");
+}
+
+/* ========================================================================== */
+
+void MVPSet::fill(const Device& device) {
     VkDescriptorBufferInfo bufferInfo{};
-    bufferInfo.buffer = m_buffer.getBuffer();
+    bufferInfo.buffer = m_mvpDataBuffer.getBuffer();
     bufferInfo.offset = 0;
     bufferInfo.range = sizeof(ubo::MvpUbo);
 
-    VkDescriptorImageInfo imageInfo{};
-    imageInfo.imageLayout = m_texture.getImageBuffer().getMetaData().m_layoutData.m_layout;
-    imageInfo.imageView = m_texture.getImageBuffer().getView();
-    imageInfo.sampler = m_texture.getSampler();
+    // VkDescriptorImageInfo imageInfo{};
+    // imageInfo.imageLayout = m_texture.getImageBuffer().getMetaData().m_layoutData.m_layout;
+    // imageInfo.imageView = m_texture.getImageBuffer().getView();
+    // imageInfo.sampler = m_texture.getSampler();
 
     std::array<VkWriteDescriptorSet, BINDING_COUNT> descriptorWrites = {
-        _createWriteDescriptorSet(DescriptorTypeIndex::UniformBuffer, &bufferInfo, (u32)BindingIndex::TextureIndex),
-        _createWriteDescriptorSet(DescriptorTypeIndex::CombinedImageSampler, &imageInfo, (u32)BindingIndex::TextureSampler)
+        _createWriteDescriptorSet(DescriptorTypeIndex::UniformBuffer, &bufferInfo, (u32)BindingIndex::Self),
+        // _createWriteDescriptorSet(DescriptorTypeIndex::CombinedImageSampler, &imageInfo, (u32)BindingIndex::TextureSampler)
     };
     vkUpdateDescriptorSets(device.getDevice(), BINDING_COUNT, descriptorWrites.data(), 0, nullptr);
 
     LDEBUG("MVP descriptor set filled");
 }
 
-void MVPSet::destroy(const Device& device) {
-    m_buffer.unmap(device);
-    m_buffer.destroy(device);
-    m_texture.destroy(device);
-    vkDestroyDescriptorSetLayout(device.getDevice(), m_layout, nullptr);
+void MVPSet::update(const game::GameState& state) {
+    // constexpr math::Vect3   POSITION = {0.0f, 15.0f, 0.0f};
+    constexpr math::Vect3   POSITION = {WORLD_WIDTH * CHUNK_SIZE / 2.0f, 15.0f, WORLD_DEPTH * CHUNK_SIZE / 2.0f};
+    constexpr math::Vect3   UP_VEC = {0.0f, 1.0f, 0.0f};
+    const math::Vect3&      front = state.getPlayerCamera();
+    const math::Vect3       right = math::normalize(math::cross(front, UP_VEC));
+    const math::Vect3       up = math::cross(right, front);
 
-    LDEBUG("MVP descriptor set destroyed");
-}
+    const math::Mat4        view = math::lookAt(POSITION, front, up, right);
 
-void MVPSet::update(const GameState& state) {
-    m_data.pack(state.color, state.index);
-    m_buffer.copyFrom(&m_data);
-}
+    const f32           fovRadians = math::radians(70.0f);
+    constexpr f32       aspectRatio = 1200/800;
+    constexpr f32       nearPlane = 0.1f;
+    constexpr f32       farPlane = 100.0f;
 
-/* ========================================================================== */
-/*                                   PRIVATE                                  */
-/* ========================================================================== */
+    const math::Mat4    projection = math::perspective(fovRadians, aspectRatio, nearPlane, farPlane);
 
-void MVPSet::_createBuffers(const Device& device, const ICommandBuffer* cmdBuffer) {
-    // Buffers
-    BufferMetadata bufferData{};
-    bufferData.m_size = sizeof(ubo::MvpUbo);
-    bufferData.m_usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
-    bufferData.m_properties = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
-    m_buffer.init(device, std::move(bufferData));
-    m_buffer.map(device);
-    m_buffer.copyFrom(&m_data);
+    m_data.viewProj = projection * view;
 
-    // Samplers
-    m_texture.init(device, cmdBuffer);
+    m_mvpDataBuffer.copyFrom(&m_data);
 }
 
 } // namespace vox::gfx

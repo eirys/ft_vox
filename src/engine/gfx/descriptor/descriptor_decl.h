@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/28 23:42:29 by etran             #+#    #+#             */
-/*   Updated: 2024/03/07 14:27:58 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/15 17:02:12 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,10 +27,11 @@ namespace vox::gfx {
  * @note The list is stored in the DescriptorTable class.
 */
 enum class DescriptorSetIndex: u32 {
-    Mvp = 0, // placeholder
+    Mvp = 0,
+    WorldData,
 
     First = Mvp,
-    Last = Mvp
+    Last = WorldData
 };
 
 constexpr u32 DESCRIPTOR_TABLE_SIZE = enumSize<DescriptorSetIndex>();

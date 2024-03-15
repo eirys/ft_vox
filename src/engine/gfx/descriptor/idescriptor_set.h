@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/28 20:41:22 by etran             #+#    #+#             */
-/*   Updated: 2024/03/11 18:30:07 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/15 16:39:53 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,10 +19,13 @@
 #include "enum.h"
 #include "descriptor_decl.h"
 
+namespace game {
+class GameState;
+}
+
 namespace vox::gfx {
 
 class Device;
-class GameState;
 class ICommandBuffer;
 
 class IDescriptorSet {
@@ -44,7 +47,7 @@ public:
     virtual void    init(const Device& device, const ICommandBuffer* cmdBuffer) = 0;
     virtual void    destroy(const Device& device) = 0;
 
-    virtual void    fill(const Device& device, const GameState& state) = 0;
+    virtual void    fill(const Device& device) = 0;
     virtual void    setDescriptorSet(const VkDescriptorSet set) noexcept = 0;
 
     /* ====================================================================== */
