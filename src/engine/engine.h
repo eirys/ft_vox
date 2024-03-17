@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/27 18:15:33 by etran             #+#    #+#             */
-/*   Updated: 2024/03/15 20:29:58 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/17 01:44:44 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,7 +43,7 @@ private:
     /* ====================================================================== */
 
     ui::Window      m_window;
-    ui::Controller  m_controller;
+    // ui::Controller  m_controller;
     gfx::Renderer   m_renderer;
 
     game::GameState  m_game;

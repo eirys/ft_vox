@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/15 20:35:46 by etran             #+#    #+#             */
-/*   Updated: 2024/03/15 21:11:03 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/17 02:00:32 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,6 +31,7 @@ void Controller::update(const Window& win) {
     if (win.isMouseActive())
         return;
 
+    // Camera
     const auto& mousePos = win.getMousePos();
     const float deltaX = (float)mousePos.x - m_lastX;
     const float deltaY = m_lastY - (float)mousePos.y;
@@ -44,17 +45,44 @@ void Controller::update(const Window& win) {
     LDEBUG("Yaw: " << m_yaw);
     LDEBUG("Pitch: " << m_pitch);
 
+    const float yaw = math::radians(m_yaw);
+    const float pitch = math::radians(m_pitch);
+
+    const float cosPitch = std::cos(pitch);
+    const float sinPitch = std::sin(pitch);
+    const float cosYaw = std::cos(yaw);
+    const float sinYaw = std::sin(yaw);
+
+    m_direction = { cosYaw * cosPitch, sinPitch, sinYaw * cosPitch };
+
     m_lastX = (float)mousePos.x;
     m_lastY = (float)mousePos.y;
+
+    // Position
+    constexpr float     MOVE_SPEED = 0.2f;
+
+    if (win.isKeyPressed(KeyIndex::Forward))
+        m_position += math::Vect3(cosYaw, 0.0f, sinYaw) * MOVE_SPEED;
+    else if (win.isKeyPressed(KeyIndex::Backward))
+        m_position -= math::Vect3(cosYaw, 0.0f, sinYaw) * MOVE_SPEED;
+
+    if (win.isKeyPressed(KeyIndex::Left))
+        m_position += math::Vect3(sinYaw, 0.0f, -cosYaw) * MOVE_SPEED;
+    else if (win.isKeyPressed(KeyIndex::Right))
+        m_position -= math::Vect3(sinYaw, 0.0f, -cosYaw) * MOVE_SPEED;
+
+    if (win.isKeyPressed(KeyIndex::Up))
+        m_position.y += MOVE_SPEED;
+    else if (win.isKeyPressed(KeyIndex::Down))
+        m_position.y -= MOVE_SPEED;
 }
 
-math::Vect3 Controller::computeView() const {
-    const float cosPitch = std::cos(math::radians(m_pitch));
-    return math::Vect3(
-        std::cos(math::radians(m_yaw)) * cosPitch,
-        std::sin(math::radians(m_pitch)),
-        std::sin(math::radians(m_yaw)) * cosPitch
-    );
+const math::Vect3& Controller::getView() const {
+    return m_direction;
+}
+
+const math::Vect3& Controller::getPosition() const noexcept {
+    return m_position;
 }
 
 } // namespace ui

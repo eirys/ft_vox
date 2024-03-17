@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/11 16:12:13 by etran             #+#    #+#             */
-/*   Updated: 2024/03/15 22:15:56 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/17 01:57:37 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -79,19 +79,19 @@ void MVPSet::fill(const Device& device) {
 }
 
 void MVPSet::update(const game::GameState& state) {
-    // constexpr math::Vect3   POSITION = {0.0f, 15.0f, 0.0f};
-    constexpr math::Vect3   POSITION = {WORLD_WIDTH * CHUNK_SIZE / 2.0f, 15.0f, WORLD_DEPTH * CHUNK_SIZE / 2.0f};
     constexpr math::Vect3   UP_VEC = {0.0f, 1.0f, 0.0f};
-    const math::Vect3&      front = state.getPlayerCamera();
+
+    const math::Vect3&      position = state.getController().getPosition();
+    const math::Vect3&      front = state.getController().getView();
     const math::Vect3       right = math::normalize(math::cross(front, UP_VEC));
     const math::Vect3       up = math::cross(right, front);
 
-    const math::Mat4        view = math::lookAt(POSITION, front, up, right);
+    const math::Mat4        view = math::lookAt(position, front, up, right);
 
     const f32           fovRadians = math::radians(70.0f);
     constexpr f32       aspectRatio = 1200/800;
     constexpr f32       nearPlane = 0.1f;
-    constexpr f32       farPlane = 100.0f;
+    constexpr f32       farPlane = 500.0f;
 
     const math::Mat4    projection = math::perspective(fovRadians, aspectRatio, nearPlane, farPlane);
 

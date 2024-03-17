@@ -6,12 +6,12 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/15 13:46:03 by etran             #+#    #+#             */
-/*   Updated: 2024/03/15 20:39:02 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/17 01:58:26 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "game_state.h"
-#include "controller.h"
+#include "window.h"
 
 namespace game {
 
@@ -19,18 +19,15 @@ namespace game {
 /*                                   PUBLIC                                   */
 /* ========================================================================== */
 
-GameState::GameState() {
+void GameState::init(const ui::Window& window) {
     m_world.init(42);
+    m_controller.init(window);
 }
 
 /* ========================================================================== */
 
-void GameState::update(const ui::Controller& controller) {
-    m_playerCamera = controller.computeView();
-}
-
-const math::Vect3& GameState::getPlayerCamera() const noexcept {
-    return m_playerCamera;
+void GameState::update(const ui::Window& window) {
+    m_controller.update((window));
 }
 
 World& GameState::getWorld() noexcept {
@@ -39,6 +36,10 @@ World& GameState::getWorld() noexcept {
 
 const World& GameState::getWorld() const noexcept {
     return m_world;
+}
+
+const ui::Controller& GameState::getController() const noexcept {
+    return m_controller;
 }
 
 } // namespace game
