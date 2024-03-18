@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/15 20:35:46 by etran             #+#    #+#             */
-/*   Updated: 2024/03/17 02:00:32 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/18 11:44:06 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,9 +38,8 @@ void Controller::update(const Window& win) {
 
     constexpr float CAM_SPEED = 0.15f;
 
-    const float camAngle = std::fma(deltaY, CAM_SPEED, m_pitch);
     m_yaw = std::fmod(std::fma(deltaX, CAM_SPEED, m_yaw), 360.0f);
-    m_pitch = std::clamp(camAngle, -89.0f, 89.0f); // Clamp to avoid camera flipping.
+    m_pitch = std::clamp(std::fma(deltaY, CAM_SPEED, m_pitch), -89.0f, 89.0f); // Clamp to avoid camera flipping.
 
     LDEBUG("Yaw: " << m_yaw);
     LDEBUG("Pitch: " << m_pitch);
@@ -59,7 +58,7 @@ void Controller::update(const Window& win) {
     m_lastY = (float)mousePos.y;
 
     // Position
-    constexpr float     MOVE_SPEED = 0.2f;
+    constexpr float     MOVE_SPEED = 0.1f;
 
     if (win.isKeyPressed(KeyIndex::Forward))
         m_position += math::Vect3(cosYaw, 0.0f, sinYaw) * MOVE_SPEED;

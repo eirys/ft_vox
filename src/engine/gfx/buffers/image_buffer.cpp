@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/27 18:36:30 by etran             #+#    #+#             */
-/*   Updated: 2024/03/12 15:43:53 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/18 10:56:02 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -260,6 +260,25 @@ void ImageBuffer::generateMipmap(const ICommandBuffer* cmdBuffer) {
     setLayout(cmdBuffer, shaderLayoutData, &dstLayoutData);
 
     LDEBUG("Generated mipmaps for image::" << m_image);
+}
+
+/**
+ * @brief Creates a staging buffer with proper format.
+ * @note The buffer needs to be mapped prior to copying data, and unmapped after before destruction.
+ */
+Buffer ImageBuffer::createStagingBuffer(const Device& device) const {
+    BufferMetadata  bufferData{};
+    bufferData.m_size = m_metadata.m_width *
+                        m_metadata.m_height *
+                        m_metadata.m_layerCount *
+                        m_metadata.getPixelSize();
+    bufferData.m_usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+    bufferData.m_properties = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
+
+    Buffer stagingBuffer;
+    stagingBuffer.init(device, std::move(bufferData));
+
+    return stagingBuffer;
 }
 
 /* ========================================================================== */

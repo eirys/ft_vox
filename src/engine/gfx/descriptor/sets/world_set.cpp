@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/15 17:03:33 by etran             #+#    #+#             */
-/*   Updated: 2024/03/15 21:20:08 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/18 12:24:05 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,17 +25,10 @@ namespace vox::gfx {
 constexpr u32 BUFFERSIZE = WORLD_SIZE * CHUNK_AREA;
 
 void WorldSet::init(const Device& device, const ICommandBuffer* cmdBuffer) {
-    BufferMetadata bufferData{};
-    bufferData.m_size = BUFFERSIZE;
-    bufferData.m_usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
-    bufferData.m_properties = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
-
-    m_blockPosBuffer.init(device, std::move(bufferData));
-    m_blockPosBuffer.map(device);
+    m_chunkDataSampler.init(device, cmdBuffer);
 
     std::array<VkDescriptorSetLayoutBinding, BINDING_COUNT> bindings = {
-        _createLayoutBinding(DescriptorTypeIndex::UniformBuffer, ShaderVisibility::VS, (u32)BindingIndex::BlockPos),
-        // _createLayoutBinding(DescriptorTypeIndex::CombinedImageSampler, ShaderVisibility::FS, (u32)BindingIndex::Textures)
+        _createLayoutBinding(DescriptorTypeIndex::CombinedImageSampler, ShaderVisibility::VS, (u32)BindingIndex::BlockPos),
     };
 
     VkDescriptorSetLayoutCreateInfo layoutInfo{};
@@ -51,8 +44,7 @@ void WorldSet::init(const Device& device, const ICommandBuffer* cmdBuffer) {
 }
 
 void WorldSet::destroy(const Device& device) {
-    m_blockPosBuffer.unmap(device);
-    m_blockPosBuffer.destroy(device);
+    m_chunkDataSampler.destroy(device);
     vkDestroyDescriptorSetLayout(device.getDevice(), m_layout, nullptr);
 
     LDEBUG("World descriptor set destroyed");
@@ -61,34 +53,21 @@ void WorldSet::destroy(const Device& device) {
 /* ========================================================================== */
 
 void WorldSet::fill(const Device& device) {
-    VkDescriptorBufferInfo bufferInfo{};
-    bufferInfo.buffer = m_blockPosBuffer.getBuffer();
-    bufferInfo.offset = 0;
-    bufferInfo.range = BUFFERSIZE;
+    VkDescriptorImageInfo imageInfo{};
+    imageInfo.imageLayout = m_chunkDataSampler.getImageBuffer().getMetaData().m_layoutData.m_layout;
+    imageInfo.imageView = m_chunkDataSampler.getImageBuffer().getView();
+    imageInfo.sampler = m_chunkDataSampler.getSampler();
 
     std::array<VkWriteDescriptorSet, BINDING_COUNT> descriptorWrites = {
-        _createWriteDescriptorSet(DescriptorTypeIndex::UniformBuffer, &bufferInfo, (u32)BindingIndex::BlockPos),
-        // _createWriteDescriptorSet(DescriptorTypeIndex::CombinedImageSampler, &imageInfo, (u32)BindingIndex::TextureSampler)
+        _createWriteDescriptorSet(DescriptorTypeIndex::CombinedImageSampler, &imageInfo, (u32)BindingIndex::BlockPos),
     };
     vkUpdateDescriptorSets(device.getDevice(), BINDING_COUNT, descriptorWrites.data(), 0, nullptr);
 
     LDEBUG("WorldSet descriptor set filled");
 }
 
-void WorldSet::update(const game::GameState& state) {
-    static bool updated = false;
-
-    if (updated)
-        return;
-
-    const auto& chunks = state.getWorld().getChunks();
-
-    for (u32 i = 0; i < WORLD_SIZE; i++) {
-        const auto& heights = chunks[i].getHeights();
-        m_blockPosBuffer.copyFrom(heights.data(), CHUNK_AREA, i * CHUNK_AREA);
-    }
-
-    updated = true;
+void WorldSet::update(const Device& device, const game::GameState& state, const ICommandBuffer* cmdBuffer) {
+    m_chunkDataSampler.fill(device, cmdBuffer, &state.getWorld().getChunks());
 }
 
 } // namespace vox::gfx

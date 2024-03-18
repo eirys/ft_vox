@@ -4,32 +4,26 @@ layout(set = 0, binding = 0) uniform ViewProjData {
     mat4 inner;
 } viewProj;
 
-layout(set = 1, binding = 0) uniform WorldData {
-    uint heights[1*1][16*16];
-} world;
+layout(set = 1, binding = 0) uniform usampler2DArray heightmap;
 
-const vec2 quadpos[4] = {
+const vec2 vertexPos[4] = {
     { 0.0, 0.0 },
     { 1.0, 0.0 },
     { 0.0, 1.0 },
     { 1.0, 1.0 },
 };
 
+#define CHUNK_AREA 256;
+
 void main() {
-    const uint chunkSize = 16;
-    const uint worldSize = 1;
+    uint chunk = gl_InstanceIndex / CHUNK_AREA;
+    uint block = (gl_InstanceIndex - chunk) % CHUNK_AREA;
 
-    uint localIndex = gl_InstanceIndex % (chunkSize * chunkSize);
-    uint chunkIndex = gl_InstanceIndex / (chunkSize * chunkSize);
+    vec2 blockUV = vec2(block % 16, block / 16);
+    float height = texture(heightmap, vec3(blockUV / textureSize(heightmap, 0).xy, chunk)).r;
 
-    uvec2 localPos = uvec2(localIndex % chunkSize, localIndex / chunkSize);
-    uvec2 chunkPos = uvec2(chunkIndex % worldSize, chunkIndex / worldSize);
+    vec2 vertex = vertexPos[gl_VertexIndex] + blockUV;
+    vec4 worldPos = vec4(vertex.x, height, vertex.y, 1.0);
 
-    uvec2 worldPos2d = chunkPos * chunkSize + localPos;
-    uint height = world.heights[chunkIndex][localIndex];
-
-    vec2 posXZ = quadpos[gl_VertexIndex] + vec2(worldPos2d);
-    vec3 worldPos = vec3(posXZ.x, float(height), posXZ.y);
-
-    gl_Position = viewProj.inner * vec4(worldPos, 1.0);
+    gl_Position = viewProj.inner * worldPos;
 }

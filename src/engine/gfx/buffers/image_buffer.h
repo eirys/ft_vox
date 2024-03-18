@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/27 18:36:32 by etran             #+#    #+#             */
-/*   Updated: 2024/03/12 15:43:58 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/18 10:54:26 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -91,6 +91,8 @@ public:
         const u32 newQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED);
     void copyFrom(const ICommandBuffer* cmdBuffer, const Buffer& srcBuffer);
     void generateMipmap(const ICommandBuffer* cmdBuffer);
+
+    Buffer createStagingBuffer(const Device& device) const;
 
     /* ====================================================================== */
 

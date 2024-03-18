@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/15 19:33:01 by etran             #+#    #+#             */
-/*   Updated: 2024/03/17 01:14:47 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/18 13:11:26 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,7 +52,7 @@ private:
     float   m_pitch = 0.0f;
 
     math::Vect3 m_direction = {0.0f, 0.0f, 0.0f};
-    math::Vect3 m_position = {0.0f, 0.0f, 0.0f};
+    math::Vect3 m_position = {0.0f, 20.0f, 0.0f};
 
 }; // class Controller
 

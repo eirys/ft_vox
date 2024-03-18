@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/27 18:17:53 by etran             #+#    #+#             */
-/*   Updated: 2024/03/17 01:56:54 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/18 12:18:05 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,7 @@ namespace vox {
 /* ========================================================================== */
 
 Engine::Engine() {
+    m_game.init(m_window);
     m_renderer.init(m_window, m_game);
 
     LINFO("Engine initialized.");
@@ -35,9 +36,6 @@ Engine::~Engine() {
 /* ========================================================================== */
 
 void Engine::run() {
-    // m_controller.init(m_window);
-    m_game.init(m_window);
-
     while (m_window.isAlive()) {
         m_window.pollEvents();
         // if (m_window.needsUpdate()) {

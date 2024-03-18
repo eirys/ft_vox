@@ -6,7 +6,7 @@
 #    By: etran <etran@student.42.fr>                +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/04/06 03:40:09 by eli               #+#    #+#              #
-#    Updated: 2024/03/15 22:51:59 by etran            ###   ########.fr        #
+#    Updated: 2024/03/18 12:31:06 by etran            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -32,9 +32,6 @@ UI_DIR		:=	$(ENGINE_DIR)/ui
 GAME_DIR	:=	$(ENGINE_DIR)/game
 WORLD_DIR	:=	$(GAME_DIR)/world
 
-# procedural
-PROC_DIR	:=	procedural
-
 # gfx
 BUF_DIR		:=	$(GFX_DIR)/buffers
 CMD_DIR		:=	$(GFX_DIR)/command
@@ -50,6 +47,8 @@ LIBS_DIR	:=	libs
 MATH_DIR	:=	$(LIBS_DIR)/math
 DECL_DIR	:=	$(LIBS_DIR)/decl
 IO_DIR		:=	$(LIBS_DIR)/io
+PROC_DIR	:=	$(LIBS_DIR)/procedural
+LOAD_DIR	:=	$(LIBS_DIR)/load
 
 # ---------------- SUBDIRECTORIES -------------- #
 SUBDIRS		:=	$(LIBS_DIR) \
@@ -86,6 +85,7 @@ SRC_FILES	:=	entrypoint.cpp \
 				$(CMD_DIR)/command_pool.cpp \
 				$(CMD_DIR)/command_buffer.cpp \
 				$(SAMPLER_DIR)/game_texture_sampler.cpp \
+				$(SAMPLER_DIR)/chunk_data_sampler.cpp \
 				$(SETS_DIR)/mvp_set.cpp \
 				$(SETS_DIR)/world_set.cpp \
 				$(DESC_DIR)/descriptor_pool.cpp \

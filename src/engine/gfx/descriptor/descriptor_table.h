@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/28 15:42:53 by etran             #+#    #+#             */
-/*   Updated: 2024/03/15 18:50:42 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/18 11:06:09 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,7 +45,10 @@ public:
 
     /* ====================================================================== */
 
-    void init(const Device& device, const ICommandBuffer* cmdBuffer);
+    void init(
+        const Device& device,
+        const ICommandBuffer* cmdBuffer,
+        const game::GameState& state);
     void destroy(const Device& device);
 
     void fill(const Device& device);

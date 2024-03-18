@@ -6,14 +6,15 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/15 16:21:18 by etran             #+#    #+#             */
-/*   Updated: 2024/03/15 17:45:18 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/18 11:04:27 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
 #include "descriptor_set.h"
-#include "buffer.h"
+// #include "buffer.h"
+#include "chunk_data_sampler.h"
 
 namespace vox::gfx {
 
@@ -42,7 +43,7 @@ public:
     void    destroy(const Device& device) override;
 
     void    fill(const Device& device) override;
-    void    update(const game::GameState& state);
+    void    update(const Device& device, const game::GameState& state, const ICommandBuffer* cmdBuffer);
 
 private:
     /* ====================================================================== */
@@ -55,7 +56,8 @@ private:
     /*                                  DATA                                  */
     /* ====================================================================== */
 
-    Buffer   m_blockPosBuffer;
+    // Buffer   m_blockPosBuffer;
+    ChunkDataSampler    m_chunkDataSampler;
 
 }; // class WorldSet
 

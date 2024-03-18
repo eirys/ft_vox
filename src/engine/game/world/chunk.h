@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/15 13:29:06 by etran             #+#    #+#             */
-/*   Updated: 2024/03/15 20:58:27 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/18 10:59:10 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,6 +30,7 @@ public:
     /* ====================================================================== */
 
     using Block = u8;
+    using Height = u8;
 
     /* ====================================================================== */
     /*                                 METHODS                                */
@@ -37,18 +38,18 @@ public:
 
     void    generate(const proc::PerlinNoise& noise, const u32 offsetX, const u32 offsetZ) noexcept;
 
-    u8&     operator[](const u32 index) noexcept;
-    u8      operator[](const u32 index) const noexcept;
+    Block&  operator[](const u32 index) noexcept;
+    Block   operator[](const u32 index) const noexcept;
 
-    const std::array<u32, CHUNK_AREA>&    getHeights() const;
+    const std::array<Height, CHUNK_AREA>&    getHeights() const;
 
 private:
     /* ====================================================================== */
     /*                                  DATA                                  */
     /* ====================================================================== */
 
-    std::array<Block, CHUNK_VOLUME>         m_blocks = {};
-    std::array<u32, CHUNK_AREA> m_heights = {};
+    std::array<Block, CHUNK_VOLUME> m_blocks = {};
+    std::array<Height, CHUNK_AREA>     m_heights = {};
 
 }; // class Chunk
 

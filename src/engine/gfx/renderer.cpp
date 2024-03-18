@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/23 09:29:35 by etran             #+#    #+#             */
-/*   Updated: 2024/03/15 18:51:06 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/18 11:08:54 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,7 +42,8 @@ void Renderer::init(ui::Window& window, const game::GameState& game) {
 
     _createCommandBuffers();
 
-    m_descriptorTable.init(m_device, m_commandBuffers[(u32)CommandBufferIndex::Transfer]);
+    const ICommandBuffer* transferBuffer = m_commandBuffers[(u32)CommandBufferIndex::Transfer];
+    m_descriptorTable.init(m_device, transferBuffer, game);
 
     _createPipelines();
     _createFences();

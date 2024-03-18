@@ -1,20 +1,22 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   game_texture_sampler.cpp                           :+:      :+:    :+:   */
+/*   chunk_data_sampler.cpp                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/03/11 17:46:33 by etran             #+#    #+#             */
-/*   Updated: 2024/03/18 13:08:35 by etran            ###   ########.fr       */
+/*   Created: 2024/03/17 23:05:38 by etran             #+#    #+#             */
+/*   Updated: 2024/03/18 12:18:13 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "game_texture_sampler.h"
+#include "chunk_data_sampler.h"
 #include "device.h"
-#include "perlin_noise.h"
+#include "chunk.h"
 #include "buffer.h"
 #include "icommand_buffer.h"
+
+#include <stdexcept>
 
 namespace vox::gfx {
 
@@ -22,36 +24,41 @@ namespace vox::gfx {
 /*                                   PUBLIC                                   */
 /* ========================================================================== */
 
-void GameTextureSampler::init(
-    const Device& device,
-    const ICommandBuffer* cmdBuffer
-) {
+void ChunkDataSampler::init(const Device& device, const ICommandBuffer* cmdBuffer) {
     ImageMetaData textureData{};
-    textureData.m_format = VK_FORMAT_R8G8B8A8_SRGB;
-    textureData.m_width = 300;
-    textureData.m_height = 200;
-    textureData.m_layerCount = 2;
-    textureData.m_usage = VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+    textureData.m_format = VK_FORMAT_R8_UINT;
+    textureData.m_width = CHUNK_SIZE;
+    textureData.m_height = CHUNK_SIZE;
+    textureData.m_layerCount = WORLD_SIZE;
+    textureData.m_usage = VK_IMAGE_USAGE_SAMPLED_BIT |      // Sampled texture
+                          VK_IMAGE_USAGE_TRANSFER_DST_BIT;  // Transfer destination
     textureData.m_viewType = VK_IMAGE_VIEW_TYPE_2D_ARRAY;
-    textureData.computeMipCount();
     m_imageBuffer.initImage(device, std::move(textureData));
     _createSampler(device);
 }
 
-void GameTextureSampler::fill(
+void ChunkDataSampler::fill(
     const Device& device,
     const ICommandBuffer* cmdBuffer,
     const void* data
 ) {
+    constexpr LayoutData finalLayout{
+        .m_layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+        .m_accessMask = VK_ACCESS_SHADER_READ_BIT,
+        .m_stageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT };
+
+    const auto& chunks = *(const std::array<game::Chunk, WORLD_SIZE>*)data;
+
     Buffer stagingBuffer = m_imageBuffer.createStagingBuffer(device);
     stagingBuffer.map(device);
-    // stagingBuffer.copyFrom(pixels.data());
+    for (u32 i = 0; i < WORLD_SIZE; i++)
+        stagingBuffer.copyFrom(chunks[i].getHeights().data(), CHUNK_AREA, i * CHUNK_AREA);
     stagingBuffer.unmap(device);
 
     cmdBuffer->reset();
     cmdBuffer->startRecording();
     m_imageBuffer.copyFrom(cmdBuffer, stagingBuffer);
-    m_imageBuffer.generateMipmap(cmdBuffer);
+    m_imageBuffer.setLayout(cmdBuffer, finalLayout);
     cmdBuffer->stopRecording();
     cmdBuffer->awaitEndOfRecording(device);
     stagingBuffer.destroy(device);
@@ -59,7 +66,7 @@ void GameTextureSampler::fill(
     m_imageBuffer.initView(device);
 }
 
-void GameTextureSampler::destroy(const Device& device) {
+void ChunkDataSampler::destroy(const Device& device) {
     m_imageBuffer.destroy(device);
     vkDestroySampler(device.getDevice(), m_sampler, nullptr);
 }
@@ -68,34 +75,27 @@ void GameTextureSampler::destroy(const Device& device) {
 /*                                   PRIVATE                                  */
 /* ========================================================================== */
 
-void GameTextureSampler::_createSampler(const Device& device) {
+void ChunkDataSampler::_createSampler(const Device& device) {
     VkSamplerCreateInfo samplerInfo{};
     samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
-    samplerInfo.magFilter = VK_FILTER_LINEAR;
-    samplerInfo.minFilter = VK_FILTER_LINEAR;
-    samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+    samplerInfo.magFilter = VK_FILTER_NEAREST;
+    samplerInfo.minFilter = VK_FILTER_NEAREST;
+    samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_NEAREST;
     samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER;
     samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER;
     samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER;
-    samplerInfo.anisotropyEnable = VK_TRUE;
-    samplerInfo.maxAnisotropy = device.queryDeviceProperties().limits.maxSamplerAnisotropy;
+    samplerInfo.anisotropyEnable = VK_FALSE;
+    samplerInfo.maxAnisotropy = 1.0;
     samplerInfo.compareEnable = VK_FALSE;
     samplerInfo.compareOp = VK_COMPARE_OP_NEVER;
     samplerInfo.mipLodBias = 0.0f;
     samplerInfo.minLod = 0.0f;
-    samplerInfo.maxLod = (float)m_imageBuffer.getMetaData().m_mipCount;
-    samplerInfo.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
-    samplerInfo.unnormalizedCoordinates = VK_FALSE;
+    samplerInfo.maxLod = 1.0f;
+    samplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
 
     if (vkCreateSampler(device.getDevice(), &samplerInfo, nullptr, &m_sampler) != VK_SUCCESS) {
         throw std::runtime_error("failed to create texture sampler!");
     }
-}
-
-std::vector<u32> GameTextureSampler::_loadAssets() {
-    std::vector<u32> pixels;
-    // Load pixels from file
-    return pixels;
 }
 
 } // namespace vox::gfx
