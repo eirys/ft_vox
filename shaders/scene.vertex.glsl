@@ -1,5 +1,7 @@
 #version 450
 
+#include "../src/engine/game/game_decl.h"
+
 layout(location = 0) out vec3 outUV;
 
 layout(set = 0, binding = 0) uniform ViewProjData {
@@ -15,18 +17,19 @@ const vec2 vertexPos[4] = {
     { 1.0, 1.0 },
 };
 
-#define CHUNK_AREA 256;
-
 void main() {
     uint chunk = gl_InstanceIndex / CHUNK_AREA;
     uint block = (gl_InstanceIndex - chunk) % CHUNK_AREA;
 
-    vec2 blockUV = vec2(block % 16, block / 16);
-    float height = texture(heightmap, vec3(blockUV / textureSize(heightmap, 0).xy, chunk)).r;
+    vec2 chunkPos = vec2(chunk % WORLD_WIDTH, chunk / WORLD_DEPTH) * CHUNK_SIZE;
+    vec2 blockPos = vec2(block % CHUNK_SIZE, block / CHUNK_SIZE);
+    vec2 vertex = vertexPos[gl_VertexIndex] + blockPos + chunkPos;
 
-    vec2 vertex = vertexPos[gl_VertexIndex] + blockUV;
-    vec4 worldPos = vec4(vertex.x, height, vertex.y, 1.0);
+    vec2 blockUV = blockPos / textureSize(heightmap, 0).xy;
+    float height = texture(heightmap, vec3(blockUV, chunk)).r;
+
+    vec3 worldPos = vec3(vertex.x, height, vertex.y);
 
     outUV = vec3(vertexPos[gl_VertexIndex], 3);
-    gl_Position = viewProj.inner * worldPos;
+    gl_Position = viewProj.inner * vec4(worldPos, 1.0);
 }
