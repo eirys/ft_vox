@@ -6,7 +6,7 @@
 #    By: etran <etran@student.42.fr>                +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/04/06 03:40:09 by eli               #+#    #+#              #
-#    Updated: 2024/03/18 12:31:06 by etran            ###   ########.fr        #
+#    Updated: 2024/03/18 15:47:13 by etran            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -68,6 +68,7 @@ SUBDIRS		:=	$(LIBS_DIR) \
 				$(PIP_DIR) \
 				$(PROC_DIR) \
 				$(GAME_DIR) \
+				$(LOAD_DIR) \
 				$(WORLD_DIR)
 
 OBJ_SUBDIRS	:=	$(addprefix $(OBJ_DIR)/,$(SUBDIRS))
@@ -76,6 +77,8 @@ INC_SUBDIRS	:=	$(addprefix $(SRC_DIR)/,$(SUBDIRS)) \
 
 # ---------------- SOURCE FILES ---------------- #
 SRC_FILES	:=	entrypoint.cpp \
+				$(LOAD_DIR)/ppm_loader.cpp \
+				$(LOAD_DIR)/image_handler.cpp \
 				$(IO_DIR)/io_helpers.cpp \
 				$(ENGINE_DIR)/engine.cpp \
 				$(GFX_DIR)/renderer.cpp \

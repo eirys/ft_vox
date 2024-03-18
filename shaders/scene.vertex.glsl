@@ -1,5 +1,7 @@
 #version 450
 
+layout(location = 0) out vec3 outUV;
+
 layout(set = 0, binding = 0) uniform ViewProjData {
     mat4 inner;
 } viewProj;
@@ -25,5 +27,6 @@ void main() {
     vec2 vertex = vertexPos[gl_VertexIndex] + blockUV;
     vec4 worldPos = vec4(vertex.x, height, vertex.y, 1.0);
 
+    outUV = vec3(vertexPos[gl_VertexIndex], 3);
     gl_Position = viewProj.inner * worldPos;
 }

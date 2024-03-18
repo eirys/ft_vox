@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:17:39 by etran             #+#    #+#             */
-/*   Updated: 2024/01/20 12:55:47 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/18 15:03:57 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,8 +59,8 @@ private:
 
 	std::string				path;
 	std::vector<uint32_t>	pixels;
-	std::size_t				width;
-	std::size_t				height;
+	std::size_t				width = 0;
+	std::size_t				height = 0;
 
 }; // class Image
 

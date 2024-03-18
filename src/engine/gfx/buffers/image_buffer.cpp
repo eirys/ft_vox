@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/27 18:36:30 by etran             #+#    #+#             */
-/*   Updated: 2024/03/18 10:56:02 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/18 16:05:13 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -299,7 +299,7 @@ const ImageMetaData& ImageBuffer::getMetaData() const noexcept {
 /*                                    OTHER                                   */
 /* ========================================================================== */
 
-constexpr u32  ImageMetaData::getPixelSize() const {
+u32  ImageMetaData::getPixelSize() const {
     switch (m_format) {
         // uint
         case VK_FORMAT_R8_UINT:
@@ -345,7 +345,7 @@ constexpr u32  ImageMetaData::getPixelSize() const {
     }
 }
 
-constexpr u32  ImageMetaData::getLayerSize() const noexcept {
+u32  ImageMetaData::getLayerSize() const noexcept {
     return m_width * m_height;
 }
 

@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/11 17:46:33 by etran             #+#    #+#             */
-/*   Updated: 2024/03/18 13:08:35 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/18 16:04:43 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,12 @@
 #include "buffer.h"
 #include "icommand_buffer.h"
 
+#include "ppm_loader.h"
+
 namespace vox::gfx {
+
+static constexpr u32 TEXTURE_SIZE = 16;
+static constexpr u32 TEXTURE_COUNT = 3;
 
 /* ========================================================================== */
 /*                                   PUBLIC                                   */
@@ -28,9 +33,9 @@ void GameTextureSampler::init(
 ) {
     ImageMetaData textureData{};
     textureData.m_format = VK_FORMAT_R8G8B8A8_SRGB;
-    textureData.m_width = 300;
-    textureData.m_height = 200;
-    textureData.m_layerCount = 2;
+    textureData.m_width = TEXTURE_SIZE;
+    textureData.m_height = TEXTURE_SIZE;
+    textureData.m_layerCount = TEXTURE_COUNT;
     textureData.m_usage = VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
     textureData.m_viewType = VK_IMAGE_VIEW_TYPE_2D_ARRAY;
     textureData.computeMipCount();
@@ -38,14 +43,38 @@ void GameTextureSampler::init(
     _createSampler(device);
 }
 
+static
+std::array<scop::Image, TEXTURE_COUNT> _loadAssets() {
+    std::array<scop::Image, TEXTURE_COUNT> textures;
+
+    std::array<std::string, TEXTURE_COUNT> texturePaths = {
+        "assets/textures/dirt.ppm",
+        "assets/textures/grass_side.ppm",
+        "assets/textures/grass_top.ppm"
+    };
+
+    for (u32 i = 0; i < TEXTURE_COUNT; ++i) {
+        scop::PpmLoader loader(texturePaths[i]);
+        textures[i] = loader.load();
+    }
+
+    return textures;
+}
+
 void GameTextureSampler::fill(
     const Device& device,
     const ICommandBuffer* cmdBuffer,
     const void* data
 ) {
+    static const u32 IMAGE_SIZE = m_imageBuffer.getMetaData().getLayerSize()
+                                * m_imageBuffer.getMetaData().getPixelSize();
+
+    std::array<scop::Image, TEXTURE_COUNT> textures = _loadAssets();
+
     Buffer stagingBuffer = m_imageBuffer.createStagingBuffer(device);
     stagingBuffer.map(device);
-    // stagingBuffer.copyFrom(pixels.data());
+    for (u32 i = 0; i < TEXTURE_COUNT; ++i)
+        stagingBuffer.copyFrom(textures[i].getPixels(), IMAGE_SIZE, i * IMAGE_SIZE);
     stagingBuffer.unmap(device);
 
     cmdBuffer->reset();
@@ -71,14 +100,14 @@ void GameTextureSampler::destroy(const Device& device) {
 void GameTextureSampler::_createSampler(const Device& device) {
     VkSamplerCreateInfo samplerInfo{};
     samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
-    samplerInfo.magFilter = VK_FILTER_LINEAR;
-    samplerInfo.minFilter = VK_FILTER_LINEAR;
+    samplerInfo.magFilter = VK_FILTER_NEAREST;
+    samplerInfo.minFilter = VK_FILTER_NEAREST;
     samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
-    samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER;
-    samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER;
-    samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER;
-    samplerInfo.anisotropyEnable = VK_TRUE;
-    samplerInfo.maxAnisotropy = device.queryDeviceProperties().limits.maxSamplerAnisotropy;
+    samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+    samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+    samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+    samplerInfo.anisotropyEnable = VK_FALSE;
+    samplerInfo.maxAnisotropy = 1.0f;
     samplerInfo.compareEnable = VK_FALSE;
     samplerInfo.compareOp = VK_COMPARE_OP_NEVER;
     samplerInfo.mipLodBias = 0.0f;
@@ -90,12 +119,6 @@ void GameTextureSampler::_createSampler(const Device& device) {
     if (vkCreateSampler(device.getDevice(), &samplerInfo, nullptr, &m_sampler) != VK_SUCCESS) {
         throw std::runtime_error("failed to create texture sampler!");
     }
-}
-
-std::vector<u32> GameTextureSampler::_loadAssets() {
-    std::vector<u32> pixels;
-    // Load pixels from file
-    return pixels;
 }
 
 } // namespace vox::gfx

@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/23 22:43:14 by etran             #+#    #+#             */
-/*   Updated: 2024/03/18 11:12:23 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/18 15:54:47 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -81,6 +81,7 @@ void CommandBuffer::awaitEndOfRecording(const Device& device) const {
         throw std::runtime_error("failed to submit command buffer to queue");
 
     m_awaitFence.await(device);
+    m_awaitFence.reset(device);
 }
 
 void CommandBuffer::submitRecording(

@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/11 17:33:50 by etran             #+#    #+#             */
-/*   Updated: 2024/03/18 12:26:48 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/18 15:59:06 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,15 +36,14 @@ public:
     void    init(const Device& device, const ICommandBuffer* cmdBuffer) override;
     void    destroy(const Device& device) override;
 
-    void    fill(const Device& device, const ICommandBuffer* cmdBuffer, const void* data) override;
+    void    fill(const Device& device, const ICommandBuffer* cmdBuffer, const void* data = nullptr) override;
 
 private:
     /* ====================================================================== */
     /*                                 METHODS                                */
     /* ====================================================================== */
 
-    void                _createSampler(const Device& device);
-    std::vector<u32>    _loadAssets();
+    void    _createSampler(const Device& device);
 
 }; // class GameTextureSampler
 

@@ -6,15 +6,15 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/15 16:21:18 by etran             #+#    #+#             */
-/*   Updated: 2024/03/18 11:04:27 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/18 13:45:44 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
 #include "descriptor_set.h"
-// #include "buffer.h"
 #include "chunk_data_sampler.h"
+#include "game_texture_sampler.h"
 
 namespace vox::gfx {
 
@@ -26,11 +26,10 @@ public:
 
     enum class BindingIndex: u32 {
         BlockPos = 0,
-
         Textures,
 
         First = BlockPos,
-        Last = BlockPos
+        Last = Textures
     };
 
     /* ====================================================================== */
@@ -56,8 +55,8 @@ private:
     /*                                  DATA                                  */
     /* ====================================================================== */
 
-    // Buffer   m_blockPosBuffer;
     ChunkDataSampler    m_chunkDataSampler;
+    GameTextureSampler  m_gameTextureSampler;
 
 }; // class WorldSet
 
