@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/11 16:12:13 by etran             #+#    #+#             */
-/*   Updated: 2024/03/20 19:16:48 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/20 19:37:39 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -94,10 +94,10 @@ void MVPSet::update(const game::GameState& state) {
     const math::Mat4    projection = math::perspective(fovRadians, aspectRatio, nearPlane, farPlane);
 
     m_data.m_viewProj = projection * view;
-    m_data.m_camera.m_time = state.getElapsedTime();
-    m_data.m_camera.front = front;
-    m_data.m_camera.right = right;
-    m_data.m_camera.up = up;
+    m_data.m_gameData.time = state.getElapsedTime();
+    m_data.m_gameData.camera.front = front;
+    m_data.m_gameData.camera.right = right;
+    m_data.m_gameData.camera.up = up;
     m_mvpDataBuffer.copyFrom(&m_data);
 }
 

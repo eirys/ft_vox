@@ -2,7 +2,7 @@
 
 #include "../src/engine/game/game_decl.h"
 
-layout(location = 0) out vec3 outUV;
+layout(location = 0) out vec2 outUV;
 
 layout(set = 0, binding = 0) uniform ViewProj {
     mat4 inner;
@@ -37,6 +37,6 @@ void main() {
 
     vec3 worldPos = vec3(vertex.x, height, vertex.y);
 
-    outUV = vec3(vertexPos[gl_VertexIndex], 3);
+    outUV = vertexPos[gl_VertexIndex];
     gl_Position = viewProj.inner * vec4(worldPos, 1.0);
 }

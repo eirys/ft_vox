@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/07 13:46:39 by etran             #+#    #+#             */
-/*   Updated: 2024/03/20 19:15:05 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/20 19:36:52 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,22 +18,30 @@
 namespace vox::gfx {
 
 struct MvpUbo final {
+    /* ====================================================================== */
+    /*                                  ENUMS                                 */
+    /* ====================================================================== */
 
     enum class Offset: u32 {
         ViewProj    = 0,
         GameData    = ViewProj + sizeof(math::Mat4),
     };
 
-    math::Mat4          m_viewProj;
+    /* ====================================================================== */
+    /*                                  DATA                                  */
+    /* ====================================================================== */
+
+    math::Mat4  m_viewProj;
+
     struct {
-        f32             m_time;
+        f32 time;
         struct {
             math::Vect3     front;
             math::Vect3     right;
             math::Vect3     up;
-        }               m_camera;
-        u32             m_padding[2];
-    }                   m_gameData;
+        }   camera;
+        u32 padding[2];
+    }           m_gameData;
 
 }; // struct MvpUbo
 
