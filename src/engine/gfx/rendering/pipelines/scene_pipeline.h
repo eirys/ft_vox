@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/29 23:49:38 by etran             #+#    #+#             */
-/*   Updated: 2024/03/07 16:06:19 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/19 11:33:25 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,15 +52,19 @@ public:
 
     /* ====================================================================== */
 
-    void    init(const Device& device, const RenderPassInfo* info) override;
+    void    init(
+        const Device& device,
+        const RenderPassInfo* info,
+        const VkPipelineLayout& pipelineLayout) override;
     void    destroy(const Device& device) override;
-    void    assemble(const Device& device, const VkPipelineLayout& pipelineLayout) override;
 
     void    record(
         const VkPipelineLayout layout,
         const DescriptorTable& descriptorTable,
         const ICommandBuffer* cmdBuffer,
         const RecordInfo& drawInfo) override;
+
+    RenderPass* getRenderPass() const noexcept override;
 
 private:
     /* ====================================================================== */

@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/15 13:46:03 by etran             #+#    #+#             */
-/*   Updated: 2024/03/17 01:58:26 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/19 02:34:25 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,6 +22,18 @@ namespace game {
 void GameState::init(const ui::Window& window) {
     m_world.init(42);
     m_controller.init(window);
+    m_startTime = Clock::now();
+}
+
+/* ========================================================================== */
+
+float GameState::getStartTime() const noexcept {
+    return m_startTime.time_since_epoch().count();
+}
+
+float GameState::getElapsedTime() const noexcept {
+    std::chrono::duration<float> elapsedTime = Clock::now() - m_startTime;
+    return elapsedTime.count();
 }
 
 /* ========================================================================== */

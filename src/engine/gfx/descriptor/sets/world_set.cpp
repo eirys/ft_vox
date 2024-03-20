@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/15 17:03:33 by etran             #+#    #+#             */
-/*   Updated: 2024/03/18 15:55:05 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/19 02:46:53 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,8 +21,6 @@ namespace vox::gfx {
 /* ========================================================================== */
 /*                                   PUBLIC                                   */
 /* ========================================================================== */
-
-constexpr u32 BUFFERSIZE = WORLD_SIZE * CHUNK_AREA;
 
 void WorldSet::init(const Device& device, const ICommandBuffer* cmdBuffer) {
     m_chunkDataSampler.init(device, cmdBuffer);

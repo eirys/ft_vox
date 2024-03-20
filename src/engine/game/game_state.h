@@ -6,21 +6,27 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/11 16:56:28 by etran             #+#    #+#             */
-/*   Updated: 2024/03/17 01:58:39 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/19 02:32:52 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
-#include "vector.h"
-#include "types.h"
 #include "world.h"
 #include "controller.h"
+
+#include <chrono>
 
 namespace game {
 
 class GameState final {
 public:
+    /* ====================================================================== */
+    /*                                TYPEDEFS                                */
+    /* ====================================================================== */
+
+    using Clock = std::chrono::high_resolution_clock;
+
     /* ====================================================================== */
     /*                                 METHODS                                */
     /* ====================================================================== */
@@ -29,6 +35,13 @@ public:
 
     void init(const ui::Window& window);
     void update(const ui::Window& window);
+
+    /* ====================================================================== */
+
+    float getStartTime() const noexcept;
+    float getElapsedTime() const noexcept;
+
+    /* ====================================================================== */
 
     World&                  getWorld() noexcept;
     const World&            getWorld() const noexcept;
@@ -39,8 +52,9 @@ private:
     /*                                  DATA                                  */
     /* ====================================================================== */
 
-    World           m_world;
-    ui::Controller  m_controller;
+    World               m_world;
+    ui::Controller      m_controller;
+    Clock::time_point   m_startTime;
 
 };
 

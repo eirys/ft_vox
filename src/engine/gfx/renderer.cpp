@@ -6,13 +6,14 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/23 09:29:35 by etran             #+#    #+#             */
-/*   Updated: 2024/03/18 11:08:54 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/19 11:26:59 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "renderer.h"
 #include "scene_pipeline.h"
 #include "scene_render_pass.h"
+#include "skybox_pipeline.h"
 #include "icommand_buffer.h"
 #include "render_decl.h"
 
@@ -26,6 +27,7 @@ namespace vox::gfx {
 
 Renderer::Renderer() {
     m_pipelines[(u32)PipelineIndex::ScenePipeline] = new ScenePipeline();
+    m_pipelines[(u32)PipelineIndex::SkyboxPipeline] = new SkyboxPipeline(m_pipelines[(u32)PipelineIndex::ScenePipeline]->getRenderPass());
 }
 
 Renderer::~Renderer() {
@@ -45,6 +47,7 @@ void Renderer::init(ui::Window& window, const game::GameState& game) {
     const ICommandBuffer* transferBuffer = m_commandBuffers[(u32)CommandBufferIndex::Transfer];
     m_descriptorTable.init(m_device, transferBuffer, game);
 
+    _createPipelineLayout();
     _createPipelines();
     _createFences();
     _createGfxSemaphores();
@@ -145,11 +148,7 @@ void Renderer::_createPipelines() {
     scenePassInfo.m_targetHeight = m_swapChain.getImageExtent().height;
     passInfos[(u32)PipelineIndex::ScenePipeline] = &scenePassInfo;
 
-    for (u32 i = 0; i < PIPELINE_COUNT; ++i) m_pipelines[i]->init(m_device, passInfos[i]);
-
-    _createPipelineLayout();
-
-    for (u32 i = 0; i < PIPELINE_COUNT; ++i) m_pipelines[i]->assemble(m_device, m_pipelineLayout);
+    for (u32 i = 0; i < PIPELINE_COUNT; ++i) m_pipelines[i]->init(m_device, passInfos[i], m_pipelineLayout);
 
     LDEBUG("Pipelines created.");
 }

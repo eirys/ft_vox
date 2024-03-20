@@ -1,31 +1,28 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   scene_pipeline.cpp                                 :+:      :+:    :+:   */
+/*   skybox_pipeline.cpp                                :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/03/07 09:48:27 by etran             #+#    #+#             */
-/*   Updated: 2024/03/19 11:33:34 by etran            ###   ########.fr       */
+/*   Created: 2024/03/19 10:48:36 by etran             #+#    #+#             */
+/*   Updated: 2024/03/20 08:21:58 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "scene_pipeline.h"
-#include "scene_render_pass.h"
+#include "skybox_pipeline.h"
 #include "device.h"
+#include "render_pass.h"
 #include "icommand_buffer.h"
 #include "descriptor_table.h"
 
-#include <array>
-#include <stdexcept>
-
-#include "game_decl.h"
-
 #include "debug.h"
+
+#include <array>
 
 namespace vox::gfx {
 
-enum class SceneDescriptorSet: u32 {
+enum class SkyboxDescriptorSet: u32 {
     Mvp = 0,
     WorldData,
 
@@ -33,35 +30,25 @@ enum class SceneDescriptorSet: u32 {
     Last = WorldData
 };
 
-static constexpr u32 DESCRIPTOR_SET_COUNT = enumSize<SceneDescriptorSet>();
+static constexpr u32 DESCRIPTOR_SET_COUNT = enumSize<SkyboxDescriptorSet>();
 
 /* ========================================================================== */
 /*                                   PUBLIC                                   */
 /* ========================================================================== */
 
-ScenePipeline::ScenePipeline() {
-    m_renderPass = new SceneRenderPass();
-}
-
-ScenePipeline::~ScenePipeline() {
-    delete m_renderPass;
+SkyboxPipeline::SkyboxPipeline(RenderPass* renderPass) {
+    m_renderPass = renderPass;
 }
 
 /* ========================================================================== */
 
-void ScenePipeline::init(
+void SkyboxPipeline::init(
     const Device& device,
     const RenderPassInfo* info,
     const VkPipelineLayout& pipelineLayout
 ) {
-    m_renderPass->init(device, info);
-
     VkPipelineVertexInputStateCreateInfo vertexInput{};
     vertexInput.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-    vertexInput.vertexBindingDescriptionCount = 0;
-    vertexInput.pVertexBindingDescriptions = nullptr;
-    vertexInput.vertexAttributeDescriptionCount = 0;
-    vertexInput.pVertexAttributeDescriptions = nullptr;
 
     VkPipelineInputAssemblyStateCreateInfo inputAssembly{};
     inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
@@ -75,55 +62,30 @@ void ScenePipeline::init(
 
     VkPipelineRasterizationStateCreateInfo rasterizer{};
     rasterizer.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
-    rasterizer.depthClampEnable = VK_FALSE;
-    rasterizer.rasterizerDiscardEnable = VK_FALSE;
     rasterizer.polygonMode = VK_POLYGON_MODE_FILL;
+    rasterizer.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
+    rasterizer.cullMode = VK_CULL_MODE_FRONT_BIT;
     rasterizer.lineWidth = 1.0f;
-    rasterizer.frontFace = VK_FRONT_FACE_CLOCKWISE;
-    rasterizer.depthBiasEnable = VK_FALSE;
-    rasterizer.depthBiasConstantFactor = 0.0f;
-    rasterizer.depthBiasClamp = 0.0f;
-    rasterizer.cullMode = VK_CULL_MODE_NONE;
-    rasterizer.depthBiasSlopeFactor = 0.0f;
 
     VkPipelineMultisampleStateCreateInfo multisample{};
     multisample.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
-    multisample.sampleShadingEnable = VK_FALSE;
     multisample.minSampleShading = 1.0f;
-    multisample.pSampleMask = nullptr;
-    multisample.rasterizationSamples = device.getMsaaCount();
-    multisample.alphaToCoverageEnable = VK_FALSE;
-    multisample.alphaToOneEnable = VK_FALSE;
+    multisample.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
 
     VkPipelineColorBlendAttachmentState colorBlendAttachment{};
     colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
     colorBlendAttachment.blendEnable = VK_FALSE;
-    colorBlendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_ONE;
-    colorBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ZERO;
-    colorBlendAttachment.colorBlendOp = VK_BLEND_OP_ADD;
-    colorBlendAttachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
-    colorBlendAttachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
-    colorBlendAttachment.alphaBlendOp = VK_BLEND_OP_ADD;
 
     VkPipelineColorBlendStateCreateInfo colorBlend{};
     colorBlend.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
-    colorBlend.logicOpEnable = VK_FALSE;
-    colorBlend.logicOp = VK_LOGIC_OP_COPY;
-    colorBlend.blendConstants[0] = 0.0f;
-    colorBlend.blendConstants[1] = 0.0f;
-    colorBlend.blendConstants[2] = 0.0f;
-    colorBlend.blendConstants[3] = 0.0f;
     colorBlend.attachmentCount = 1;
     colorBlend.pAttachments = &colorBlendAttachment;
 
     VkPipelineDepthStencilStateCreateInfo depthStencil{};
     depthStencil.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
-    depthStencil.depthTestEnable = VK_TRUE;
-    depthStencil.depthWriteEnable = VK_TRUE;
-    depthStencil.depthBoundsTestEnable = VK_FALSE;
-    depthStencil.minDepthBounds = 0.0f;
-    depthStencil.maxDepthBounds = 1.0f;
-    depthStencil.stencilTestEnable = VK_FALSE;
+    depthStencil.depthTestEnable = VK_FALSE;
+    depthStencil.depthWriteEnable = VK_FALSE;
+    depthStencil.back.compareOp = VK_COMPARE_OP_ALWAYS;
     depthStencil.depthCompareOp = VK_COMPARE_OP_LESS;
 
     const std::array<VkDynamicState, 2> dynamicStates = { VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR };
@@ -133,13 +95,13 @@ void ScenePipeline::init(
     dynamicState.pDynamicStates = dynamicStates.data();
 
     std::array<VkPipelineShaderStageCreateInfo, SHADER_STAGE_COUNT> shaderStages{};
-    const VkShaderModule vertexModule = _createShaderModule(device, "obj/shaders/scene.vertex.spv");
+    const VkShaderModule vertexModule = _createShaderModule(device, "obj/shaders/skybox.vertex.spv");
     shaderStages[(u32)ShaderStage::Vertex].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
     shaderStages[(u32)ShaderStage::Vertex].stage = (VkShaderStageFlagBits)ShaderType::VS;
     shaderStages[(u32)ShaderStage::Vertex].module = vertexModule;
     shaderStages[(u32)ShaderStage::Vertex].pName = "main";
 
-    const VkShaderModule fragmentModule = _createShaderModule(device, "obj/shaders/scene.fragment.spv");
+    const VkShaderModule fragmentModule = _createShaderModule(device, "obj/shaders/skybox.fragment.spv");
     shaderStages[(u32)ShaderStage::Fragment].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
     shaderStages[(u32)ShaderStage::Fragment].stage = (VkShaderStageFlagBits)ShaderType::FS;
     shaderStages[(u32)ShaderStage::Fragment].module = fragmentModule;
@@ -169,13 +131,11 @@ void ScenePipeline::init(
     vkDestroyShaderModule(device.getDevice(), vertexModule, nullptr);
     vkDestroyShaderModule(device.getDevice(), fragmentModule, nullptr);
 
-    LDEBUG("Scene pipeline assembled: " << m_pipeline);
 
-    LDEBUG("Scene pipeline initialized.");
+    LDEBUG("Skybox pipeline initialized.");
 }
 
-void ScenePipeline::destroy(const Device& device) {
-    m_renderPass->destroy(device);
+void SkyboxPipeline::destroy(const Device& device) {
     vkDestroyPipeline(device.getDevice(), m_pipeline, nullptr);
 
     LDEBUG("Scene pipeline destroyed.");
@@ -183,7 +143,7 @@ void ScenePipeline::destroy(const Device& device) {
 
 /* ========================================================================== */
 
-void ScenePipeline::record(
+void SkyboxPipeline::record(
     const VkPipelineLayout layout,
     const DescriptorTable& descriptorTable,
     const ICommandBuffer* cmdBuffer,
@@ -204,14 +164,15 @@ void ScenePipeline::record(
     vkCmdSetScissor(cmdBuffer->getBuffer(), 0, 1, &scissor);
 
     std::array<VkDescriptorSet, DESCRIPTOR_SET_COUNT> descriptorSets = {
-        descriptorTable[DescriptorSetIndex::Mvp]->getSet(),
-        descriptorTable[DescriptorSetIndex::WorldData]->getSet() };
+        descriptorTable[(u32)SkyboxDescriptorSet::Mvp]->getSet(),
+        descriptorTable[(u32)SkyboxDescriptorSet::WorldData]->getSet()
+    };
 
     vkCmdBindDescriptorSets(
         cmdBuffer->getBuffer(),
         VK_PIPELINE_BIND_POINT_GRAPHICS,
         layout,
-        (u32)SceneDescriptorSet::First,
+        (u32)SkyboxDescriptorSet::First,
         DESCRIPTOR_SET_COUNT, descriptorSets.data(),
         0, nullptr);
 
@@ -220,19 +181,7 @@ void ScenePipeline::record(
         VK_PIPELINE_BIND_POINT_GRAPHICS,
         m_pipeline);
 
-    // For now, draw a quad
-    constexpr u32 INSTANCES = WORLD_SIZE * CHUNK_AREA;
-
-    LDEBUG("Drawing " << INSTANCES << " instances");
-    vkCmdDraw(cmdBuffer->getBuffer(), 4, INSTANCES, 0, 0);
-
     m_renderPass->end(cmdBuffer);
-}
-
-/* ========================================================================== */
-
-RenderPass* ScenePipeline::getRenderPass() const noexcept {
-    return m_renderPass;
 }
 
 } // namespace vox::gfx

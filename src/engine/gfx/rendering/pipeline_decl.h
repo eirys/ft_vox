@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/29 22:37:23 by etran             #+#    #+#             */
-/*   Updated: 2024/03/07 14:27:54 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/19 11:24:08 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,9 +24,10 @@ namespace vox::gfx {
 */
 enum class PipelineIndex: u32 {
     ScenePipeline = 0,
+    SkyboxPipeline,
 
     First = ScenePipeline,
-    Last = ScenePipeline
+    Last = SkyboxPipeline
 };
 
 constexpr u32 PIPELINE_COUNT = enumSize<PipelineIndex>();

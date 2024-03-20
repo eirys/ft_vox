@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/28 15:26:02 by etran             #+#    #+#             */
-/*   Updated: 2024/03/10 19:14:48 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/19 11:31:52 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,9 +36,11 @@ public:
 
     /* ====================================================================== */
 
-    virtual void    init(const Device& device, const RenderPassInfo* info) = 0;
+    virtual void    init(
+        const Device& device,
+        const RenderPassInfo* info,
+        const VkPipelineLayout& pipelineLayout) = 0;
     virtual void    destroy(const Device& device) = 0;
-    virtual void    assemble(const Device& device, const VkPipelineLayout& pipelineLayout) = 0;
 
     virtual void    record(
         const VkPipelineLayout layout,
@@ -46,7 +48,7 @@ public:
         const ICommandBuffer* cmdBuffer,
         const RecordInfo& recordInfo) = 0;
 
-    /* ====================================================================== */
+    virtual RenderPass* getRenderPass() const noexcept = 0;
 
     VkPipeline          getPipeline() const noexcept;
 

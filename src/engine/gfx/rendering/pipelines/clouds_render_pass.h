@@ -1,34 +1,32 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   mvp_ubo.h                                          :+:      :+:    :+:   */
+/*   clouds_render_pass.h                               :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/03/07 13:46:39 by etran             #+#    #+#             */
-/*   Updated: 2024/03/19 01:53:40 by etran            ###   ########.fr       */
+/*   Created: 2024/03/19 10:46:12 by etran             #+#    #+#             */
+/*   Updated: 2024/03/19 10:47:51 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
-#include "matrix.h"
+#include "render_pass.h"
+#include "enum.h"
 
 namespace vox::gfx {
 
-struct MvpUbo final {
+/* ========================================================================== */
+/*                                    ENUMS                                   */
+/* ========================================================================== */
 
-    enum class Offset: u32 {
-        ViewProj    = 0,
-        Time        = sizeof(math::Mat4),
-    };
+enum class CloudsAttachment: u32 {
+    Color = 0,
+    Depth,
 
-    math::Mat4  viewProj;
-    f32         time;
-    u32         padding[3];
-
-}; // struct MvpUbo
-
-static_assert(sizeof(MvpUbo) % 16 == 0);
+    First = Color,
+    Last = Depth
+};
 
 } // namespace vox::gfx

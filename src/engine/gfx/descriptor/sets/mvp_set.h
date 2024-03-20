@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/28 23:38:00 by etran             #+#    #+#             */
-/*   Updated: 2024/03/15 17:38:33 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/19 02:03:34 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,9 +27,10 @@ public:
 
     enum class BindingIndex: u32 {
         Self = 0,
+        Time,
 
         First = Self,
-        Last = Self
+        Last = Time
     };
 
     /* ====================================================================== */
@@ -61,9 +62,8 @@ private:
     /*                                  DATA                                  */
     /* ====================================================================== */
 
-    Buffer              m_mvpDataBuffer;
-    // GameTextureSampler  m_texture;
-    ubo::MvpUbo         m_data;
+    Buffer  m_mvpDataBuffer;
+    MvpUbo  m_data;
 
 };
 
