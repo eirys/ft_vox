@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/19 10:48:36 by etran             #+#    #+#             */
-/*   Updated: 2024/03/20 18:46:25 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/20 19:21:35 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -177,6 +177,10 @@ void SkyboxPipeline::record(
         cmdBuffer->getBuffer(),
         VK_PIPELINE_BIND_POINT_GRAPHICS,
         m_pipeline);
+
+    // Draw skybox
+    vkCmdDraw(cmdBuffer->getBuffer(), 4, 1, 0, 0);
+    LDEBUG("Drawing Skybox");
 
     m_renderPass->end(cmdBuffer);
 }

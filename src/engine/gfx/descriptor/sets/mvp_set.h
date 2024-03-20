@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/28 23:38:00 by etran             #+#    #+#             */
-/*   Updated: 2024/03/20 18:52:16 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/20 19:15:21 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,10 +27,10 @@ public:
 
     enum class BindingIndex: u32 {
         ViewProj = 0,
-        Camera,
+        GameData,
 
         First = ViewProj,
-        Last = Camera
+        Last = GameData
     };
 
     /* ====================================================================== */

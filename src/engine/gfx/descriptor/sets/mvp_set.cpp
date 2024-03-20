@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/11 16:12:13 by etran             #+#    #+#             */
-/*   Updated: 2024/03/20 18:53:02 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/20 19:16:48 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,8 +32,7 @@ void MVPSet::init(const Device& device, const ICommandBuffer* cmdBuffer) {
 
     std::array<VkDescriptorSetLayoutBinding, BINDING_COUNT> bindings = {
         _createLayoutBinding(DescriptorTypeIndex::UniformBuffer, ShaderVisibility::VS, (u32)BindingIndex::ViewProj),
-        // _createLayoutBinding(DescriptorTypeIndex::UniformBuffer, ShaderVisibility::VS, (u32)BindingIndex::Time),
-        _createLayoutBinding(DescriptorTypeIndex::UniformBuffer, ShaderVisibility::VS, (u32)BindingIndex::Camera),
+        _createLayoutBinding(DescriptorTypeIndex::UniformBuffer, ShaderVisibility::VS, (u32)BindingIndex::GameData),
     };
 
     VkDescriptorSetLayoutCreateInfo layoutInfo{};
@@ -64,20 +63,14 @@ void MVPSet::fill(const Device& device) {
     viewProjInfo.offset = (VkDeviceSize)MvpUbo::Offset::ViewProj;
     viewProjInfo.range = sizeof(MvpUbo::m_viewProj);
 
-    // VkDescriptorBufferInfo timeInfo{};
-    // timeInfo.buffer = m_mvpDataBuffer.getBuffer();
-    // timeInfo.offset = (VkDeviceSize)MvpUbo::Offset::Time;
-    // timeInfo.range = sizeof(MvpUbo::m_time);
-
     VkDescriptorBufferInfo cameraInfo{};
     cameraInfo.buffer = m_mvpDataBuffer.getBuffer();
-    cameraInfo.offset = (VkDeviceSize)MvpUbo::Offset::Camera;
-    cameraInfo.range = sizeof(MvpUbo::m_camera);
+    cameraInfo.offset = (VkDeviceSize)MvpUbo::Offset::GameData;
+    cameraInfo.range = sizeof(MvpUbo::m_gameData);
 
     std::array<VkWriteDescriptorSet, BINDING_COUNT> descriptorWrites = {
         _createWriteDescriptorSet(DescriptorTypeIndex::UniformBuffer, &viewProjInfo, (u32)BindingIndex::ViewProj),
-        // _createWriteDescriptorSet(DescriptorTypeIndex::UniformBuffer, &timeInfo, (u32)BindingIndex::Time),
-        _createWriteDescriptorSet(DescriptorTypeIndex::UniformBuffer, &cameraInfo, (u32)BindingIndex::Camera),
+        _createWriteDescriptorSet(DescriptorTypeIndex::UniformBuffer, &cameraInfo, (u32)BindingIndex::GameData),
     };
     vkUpdateDescriptorSets(device.getDevice(), BINDING_COUNT, descriptorWrites.data(), 0, nullptr);
 

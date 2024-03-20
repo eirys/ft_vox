@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/07 09:48:27 by etran             #+#    #+#             */
-/*   Updated: 2024/03/20 16:20:34 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/20 19:21:42 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -83,7 +83,7 @@ void ScenePipeline::init(
     rasterizer.depthBiasEnable = VK_FALSE;
     rasterizer.depthBiasConstantFactor = 0.0f;
     rasterizer.depthBiasClamp = 0.0f;
-    rasterizer.cullMode = VK_CULL_MODE_NONE;
+    rasterizer.cullMode = VK_CULL_MODE_BACK_BIT;
     rasterizer.depthBiasSlopeFactor = 0.0f;
 
     VkPipelineMultisampleStateCreateInfo multisample{};
@@ -218,10 +218,10 @@ void ScenePipeline::record(
         VK_PIPELINE_BIND_POINT_GRAPHICS,
         m_pipeline);
 
-    // For now, draw a quad
+    // For now, draw upper quad
     constexpr u32 INSTANCES = WORLD_SIZE * CHUNK_AREA;
 
-    LDEBUG("Drawing " << INSTANCES << " instances");
+    LDEBUG("Drawing " << INSTANCES << " instances of scene");
     vkCmdDraw(cmdBuffer->getBuffer(), 4, INSTANCES, 0, 0);
 
     m_renderPass->end(cmdBuffer);
