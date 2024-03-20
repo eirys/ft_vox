@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/04 00:33:46 by etran             #+#    #+#             */
-/*   Updated: 2024/03/11 14:40:31 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/20 15:14:01 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,6 +18,7 @@
 
 #include <limits>
 #include <stdexcept>
+#include <algorithm>
 
 #include "debug.h"
 

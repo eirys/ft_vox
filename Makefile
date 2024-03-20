@@ -6,7 +6,7 @@
 #    By: etran <etran@student.42.fr>                +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/04/06 03:40:09 by eli               #+#    #+#              #
-#    Updated: 2024/03/19 11:11:11 by etran            ###   ########.fr        #
+#    Updated: 2024/03/20 18:23:23 by etran            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -88,6 +88,7 @@ SRC_FILES	:=	entrypoint.cpp \
 				$(CMD_DIR)/command_pool.cpp \
 				$(CMD_DIR)/command_buffer.cpp \
 				$(SAMPLER_DIR)/game_texture_sampler.cpp \
+				$(SAMPLER_DIR)/skybox_sampler.cpp \
 				$(SAMPLER_DIR)/chunk_data_sampler.cpp \
 				$(SETS_DIR)/mvp_set.cpp \
 				$(SETS_DIR)/world_set.cpp \
@@ -98,7 +99,6 @@ SRC_FILES	:=	entrypoint.cpp \
 				$(RENDER_DIR)/render_pass.cpp \
 				$(PIP_DIR)/scene_pipeline.cpp \
 				$(PIP_DIR)/scene_render_pass.cpp \
-# $(PIP_DIR)/clouds_pipeline.cpp
 				$(PIP_DIR)/skybox_pipeline.cpp \
 				$(BUF_DIR)/buffer.cpp \
 				$(BUF_DIR)/image_buffer.cpp \
@@ -122,6 +122,7 @@ MACROS		:=	GLFW_INCLUDE_VULKAN \
 				__LOG \
 				__INFO \
 				__LINUX \
+				__DEBUG \
 				VOX_CPP
 DEFINES		:=	$(addprefix -D,$(MACROS))
 
@@ -179,7 +180,7 @@ all: $(NAME)
 -include $(DEP)
 
 # Compile binary
-$(NAME):  shaders $(OBJ)
+$(NAME):   $(OBJ)
 	@$(CXX) $(CFLAGS) $(OBJ) -o $(NAME) $(LDFLAGS)
 	@echo "\`$(NAME)\` successfully created."
 

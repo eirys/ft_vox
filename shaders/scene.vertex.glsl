@@ -4,9 +4,19 @@
 
 layout(location = 0) out vec3 outUV;
 
-layout(set = 0, binding = 0) uniform ViewProjData {
+layout(set = 0, binding = 0) uniform ViewProj {
     mat4 inner;
 } viewProj;
+
+layout(set = 0, binding = 1) uniform Time {
+    float inner;
+} time;
+
+layout(set = 0, binding = 2) uniform Camera {
+    float forward;
+    float right;
+    float up;
+} camera;
 
 layout(set = 1, binding = 0) uniform usampler2DArray heightmap;
 

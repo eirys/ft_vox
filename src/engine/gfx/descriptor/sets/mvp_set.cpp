@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/11 16:12:13 by etran             #+#    #+#             */
-/*   Updated: 2024/03/19 02:36:17 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/20 18:53:02 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,8 +31,9 @@ void MVPSet::init(const Device& device, const ICommandBuffer* cmdBuffer) {
     m_mvpDataBuffer.map(device);
 
     std::array<VkDescriptorSetLayoutBinding, BINDING_COUNT> bindings = {
-        _createLayoutBinding(DescriptorTypeIndex::UniformBuffer, ShaderVisibility::VS, (u32)BindingIndex::Self),
-        _createLayoutBinding(DescriptorTypeIndex::UniformBuffer, ShaderVisibility::VS, (u32)BindingIndex::Time),
+        _createLayoutBinding(DescriptorTypeIndex::UniformBuffer, ShaderVisibility::VS, (u32)BindingIndex::ViewProj),
+        // _createLayoutBinding(DescriptorTypeIndex::UniformBuffer, ShaderVisibility::VS, (u32)BindingIndex::Time),
+        _createLayoutBinding(DescriptorTypeIndex::UniformBuffer, ShaderVisibility::VS, (u32)BindingIndex::Camera),
     };
 
     VkDescriptorSetLayoutCreateInfo layoutInfo{};
@@ -61,16 +62,22 @@ void MVPSet::fill(const Device& device) {
     VkDescriptorBufferInfo viewProjInfo{};
     viewProjInfo.buffer = m_mvpDataBuffer.getBuffer();
     viewProjInfo.offset = (VkDeviceSize)MvpUbo::Offset::ViewProj;
-    viewProjInfo.range = sizeof(MvpUbo::viewProj);
+    viewProjInfo.range = sizeof(MvpUbo::m_viewProj);
 
-    VkDescriptorBufferInfo timeInfo{};
-    timeInfo.buffer = m_mvpDataBuffer.getBuffer();
-    timeInfo.offset = (VkDeviceSize)MvpUbo::Offset::Time;
-    timeInfo.range = sizeof(MvpUbo::time);
+    // VkDescriptorBufferInfo timeInfo{};
+    // timeInfo.buffer = m_mvpDataBuffer.getBuffer();
+    // timeInfo.offset = (VkDeviceSize)MvpUbo::Offset::Time;
+    // timeInfo.range = sizeof(MvpUbo::m_time);
+
+    VkDescriptorBufferInfo cameraInfo{};
+    cameraInfo.buffer = m_mvpDataBuffer.getBuffer();
+    cameraInfo.offset = (VkDeviceSize)MvpUbo::Offset::Camera;
+    cameraInfo.range = sizeof(MvpUbo::m_camera);
 
     std::array<VkWriteDescriptorSet, BINDING_COUNT> descriptorWrites = {
-        _createWriteDescriptorSet(DescriptorTypeIndex::UniformBuffer, &viewProjInfo, (u32)BindingIndex::Self),
-        _createWriteDescriptorSet(DescriptorTypeIndex::UniformBuffer, &timeInfo, (u32)BindingIndex::Time),
+        _createWriteDescriptorSet(DescriptorTypeIndex::UniformBuffer, &viewProjInfo, (u32)BindingIndex::ViewProj),
+        // _createWriteDescriptorSet(DescriptorTypeIndex::UniformBuffer, &timeInfo, (u32)BindingIndex::Time),
+        _createWriteDescriptorSet(DescriptorTypeIndex::UniformBuffer, &cameraInfo, (u32)BindingIndex::Camera),
     };
     vkUpdateDescriptorSets(device.getDevice(), BINDING_COUNT, descriptorWrites.data(), 0, nullptr);
 
@@ -93,9 +100,12 @@ void MVPSet::update(const game::GameState& state) {
 
     const math::Mat4    projection = math::perspective(fovRadians, aspectRatio, nearPlane, farPlane);
 
-    m_data.viewProj = projection * view;
-    m_data.time = state.getElapsedTime();
-    m_mvpDataBuffer.copyFrom(&m_data); //, sizeof(MvpUbo::viewProj), (u32)MvpUbo::Offset::ViewProj);
+    m_data.m_viewProj = projection * view;
+    m_data.m_camera.m_time = state.getElapsedTime();
+    m_data.m_camera.front = front;
+    m_data.m_camera.right = right;
+    m_data.m_camera.up = up;
+    m_mvpDataBuffer.copyFrom(&m_data);
 }
 
 } // namespace vox::gfx

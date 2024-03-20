@@ -6,17 +6,24 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/19 10:48:41 by etran             #+#    #+#             */
-/*   Updated: 2024/03/19 11:33:19 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/20 16:18:34 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
 #include "pipeline.h"
+#include "render_pass.h"
 
 namespace vox::gfx {
 
-class RenderPass;
+/* ========================================================================== */
+/*                               HELPER OBJECTS                               */
+/* ========================================================================== */
+
+struct SkyboxRenderPassInfo final: public RenderPassInfo {
+    RenderPass* m_scenePass = nullptr;
+};
 
 class SkyboxPipeline final: public Pipeline {
 public:
@@ -42,11 +49,9 @@ public:
     /*                                 METHODS                                */
     /* ====================================================================== */
 
-    SkyboxPipeline(RenderPass* renderPass);
-
+    SkyboxPipeline() = default;
     ~SkyboxPipeline() = default;
 
-    SkyboxPipeline() = delete;
     SkyboxPipeline(SkyboxPipeline&& other) = delete;
     SkyboxPipeline(const SkyboxPipeline& other) = delete;
     SkyboxPipeline& operator=(SkyboxPipeline&& other) = delete;

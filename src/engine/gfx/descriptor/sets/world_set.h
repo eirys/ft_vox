@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/15 16:21:18 by etran             #+#    #+#             */
-/*   Updated: 2024/03/19 11:06:57 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/20 15:51:54 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 #include "descriptor_set.h"
 #include "chunk_data_sampler.h"
 #include "game_texture_sampler.h"
+#include "skybox_sampler.h"
 
 namespace vox::gfx {
 
@@ -27,10 +28,10 @@ public:
     enum class BindingIndex: u32 {
         BlockPos = 0,
         Textures,
-        // Skybox,
+        Skybox,
 
         First = BlockPos,
-        Last = Textures
+        Last = Skybox
     };
 
     /* ====================================================================== */
@@ -58,6 +59,7 @@ private:
 
     ChunkDataSampler    m_chunkDataSampler;
     GameTextureSampler  m_gameTextureSampler;
+    SkyboxSampler       m_skyboxSampler;
 
 }; // class WorldSet
 

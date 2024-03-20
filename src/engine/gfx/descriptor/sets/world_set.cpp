@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/15 17:03:33 by etran             #+#    #+#             */
-/*   Updated: 2024/03/19 02:46:53 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/20 19:10:35 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,9 +27,13 @@ void WorldSet::init(const Device& device, const ICommandBuffer* cmdBuffer) {
     m_gameTextureSampler.init(device, cmdBuffer);
     m_gameTextureSampler.fill(device, cmdBuffer);
 
+    m_skyboxSampler.init(device, cmdBuffer);
+    m_skyboxSampler.fill(device, cmdBuffer);
+
     std::array<VkDescriptorSetLayoutBinding, BINDING_COUNT> bindings = {
         _createLayoutBinding(DescriptorTypeIndex::CombinedImageSampler, ShaderVisibility::VS, (u32)BindingIndex::BlockPos),
         _createLayoutBinding(DescriptorTypeIndex::CombinedImageSampler, ShaderVisibility::FS, (u32)BindingIndex::Textures),
+        _createLayoutBinding(DescriptorTypeIndex::CombinedImageSampler, ShaderVisibility::FS, (u32)BindingIndex::Skybox),
     };
 
     VkDescriptorSetLayoutCreateInfo layoutInfo{};
@@ -47,6 +51,7 @@ void WorldSet::init(const Device& device, const ICommandBuffer* cmdBuffer) {
 void WorldSet::destroy(const Device& device) {
     m_chunkDataSampler.destroy(device);
     m_gameTextureSampler.destroy(device);
+    m_skyboxSampler.destroy(device);
     vkDestroyDescriptorSetLayout(device.getDevice(), m_layout, nullptr);
 
     LDEBUG("World descriptor set destroyed");
@@ -55,6 +60,8 @@ void WorldSet::destroy(const Device& device) {
 /* ========================================================================== */
 
 void WorldSet::fill(const Device& device) {
+    LDEBUG("Filling WorldSet descriptor set");
+
     VkDescriptorImageInfo chunkSamplerInfo{};
     chunkSamplerInfo.imageLayout = m_chunkDataSampler.getImageBuffer().getMetaData().m_layoutData.m_layout;
     chunkSamplerInfo.imageView = m_chunkDataSampler.getImageBuffer().getView();
@@ -65,9 +72,15 @@ void WorldSet::fill(const Device& device) {
     gameSamplerInfo.imageView = m_gameTextureSampler.getImageBuffer().getView();
     gameSamplerInfo.sampler = m_gameTextureSampler.getSampler();
 
+    VkDescriptorImageInfo skyboxInfo{};
+    skyboxInfo.imageLayout = m_skyboxSampler.getImageBuffer().getMetaData().m_layoutData.m_layout;
+    skyboxInfo.imageView = m_skyboxSampler.getImageBuffer().getView();
+    skyboxInfo.sampler = m_skyboxSampler.getSampler();
+
     std::array<VkWriteDescriptorSet, BINDING_COUNT> descriptorWrites = {
         _createWriteDescriptorSet(DescriptorTypeIndex::CombinedImageSampler, &chunkSamplerInfo, (u32)BindingIndex::BlockPos),
         _createWriteDescriptorSet(DescriptorTypeIndex::CombinedImageSampler, &gameSamplerInfo, (u32)BindingIndex::Textures),
+        _createWriteDescriptorSet(DescriptorTypeIndex::CombinedImageSampler, &skyboxInfo, (u32)BindingIndex::Skybox),
     };
     vkUpdateDescriptorSets(device.getDevice(), BINDING_COUNT, descriptorWrites.data(), 0, nullptr);
 

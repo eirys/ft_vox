@@ -1,4 +1,4 @@
-FROM ubuntu:22.04
+FROM ubuntu:18.04
 
 WORKDIR /app
 
@@ -12,15 +12,6 @@ add-apt-repository ppa:ubuntu-toolchain-r/test -y && \
 apt upgrade libstdc++6 -y && \
 # Cleanup
 apt autoremove -y && \
-apt autoclean -y && \
-useradd \
-    -rm \
-    -d /home/vox_user \
-    -s /bin/bash \
-    -g root \
-    -G sudo \
-    -u 1000 vox_user
+apt autoclean -y
 
-USER vox_user
-
-ENTRYPOINT [ "./dev.sh" ]
+CMD ["tail", "-f", "/dev/null"]

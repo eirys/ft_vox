@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/07 09:48:27 by etran             #+#    #+#             */
-/*   Updated: 2024/03/19 11:33:34 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/20 16:20:34 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -170,8 +170,6 @@ void ScenePipeline::init(
     vkDestroyShaderModule(device.getDevice(), fragmentModule, nullptr);
 
     LDEBUG("Scene pipeline assembled: " << m_pipeline);
-
-    LDEBUG("Scene pipeline initialized.");
 }
 
 void ScenePipeline::destroy(const Device& device) {

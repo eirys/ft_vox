@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/23 09:29:35 by etran             #+#    #+#             */
-/*   Updated: 2024/03/19 11:26:59 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/20 16:17:55 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,7 +27,7 @@ namespace vox::gfx {
 
 Renderer::Renderer() {
     m_pipelines[(u32)PipelineIndex::ScenePipeline] = new ScenePipeline();
-    m_pipelines[(u32)PipelineIndex::SkyboxPipeline] = new SkyboxPipeline(m_pipelines[(u32)PipelineIndex::ScenePipeline]->getRenderPass());
+    m_pipelines[(u32)PipelineIndex::SkyboxPipeline] = new SkyboxPipeline();
 }
 
 Renderer::~Renderer() {
@@ -133,7 +133,6 @@ void Renderer::_createCommandBuffers() {
 }
 
 void Renderer::_createPipelines() {
-    std::array<RenderPassInfo*, PIPELINE_COUNT> passInfos;
     SceneRenderPassInfo scenePassInfo(m_swapChain.getImageViews());
     scenePassInfo.m_formats.resize(SceneRenderPass::RESOURCE_COUNT, VK_FORMAT_UNDEFINED);
     scenePassInfo.m_formats[(u32)SceneResource::ColorImage] = m_swapChain.getImageFormat();
@@ -146,9 +145,11 @@ void Renderer::_createPipelines() {
     scenePassInfo.m_targetCount = m_swapChain.getImageViews().size();
     scenePassInfo.m_targetWidth = m_swapChain.getImageExtent().width;
     scenePassInfo.m_targetHeight = m_swapChain.getImageExtent().height;
-    passInfos[(u32)PipelineIndex::ScenePipeline] = &scenePassInfo;
+    m_pipelines[(u32)PipelineIndex::ScenePipeline]->init(m_device, &scenePassInfo, m_pipelineLayout);
 
-    for (u32 i = 0; i < PIPELINE_COUNT; ++i) m_pipelines[i]->init(m_device, passInfos[i], m_pipelineLayout);
+    SkyboxRenderPassInfo skyboxPassInfo;
+    skyboxPassInfo.m_scenePass = m_pipelines[(u32)PipelineIndex::ScenePipeline]->getRenderPass();
+    m_pipelines[(u32)PipelineIndex::SkyboxPipeline]->init(m_device, &skyboxPassInfo, m_pipelineLayout);
 
     LDEBUG("Pipelines created.");
 }

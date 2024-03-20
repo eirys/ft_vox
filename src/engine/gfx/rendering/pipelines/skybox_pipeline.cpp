@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/19 10:48:36 by etran             #+#    #+#             */
-/*   Updated: 2024/03/20 08:21:58 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/20 18:46:25 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,17 +36,14 @@ static constexpr u32 DESCRIPTOR_SET_COUNT = enumSize<SkyboxDescriptorSet>();
 /*                                   PUBLIC                                   */
 /* ========================================================================== */
 
-SkyboxPipeline::SkyboxPipeline(RenderPass* renderPass) {
-    m_renderPass = renderPass;
-}
-
-/* ========================================================================== */
-
 void SkyboxPipeline::init(
     const Device& device,
     const RenderPassInfo* info,
     const VkPipelineLayout& pipelineLayout
 ) {
+    const SkyboxRenderPassInfo* renderPassInfo = dynamic_cast<const SkyboxRenderPassInfo*>(info);
+    m_renderPass = renderPassInfo->m_scenePass;
+
     VkPipelineVertexInputStateCreateInfo vertexInput{};
     vertexInput.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
 
@@ -70,7 +67,7 @@ void SkyboxPipeline::init(
     VkPipelineMultisampleStateCreateInfo multisample{};
     multisample.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
     multisample.minSampleShading = 1.0f;
-    multisample.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
+    multisample.rasterizationSamples = device.getMsaaCount();
 
     VkPipelineColorBlendAttachmentState colorBlendAttachment{};
     colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
@@ -95,13 +92,13 @@ void SkyboxPipeline::init(
     dynamicState.pDynamicStates = dynamicStates.data();
 
     std::array<VkPipelineShaderStageCreateInfo, SHADER_STAGE_COUNT> shaderStages{};
-    const VkShaderModule vertexModule = _createShaderModule(device, "obj/shaders/skybox.vertex.spv");
+    const VkShaderModule vertexModule = _createShaderModule(device, "obj/shaders/scene.vertex.spv");
     shaderStages[(u32)ShaderStage::Vertex].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
     shaderStages[(u32)ShaderStage::Vertex].stage = (VkShaderStageFlagBits)ShaderType::VS;
     shaderStages[(u32)ShaderStage::Vertex].module = vertexModule;
     shaderStages[(u32)ShaderStage::Vertex].pName = "main";
 
-    const VkShaderModule fragmentModule = _createShaderModule(device, "obj/shaders/skybox.fragment.spv");
+    const VkShaderModule fragmentModule = _createShaderModule(device, "obj/shaders/scene.fragment.spv");
     shaderStages[(u32)ShaderStage::Fragment].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
     shaderStages[(u32)ShaderStage::Fragment].stage = (VkShaderStageFlagBits)ShaderType::FS;
     shaderStages[(u32)ShaderStage::Fragment].module = fragmentModule;
@@ -182,6 +179,10 @@ void SkyboxPipeline::record(
         m_pipeline);
 
     m_renderPass->end(cmdBuffer);
+}
+
+RenderPass* SkyboxPipeline::getRenderPass() const noexcept {
+    return m_renderPass;
 }
 
 } // namespace vox::gfx
