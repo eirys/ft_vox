@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/29 23:49:38 by etran             #+#    #+#             */
-/*   Updated: 2024/03/19 11:33:25 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/21 01:37:25 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,8 +42,8 @@ public:
     /*                                 METHODS                                */
     /* ====================================================================== */
 
-    ScenePipeline();
-    ~ScenePipeline();
+    ScenePipeline() = default;
+    ~ScenePipeline() = default;
 
     ScenePipeline(ScenePipeline&& other) = delete;
     ScenePipeline(const ScenePipeline& other) = delete;
@@ -54,17 +54,14 @@ public:
 
     void    init(
         const Device& device,
-        const RenderPassInfo* info,
+        const RenderPass* renderPass,
         const VkPipelineLayout& pipelineLayout) override;
     void    destroy(const Device& device) override;
 
     void    record(
         const VkPipelineLayout layout,
         const DescriptorTable& descriptorTable,
-        const ICommandBuffer* cmdBuffer,
-        const RecordInfo& drawInfo) override;
-
-    RenderPass* getRenderPass() const noexcept override;
+        const ICommandBuffer* cmdBuffer) override;
 
 private:
     /* ====================================================================== */
@@ -72,12 +69,6 @@ private:
     /* ====================================================================== */
 
     static constexpr u32 SHADER_STAGE_COUNT = enumSize<ShaderStage>();
-
-    /* ====================================================================== */
-    /*                                  DATA                                  */
-    /* ====================================================================== */
-
-    SceneRenderPass* m_renderPass = nullptr;
 
 }; // class ScenePipeline
 

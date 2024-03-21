@@ -6,7 +6,7 @@
 #    By: etran <etran@student.42.fr>                +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/04/06 03:40:09 by eli               #+#    #+#              #
-#    Updated: 2024/03/20 18:23:23 by etran            ###   ########.fr        #
+#    Updated: 2024/03/21 01:30:55 by etran            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -35,12 +35,15 @@ WORLD_DIR	:=	$(GAME_DIR)/world
 # gfx
 BUF_DIR		:=	$(GFX_DIR)/buffers
 CMD_DIR		:=	$(GFX_DIR)/command
-DESC_DIR	:=	$(GFX_DIR)/descriptor
 SYNC_DIR	:=	$(GFX_DIR)/sync
-RENDER_DIR	:=	$(GFX_DIR)/rendering
+
+DESC_DIR	:=	$(GFX_DIR)/descriptor
 SETS_DIR	:=	$(DESC_DIR)/sets
 SAMPLER_DIR	:=	$(DESC_DIR)/sampler
+
+RENDER_DIR	:=	$(GFX_DIR)/rendering
 PIP_DIR		:=	$(RENDER_DIR)/pipelines
+PASSES_DIR	:=	$(RENDER_DIR)/passes
 
 # libraries
 LIBS_DIR	:=	libs
@@ -66,6 +69,7 @@ SUBDIRS		:=	$(LIBS_DIR) \
 				$(SYNC_DIR) \
 				$(RENDER_DIR) \
 				$(PIP_DIR) \
+				$(PASSES_DIR) \
 				$(PROC_DIR) \
 				$(GAME_DIR) \
 				$(LOAD_DIR) \
@@ -97,8 +101,8 @@ SRC_FILES	:=	entrypoint.cpp \
 				$(DESC_DIR)/descriptor_set.cpp \
 				$(RENDER_DIR)/pipeline.cpp \
 				$(RENDER_DIR)/render_pass.cpp \
+				$(PASSES_DIR)/main_render_pass.cpp \
 				$(PIP_DIR)/scene_pipeline.cpp \
-				$(PIP_DIR)/scene_render_pass.cpp \
 				$(PIP_DIR)/skybox_pipeline.cpp \
 				$(BUF_DIR)/buffer.cpp \
 				$(BUF_DIR)/image_buffer.cpp \
@@ -161,7 +165,9 @@ LDFLAGS		:=	-lglfw \
 
 # ------------------- SHADERS ------------------ #
 SHD_FILES	:=	scene.fragment \
-				scene.vertex
+				scene.vertex \
+				skybox.vertex \
+				skybox.fragment
 
 SHD			:=	$(addprefix $(SHD_BIN_DIR)/,$(SHD_FILES))
 SHD_BIN		:=	$(addsuffix .spv,$(SHD))
@@ -180,7 +186,7 @@ all: $(NAME)
 -include $(DEP)
 
 # Compile binary
-$(NAME):   $(OBJ)
+$(NAME): shaders $(OBJ)
 	@$(CXX) $(CFLAGS) $(OBJ) -o $(NAME) $(LDFLAGS)
 	@echo "\`$(NAME)\` successfully created."
 

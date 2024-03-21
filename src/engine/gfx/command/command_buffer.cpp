@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/23 22:43:14 by etran             #+#    #+#             */
-/*   Updated: 2024/03/18 15:54:47 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/21 00:36:04 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,7 @@
 #include "compute_command_buffer.h"
 #include "gfx_semaphore.h"
 #include "debug.h"
+#include "render_pass.h"
 
 #include <stdexcept>
 
@@ -102,6 +103,14 @@ void CommandBuffer::submitRecording(
 
     if (vkQueueSubmit(_getQueue(), 1, &submitInfo, fence.getFence()) != VK_SUCCESS)
         throw std::runtime_error("failed to submit command buffer to queue");
+}
+
+void CommandBuffer::beginRenderPass(RenderPass* renderPass, const RecordInfo& recordInfo) const {
+    renderPass->begin(this, recordInfo);
+}
+
+void CommandBuffer::endRenderPass(RenderPass* renderPass) const {
+    renderPass->end(this);
 }
 
 /* ========================================================================== */

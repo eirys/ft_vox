@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/21 12:17:21 by etran             #+#    #+#             */
-/*   Updated: 2024/03/15 15:26:21 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/21 01:54:48 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,7 @@
 #include "device.h"
 #include "pipeline_decl.h"
 #include "sync_decl.h"
+#include "render_decl.h"
 #include "fence.h"
 #include "gfx_semaphore.h"
 #include "swap_chain.h"
@@ -34,6 +35,7 @@ class GameState;
 namespace vox::gfx {
 
 class Pipeline;
+class RenderPass;
 
 /**
  * @brief Holds all the pipelines and render the scene.
@@ -94,6 +96,7 @@ private:
     std::array<GfxSemaphore, SEMAPHORE_COUNT>       m_semaphores;
     std::array<ICommandBuffer*, CMD_BUFFER_COUNT>   m_commandBuffers;
     std::array<Pipeline*, PIPELINE_COUNT>           m_pipelines;
+    std::array<RenderPass*, RENDER_PASS_COUNT>      m_renderPasses;
 
     DescriptorTable                         m_descriptorTable;
     VkPipelineLayout                        m_pipelineLayout;
@@ -103,6 +106,7 @@ private:
     /* ====================================================================== */
 
     void    _createCommandBuffers();
+    void    _createRenderPasses();
     void    _createPipelines();
     void    _createPipelineLayout();
     void    _createGfxSemaphores();
@@ -112,6 +116,7 @@ private:
     void    _destroyGfxSemaphores();
     void    _destroyPipelineLayout();
     void    _destroyPipelines();
+    void    _destroyRenderPasses();
     void    _destroyCommandBuffers();
 
 }; // class Renderer

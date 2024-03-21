@@ -6,20 +6,19 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/07 09:48:27 by etran             #+#    #+#             */
-/*   Updated: 2024/03/20 19:38:34 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/21 01:59:16 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "scene_pipeline.h"
-#include "scene_render_pass.h"
+#include "render_pass.h"
 #include "device.h"
 #include "icommand_buffer.h"
 #include "descriptor_table.h"
+#include "game_decl.h"
 
 #include <array>
 #include <stdexcept>
-
-#include "game_decl.h"
 
 #include "debug.h"
 
@@ -39,23 +38,11 @@ static constexpr u32 DESCRIPTOR_SET_COUNT = enumSize<SceneDescriptorSet>();
 /*                                   PUBLIC                                   */
 /* ========================================================================== */
 
-ScenePipeline::ScenePipeline() {
-    m_renderPass = new SceneRenderPass();
-}
-
-ScenePipeline::~ScenePipeline() {
-    delete m_renderPass;
-}
-
-/* ========================================================================== */
-
 void ScenePipeline::init(
     const Device& device,
-    const RenderPassInfo* info,
+    const RenderPass* renderPass,
     const VkPipelineLayout& pipelineLayout
 ) {
-    m_renderPass->init(device, info);
-
     VkPipelineVertexInputStateCreateInfo vertexInput{};
     vertexInput.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
     vertexInput.vertexBindingDescriptionCount = 0;
@@ -155,7 +142,7 @@ void ScenePipeline::init(
     pipelineInfo.pDepthStencilState = &depthStencil;
     pipelineInfo.pColorBlendState = &colorBlend;
     pipelineInfo.pDynamicState = &dynamicState;
-    pipelineInfo.renderPass = m_renderPass->getRenderPass();
+    pipelineInfo.renderPass = renderPass->getRenderPass();
     pipelineInfo.stageCount = SHADER_STAGE_COUNT;
     pipelineInfo.pStages = shaderStages.data();
     pipelineInfo.layout = pipelineLayout;
@@ -173,7 +160,6 @@ void ScenePipeline::init(
 }
 
 void ScenePipeline::destroy(const Device& device) {
-    m_renderPass->destroy(device);
     vkDestroyPipeline(device.getDevice(), m_pipeline, nullptr);
 
     LDEBUG("Scene pipeline destroyed.");
@@ -184,23 +170,8 @@ void ScenePipeline::destroy(const Device& device) {
 void ScenePipeline::record(
     const VkPipelineLayout layout,
     const DescriptorTable& descriptorTable,
-    const ICommandBuffer* cmdBuffer,
-    const RecordInfo& drawInfo
+    const ICommandBuffer* cmdBuffer
 ) {
-    m_renderPass->begin(cmdBuffer, drawInfo);
-
-    VkViewport viewport{};
-    viewport.width = (f32)m_renderPass->getWidth();
-    viewport.height = (f32)m_renderPass->getHeight();
-    viewport.minDepth = 0.0f;
-    viewport.maxDepth = 1.0f;
-    vkCmdSetViewport(cmdBuffer->getBuffer(), 0, 1, &viewport);
-
-    VkRect2D scissor{};
-    scissor.offset = { 0, 0 };
-    scissor.extent = { m_renderPass->getWidth(), m_renderPass->getHeight() };
-    vkCmdSetScissor(cmdBuffer->getBuffer(), 0, 1, &scissor);
-
     std::array<VkDescriptorSet, DESCRIPTOR_SET_COUNT> descriptorSets = {
         descriptorTable[DescriptorSetIndex::Mvp]->getSet(),
         descriptorTable[DescriptorSetIndex::WorldData]->getSet() };
@@ -223,14 +194,6 @@ void ScenePipeline::record(
 
     LDEBUG("Drawing " << INSTANCES << " instances of scene");
     vkCmdDraw(cmdBuffer->getBuffer(), 4, INSTANCES, 0, 0);
-
-    m_renderPass->end(cmdBuffer);
-}
-
-/* ========================================================================== */
-
-RenderPass* ScenePipeline::getRenderPass() const noexcept {
-    return m_renderPass;
 }
 
 } // namespace vox::gfx

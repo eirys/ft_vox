@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   scene_render_pass.h                                :+:      :+:    :+:   */
+/*   main_render_pass.h                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/07 10:08:33 by etran             #+#    #+#             */
-/*   Updated: 2024/03/07 16:06:25 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/21 01:35:10 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,58 +18,58 @@
 namespace vox::gfx {
 
 /* ========================================================================== */
-/*                                    ENUMS                                   */
-/* ========================================================================== */
-
-enum class SceneResource: u32 {
-    ColorImage = 0,
-    DepthImage,
-
-    First = ColorImage,
-    Last = DepthImage
-};
-
-enum class SceneAttachment: u32 {
-    Color = 0,
-    Depth,
-    ColorResolve,
-
-    First = Color,
-    Last = ColorResolve
-};
-
-/* ========================================================================== */
 /*                               HELPER OBJECTS                               */
 /* ========================================================================== */
 
-// Special case: SceneRenderPass needs swap chain image views to create the target.
-struct SceneRenderPassInfo final: public RenderPassInfo {
-    SceneRenderPassInfo(const std::vector<VkImageView>& swapViews): m_swapChainImageViews(swapViews) {}
-    SceneRenderPassInfo() = delete;
+// Special case: MainRenderPass needs swap chain image views to create the target.
+struct MainRenderPassInfo final: public RenderPassInfo {
+    MainRenderPassInfo(const std::vector<VkImageView>& swapViews): m_swapChainImageViews(swapViews) {}
+    MainRenderPassInfo() = delete;
 
     const std::vector<VkImageView>& m_swapChainImageViews;
 };
 
-class SceneRenderPass final: public RenderPass {
+class MainRenderPass final: public RenderPass {
 public:
+    /* ====================================================================== */
+    /*                                  ENUMS                                 */
+    /* ====================================================================== */
+
+    enum class Resource: u32 {
+        ColorImage = 0,
+        DepthImage,
+
+        First = ColorImage,
+        Last = DepthImage
+    };
+
+    enum class Attachment: u32 {
+        Color = 0,
+        Depth,
+        ColorResolve,
+
+        First = Color,
+        Last = ColorResolve
+    };
+
     /* ====================================================================== */
     /*                             STATIC MEMBERS                             */
     /* ====================================================================== */
 
-    static constexpr u32    RESOURCE_COUNT = enumSize<SceneResource>();
-    static constexpr u32    ATTACHMENT_COUNT = enumSize<SceneAttachment>();
+    static constexpr u32    RESOURCE_COUNT = enumSize<Resource>();
+    static constexpr u32    ATTACHMENT_COUNT = enumSize<Attachment>();
 
     /* ====================================================================== */
     /*                                 METHODS                                */
     /* ====================================================================== */
 
-    SceneRenderPass() = default;
-    ~SceneRenderPass() = default;
+    MainRenderPass() = default;
+    ~MainRenderPass() = default;
 
-    SceneRenderPass(SceneRenderPass&& other) = delete;
-    SceneRenderPass(const SceneRenderPass& other) = delete;
-    SceneRenderPass& operator=(SceneRenderPass&& other) = delete;
-    SceneRenderPass& operator=(const SceneRenderPass& other) = delete;
+    MainRenderPass(MainRenderPass&& other) = delete;
+    MainRenderPass(const MainRenderPass& other) = delete;
+    MainRenderPass& operator=(MainRenderPass&& other) = delete;
+    MainRenderPass& operator=(const MainRenderPass& other) = delete;
 
     /* ====================================================================== */
 
@@ -91,6 +91,6 @@ private:
     void    _destroyTarget(const Device& device);
     void    _destroyResources(const Device& device);
 
-}; // class SceneRenderPass
+}; // class MainRenderPass
 
 } // namespace vox::gfx

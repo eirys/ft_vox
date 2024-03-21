@@ -6,16 +6,15 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/23 09:29:35 by etran             #+#    #+#             */
-/*   Updated: 2024/03/20 16:17:55 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/21 02:01:10 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "renderer.h"
 #include "scene_pipeline.h"
-#include "scene_render_pass.h"
+#include "main_render_pass.h"
 #include "skybox_pipeline.h"
 #include "icommand_buffer.h"
-#include "render_decl.h"
 
 #include "debug.h"
 
@@ -47,6 +46,7 @@ void Renderer::init(ui::Window& window, const game::GameState& game) {
     const ICommandBuffer* transferBuffer = m_commandBuffers[(u32)CommandBufferIndex::Transfer];
     m_descriptorTable.init(m_device, transferBuffer, game);
 
+    _createRenderPasses();
     _createPipelineLayout();
     _createPipelines();
     _createFences();
@@ -65,6 +65,7 @@ void Renderer::destroy() {
     _destroyGfxSemaphores();
     _destroyFences();
     _destroyPipelines();
+    _destroyRenderPasses();
     _destroyCommandBuffers();
 
     m_commandPool.destroy(m_device);
@@ -93,17 +94,38 @@ void Renderer::render(const game::GameState& game) {
     // --------------------------------
 
     // Record command buffer ---------
+    ICommandBuffer* const drawBuffer = m_commandBuffers[(u32)CommandBufferIndex::Draw];
+    RenderPass* const mainRenderPass = m_renderPasses[(u32)RenderPassIndex::Main];
     RecordInfo  recordInfo{};
     recordInfo.m_targetIndex = m_swapChain.getImageIndex();
 
-    ICommandBuffer* const drawBuffer = m_commandBuffers[(u32)CommandBufferIndex::Draw];
     drawBuffer->reset();
     drawBuffer->startRecording();
+    // drawBuffer->beginRenderPass(m_pipelines[(u32)PipelineIndex::ScenePipeline]->getRenderPass(), recordInfo);
+    mainRenderPass->begin(drawBuffer, recordInfo);
+
+    VkViewport viewport{};
+    viewport.width = (f32)mainRenderPass->getWidth();
+    viewport.height = (f32)mainRenderPass->getHeight();
+    viewport.minDepth = 0.0f;
+    viewport.maxDepth = 1.0f;
+    vkCmdSetViewport(drawBuffer->getBuffer(), 0, 1, &viewport);
+
+    VkRect2D scissor{};
+    scissor.offset = { 0, 0 };
+    scissor.extent = { mainRenderPass->getWidth(), mainRenderPass->getHeight() };
+    vkCmdSetScissor(drawBuffer->getBuffer(), 0, 1, &scissor);
+
+    m_pipelines[(u32)PipelineIndex::SkyboxPipeline]->record(
+        m_pipelineLayout,
+        m_descriptorTable,
+        drawBuffer);
     m_pipelines[(u32)PipelineIndex::ScenePipeline]->record(
         m_pipelineLayout,
         m_descriptorTable,
-        drawBuffer,
-        recordInfo);
+        drawBuffer);
+    // drawBuffer->endRenderPass(m_pipelines[(u32)PipelineIndex::ScenePipeline]->getRenderPass());
+    mainRenderPass->end(drawBuffer);
     drawBuffer->stopRecording();
     // --------------------------------
 
@@ -132,24 +154,27 @@ void Renderer::_createCommandBuffers() {
     LDEBUG("Command buffers created.");
 }
 
-void Renderer::_createPipelines() {
-    SceneRenderPassInfo scenePassInfo(m_swapChain.getImageViews());
-    scenePassInfo.m_formats.resize(SceneRenderPass::RESOURCE_COUNT, VK_FORMAT_UNDEFINED);
-    scenePassInfo.m_formats[(u32)SceneResource::ColorImage] = m_swapChain.getImageFormat();
-    scenePassInfo.m_formats[(u32)SceneResource::DepthImage] = m_swapChain.getDepthFormat();
-    scenePassInfo.m_samples.resize(SceneRenderPass::RESOURCE_COUNT, VK_SAMPLE_COUNT_1_BIT);
-    scenePassInfo.m_samples[(u32)SceneResource::ColorImage] = m_device.getMsaaCount();
-    scenePassInfo.m_samples[(u32)SceneResource::DepthImage] = m_device.getMsaaCount();
-    scenePassInfo.m_renderPassWidth = m_swapChain.getImageExtent().width;
-    scenePassInfo.m_renderPassHeight = m_swapChain.getImageExtent().height;
-    scenePassInfo.m_targetCount = m_swapChain.getImageViews().size();
-    scenePassInfo.m_targetWidth = m_swapChain.getImageExtent().width;
-    scenePassInfo.m_targetHeight = m_swapChain.getImageExtent().height;
-    m_pipelines[(u32)PipelineIndex::ScenePipeline]->init(m_device, &scenePassInfo, m_pipelineLayout);
+void Renderer::_createRenderPasses() {
+    m_renderPasses[(u32)RenderPassIndex::Main] = new MainRenderPass();
 
-    SkyboxRenderPassInfo skyboxPassInfo;
-    skyboxPassInfo.m_scenePass = m_pipelines[(u32)PipelineIndex::ScenePipeline]->getRenderPass();
-    m_pipelines[(u32)PipelineIndex::SkyboxPipeline]->init(m_device, &skyboxPassInfo, m_pipelineLayout);
+    MainRenderPassInfo mainPassInfo(m_swapChain.getImageViews());
+    mainPassInfo.m_formats.resize(MainRenderPass::RESOURCE_COUNT, VK_FORMAT_UNDEFINED);
+    mainPassInfo.m_formats[(u32)MainRenderPass::Resource::ColorImage] = m_swapChain.getImageFormat();
+    mainPassInfo.m_formats[(u32)MainRenderPass::Resource::DepthImage] = m_swapChain.getDepthFormat();
+    mainPassInfo.m_samples.resize(MainRenderPass::RESOURCE_COUNT, VK_SAMPLE_COUNT_1_BIT);
+    mainPassInfo.m_samples[(u32)MainRenderPass::Resource::ColorImage] = m_device.getMsaaCount();
+    mainPassInfo.m_samples[(u32)MainRenderPass::Resource::DepthImage] = m_device.getMsaaCount();
+    mainPassInfo.m_renderPassWidth = m_swapChain.getImageExtent().width;
+    mainPassInfo.m_renderPassHeight = m_swapChain.getImageExtent().height;
+    mainPassInfo.m_targetCount = m_swapChain.getImageViews().size();
+    mainPassInfo.m_targetWidth = m_swapChain.getImageExtent().width;
+    mainPassInfo.m_targetHeight = m_swapChain.getImageExtent().height;
+    m_renderPasses[(u32)RenderPassIndex::Main]->init(m_device, &mainPassInfo);
+}
+
+void Renderer::_createPipelines() {
+    m_pipelines[(u32)PipelineIndex::ScenePipeline]->init(m_device, m_renderPasses[(u32)RenderPassIndex::Main], m_pipelineLayout);
+    m_pipelines[(u32)PipelineIndex::SkyboxPipeline]->init(m_device, m_renderPasses[(u32)RenderPassIndex::Main], m_pipelineLayout);
 
     LDEBUG("Pipelines created.");
 }
@@ -182,6 +207,10 @@ void Renderer::_createFences() {
 
 void Renderer::_destroyCommandBuffers() {
     for (u32 i = 0; i < CMD_BUFFER_COUNT; ++i) m_commandPool.destroyBuffer(m_device, m_commandBuffers[i]);
+}
+
+void Renderer::_destroyRenderPasses() {
+    for (u32 i = 0; i < RENDER_PASS_COUNT; i++) m_renderPasses[i]->destroy(m_device);
 }
 
 void Renderer::_destroyPipelines() {

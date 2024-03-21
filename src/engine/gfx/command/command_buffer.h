@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/23 20:01:10 by etran             #+#    #+#             */
-/*   Updated: 2024/03/12 11:45:38 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/21 00:37:06 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,6 +35,9 @@ public:
     void    startRecording(VkCommandBufferUsageFlags flags = 0) const override;
     void    stopRecording() const override;
     void    awaitEndOfRecording(const Device& device) const override;
+
+    void    beginRenderPass(RenderPass* renderPass, const RecordInfo& recordInfo) const override;
+    void    endRenderPass(RenderPass* renderPass) const override;
 
     void    submitRecording(
         const std::vector<VkSemaphore> waitSemaphores,
