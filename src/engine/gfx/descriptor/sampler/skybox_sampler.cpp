@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/20 15:27:49 by etran             #+#    #+#             */
-/*   Updated: 2024/03/21 01:04:20 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/21 02:10:14 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,11 +66,6 @@ void SkyboxSampler::fill(
     const ICommandBuffer* cmdBuffer,
     const void* data
 ) {
-    constexpr LayoutData finalLayout{
-        .m_layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-        .m_accessMask = VK_ACCESS_SHADER_READ_BIT,
-        .m_stageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT };
-
     static const u32 IMAGE_SIZE = m_imageBuffer.getMetaData().getLayerSize()
                                 * m_imageBuffer.getMetaData().getPixelSize();
 
@@ -86,7 +81,6 @@ void SkyboxSampler::fill(
     cmdBuffer->startRecording();
     m_imageBuffer.copyFrom(cmdBuffer, stagingBuffer);
     m_imageBuffer.generateMipmap(cmdBuffer);
-    // m_imageBuffer.setLayout(cmdBuffer, finalLayout);
     cmdBuffer->stopRecording();
     cmdBuffer->awaitEndOfRecording(device);
     stagingBuffer.destroy(device);

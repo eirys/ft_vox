@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/07 10:15:26 by etran             #+#    #+#             */
-/*   Updated: 2024/03/21 01:57:14 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/21 02:09:02 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,8 +19,6 @@
 #include <stdexcept>
 
 #include "debug.h"
-
-#include <cassert>
 
 namespace vox::gfx {
 
@@ -73,9 +71,9 @@ void MainRenderPass::begin(const ICommandBuffer* cmdBuffer, const RecordInfo& re
 /* ========================================================================== */
 
 void MainRenderPass::_createRenderPass(const Device& device, const RenderPassInfo* info) {
-    // Attachments
     const MainRenderPassInfo* scenePassInfo = dynamic_cast<const MainRenderPassInfo*>(info);
 
+    // Attachments
     std::array<VkAttachmentDescription, ATTACHMENT_COUNT> attachments{};
 
     attachments[(u32)Attachment::Color].format = scenePassInfo->m_formats[(u32)Resource::ColorImage];
