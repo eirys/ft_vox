@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/23 09:29:35 by etran             #+#    #+#             */
-/*   Updated: 2024/03/21 02:01:10 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/22 17:15:39 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -101,8 +101,6 @@ void Renderer::render(const game::GameState& game) {
 
     drawBuffer->reset();
     drawBuffer->startRecording();
-    // drawBuffer->beginRenderPass(m_pipelines[(u32)PipelineIndex::ScenePipeline]->getRenderPass(), recordInfo);
-    mainRenderPass->begin(drawBuffer, recordInfo);
 
     VkViewport viewport{};
     viewport.width = (f32)mainRenderPass->getWidth();
@@ -116,6 +114,7 @@ void Renderer::render(const game::GameState& game) {
     scissor.extent = { mainRenderPass->getWidth(), mainRenderPass->getHeight() };
     vkCmdSetScissor(drawBuffer->getBuffer(), 0, 1, &scissor);
 
+    mainRenderPass->begin(drawBuffer, recordInfo);
     m_pipelines[(u32)PipelineIndex::SkyboxPipeline]->record(
         m_pipelineLayout,
         m_descriptorTable,
@@ -124,7 +123,7 @@ void Renderer::render(const game::GameState& game) {
         m_pipelineLayout,
         m_descriptorTable,
         drawBuffer);
-    // drawBuffer->endRenderPass(m_pipelines[(u32)PipelineIndex::ScenePipeline]->getRenderPass());
+
     mainRenderPass->end(drawBuffer);
     drawBuffer->stopRecording();
     // --------------------------------

@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/19 10:48:36 by etran             #+#    #+#             */
-/*   Updated: 2024/03/21 01:59:42 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/22 22:59:36 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,7 +47,7 @@ void SkyboxPipeline::init(
     VkPipelineInputAssemblyStateCreateInfo inputAssembly{};
     inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
     inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
-    inputAssembly.primitiveRestartEnable = VK_FALSE;
+    inputAssembly.primitiveRestartEnable = VK_TRUE;
 
     VkPipelineViewportStateCreateInfo viewportState{};
     viewportState.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
@@ -57,7 +57,7 @@ void SkyboxPipeline::init(
     VkPipelineRasterizationStateCreateInfo rasterizer{};
     rasterizer.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
     rasterizer.polygonMode = VK_POLYGON_MODE_FILL;
-    rasterizer.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
+    rasterizer.frontFace = VK_FRONT_FACE_CLOCKWISE;
     rasterizer.cullMode = VK_CULL_MODE_NONE;
     rasterizer.lineWidth = 1.0f;
 
@@ -161,7 +161,7 @@ void SkyboxPipeline::record(
         m_pipeline);
 
     // Draw skybox
-    vkCmdDraw(cmdBuffer->getBuffer(), 4, 1, 0, 0);
+    vkCmdDraw(cmdBuffer->getBuffer(), 4, 6, 0, 0);
     LDEBUG("Drawing Skybox");
 }
 

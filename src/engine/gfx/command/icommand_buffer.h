@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/23 10:28:53 by etran             #+#    #+#             */
-/*   Updated: 2024/03/21 00:37:11 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/22 17:11:49 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,8 +19,6 @@ namespace vox::gfx {
 
 class Device;
 class Fence;
-class RenderPass;
-struct RecordInfo;
 
 class ICommandBuffer {
 public:
@@ -39,9 +37,6 @@ public:
     virtual void    startRecording(VkCommandBufferUsageFlags flags = 0) const = 0;
     virtual void    stopRecording() const = 0;
     virtual void    awaitEndOfRecording(const Device& device) const = 0;
-
-    virtual void    beginRenderPass(RenderPass* renderPass, const RecordInfo& recordInfo) const = 0;
-    virtual void    endRenderPass(RenderPass* renderPass) const = 0;
 
     virtual void    submitRecording(
         const std::vector<VkSemaphore> waitSemaphores,
