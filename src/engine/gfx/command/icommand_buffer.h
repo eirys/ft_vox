@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/23 10:28:53 by etran             #+#    #+#             */
-/*   Updated: 2024/03/22 17:11:49 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/22 23:07:27 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,7 +42,7 @@ public:
         const std::vector<VkSemaphore> waitSemaphores,
         const std::vector<VkPipelineStageFlags> waitStages,
         const std::vector<VkSemaphore> signalSemaphore,
-        const Fence& fence) = 0;
+        const Fence& fence) const = 0;
 
     virtual VkCommandBuffer getBuffer() const noexcept = 0;
 

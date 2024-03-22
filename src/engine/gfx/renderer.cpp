@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/23 09:29:35 by etran             #+#    #+#             */
-/*   Updated: 2024/03/22 17:15:39 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/22 23:09:23 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -94,8 +94,9 @@ void Renderer::render(const game::GameState& game) {
     // --------------------------------
 
     // Record command buffer ---------
-    ICommandBuffer* const drawBuffer = m_commandBuffers[(u32)CommandBufferIndex::Draw];
-    RenderPass* const mainRenderPass = m_renderPasses[(u32)RenderPassIndex::Main];
+    const ICommandBuffer* drawBuffer = m_commandBuffers[(u32)CommandBufferIndex::Draw];
+    const RenderPass* mainRenderPass = m_renderPasses[(u32)RenderPassIndex::Main];
+
     RecordInfo  recordInfo{};
     recordInfo.m_targetIndex = m_swapChain.getImageIndex();
 
@@ -123,8 +124,8 @@ void Renderer::render(const game::GameState& game) {
         m_pipelineLayout,
         m_descriptorTable,
         drawBuffer);
-
     mainRenderPass->end(drawBuffer);
+
     drawBuffer->stopRecording();
     // --------------------------------
 

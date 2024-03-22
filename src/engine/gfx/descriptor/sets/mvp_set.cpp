@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/11 16:12:13 by etran             #+#    #+#             */
-/*   Updated: 2024/03/22 22:19:36 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/22 23:04:47 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -85,35 +85,16 @@ void MVPSet::update(const game::GameState& state) {
     const math::Vect3   right = math::normalize(math::cross(front, UP_VEC));
     const math::Vect3   up = math::cross(right, front);
 
-    // constexpr math::Vect3 position = { -1.0f, 30.0f, 1.0f };
-    // constexpr math::Vect3 center = { 10.0f, -5.0f, 10.0f };
-    // constexpr math::Vect3 up = UP_VEC;
-
-    // const math::Mat4    view = math::lookAt(position, front, up, right);
     m_data.m_viewProj.view = math::lookAt(position, front, up, right);
-    // const math::Mat4    view = math::lookAt(position, center, up);
-
-    // m_data.m_gameData.camera.front = { 1.0f, 0.0f, 0.0f };
-    // m_data.m_gameData.camera.right = { 0.0f, -1.0f, 0.0f };
-    // m_data.m_gameData.camera.up = UP_VEC;
 
     static const f32    fovRadians = math::radians(70.0f);
     constexpr f32       aspectRatio = 1200.0f / 800.0f;
     constexpr f32       nearPlane = 0.1f;
     constexpr f32       farPlane = 500.0f;
 
-    // const math::Mat4    projection = math::perspective(fovRadians, aspectRatio, nearPlane, farPlane);
     m_data.m_viewProj.proj = math::perspective(fovRadians, aspectRatio, nearPlane, farPlane);
 
-
-    // const mat::Mat4     camView =
-
-    // m_data.m_viewProj = projection * view;
-
     m_data.m_gameData.time = state.getElapsedTime();
-    // m_data.m_gameData.camera.front = front;
-    // m_data.m_gameData.camera.right = right;
-    // m_data.m_gameData.camera.up = up;
 
     m_mvpDataBuffer.copyFrom(&m_data);
 }

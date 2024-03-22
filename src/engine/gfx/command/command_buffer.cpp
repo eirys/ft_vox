@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/23 22:43:14 by etran             #+#    #+#             */
-/*   Updated: 2024/03/22 17:11:57 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/22 23:07:21 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -89,7 +89,7 @@ void CommandBuffer::submitRecording(
     const std::vector<VkPipelineStageFlags> waitStages,
     const std::vector<VkSemaphore> signalSemaphore,
     const Fence& fence
-) {
+) const {
     VkSubmitInfo submitInfo{};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
     submitInfo.commandBufferCount = 1;

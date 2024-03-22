@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/07 13:46:39 by etran             #+#    #+#             */
-/*   Updated: 2024/03/22 22:19:24 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/22 23:05:00 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,6 @@ struct MvpUbo final {
     /*                                  DATA                                  */
     /* ====================================================================== */
 
-    // math::Mat4  m_viewProj;
     struct {
         math::Mat4  view;
         math::Mat4  proj;
@@ -30,12 +29,7 @@ struct MvpUbo final {
 
     struct {
         f32 time;
-        struct {
-            math::Vect3     front;
-            math::Vect3     right;
-            math::Vect3     up;
-        }   camera;
-        u32 padding[2];
+        u32 padding[3];
     }           m_gameData;
 
     /* ====================================================================== */

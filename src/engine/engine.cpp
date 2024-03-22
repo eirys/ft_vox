@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/27 18:17:53 by etran             #+#    #+#             */
-/*   Updated: 2024/03/22 19:48:44 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/22 23:06:34 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,7 +36,6 @@ Engine::~Engine() {
 /* ========================================================================== */
 
 void Engine::run() {
-    // if (m_window.isAlive()) {
     while (m_window.isAlive()) {
         m_window.pollEvents();
         // if (m_window.needsUpdate()) {
@@ -48,9 +47,6 @@ void Engine::run() {
         // }
     }
 
-    // while (m_window.isAlive()) {
-    //     m_window.pollEvents();
-    // }
     m_renderer.waitIdle();
 }
 

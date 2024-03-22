@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/07 10:15:26 by etran             #+#    #+#             */
-/*   Updated: 2024/03/21 02:09:02 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/22 23:08:04 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,7 +49,7 @@ void MainRenderPass::updateResources(const Device& device, const RenderPassInfo*
     _createTarget(device, info);
 }
 
-void MainRenderPass::begin(const ICommandBuffer* cmdBuffer, const RecordInfo& recordInfo) {
+void MainRenderPass::begin(const ICommandBuffer* cmdBuffer, const RecordInfo& recordInfo) const {
     std::array<VkClearValue, RESOURCE_COUNT> clearValues{};
     clearValues[(u32)Attachment::Color].color = {{ 0.0f, 0.0f, 0.0f, 1.0f }};
     clearValues[(u32)Attachment::Depth].depthStencil = { 1.0f, 0 };

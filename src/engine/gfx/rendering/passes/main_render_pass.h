@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/07 10:08:33 by etran             #+#    #+#             */
-/*   Updated: 2024/03/21 01:35:10 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/22 23:08:24 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -77,7 +77,7 @@ public:
     void    destroy(const Device& device) override;
 
     void    updateResources(const Device& device, const RenderPassInfo* info) override;
-    void    begin(const ICommandBuffer* cmdBuffer, const RecordInfo& recordInfo) override;
+    void    begin(const ICommandBuffer* cmdBuffer, const RecordInfo& recordInfo) const override;
 
 private:
     /* ====================================================================== */

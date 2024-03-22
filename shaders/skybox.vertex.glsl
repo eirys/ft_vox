@@ -7,13 +7,6 @@ layout(set = 0, binding = 0) uniform ViewProj {
     mat4 proj;
 } viewProj;
 
-layout(set = 0, binding = 1) uniform GameData {
-    float time;
-    vec3  forward;
-    vec3  right;
-    vec3  up;
-} gameData;
-
 #define CORNER_A vec3( 1.0, -1.0,  1.0)
 #define CORNER_B vec3( 1.0, -1.0, -1.0)
 #define CORNER_C vec3( 1.0,  1.0, -1.0)
