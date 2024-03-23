@@ -6,7 +6,7 @@
 #    By: etran <etran@student.42.fr>                +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/04/06 03:40:09 by eli               #+#    #+#              #
-#    Updated: 2024/03/21 01:30:55 by etran            ###   ########.fr        #
+#    Updated: 2024/03/23 22:03:38 by etran            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -126,7 +126,6 @@ MACROS		:=	GLFW_INCLUDE_VULKAN \
 				__LOG \
 				__INFO \
 				__LINUX \
-				__DEBUG \
 				VOX_CPP
 DEFINES		:=	$(addprefix -D,$(MACROS))
 

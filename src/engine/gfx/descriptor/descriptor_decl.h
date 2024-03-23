@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/28 23:42:29 by etran             #+#    #+#             */
-/*   Updated: 2024/03/15 17:02:12 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/23 17:38:16 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -72,5 +72,10 @@ enum class ShaderVisibility: u8 {
     FS = VK_SHADER_STAGE_FRAGMENT_BIT,
     CS = VK_SHADER_STAGE_COMPUTE_BIT
 };
+
+inline
+ShaderVisibility operator|(ShaderVisibility lhs, ShaderVisibility rhs) {
+    return static_cast<ShaderVisibility>(static_cast<u8>(lhs) | static_cast<u8>(rhs));
+}
 
 } // namespace vox::gfx
