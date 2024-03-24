@@ -38,7 +38,7 @@ float applyDiffuse(
     in vec3 normal,
     in vec3 sunDir
 ) {
-    return max(dot(normal, sunDir), 0.1);
+    return max(dot(normal, sunDir), 0.05);
 }
 
 void main() {
