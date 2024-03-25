@@ -4,7 +4,6 @@
 
 layout(location = 0) out vec3 outUVW;
 layout(location = 1) out vec3 outSunDir;
-// layout(location = 2) out vec3 outSunColor;
 
 layout(set = 0, binding = 0) uniform ViewProj {
     mat4 view;
@@ -13,7 +12,6 @@ layout(set = 0, binding = 0) uniform ViewProj {
 
 layout(set = 0, binding = 1) uniform GameData {
     vec2 sunPos;
-    // uint sunColor;
 } gameData;
 
 #define CORNER_A vec3( 1.0, -1.0,  1.0)
@@ -36,12 +34,6 @@ const vec3 quadCorner[6][4] = {
 
 void main() {
     outSunDir = vec3(gameData.sunPos, 0.0);
-    // outSunColor = vec3((
-    //     gameData.sunColor & 0xFF) / 255.0,
-    //     ((gameData.sunColor >> 8) & 0xFF) / 255.0,
-    //     ((gameData.sunColor >> 16) & 0xFF) / 255.0);
-
-    // Skybox
     outUVW = quadCorner[gl_InstanceIndex][gl_VertexIndex];
     gl_Position = viewProj.proj * mat4(mat3(viewProj.view)) * vec4(outUVW, 1.0);
 }

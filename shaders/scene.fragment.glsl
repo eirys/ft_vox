@@ -1,51 +1,45 @@
 #version 450
 
 layout(location = 0) in vec2 inUV;
-layout(location = 1) in vec3 inViewDir;
-layout(location = 2) in vec3 inNormal;
-layout(location = 3) in vec3 inSunDir;
+layout(location = 1) in vec3 inNormal;
+layout(location = 2) in vec3 inSunDir;
 
 layout(location = 0) out vec4 outFragColor;
 
 layout(set = 1, binding = 1) uniform sampler2DArray GameTex;
 
 const vec3 SUN_COLOR = vec3(1.0, 1.0, 0.33);
+const vec3 MOON_COLOR = vec3(0.5, 0.5, 0.5);
+const vec3 FOG_COLOR = vec3(0.3, 0.4, 0.6);
 
 // From Iñigo Quílez
-vec3 applyFog(
-    in vec3 fragColor,
-    in float depth,
-    in vec3 camDir,
-    in vec3 sunDir
-) {
-    // vec3  sunColor = vec3(
-    //     (gameData.sunColor & 0xFF) / 255.0,
-    //     ((gameData.sunColor >> 8) & 0xFF) / 255.0,
-    //     ((gameData.sunColor >> 16) & 0xFF) / 255.0);
-    float fogAmount = 1.0 - exp(-depth * 0.5);
-    float sunAmount = pow(max(dot(camDir, sunDir), 0.0), 8.0);
-    vec3  fogColor = mix(
-        vec3(0.0),
-        // vec3(0.5, 0.6, 0.8), // Blueish
-        // vec3(1.0, 0.8, 0.3), // Yellowish
-        // sunColor,
-        vec3(1.0),
-        sunAmount);
-    return mix(fragColor, fogColor, fogAmount);
+float applyFog(in float distanceToPoint) {
+    const float minFogDistance = 0.0;
+    const float maxFogDistance = 300.0;
+
+    return 1.0 - (maxFogDistance - distanceToPoint) / (maxFogDistance - minFogDistance);
 }
 
-float applyDiffuse(
-    in vec3 normal,
-    in vec3 sunDir
-) {
+float applyDiffuse(in vec3 normal, in vec3 sunDir) {
     return max(dot(normal, sunDir), 0.05);
 }
 
 void main() {
+    const float sunHeight = max(inSunDir.y, 0.0);
+
     vec3 color = texture(GameTex, vec3(inUV, 2)).rgb;
 
-    float diffuse = applyDiffuse(inNormal, inSunDir);
+    const float ambientFactor = 0.1;
+    const vec3 ambientColor = mix(MOON_COLOR, SUN_COLOR, sunHeight);
 
-    // vec3 fog = applyFog(color, gl_FragCoord.z, inViewDir, normalize(vec3(gameData.sunPos, 1.0)));
-    outFragColor = vec4(diffuse * color, 1.0);
+    // Fog
+    const float fogAmount = applyFog(gl_FragCoord.z / gl_FragCoord.w);
+    const vec3 fogColor = mix(FOG_COLOR, ambientColor, ambientFactor);
+    color = mix(color, fogColor, fogAmount);
+
+    // Lighting
+    const float diffuseFactor = applyDiffuse(inNormal, inSunDir);
+    color = diffuseFactor * mix(color, ambientColor, ambientFactor);
+
+    outFragColor = vec4(color, 1.0);
 }

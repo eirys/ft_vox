@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/07 13:46:39 by etran             #+#    #+#             */
-/*   Updated: 2024/03/24 00:30:21 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/25 00:55:07 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,10 +28,7 @@ struct MvpUbo final {
     }           m_viewProj;
 
     struct {
-        struct {
-            math::Vect2 pos;
-            // u32         color;
-        }           sun;
+        math::Vect2 sunPos;
         u32         padding[2];
     }           m_gameData;
 
