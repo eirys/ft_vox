@@ -7,19 +7,12 @@ layout(location = 0) out vec4 outFragColor;
 
 layout(set = 1, binding = 2) uniform samplerCube    SkyboxTex;
 
-// Apply sun lighting depending on the angle between the eye direction and the sun direction
-float applySun(in vec3 eyeDir, in vec3 sunDir) {
-    float sunDot = clamp(dot(eyeDir, sunDir), 0.0, 1.0);
-    float sunAmount =
-        0.02 * pow(sunDot, 8.0) + // Outer glow
-        0.5 * pow(sunDot, 64.0) + // Inner glow
-        0.8 * pow(sunDot, 256.0); // Sun disk
-    return sunAmount;
-}
+const float TINT_INTENSITY = 0.02;
 
-const float TINT_INTENSITY = 0.98;
 const vec3 SUN_COLOR = vec3(1.0, 1.0, 0.33);
-const vec3 DIMMED_SUN_COLOR = vec3(1.0, 0.3, 0.0);
+const vec3 MOON_COLOR = vec3(0.8, 0.8, 0.9);
+
+const vec3 DEFAULT_SKY_COLOR = vec3(0.5, 0.5, 1.0);
 
 const vec3 DAY_TINT = vec3(0.6, 0.8, 1.0);
 const vec3 NIGHT_TINT = vec3(0.0, 0.0, 0.01);
@@ -27,40 +20,61 @@ const vec3 SUNSET_TINT = vec3(0.9, 0.3, 0.0);
 const vec3 MOON_TINT = vec3(0.2, 0.2, 0.3);
 const vec3 VOID_COLOR = vec3(0.0);
 
+vec3 applySun(in vec3 skyColor, in vec3 skyboxPoint, in vec3 sunDir, in float horizonLine) {
+    const float horizonEffect = pow(horizonLine, 16.0);
+
+    const vec3 sunColor = mix(SUN_COLOR, SUNSET_TINT, horizonLine);
+    const float sunIntensity = clamp(dot(skyboxPoint, sunDir), 0.0, 1.0);
+    const float sun =
+        0.02 * pow(sunIntensity, 8.0) + // Outer glow
+        0.5 * pow(sunIntensity, 64.0) + // Inner glow
+        1.0 * pow(sunIntensity, 256.0); // Sun disk
+    const float sunAmount = clamp((1.0 - horizonEffect) * sun, 0.0, 1.0);
+
+    return mix(skyColor, sunColor, sunAmount);
+}
+
 vec3 computeSkyColor(in vec3 defaultColor, in float sunHeight, in float horizonLine) {
+    const vec3 skyTint = mix(NIGHT_TINT, DAY_TINT, sunHeight);
+    const vec3 tintedSky = defaultColor * skyTint;
+
     vec3 skyColor;
 
-    // Tint skybox depending on day time (blend mode: multiply)
-    const vec3 skyboxColor = mix(NIGHT_TINT, DAY_TINT, sunHeight) * defaultColor;
+    // Add horizon hue (amplify sky tint at the horizon line)
+    skyColor = mix(tintedSky, skyTint, horizonLine);
 
-    // Add horizon hue
-    const vec3 horizonColor = mix(NIGHT_TINT, DAY_TINT, sunHeight);
-    skyColor = mix(skyboxColor, horizonColor, horizonLine);
-
-    // Add sun glow
+    // Add skylight glow
     const vec3 glowColor = mix(MOON_TINT, SUNSET_TINT, sunHeight);
     skyColor = mix(skyColor, glowColor, pow(horizonLine, 8.0) * (1.0 - sunHeight));
 
     // Add void
     skyColor = mix(skyColor, VOID_COLOR, pow(horizonLine, 16.0));
 
-    // Apply tint
-    skyColor = mix(skyboxColor, skyColor, TINT_INTENSITY);
-
-    return skyColor;
+    return mix(skyColor, tintedSky, TINT_INTENSITY);
 }
 
 void main() {
-    const vec3 eyeDir = normalize(inUVW);
+    const vec3 skyboxPoint = normalize(inUVW);
     const float sunHeight = max(inSunDir.y, 0.0);
+    const float horizonLine = 1.0 - clamp(skyboxPoint.y + 0.15, 0.0, 1.0); // Offset height to lower horizon
 
-    const float horizonLine = 1.0 - clamp(eyeDir.y + 0.15, 0.0, 1.0); // Offset eye height to lower horizon
+    vec3 skyColor;
 
-    const vec3 skyTex = texture(SkyboxTex, inUVW).rgb;
-    vec3 skyColor = computeSkyColor(skyTex, sunHeight, horizonLine);
+    // Sample skybox texture
+    // skyColor = texture(SkyboxTex, inUVW).rgb;
+    skyColor = DEFAULT_SKY_COLOR;
 
-    const vec3 sunColor = mix(SUN_COLOR, DIMMED_SUN_COLOR, horizonLine);
-    const float sunAmount = (1.0 - horizonLine) * applySun(eyeDir, inSunDir);
+    // Add atmosphere
+    skyColor = computeSkyColor(skyColor, sunHeight, horizonLine);
 
-    outFragColor = vec4(mix(skyColor, sunColor, sunAmount), 1.0);
+    // Add stars
+    // Todo
+
+    // Add moon
+    // Todo
+
+    // Add sun
+    skyColor = applySun(skyColor, skyboxPoint, inSunDir, horizonLine);
+
+    outFragColor = vec4(skyColor, 1.0);
 }

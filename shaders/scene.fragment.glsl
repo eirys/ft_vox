@@ -15,7 +15,7 @@ const vec3 FOG_COLOR = vec3(0.3, 0.4, 0.6);
 // From Iñigo Quílez
 float applyFog(in float distanceToPoint) {
     const float minFogDistance = 0.0;
-    const float maxFogDistance = 300.0;
+    const float maxFogDistance = 200.0;
 
     return 1.0 - (maxFogDistance - distanceToPoint) / (maxFogDistance - minFogDistance);
 }
@@ -39,7 +39,7 @@ void main() {
 
     // Lighting
     const float diffuseFactor = applyDiffuse(inNormal, inSunDir);
-    color = diffuseFactor * mix(color, ambientColor, ambientFactor);
+    color = diffuseFactor * mix(color, ambientColor, 0.01);
 
     outFragColor = vec4(color, 1.0);
 }
