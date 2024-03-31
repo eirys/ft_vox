@@ -1,12 +1,15 @@
 #version 450
 
+#include "../src/engine/game/game_decl.h"
+#include "../src/engine/gfx/descriptor/sets/descriptor_decl.h"
+
 layout(location = 0) in vec2 inUV;
 layout(location = 1) in vec3 inNormal;
 layout(location = 2) in vec3 inSunDir;
 
 layout(location = 0) out vec4 outFragColor;
 
-layout(set = 1, binding = 1) uniform sampler2DArray GameTex;
+layout(set = WORLD_SET, binding = 1) uniform sampler2DArray GameTex;
 
 const vec3 SUN_COLOR = vec3(1.0, 1.0, 0.33);
 const vec3 MOON_COLOR = vec3(0.5, 0.5, 0.5);

@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/21 12:17:21 by etran             #+#    #+#             */
-/*   Updated: 2024/03/21 01:54:48 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/31 16:06:43 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,8 +46,8 @@ public:
     /*                                 METHODS                                */
     /* ====================================================================== */
 
-    Renderer();
-    ~Renderer();
+    Renderer() = default;
+    ~Renderer() = default;
 
     Renderer(Renderer&& other) = delete;
     Renderer(const Renderer& other) = delete;

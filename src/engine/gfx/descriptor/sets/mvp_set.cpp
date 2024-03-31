@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/11 16:12:13 by etran             #+#    #+#             */
-/*   Updated: 2024/03/26 17:13:19 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/27 13:52:12 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -79,7 +79,6 @@ void MVPSet::fill(const Device& device) {
 
 void MVPSet::update(const game::GameState& state) {
     constexpr math::Vect3   UP_VEC = {0.0f, 1.0f, 0.0f};
-
     const math::Vect3&  position = state.getController().getPosition();
     const math::Vect3&  front = state.getController().getView();
     const math::Vect3   right = math::normalize(math::cross(front, UP_VEC));
@@ -94,7 +93,7 @@ void MVPSet::update(const game::GameState& state) {
 
     m_data.m_viewProj.proj = math::perspective(fovRadians, aspectRatio, nearPlane, farPlane);
 
-    const f32 period = state.getElapsedTime() * 0.1f;
+    const f32 period = state.getElapsedTime() * 0.7f + M_PI;
     m_data.m_gameData.sunPos = math::Vect2(std::cos(period), std::sin(period));
 
     m_mvpDataBuffer.copyFrom(&m_data);

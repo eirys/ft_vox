@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/19 23:18:11 by etran             #+#    #+#             */
-/*   Updated: 2024/02/21 11:48:47 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/30 23:32:55 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -240,9 +240,9 @@ Mat4	Mat4::transpose() const {
 /**
  * @brief Produces rotation matrix around the given axis
  *
- * @param mat:		matrix to rotate
- * @param angle:	angle in radians
- * @param axis:		axis of rotation
+ * @param mat	matrix to rotate
+ * @param angle	angle in radians
+ * @param axis	axis of rotation
  *
  * @details Result:
  * [[u.x * u.x * (1 - c) + c,			col 0
@@ -397,6 +397,7 @@ Mat4	orthographic(
 		// Col 4
 		-(right + left) / width, -(top + bot) / height, near / range, 1 };
 }
+
 /**
  * @brief Scales the matrix by the given vector
  *
@@ -421,29 +422,20 @@ Mat4	scale(const Mat4& mat, const Vect3& scale) noexcept {
  *
  * @param mat	matrix to translate
  * @param dir	vector to translate by
+ *
+ * @details Result:
+ *
+ * for (uint32_t i = 0; i < 4; ++i)
+ *  result[12 + i] = (mat[i] * dir.x) + (mat[4 + i] * dir.y) + (mat[8 + i] * dir.z) + mat[12 + i];
 */
 Mat4	translate(const Mat4& mat, const Vect3& dir) noexcept {
 	Mat4	result(mat);
-	result[12] = std::fma(
-		mat[0],
-		dir.x,
-		std::fma(mat[4], dir.y, std::fma(mat[8], dir.z, mat[12]))
-	);
-	result[13] = std::fma(
-		mat[1],
-		dir.x,
-		std::fma(mat[5], dir.y, std::fma(mat[9], dir.z, mat[13]))
-	);
-	result[14] = std::fma(
-		mat[2],
-		dir.x,
-		std::fma(mat[6], dir.y, std::fma(mat[10], dir.z, mat[14]))
-	);
-	result[15] = std::fma(
-		mat[3],
-		dir.x,
-		std::fma(mat[7], dir.y, std::fma(mat[11], dir.z, mat[15]))
-	);
+    for (uint32_t i = 0; i < 4; ++i)
+        result[12 + i] = std::fma(
+            mat[i],
+            dir.x,
+            std::fma(mat[4 + i], dir.y, std::fma(mat[8 + i], dir.z, mat[12 + i])));
+
 	return result;
 }
 

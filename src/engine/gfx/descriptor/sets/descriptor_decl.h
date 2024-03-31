@@ -6,14 +6,19 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/28 23:42:29 by etran             #+#    #+#             */
-/*   Updated: 2024/03/23 17:38:16 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/28 17:01:07 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#pragma once
+#ifndef DESCRIPTOR_DECL_H
+# define DESCRIPTOR_DECL_H
+
+#define MVP_SET 0
+#define WORLD_SET 1
+
+#ifdef VOX_CPP
 
 #include <vulkan/vulkan.h>
-
 #include "types.h"
 
 namespace vox::gfx {
@@ -27,8 +32,8 @@ namespace vox::gfx {
  * @note The list is stored in the DescriptorTable class.
 */
 enum class DescriptorSetIndex: u32 {
-    Mvp = 0,
-    WorldData,
+    Mvp         = MVP_SET,
+    WorldData   = WORLD_SET,
 
     First = Mvp,
     Last = WorldData
@@ -79,3 +84,7 @@ ShaderVisibility operator|(ShaderVisibility lhs, ShaderVisibility rhs) {
 }
 
 } // namespace vox::gfx
+
+#endif // VOX_CPP
+
+#endif // DESCRIPTOR_DECL_H

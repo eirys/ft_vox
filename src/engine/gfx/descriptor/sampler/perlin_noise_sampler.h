@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   game_texture_sampler.h                             :+:      :+:    :+:   */
+/*   perlin_noise_sampler.h                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/03/11 17:33:50 by etran             #+#    #+#             */
-/*   Updated: 2024/03/27 15:27:02 by etran            ###   ########.fr       */
+/*   Created: 2024/03/27 15:26:15 by etran             #+#    #+#             */
+/*   Updated: 2024/03/27 15:43:08 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,19 +16,19 @@
 
 namespace vox::gfx {
 
-class GameTextureSampler final: public TextureSampler {
+class PerlinNoiseSampler final: public TextureSampler {
 public:
     /* ====================================================================== */
     /*                                 METHODS                                */
     /* ====================================================================== */
 
-    GameTextureSampler() = default;
-    ~GameTextureSampler() = default;
+    PerlinNoiseSampler() = default;
+    ~PerlinNoiseSampler() = default;
 
-    GameTextureSampler(GameTextureSampler&& other) = delete;
-    GameTextureSampler(const GameTextureSampler& other) = delete;
-    GameTextureSampler& operator=(GameTextureSampler&& other) = delete;
-    GameTextureSampler& operator=(const GameTextureSampler& other) = delete;
+    PerlinNoiseSampler(PerlinNoiseSampler&& other) = delete;
+    PerlinNoiseSampler(const PerlinNoiseSampler& other) = delete;
+    PerlinNoiseSampler& operator=(PerlinNoiseSampler&& other) = delete;
+    PerlinNoiseSampler& operator=(const PerlinNoiseSampler& other) = delete;
 
     /* ====================================================================== */
 
@@ -44,6 +44,6 @@ private:
 
     void    _createSampler(const Device& device);
 
-}; // class GameTextureSampler
+}; // class PerlinNoiseSampler
 
 } // namespace vox::gfx

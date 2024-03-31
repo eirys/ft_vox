@@ -6,7 +6,7 @@
 #    By: etran <etran@student.42.fr>                +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/04/06 03:40:09 by eli               #+#    #+#              #
-#    Updated: 2024/03/23 22:03:38 by etran            ###   ########.fr        #
+#    Updated: 2024/03/29 00:12:37 by etran            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -94,16 +94,18 @@ SRC_FILES	:=	entrypoint.cpp \
 				$(SAMPLER_DIR)/game_texture_sampler.cpp \
 				$(SAMPLER_DIR)/skybox_sampler.cpp \
 				$(SAMPLER_DIR)/chunk_data_sampler.cpp \
+				$(SAMPLER_DIR)/perlin_noise_sampler.cpp \
+				$(SETS_DIR)/descriptor_set.cpp \
 				$(SETS_DIR)/mvp_set.cpp \
 				$(SETS_DIR)/world_set.cpp \
 				$(DESC_DIR)/descriptor_pool.cpp \
 				$(DESC_DIR)/descriptor_table.cpp \
-				$(DESC_DIR)/descriptor_set.cpp \
 				$(RENDER_DIR)/pipeline.cpp \
 				$(RENDER_DIR)/render_pass.cpp \
 				$(PASSES_DIR)/main_render_pass.cpp \
 				$(PIP_DIR)/scene_pipeline.cpp \
 				$(PIP_DIR)/skybox_pipeline.cpp \
+				$(PIP_DIR)/starfield_pipeline.cpp \
 				$(BUF_DIR)/buffer.cpp \
 				$(BUF_DIR)/image_buffer.cpp \
 				$(SYNC_DIR)/fence.cpp \
@@ -166,7 +168,9 @@ LDFLAGS		:=	-lglfw \
 SHD_FILES	:=	scene.fragment \
 				scene.vertex \
 				skybox.vertex \
-				skybox.fragment
+				skybox.fragment \
+				starfield.vertex \
+				starfield.fragment
 
 SHD			:=	$(addprefix $(SHD_BIN_DIR)/,$(SHD_FILES))
 SHD_BIN		:=	$(addsuffix .spv,$(SHD))

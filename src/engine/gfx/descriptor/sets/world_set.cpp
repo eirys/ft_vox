@@ -6,13 +6,17 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/15 17:03:33 by etran             #+#    #+#             */
-/*   Updated: 2024/03/20 19:10:35 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/31 16:09:47 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "world_set.h"
 #include "device.h"
 #include "game_state.h"
+#include "chunk_data_sampler.h"
+#include "game_texture_sampler.h"
+#include "skybox_sampler.h"
+#include "perlin_noise_sampler.h"
 
 #include "debug.h"
 
@@ -23,17 +27,31 @@ namespace vox::gfx {
 /* ========================================================================== */
 
 void WorldSet::init(const Device& device, const ICommandBuffer* cmdBuffer) {
-    m_chunkDataSampler.init(device, cmdBuffer);
-    m_gameTextureSampler.init(device, cmdBuffer);
-    m_gameTextureSampler.fill(device, cmdBuffer);
+    m_textures[(u32)Texture::ChunkData] = new ChunkDataSampler();
+    m_textures[(u32)Texture::GameTexture] = new GameTextureSampler();
+    m_textures[(u32)Texture::PerlinNoise] = new PerlinNoiseSampler();
 
-    m_skyboxSampler.init(device, cmdBuffer);
-    m_skyboxSampler.fill(device, cmdBuffer);
+#if ENABLE_CUBEMAP
+    m_textures[(u32)Texture::Skybox] = new SkyboxSampler();
+#endif
+
+    for (u32 i = 0; i < TEXTURE_COUNT; ++i) m_textures[i]->init(device, cmdBuffer);
+
+    m_textures[(u32)Texture::GameTexture]->fill(device, cmdBuffer);
+    m_textures[(u32)Texture::PerlinNoise]->fill(device, cmdBuffer);
+
+#if ENABLE_CUBEMAP
+    m_textures[(u32)Texture::Skybox]->fill(device, cmdBuffer);
+#endif
 
     std::array<VkDescriptorSetLayoutBinding, BINDING_COUNT> bindings = {
         _createLayoutBinding(DescriptorTypeIndex::CombinedImageSampler, ShaderVisibility::VS, (u32)BindingIndex::BlockPos),
         _createLayoutBinding(DescriptorTypeIndex::CombinedImageSampler, ShaderVisibility::FS, (u32)BindingIndex::Textures),
+        _createLayoutBinding(DescriptorTypeIndex::CombinedImageSampler, ShaderVisibility::VS, (u32)BindingIndex::Noise),
+#if ENABLE_CUBEMAP
         _createLayoutBinding(DescriptorTypeIndex::CombinedImageSampler, ShaderVisibility::FS, (u32)BindingIndex::Skybox),
+#endif
+
     };
 
     VkDescriptorSetLayoutCreateInfo layoutInfo{};
@@ -49,9 +67,11 @@ void WorldSet::init(const Device& device, const ICommandBuffer* cmdBuffer) {
 }
 
 void WorldSet::destroy(const Device& device) {
-    m_chunkDataSampler.destroy(device);
-    m_gameTextureSampler.destroy(device);
-    m_skyboxSampler.destroy(device);
+    for (u32 i = 0; i < TEXTURE_COUNT; ++i) {
+        m_textures[i]->destroy(device);
+        delete m_textures[i];
+    }
+
     vkDestroyDescriptorSetLayout(device.getDevice(), m_layout, nullptr);
 
     LDEBUG("World descriptor set destroyed");
@@ -63,24 +83,34 @@ void WorldSet::fill(const Device& device) {
     LDEBUG("Filling WorldSet descriptor set");
 
     VkDescriptorImageInfo chunkSamplerInfo{};
-    chunkSamplerInfo.imageLayout = m_chunkDataSampler.getImageBuffer().getMetaData().m_layoutData.m_layout;
-    chunkSamplerInfo.imageView = m_chunkDataSampler.getImageBuffer().getView();
-    chunkSamplerInfo.sampler = m_chunkDataSampler.getSampler();
+    chunkSamplerInfo.imageLayout = m_textures[(u32)Texture::ChunkData]->getImageBuffer().getMetaData().m_layoutData.m_layout;
+    chunkSamplerInfo.imageView = m_textures[(u32)Texture::ChunkData]->getImageBuffer().getView();
+    chunkSamplerInfo.sampler = m_textures[(u32)Texture::ChunkData]->getSampler();
 
     VkDescriptorImageInfo gameSamplerInfo{};
-    gameSamplerInfo.imageLayout = m_gameTextureSampler.getImageBuffer().getMetaData().m_layoutData.m_layout;
-    gameSamplerInfo.imageView = m_gameTextureSampler.getImageBuffer().getView();
-    gameSamplerInfo.sampler = m_gameTextureSampler.getSampler();
+    gameSamplerInfo.imageLayout = m_textures[(u32)Texture::GameTexture]->getImageBuffer().getMetaData().m_layoutData.m_layout;
+    gameSamplerInfo.imageView = m_textures[(u32)Texture::GameTexture]->getImageBuffer().getView();
+    gameSamplerInfo.sampler = m_textures[(u32)Texture::GameTexture]->getSampler();
 
+    VkDescriptorImageInfo noiseSamplerInfo{};
+    noiseSamplerInfo.imageLayout = m_textures[(u32)Texture::PerlinNoise]->getImageBuffer().getMetaData().m_layoutData.m_layout;
+    noiseSamplerInfo.imageView = m_textures[(u32)Texture::PerlinNoise]->getImageBuffer().getView();
+    noiseSamplerInfo.sampler = m_textures[(u32)Texture::PerlinNoise]->getSampler();
+
+#if ENABLE_CUBEMAP
     VkDescriptorImageInfo skyboxInfo{};
-    skyboxInfo.imageLayout = m_skyboxSampler.getImageBuffer().getMetaData().m_layoutData.m_layout;
-    skyboxInfo.imageView = m_skyboxSampler.getImageBuffer().getView();
-    skyboxInfo.sampler = m_skyboxSampler.getSampler();
+    skyboxInfo.imageLayout = m_textures[(u32)Texture::Skybox]->getImageBuffer().getMetaData().m_layoutData.m_layout;
+    skyboxInfo.imageView = m_textures[(u32)Texture::Skybox]->getImageBuffer().getView();
+    skyboxInfo.sampler = m_textures[(u32)Texture::Skybox]->getSampler();
+#endif
 
     std::array<VkWriteDescriptorSet, BINDING_COUNT> descriptorWrites = {
         _createWriteDescriptorSet(DescriptorTypeIndex::CombinedImageSampler, &chunkSamplerInfo, (u32)BindingIndex::BlockPos),
         _createWriteDescriptorSet(DescriptorTypeIndex::CombinedImageSampler, &gameSamplerInfo, (u32)BindingIndex::Textures),
+        _createWriteDescriptorSet(DescriptorTypeIndex::CombinedImageSampler, &noiseSamplerInfo, (u32)BindingIndex::Noise),
+#if ENABLE_CUBEMAP
         _createWriteDescriptorSet(DescriptorTypeIndex::CombinedImageSampler, &skyboxInfo, (u32)BindingIndex::Skybox),
+#endif
     };
     vkUpdateDescriptorSets(device.getDevice(), BINDING_COUNT, descriptorWrites.data(), 0, nullptr);
 
@@ -88,7 +118,7 @@ void WorldSet::fill(const Device& device) {
 }
 
 void WorldSet::update(const Device& device, const game::GameState& state, const ICommandBuffer* cmdBuffer) {
-    m_chunkDataSampler.fill(device, cmdBuffer, &state.getWorld().getChunks());
+    m_textures[(u32)Texture::ChunkData]->fill(device, cmdBuffer, &state.getWorld().getChunks());
 }
 
 } // namespace vox::gfx

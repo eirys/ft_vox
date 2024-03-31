@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   scene_pipeline.h                                   :+:      :+:    :+:   */
+/*   starfield_pipeline.h                               :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/02/29 23:49:38 by etran             #+#    #+#             */
-/*   Updated: 2024/03/27 14:29:15 by etran            ###   ########.fr       */
+/*   Created: 2024/03/27 13:53:07 by etran             #+#    #+#             */
+/*   Updated: 2024/03/27 14:29:13 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,7 @@
 
 namespace vox::gfx {
 
-class ScenePipeline final: public Pipeline {
+class StarfieldPipeline final: public Pipeline {
 public:
     /* ====================================================================== */
     /*                                TYPEDEFS                                */
@@ -40,13 +40,13 @@ public:
     /*                                 METHODS                                */
     /* ====================================================================== */
 
-    ScenePipeline() = default;
-    ~ScenePipeline() = default;
+    StarfieldPipeline() = default;
+    ~StarfieldPipeline() = default;
 
-    ScenePipeline(ScenePipeline&& other) = delete;
-    ScenePipeline(const ScenePipeline& other) = delete;
-    ScenePipeline& operator=(ScenePipeline&& other) = delete;
-    ScenePipeline& operator=(const ScenePipeline& other) = delete;
+    StarfieldPipeline(StarfieldPipeline&& other) = delete;
+    StarfieldPipeline(const StarfieldPipeline& other) = delete;
+    StarfieldPipeline& operator=(StarfieldPipeline&& other) = delete;
+    StarfieldPipeline& operator=(const StarfieldPipeline& other) = delete;
 
     /* ====================================================================== */
 
@@ -68,6 +68,6 @@ private:
 
     static constexpr u32 SHADER_STAGE_COUNT = enumSize<ShaderStage>();
 
-}; // class ScenePipeline
+}; // class StarfieldPipeline
 
 } // namespace vox::gfx

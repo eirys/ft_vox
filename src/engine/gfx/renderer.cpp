@@ -6,15 +6,16 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/23 09:29:35 by etran             #+#    #+#             */
-/*   Updated: 2024/03/22 23:09:23 by etran            ###   ########.fr       */
+/*   Updated: 2024/03/31 16:06:37 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "renderer.h"
-#include "scene_pipeline.h"
 #include "main_render_pass.h"
-#include "skybox_pipeline.h"
 #include "icommand_buffer.h"
+#include "scene_pipeline.h"
+#include "skybox_pipeline.h"
+#include "starfield_pipeline.h"
 
 #include "debug.h"
 
@@ -22,17 +23,6 @@ namespace vox::gfx {
 
 /* ========================================================================== */
 /*                                   PUBLIC                                   */
-/* ========================================================================== */
-
-Renderer::Renderer() {
-    m_pipelines[(u32)PipelineIndex::ScenePipeline] = new ScenePipeline();
-    m_pipelines[(u32)PipelineIndex::SkyboxPipeline] = new SkyboxPipeline();
-}
-
-Renderer::~Renderer() {
-    for (u32 i = 0; i < PIPELINE_COUNT; ++i) delete m_pipelines[i];
-}
-
 /* ========================================================================== */
 
 void Renderer::init(ui::Window& window, const game::GameState& game) {
@@ -116,14 +106,9 @@ void Renderer::render(const game::GameState& game) {
     vkCmdSetScissor(drawBuffer->getBuffer(), 0, 1, &scissor);
 
     mainRenderPass->begin(drawBuffer, recordInfo);
-    m_pipelines[(u32)PipelineIndex::SkyboxPipeline]->record(
-        m_pipelineLayout,
-        m_descriptorTable,
-        drawBuffer);
-    m_pipelines[(u32)PipelineIndex::ScenePipeline]->record(
-        m_pipelineLayout,
-        m_descriptorTable,
-        drawBuffer);
+    m_pipelines[(u32)PipelineIndex::SkyboxPipeline]->record(m_pipelineLayout, m_descriptorTable, drawBuffer);
+    m_pipelines[(u32)PipelineIndex::StarfieldPipeline]->record(m_pipelineLayout, m_descriptorTable, drawBuffer);
+    m_pipelines[(u32)PipelineIndex::ScenePipeline]->record(m_pipelineLayout, m_descriptorTable, drawBuffer);
     mainRenderPass->end(drawBuffer);
 
     drawBuffer->stopRecording();
@@ -173,8 +158,13 @@ void Renderer::_createRenderPasses() {
 }
 
 void Renderer::_createPipelines() {
+    m_pipelines[(u32)PipelineIndex::ScenePipeline] = new ScenePipeline();
+    m_pipelines[(u32)PipelineIndex::SkyboxPipeline] = new SkyboxPipeline();
+    m_pipelines[(u32)PipelineIndex::StarfieldPipeline] = new StarfieldPipeline();
+
     m_pipelines[(u32)PipelineIndex::ScenePipeline]->init(m_device, m_renderPasses[(u32)RenderPassIndex::Main], m_pipelineLayout);
     m_pipelines[(u32)PipelineIndex::SkyboxPipeline]->init(m_device, m_renderPasses[(u32)RenderPassIndex::Main], m_pipelineLayout);
+    m_pipelines[(u32)PipelineIndex::StarfieldPipeline]->init(m_device, m_renderPasses[(u32)RenderPassIndex::Main], m_pipelineLayout);
 
     LDEBUG("Pipelines created.");
 }
@@ -216,7 +206,10 @@ void Renderer::_destroyRenderPasses() {
 void Renderer::_destroyPipelines() {
     _destroyPipelineLayout();
 
-    for (u32 i = 0; i < PIPELINE_COUNT; i++) m_pipelines[i]->destroy(m_device);
+    for (u32 i = 0; i < PIPELINE_COUNT; ++i) {
+        m_pipelines[i]->destroy(m_device);
+        delete m_pipelines[i];
+    }
 }
 
 void Renderer::_destroyPipelineLayout() {
