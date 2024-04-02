@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/11 16:12:13 by etran             #+#    #+#             */
-/*   Updated: 2024/03/27 13:52:12 by etran            ###   ########.fr       */
+/*   Updated: 2024/04/01 22:37:33 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -86,7 +86,7 @@ void MVPSet::update(const game::GameState& state) {
 
     m_data.m_viewProj.view = math::lookAt(position, front, up, right);
 
-    static const f32    fovRadians = math::radians(70.0f);
+    static const f32    fovRadians = math::radians(state.getController().getFov());
     constexpr f32       aspectRatio = 1200.0f / 800.0f;
     constexpr f32       nearPlane = 0.1f;
     constexpr f32       farPlane = 500.0f;

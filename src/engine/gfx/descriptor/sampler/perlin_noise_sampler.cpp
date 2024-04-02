@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/27 15:41:25 by etran             #+#    #+#             */
-/*   Updated: 2024/03/31 16:11:05 by etran            ###   ########.fr       */
+/*   Updated: 2024/04/02 02:35:19 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,9 +51,9 @@ void PerlinNoiseSampler::fill(
     info.type = proc::PerlinNoiseType::PERLIN_NOISE_2D;
     info.width = m_imageBuffer.getMetaData().m_width;
     info.height = m_imageBuffer.getMetaData().m_height;
-    info.layers = 3;
-    info.frequency_0 = 0.03f;
-    info.frequency_mult = 2.0f;
+    info.layers = 1;
+    info.frequency_0 = 1.0f;//0.03f;
+    info.frequency_mult = 3.0f;
     info.amplitude_mult = 0.5f;
 
     const proc::PerlinNoise noise(info);

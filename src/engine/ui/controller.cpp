@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/15 20:35:46 by etran             #+#    #+#             */
-/*   Updated: 2024/03/20 15:18:11 by etran            ###   ########.fr       */
+/*   Updated: 2024/04/01 22:37:20 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -76,6 +76,10 @@ void Controller::update(const Window& win) {
         m_position.y += MOVE_SPEED;
     else if (win.isKeyPressed(KeyIndex::Down))
         m_position.y -= MOVE_SPEED;
+}
+
+float Controller::getFov() const noexcept {
+    return m_fov;
 }
 
 const math::Vect3& Controller::getView() const {
