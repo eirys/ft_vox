@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/27 15:41:25 by etran             #+#    #+#             */
-/*   Updated: 2024/04/02 02:35:19 by etran            ###   ########.fr       */
+/*   Updated: 2024/04/03 21:33:44 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,6 +32,8 @@ void PerlinNoiseSampler::init(const Device& device, const ICommandBuffer* cmdBuf
     textureData.m_height = NOISEMAP_SIZE;
     textureData.m_usage = VK_IMAGE_USAGE_SAMPLED_BIT |      // Sampled texture
                           VK_IMAGE_USAGE_TRANSFER_DST_BIT;  // Transfer destination
+    textureData.m_layerCount = 2;
+    textureData.m_viewType = VK_IMAGE_VIEW_TYPE_2D_ARRAY;
     m_imageBuffer.initImage(device, std::move(textureData));
     _createSampler(device);
 }
@@ -41,33 +43,41 @@ void PerlinNoiseSampler::fill(
     const ICommandBuffer* cmdBuffer,
     const void* data
 ) {
-    constexpr LayoutData finalLayout{
+    proc::NoiseMapInfo info{};
+    info.type = proc::PerlinNoiseType::PERLIN_NOISE_2D;
+    info.width = m_imageBuffer.getMetaData().m_width;
+    info.height = m_imageBuffer.getMetaData().m_height;
+    info.layers = 2;
+    info.frequency_0 = 2.0f;
+    info.frequency_mult = 0.1f;
+    info.amplitude_mult = 0.5f;
+
+    info.seed = 16;
+    const proc::PerlinNoise noise1(info);
+    auto noiseData1 = noise1.toPixels();
+
+    info.seed = 24;
+    const proc::PerlinNoise noise2(info);
+    auto noiseData2 = noise2.toPixels();
+
+    const u32 imageSize = m_imageBuffer.getMetaData().getLayerSize()
+                           * m_imageBuffer.getMetaData().getPixelSize();
+
+    Buffer stagingBuffer = m_imageBuffer.createStagingBuffer(device);
+    stagingBuffer.map(device);
+    stagingBuffer.copyFrom(noiseData1.data(), imageSize, 0);
+    stagingBuffer.copyFrom(noiseData2.data(), imageSize, imageSize);
+    stagingBuffer.unmap(device);
+
+    constexpr LayoutData FINAL_LAYOUT{
         .m_layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
         .m_accessMask = VK_ACCESS_SHADER_READ_BIT,
         .m_stageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT };
 
-    proc::NoiseMapInfo info{};
-    info.seed = 16;
-    info.type = proc::PerlinNoiseType::PERLIN_NOISE_2D;
-    info.width = m_imageBuffer.getMetaData().m_width;
-    info.height = m_imageBuffer.getMetaData().m_height;
-    info.layers = 1;
-    info.frequency_0 = 1.0f;//0.03f;
-    info.frequency_mult = 3.0f;
-    info.amplitude_mult = 0.5f;
-
-    const proc::PerlinNoise noise(info);
-    auto noiseData = noise.toPixels();
-
-    Buffer stagingBuffer = m_imageBuffer.createStagingBuffer(device);
-    stagingBuffer.map(device);
-    stagingBuffer.copyFrom(noiseData.data());
-    stagingBuffer.unmap(device);
-
     cmdBuffer->reset();
     cmdBuffer->startRecording();
     m_imageBuffer.copyFrom(cmdBuffer, stagingBuffer);
-    m_imageBuffer.setLayout(cmdBuffer, finalLayout);
+    m_imageBuffer.setLayout(cmdBuffer, FINAL_LAYOUT);
     cmdBuffer->stopRecording();
     cmdBuffer->awaitEndOfRecording(device);
     stagingBuffer.destroy(device);
@@ -86,15 +96,18 @@ void PerlinNoiseSampler::destroy(const Device& device) {
 
 void PerlinNoiseSampler::_createSampler(const Device& device) {
     VkSamplerCreateInfo samplerInfo{};
+
+    constexpr VkFilter FILTER = VK_FILTER_NEAREST;
+
     samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
-    samplerInfo.magFilter = VK_FILTER_NEAREST;
-    samplerInfo.minFilter = VK_FILTER_NEAREST;
-    samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_NEAREST;
+    samplerInfo.magFilter = FILTER;
+    samplerInfo.minFilter = FILTER;
+    samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
     samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
     samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
     samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
     samplerInfo.anisotropyEnable = VK_FALSE;
-    samplerInfo.maxAnisotropy = 1.0;
+    samplerInfo.maxAnisotropy = 0.0;
     samplerInfo.compareEnable = VK_FALSE;
     samplerInfo.compareOp = VK_COMPARE_OP_NEVER;
     samplerInfo.mipLodBias = 0.0f;

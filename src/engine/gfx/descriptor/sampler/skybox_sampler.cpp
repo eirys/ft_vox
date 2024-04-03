@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/20 15:27:49 by etran             #+#    #+#             */
-/*   Updated: 2024/03/22 23:03:37 by etran            ###   ########.fr       */
+/*   Updated: 2024/04/03 00:23:08 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,8 +66,8 @@ void SkyboxSampler::fill(
     const ICommandBuffer* cmdBuffer,
     const void* data
 ) {
-    static const u32 IMAGE_SIZE = m_imageBuffer.getMetaData().getLayerSize()
-                                * m_imageBuffer.getMetaData().getPixelSize();
+    const u32 IMAGE_SIZE = m_imageBuffer.getMetaData().getLayerSize()
+                           * m_imageBuffer.getMetaData().getPixelSize();
 
     scop::Image texture = _loadSkybox();
 

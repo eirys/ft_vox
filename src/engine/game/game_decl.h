@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/15 13:35:46 by etran             #+#    #+#             */
-/*   Updated: 2024/03/28 17:15:57 by etran            ###   ########.fr       */
+/*   Updated: 2024/04/03 17:37:44 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,9 +22,9 @@
 # define WORLD_DEPTH    WORLD_WIDTH
 # define WORLD_SIZE     (WORLD_WIDTH * WORLD_DEPTH)
 
-# define NOISEMAP_SIZE  32
+# define NOISEMAP_SIZE  16
 # define STAR_COUNT     (NOISEMAP_SIZE * NOISEMAP_SIZE)
 
 # define ENABLE_CUBEMAP 0
 
-#endif // GAME_DECL_H
+#endif // GAME_DECL_

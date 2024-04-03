@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/11 16:12:13 by etran             #+#    #+#             */
-/*   Updated: 2024/04/01 22:37:33 by etran            ###   ########.fr       */
+/*   Updated: 2024/04/03 17:23:39 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -93,8 +93,7 @@ void MVPSet::update(const game::GameState& state) {
 
     m_data.m_viewProj.proj = math::perspective(fovRadians, aspectRatio, nearPlane, farPlane);
 
-    const f32 period = state.getElapsedTime() * 0.7f + M_PI;
-    m_data.m_gameData.sunPos = math::Vect2(std::cos(period), std::sin(period));
+    m_data.m_gameData.sunPos = state.getSunPos().xy;
 
     m_mvpDataBuffer.copyFrom(&m_data);
 }

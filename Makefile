@@ -6,7 +6,7 @@
 #    By: etran <etran@student.42.fr>                +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/04/06 03:40:09 by eli               #+#    #+#              #
-#    Updated: 2024/03/29 00:12:37 by etran            ###   ########.fr        #
+#    Updated: 2024/04/03 22:15:48 by etran            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -45,6 +45,8 @@ RENDER_DIR	:=	$(GFX_DIR)/rendering
 PIP_DIR		:=	$(RENDER_DIR)/pipelines
 PASSES_DIR	:=	$(RENDER_DIR)/passes
 
+DEBUG_PIP_DIR	:=	$(PIP_DIR)/debug
+
 # libraries
 LIBS_DIR	:=	libs
 MATH_DIR	:=	$(LIBS_DIR)/math
@@ -73,7 +75,8 @@ SUBDIRS		:=	$(LIBS_DIR) \
 				$(PROC_DIR) \
 				$(GAME_DIR) \
 				$(LOAD_DIR) \
-				$(WORLD_DIR)
+				$(WORLD_DIR) \
+				$(DEBUG_PIP_DIR)
 
 OBJ_SUBDIRS	:=	$(addprefix $(OBJ_DIR)/,$(SUBDIRS))
 INC_SUBDIRS	:=	$(addprefix $(SRC_DIR)/,$(SUBDIRS)) \
@@ -106,6 +109,7 @@ SRC_FILES	:=	entrypoint.cpp \
 				$(PIP_DIR)/scene_pipeline.cpp \
 				$(PIP_DIR)/skybox_pipeline.cpp \
 				$(PIP_DIR)/starfield_pipeline.cpp \
+				$(DEBUG_PIP_DIR)/debug_tex_pipeline.cpp \
 				$(BUF_DIR)/buffer.cpp \
 				$(BUF_DIR)/image_buffer.cpp \
 				$(SYNC_DIR)/fence.cpp \
@@ -149,7 +153,7 @@ INCLUDES	:=	$(addprefix -I./,$(INC_SUBDIRS))
 
 CFLAGS		:=	$(EXTRA) \
 				-std=c++20 \
-				-MMD \
+				-MD \
 				-MP \
 				-O3 \
 				$(INCLUDES) \
@@ -174,9 +178,12 @@ SHD_FILES	:=	scene.fragment \
 
 SHD			:=	$(addprefix $(SHD_BIN_DIR)/,$(SHD_FILES))
 SHD_BIN		:=	$(addsuffix .spv,$(SHD))
+SHD_DEP		:=	$(addsuffix .d,$(SHD))
 
 # -------------------- MISC -------------------- #
 GLSLC		?=	glslc
+GLSLC_FLAGS	:=	-MD
+
 RM			:=	rm -rf
 
 # ============================================================================ #
@@ -187,6 +194,7 @@ RM			:=	rm -rf
 all: $(NAME)
 
 -include $(DEP)
+-include $(SHD_DEP)
 
 # Compile binary
 $(NAME): shaders $(OBJ)
@@ -203,18 +211,11 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
 $(SHD_BIN_DIR)/%.spv: $(SHD_DIR)/%.glsl
 	@mkdir -p $(OBJ_DIR) $(SHD_BIN_DIR)
 	@echo "Compiling shader $<..."
-	@$(GLSLC) -fshader-stage=$(subst .,,$(suffix $(basename $<))) $< -o $@
+	@$(GLSLC) $(GLSLC_FLAGS) -fshader-stage=$(subst .,,$(suffix $(basename $<))) $< -o $@
 
 .PHONY: shaders
 shaders: $(SHD_BIN)
 
-.PHONY: clean_shaders
-clean_shaders:
-	@$(RM) $(SHD_BIN_DIR)
-	@echo "Removed shader binaries."
-
-.PHONY: shaders_re
-shaders_re: clean_shaders $(SHD_BIN)
 
 .PHONY: clean
 clean:
@@ -228,3 +229,15 @@ fclean: clean
 
 .PHONY: re
 re: fclean all
+
+.PHONY: clean_shaders
+clean_shaders:
+	@$(RM) $(SHD_BIN_DIR)
+	@echo "Removed shader binaries."
+
+.PHONY: shaders_re
+shaders_re: clean_shaders $(SHD_BIN)
+
+.PHONY: force
+force:
+	@make -S shaders_re all

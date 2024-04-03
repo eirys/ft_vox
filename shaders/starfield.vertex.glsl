@@ -19,7 +19,7 @@ layout(set = MVP_SET, binding = 1) uniform GameData {
     vec2 sunPos;
 } gameData;
 
-layout(set = WORLD_SET, binding = 2) uniform sampler2D NoiseTex;
+layout(set = WORLD_SET, binding = 2) uniform sampler2DArray NoiseTex;
 
 // Generate a rotation matrix from an angle (radians) and an axis
 mat4 rotate(in float angle, in vec3 axis) {
@@ -51,6 +51,33 @@ mat4 rotate(in float angle, in vec3 axis) {
     return mat;
 }
 
+// Generate rotation matrix from cos and sin input
+mat4 rotate2(in vec2 cs, in vec3 axis) {
+    mat4 mat = mat4(1.0);
+    const float oc = 1.0 - cs.x;
+    const vec3 naxis = normalize(axis);
+
+    mat *= mat4(
+        oc * naxis.x * naxis.x + cs.x,
+        oc * naxis.x * naxis.y - naxis.z * cs.y,
+        oc * naxis.z * naxis.x + naxis.y * cs.y,
+        0.0,
+
+        oc * naxis.x * naxis.y + naxis.z * cs.y,
+        oc * naxis.y * naxis.y + cs.x,
+        oc * naxis.y * naxis.z - naxis.x * cs.y,
+        0.0,
+
+        oc * naxis.z * naxis.x - naxis.y * cs.y,
+        oc * naxis.y * naxis.z + naxis.x * cs.y,
+        oc * naxis.z * naxis.z + cs.x,
+        0.0,
+
+        0.0, 0.0, 0.0, 1.0
+    );
+    return mat;
+}
+
 // Generate a translation matrix from a direction
 mat4 translate(in vec3 dir) {
     mat4 mat = mat4(1.0);
@@ -58,50 +85,35 @@ mat4 translate(in vec3 dir) {
     return mat;
 }
 
-// Generate a scale matrix from a scale vector
-mat4 scale(in vec3 scale) {
-    mat4 mat = mat4(0.0);
-    mat[0].x = scale.x;
-    mat[1].y = scale.y;
-    mat[2].z = scale.z;
-    mat[3].w = 1.0;
-    return mat;
-}
+#define X_AXIS vec3(1.0, 0.0, 0.0)
+#define Y_AXIS vec3(0.0, 1.0, 0.0)
+#define Z_AXIS vec3(0.0, 0.0, 1.0)
+#define PI 3.141592
 
-const vec3 worldAxis[3] = {
-    vec3(1.0, 0.0, 0.0), // x-axis
-    vec3(0.0, 1.0, 0.0), // y-axis
-    vec3(0.0, 0.0, 1.0), // z-axis
+const vec3 vertexPos[4] = {
+    vec3(-1.0, -1.0, 0.0),
+    vec3( 1.0, -1.0, 0.0),
+    vec3(-1.0,  1.0, 0.0),
+    vec3( 1.0,  1.0, 0.0),
 };
-
-const vec2 vertexPos[4] = {
-    vec2(-1.0, -1.0),
-    vec2( 1.0, -1.0),
-    vec2(-1.0,  1.0),
-    vec2( 1.0,  1.0),
-};
-
-float hash(float n) {
-    return mod(fract(sin(n) * 43758.5453), 3.1415);
-}
-
-vec2 hash2(float n) {
-    return vec2(hash(n), hash(n + 1.0));
-}
+const float starSize = 0.1;
+const vec3 skyDist = vec3(0.0, 0.0, 150.0);
 
 void main() {
-    const vec4 vertex = vec4(vertexPos[gl_VertexIndex], 0.0, 1.0);
+    const vec2 noiseCoord = vec2(gl_InstanceIndex % NOISEMAP_SIZE, gl_InstanceIndex / NOISEMAP_SIZE) / textureSize(NoiseTex, 0).xy;
+    const float random1 = texture(NoiseTex, vec3(noiseCoord, 0)).r;
+    const float random2 = texture(NoiseTex, vec3(noiseCoord, 1)).r;
 
-    const vec2 noiseCoord = vec2(gl_InstanceIndex % NOISEMAP_SIZE, gl_InstanceIndex / NOISEMAP_SIZE) / textureSize(NoiseTex, 0);
-    const float noise = texture(NoiseTex, noiseCoord).r;
+    const vec2 moonDir = vec2(gameData.sunPos.x, -gameData.sunPos.y);
 
-    const vec3 starAxis = worldAxis[gl_InstanceIndex / 2];
-    const vec3 distanceFromCamera = vec3(0.0, 0.0, 100.0);
+    const mat4 model = rotate(random1 * 2.0 *  PI, X_AXIS)             // Rotate star for variety
+                    //    * rotate2(moonDir, Z_AXIS)               // Rotate star to face the sun
+                    //    * rotate(random2 * 2.0, X_AXIS)     // Displace star randomly
+                    //    * rotate(random2 * 2.0, Z_AXIS)     // Displace star randomly
+                    //    * rotate(random2 * PI * 2.0, Y_AXIS)     // Displace star randomly
+                       * translate(skyDist)                     // Move star to the sky
+                       ;
 
-    const mat4 model = rotate(noise, starAxis)
-                       * scale(vec3(0.1))
-                       * rotate(hash(noise) * 3.1415, vec3(0.0, 1.0, 0.0))
-                       * rotate(hash(noise) * 2.0 * 3.1415, vec3(1.0, 0.0, 0.0))
-                       * translate(distanceFromCamera);
+    const vec4 vertex = vec4(vertexPos[gl_VertexIndex], 1.0);
     gl_Position = viewProj.proj * mat4(mat3(viewProj.view)) * model * vertex;
 }

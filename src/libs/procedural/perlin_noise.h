@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:13:52 by etran             #+#    #+#             */
-/*   Updated: 2024/03/12 13:59:32 by etran            ###   ########.fr       */
+/*   Updated: 2024/04/02 15:43:47 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -65,6 +65,8 @@ struct NoiseMapInfo {
     float					frequency_0;
     float					frequency_mult;
     float					amplitude_mult;
+    float                   scale = 16;
+    float                   shift = 0;
 };
 
 /**
@@ -130,13 +132,13 @@ private:
 	const float					frequency;
 	const float					frequency_mult;
 	const float					amplitude_mult;
+	const float					scale;
+	const float					shift;
+
 	std::mt19937				generator;
 
 	std::vector<std::size_t>	permutation_table;
 	std::vector<float>			noise_map;
-
-	const float					scale = 16;
-	const float					shift = 0;
 
 	/* ========================================================================= */
 	/*                                  METHODS                                  */

@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/07 09:48:27 by etran             #+#    #+#             */
-/*   Updated: 2024/03/27 14:43:57 by etran            ###   ########.fr       */
+/*   Updated: 2024/04/03 22:19:26 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,12 +25,21 @@
 namespace vox::gfx {
 
 enum class SceneDescriptorSet: u32 {
-    Mvp = 0,
-    WorldData,
+    PerFrameData = 0,
+    Textures,
 
-    First = Mvp,
-    Last = WorldData
+    First = PerFrameData,
+    Last = Textures
 };
+
+enum class SetIndex: u32 {
+    PerFrameData    = (u32)DescriptorSetIndex::Mvp,
+    Textures        = (u32)DescriptorSetIndex::WorldData,
+
+    First = PerFrameData,
+    Last = Textures
+};
+
 
 static constexpr u32 DESCRIPTOR_SET_COUNT = enumSize<SceneDescriptorSet>();
 
@@ -177,8 +186,8 @@ void ScenePipeline::record(
     const ICommandBuffer* cmdBuffer
 ) {
     std::array<VkDescriptorSet, DESCRIPTOR_SET_COUNT> descriptorSets = {
-        descriptorTable[DescriptorSetIndex::Mvp]->getSet(),
-        descriptorTable[DescriptorSetIndex::WorldData]->getSet() };
+        descriptorTable[(DescriptorSetIndex)SetIndex::PerFrameData]->getSet(),
+        descriptorTable[(DescriptorSetIndex)SetIndex::Textures]->getSet() };
 
     vkCmdBindDescriptorSets(
         cmdBuffer->getBuffer(),

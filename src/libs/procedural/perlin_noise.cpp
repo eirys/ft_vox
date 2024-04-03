@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/23 10:26:08 by etran             #+#    #+#             */
-/*   Updated: 2024/03/15 13:57:57 by etran            ###   ########.fr       */
+/*   Updated: 2024/04/02 15:44:31 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,6 +44,8 @@ PerlinNoise::PerlinNoise(const NoiseMapInfo& info):
 	frequency(info.frequency_0),
 	frequency_mult(info.frequency_mult),
 	amplitude_mult(info.amplitude_mult),
+    scale(info.scale),
+    shift(info.shift),
 	generator(seed),
 	permutation_table(_generatePermutationTable())
 {
@@ -62,19 +64,6 @@ PerlinNoise::PerlinNoise(const NoiseMapInfo& info):
 
 	noise_map = (this->*generateNoiseMapFn)();
 }
-
-// PerlinNoise::PerlinNoise(PerlinNoise&& other):
-// 	seed(other.seed),
-// 	width(other.width),
-// 	height(other.height),
-// 	depth(other.depth),
-// 	layers(other.layers),
-// 	frequency(other.frequency),
-// 	frequency_mult(other.frequency_mult),
-// 	amplitude_mult(other.amplitude_mult),
-// 	generator(seed),
-// 	permutation_table(std::move(other.permutation_table)),
-// 	noise_map(std::move(other.noise_map)) {}
 
 /* ========================================================================== */
 
