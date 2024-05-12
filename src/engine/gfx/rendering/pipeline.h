@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/28 15:26:02 by etran             #+#    #+#             */
-/*   Updated: 2024/03/21 01:36:40 by etran            ###   ########.fr       */
+/*   Updated: 2024/04/08 16:41:54 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,6 @@ namespace vox::gfx {
 class Device;
 class ICommandBuffer;
 class DescriptorTable;
-class RenderPass;
 
 class Pipeline {
 public:
@@ -33,7 +32,7 @@ public:
 
     virtual void    init(
         const Device& device,
-        const RenderPass* renderPass,
+        const VkRenderPass& renderPass,
         const VkPipelineLayout& pipelineLayout) = 0;
     virtual void    destroy(const Device& device) = 0;
 

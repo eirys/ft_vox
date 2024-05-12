@@ -6,13 +6,14 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/15 19:33:01 by etran             #+#    #+#             */
-/*   Updated: 2024/04/01 22:37:13 by etran            ###   ########.fr       */
+/*   Updated: 2024/04/08 17:02:34 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
 #include "vector.h"
+#include "game_decl.h"
 
 namespace ui {
 
@@ -46,16 +47,16 @@ private:
     /*                                  DATA                                  */
     /* ====================================================================== */
 
-    float   m_fov = 70.0f;
+    math::Vect3 m_direction = {0.0f, 0.0f, 0.0f};
+    math::Vect3 m_position = {WORLD_WIDTH / 2.0 * CHUNK_SIZE, 20.0f, WORLD_DEPTH / 2.0 * CHUNK_SIZE};
+
+    float   m_fov = 85.0f;
 
     float   m_lastX = 0.0f;
     float   m_lastY = 0.0f;
 
     float   m_yaw = 0.0f;
     float   m_pitch = 0.0f;
-
-    math::Vect3 m_direction = {0.0f, 0.0f, 0.0f};
-    math::Vect3 m_position = {0.0f, 20.0f, 0.0f};
 
 }; // class Controller
 

@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/27 13:53:07 by etran             #+#    #+#             */
-/*   Updated: 2024/03/27 14:29:13 by etran            ###   ########.fr       */
+/*   Updated: 2024/04/08 16:44:34 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,7 +52,7 @@ public:
 
     void    init(
         const Device& device,
-        const RenderPass* renderPass,
+        const VkRenderPass& renderPass,
         const VkPipelineLayout& pipelineLayout) override;
     void    destroy(const Device& device) override;
 

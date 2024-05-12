@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/03 22:06:00 by etran             #+#    #+#             */
-/*   Updated: 2024/04/03 22:16:33 by etran            ###   ########.fr       */
+/*   Updated: 2024/04/08 16:41:58 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,6 @@ namespace vox::gfx {
  * Displays the wanted texture on the screen.
  */
 class DebugTexPipeline final: public Pipeline {
-
 public:
     /* ====================================================================== */
     /*                                TYPEDEFS                                */
@@ -45,19 +44,19 @@ public:
     /*                                 METHODS                                */
     /* ====================================================================== */
 
-    ScenePipeline() = default;
-    ~ScenePipeline() = default;
+    DebugTexPipeline() = default;
+    ~DebugTexPipeline() = default;
 
-    ScenePipeline(ScenePipeline&& other) = delete;
-    ScenePipeline(const ScenePipeline& other) = delete;
-    ScenePipeline& operator=(ScenePipeline&& other) = delete;
-    ScenePipeline& operator=(const ScenePipeline& other) = delete;
+    DebugTexPipeline(DebugTexPipeline&& other) = delete;
+    DebugTexPipeline(const DebugTexPipeline& other) = delete;
+    DebugTexPipeline& operator=(DebugTexPipeline&& other) = delete;
+    DebugTexPipeline& operator=(const DebugTexPipeline& other) = delete;
 
     /* ====================================================================== */
 
     void    init(
         const Device& device,
-        const RenderPass* renderPass,
+        const VkRenderPass& renderPass,
         const VkPipelineLayout& pipelineLayout) override;
     void    destroy(const Device& device) override;
 

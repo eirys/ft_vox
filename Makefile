@@ -6,7 +6,7 @@
 #    By: etran <etran@student.42.fr>                +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/04/06 03:40:09 by eli               #+#    #+#              #
-#    Updated: 2024/04/03 22:15:48 by etran            ###   ########.fr        #
+#    Updated: 2024/05/01 09:30:31 by etran            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -192,6 +192,10 @@ RM			:=	rm -rf
 
 .PHONY: all
 all: $(NAME)
+
+.PHONY: run
+run: all
+	@./$(NAME)
 
 -include $(DEP)
 -include $(SHD_DEP)

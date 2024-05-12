@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/15 20:35:46 by etran             #+#    #+#             */
-/*   Updated: 2024/04/01 22:37:20 by etran            ###   ########.fr       */
+/*   Updated: 2024/04/08 17:08:00 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,22 +60,25 @@ void Controller::update(const Window& win) {
     m_lastY = (float)mousePos.y;
 
     // Position
-    constexpr float     MOVE_SPEED = 0.1f;
+    constexpr float NORMAL_SPEED = 0.15f;
+    constexpr float HIGH_SPEED = 0.6f;
 
-    if (win.isKeyPressed(KeyIndex::Forward))
-        m_position += math::Vect3(cosYaw, 0.0f, sinYaw) * MOVE_SPEED;
-    else if (win.isKeyPressed(KeyIndex::Backward))
-        m_position -= math::Vect3(cosYaw, 0.0f, sinYaw) * MOVE_SPEED;
+    const float moveSpeed = win.isKeyPressed(ControlKeyIndex::Speed) ? HIGH_SPEED : NORMAL_SPEED;
 
-    if (win.isKeyPressed(KeyIndex::Left))
-        m_position += math::Vect3(sinYaw, 0.0f, -cosYaw) * MOVE_SPEED;
-    else if (win.isKeyPressed(KeyIndex::Right))
-        m_position -= math::Vect3(sinYaw, 0.0f, -cosYaw) * MOVE_SPEED;
+    if (win.isKeyPressed(ControlKeyIndex::Forward))
+        m_position += math::Vect3(cosYaw, 0.0f, sinYaw) * moveSpeed;
+    else if (win.isKeyPressed(ControlKeyIndex::Backward))
+        m_position -= math::Vect3(cosYaw, 0.0f, sinYaw) * moveSpeed;
 
-    if (win.isKeyPressed(KeyIndex::Up))
-        m_position.y += MOVE_SPEED;
-    else if (win.isKeyPressed(KeyIndex::Down))
-        m_position.y -= MOVE_SPEED;
+    if (win.isKeyPressed(ControlKeyIndex::Left))
+        m_position += math::Vect3(sinYaw, 0.0f, -cosYaw) * moveSpeed;
+    else if (win.isKeyPressed(ControlKeyIndex::Right))
+        m_position -= math::Vect3(sinYaw, 0.0f, -cosYaw) * moveSpeed;
+
+    if (win.isKeyPressed(ControlKeyIndex::Up))
+        m_position.y += moveSpeed;
+    else if (win.isKeyPressed(ControlKeyIndex::Down))
+        m_position.y -= moveSpeed;
 }
 
 float Controller::getFov() const noexcept {

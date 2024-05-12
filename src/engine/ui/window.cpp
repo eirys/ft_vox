@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/20 00:02:09 by etran             #+#    #+#             */
-/*   Updated: 2024/03/17 01:57:04 by etran            ###   ########.fr       */
+/*   Updated: 2024/04/08 17:08:00 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,12 +27,13 @@ void keyCallback(GLFWwindow* win, int key, int scancode, int action, int mods) {
 
             case GLFW_KEY_M:            if (isPressed) window->toggleMouse(); break;
 
-            case GLFW_KEY_W:            isPressed ? window->toggleKey(KeyIndex::Forward) : window->untoggleKey(KeyIndex::Forward); break;
-            case GLFW_KEY_S:            isPressed ? window->toggleKey(KeyIndex::Backward) : window->untoggleKey(KeyIndex::Backward); break;
-            case GLFW_KEY_A:            isPressed ? window->toggleKey(KeyIndex::Left) : window->untoggleKey(KeyIndex::Left); break;
-            case GLFW_KEY_D:            isPressed ? window->toggleKey(KeyIndex::Right) : window->untoggleKey(KeyIndex::Right); break;
-            case GLFW_KEY_SPACE:        isPressed ? window->toggleKey(KeyIndex::Up) : window->untoggleKey(KeyIndex::Up); break;
-            case GLFW_KEY_LEFT_CONTROL: isPressed ? window->toggleKey(KeyIndex::Down) : window->untoggleKey(KeyIndex::Down); break;
+            case GLFW_KEY_W:            isPressed ? window->toggleKey(ControlKeyIndex::Forward) : window->untoggleKey(ControlKeyIndex::Forward); break;
+            case GLFW_KEY_S:            isPressed ? window->toggleKey(ControlKeyIndex::Backward) : window->untoggleKey(ControlKeyIndex::Backward); break;
+            case GLFW_KEY_A:            isPressed ? window->toggleKey(ControlKeyIndex::Left) : window->untoggleKey(ControlKeyIndex::Left); break;
+            case GLFW_KEY_D:            isPressed ? window->toggleKey(ControlKeyIndex::Right) : window->untoggleKey(ControlKeyIndex::Right); break;
+            case GLFW_KEY_SPACE:        isPressed ? window->toggleKey(ControlKeyIndex::Up) : window->untoggleKey(ControlKeyIndex::Up); break;
+            case GLFW_KEY_LEFT_CONTROL: isPressed ? window->toggleKey(ControlKeyIndex::Down) : window->untoggleKey(ControlKeyIndex::Down); break;
+            case GLFW_KEY_R:            isPressed ? window->toggleKey(ControlKeyIndex::Speed) : window->untoggleKey(ControlKeyIndex::Speed); break;
 
             default:                    break;
         }
@@ -129,16 +130,16 @@ void    Window::toggleUpdate() noexcept {
     m_isUpdated = !m_isUpdated;
 }
 
-void Window::toggleKey(const KeyIndex keyIndex) noexcept {
-    if (isKeyPressed(keyIndex))
+void Window::toggleKey(const ControlKeyIndex ControlKeyIndex) noexcept {
+    if (isKeyPressed(ControlKeyIndex))
         return;
-    m_pressedKeys[(u32)keyIndex] = true;
+    m_pressedKeys[(u32)ControlKeyIndex] = true;
 }
 
-void Window::untoggleKey(const KeyIndex keyIndex) noexcept {
-    if (!isKeyPressed(keyIndex))
+void Window::untoggleKey(const ControlKeyIndex ControlKeyIndex) noexcept {
+    if (!isKeyPressed(ControlKeyIndex))
         return;
-    m_pressedKeys[(u32)keyIndex] = false;
+    m_pressedKeys[(u32)ControlKeyIndex] = false;
 }
 
 void Window::retrieveFramebufferSize(int& width, int& height) const {
@@ -155,8 +156,8 @@ const Window::MousePos& Window::getMousePos() const noexcept {
     return m_mousePos;
 }
 
-bool Window::isKeyPressed(const KeyIndex keyIndex) const noexcept {
-    return m_pressedKeys[(u32)keyIndex];
+bool Window::isKeyPressed(const ControlKeyIndex ControlKeyIndex) const noexcept {
+    return m_pressedKeys[(u32)ControlKeyIndex];
 }
 
 bool Window::isMouseActive() const noexcept {

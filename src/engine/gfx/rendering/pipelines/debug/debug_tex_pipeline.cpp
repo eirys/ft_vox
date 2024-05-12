@@ -6,12 +6,11 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/03 22:11:27 by etran             #+#    #+#             */
-/*   Updated: 2024/04/03 22:19:35 by etran            ###   ########.fr       */
+/*   Updated: 2024/04/08 16:44:02 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "debug_tex_pipeline.h"
-#include "render_pass.h"
 #include "device.h"
 #include "icommand_buffer.h"
 #include "descriptor_table.h"
@@ -37,22 +36,17 @@ static constexpr u32 DESCRIPTOR_SET_COUNT = enumSize<DebugTexSet>();
 /*                                   PUBLIC                                   */
 /* ========================================================================== */
 
-void ScenePipeline::init(
+void DebugTexPipeline::init(
     const Device& device,
-    const RenderPass* renderPass,
+    const VkRenderPass& renderPass,
     const VkPipelineLayout& pipelineLayout
 ) {
     VkPipelineVertexInputStateCreateInfo vertexInput{};
     vertexInput.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-    vertexInput.vertexBindingDescriptionCount = 0;
-    vertexInput.pVertexBindingDescriptions = nullptr;
-    vertexInput.vertexAttributeDescriptionCount = 0;
-    vertexInput.pVertexAttributeDescriptions = nullptr;
 
     VkPipelineInputAssemblyStateCreateInfo inputAssembly{};
     inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
     inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
-    inputAssembly.primitiveRestartEnable = VK_FALSE;
 
     VkPipelineViewportStateCreateInfo viewportState{};
     viewportState.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
@@ -61,43 +55,22 @@ void ScenePipeline::init(
 
     VkPipelineRasterizationStateCreateInfo rasterizer{};
     rasterizer.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
-    rasterizer.depthClampEnable = VK_FALSE;
-    rasterizer.rasterizerDiscardEnable = VK_FALSE;
     rasterizer.polygonMode = VK_POLYGON_MODE_FILL;
     rasterizer.lineWidth = 1.0f;
     rasterizer.frontFace = VK_FRONT_FACE_CLOCKWISE;
-    rasterizer.depthBiasEnable = VK_FALSE;
-    rasterizer.depthBiasConstantFactor = 0.0f;
-    rasterizer.depthBiasClamp = 0.0f;
-    #ifdef __DEBUG
-    rasterizer.cullMode = VK_CULL_MODE_NONE;
-    #else
     rasterizer.cullMode = VK_CULL_MODE_BACK_BIT;
-    #endif
-    rasterizer.depthBiasSlopeFactor = 0.0f;
 
     VkPipelineMultisampleStateCreateInfo multisample{};
     multisample.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
-    multisample.sampleShadingEnable = VK_FALSE;
     multisample.minSampleShading = 1.0f;
-    multisample.pSampleMask = nullptr;
     multisample.rasterizationSamples = device.getMsaaCount();
-    multisample.alphaToCoverageEnable = VK_FALSE;
-    multisample.alphaToOneEnable = VK_FALSE;
 
     VkPipelineColorBlendAttachmentState colorBlendAttachment{};
-    colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
     colorBlendAttachment.blendEnable = VK_FALSE;
-    colorBlendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_ONE;
-    colorBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ZERO;
-    colorBlendAttachment.colorBlendOp = VK_BLEND_OP_ADD;
-    colorBlendAttachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
-    colorBlendAttachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
-    colorBlendAttachment.alphaBlendOp = VK_BLEND_OP_ADD;
+    colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
 
     VkPipelineColorBlendStateCreateInfo colorBlend{};
     colorBlend.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
-    colorBlend.logicOpEnable = VK_FALSE;
     colorBlend.logicOp = VK_LOGIC_OP_COPY;
     colorBlend.blendConstants[0] = 0.0f;
     colorBlend.blendConstants[1] = 0.0f;
@@ -108,12 +81,8 @@ void ScenePipeline::init(
 
     VkPipelineDepthStencilStateCreateInfo depthStencil{};
     depthStencil.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
-    depthStencil.depthTestEnable = VK_TRUE;
-    depthStencil.depthWriteEnable = VK_TRUE;
-    depthStencil.depthBoundsTestEnable = VK_FALSE;
-    depthStencil.minDepthBounds = 0.0f;
-    depthStencil.maxDepthBounds = 1.0f;
-    depthStencil.stencilTestEnable = VK_FALSE;
+    depthStencil.depthTestEnable = VK_FALSE;
+    depthStencil.depthWriteEnable = VK_FALSE;
     depthStencil.depthCompareOp = VK_COMPARE_OP_LESS;
 
     const std::array<VkDynamicState, 2> dynamicStates = { VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR };
@@ -123,13 +92,13 @@ void ScenePipeline::init(
     dynamicState.pDynamicStates = dynamicStates.data();
 
     std::array<VkPipelineShaderStageCreateInfo, SHADER_STAGE_COUNT> shaderStages{};
-    const VkShaderModule vertexModule = _createShaderModule(device, "obj/shaders/scene.vertex.spv");
+    const VkShaderModule vertexModule = _createShaderModule(device, "obj/shaders/debug.vertex.spv");
     shaderStages[(u32)ShaderStage::Vertex].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
     shaderStages[(u32)ShaderStage::Vertex].stage = (VkShaderStageFlagBits)ShaderType::VS;
     shaderStages[(u32)ShaderStage::Vertex].module = vertexModule;
     shaderStages[(u32)ShaderStage::Vertex].pName = "main";
 
-    const VkShaderModule fragmentModule = _createShaderModule(device, "obj/shaders/scene.fragment.spv");
+    const VkShaderModule fragmentModule = _createShaderModule(device, "obj/shaders/debug.fragment.spv");
     shaderStages[(u32)ShaderStage::Fragment].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
     shaderStages[(u32)ShaderStage::Fragment].stage = (VkShaderStageFlagBits)ShaderType::FS;
     shaderStages[(u32)ShaderStage::Fragment].module = fragmentModule;
@@ -145,7 +114,7 @@ void ScenePipeline::init(
     pipelineInfo.pDepthStencilState = &depthStencil;
     pipelineInfo.pColorBlendState = &colorBlend;
     pipelineInfo.pDynamicState = &dynamicState;
-    pipelineInfo.renderPass = renderPass->getRenderPass();
+    pipelineInfo.renderPass = renderPass;
     pipelineInfo.stageCount = SHADER_STAGE_COUNT;
     pipelineInfo.pStages = shaderStages.data();
     pipelineInfo.layout = pipelineLayout;
@@ -162,7 +131,7 @@ void ScenePipeline::init(
     LDEBUG("Scene pipeline assembled: " << m_pipeline);
 }
 
-void ScenePipeline::destroy(const Device& device) {
+void DebugTexPipeline::destroy(const Device& device) {
     vkDestroyPipeline(device.getDevice(), m_pipeline, nullptr);
 
     LDEBUG("Scene pipeline destroyed.");
@@ -170,13 +139,13 @@ void ScenePipeline::destroy(const Device& device) {
 
 /* ========================================================================== */
 
-void ScenePipeline::record(
+void DebugTexPipeline::record(
     const VkPipelineLayout layout,
     const DescriptorTable& descriptorTable,
     const ICommandBuffer* cmdBuffer
 ) {
     std::array<VkDescriptorSet, DESCRIPTOR_SET_COUNT> descriptorSets = {
-        descriptorTable[DescriptorSetIndex::WorldData]->getSet() };
+        descriptorTable[(DescriptorSetIndex)SetIndex::TextureSet]->getSet() };
 
     vkCmdBindDescriptorSets(
         cmdBuffer->getBuffer(),

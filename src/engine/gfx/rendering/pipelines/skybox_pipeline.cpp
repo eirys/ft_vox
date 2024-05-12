@@ -6,13 +6,12 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/19 10:48:36 by etran             #+#    #+#             */
-/*   Updated: 2024/03/27 14:46:33 by etran            ###   ########.fr       */
+/*   Updated: 2024/04/08 16:45:03 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "skybox_pipeline.h"
 #include "device.h"
-#include "render_pass.h"
 #include "icommand_buffer.h"
 #include "descriptor_table.h"
 
@@ -38,7 +37,7 @@ static constexpr u32 DESCRIPTOR_SET_COUNT = enumSize<SkyboxDescriptorSet>();
 
 void SkyboxPipeline::init(
     const Device& device,
-    const RenderPass* renderPass,
+    const VkRenderPass& renderPass,
     const VkPipelineLayout& pipelineLayout
 ) {
     VkPipelineVertexInputStateCreateInfo vertexInput{};
@@ -111,7 +110,7 @@ void SkyboxPipeline::init(
     pipelineInfo.pDepthStencilState = &depthStencil;
     pipelineInfo.pColorBlendState = &colorBlend;
     pipelineInfo.pDynamicState = &dynamicState;
-    pipelineInfo.renderPass = renderPass->getRenderPass();
+    pipelineInfo.renderPass = renderPass;
     pipelineInfo.stageCount = SHADER_STAGE_COUNT;
     pipelineInfo.pStages = shaderStages.data();
     pipelineInfo.layout = pipelineLayout;

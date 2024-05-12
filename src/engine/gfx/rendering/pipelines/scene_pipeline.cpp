@@ -6,12 +6,11 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/07 09:48:27 by etran             #+#    #+#             */
-/*   Updated: 2024/04/03 22:19:26 by etran            ###   ########.fr       */
+/*   Updated: 2024/04/08 16:44:59 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "scene_pipeline.h"
-#include "render_pass.h"
 #include "device.h"
 #include "icommand_buffer.h"
 #include "descriptor_table.h"
@@ -49,7 +48,7 @@ static constexpr u32 DESCRIPTOR_SET_COUNT = enumSize<SceneDescriptorSet>();
 
 void ScenePipeline::init(
     const Device& device,
-    const RenderPass* renderPass,
+    const VkRenderPass& renderPass,
     const VkPipelineLayout& pipelineLayout
 ) {
     VkPipelineVertexInputStateCreateInfo vertexInput{};
@@ -96,8 +95,8 @@ void ScenePipeline::init(
     multisample.alphaToOneEnable = VK_FALSE;
 
     VkPipelineColorBlendAttachmentState colorBlendAttachment{};
-    colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
     colorBlendAttachment.blendEnable = VK_FALSE;
+    colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
     colorBlendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_ONE;
     colorBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ZERO;
     colorBlendAttachment.colorBlendOp = VK_BLEND_OP_ADD;
@@ -155,7 +154,7 @@ void ScenePipeline::init(
     pipelineInfo.pDepthStencilState = &depthStencil;
     pipelineInfo.pColorBlendState = &colorBlend;
     pipelineInfo.pDynamicState = &dynamicState;
-    pipelineInfo.renderPass = renderPass->getRenderPass();
+    pipelineInfo.renderPass = renderPass;
     pipelineInfo.stageCount = SHADER_STAGE_COUNT;
     pipelineInfo.pStages = shaderStages.data();
     pipelineInfo.layout = pipelineLayout;

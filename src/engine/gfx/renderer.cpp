@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/23 09:29:35 by etran             #+#    #+#             */
-/*   Updated: 2024/04/02 17:46:48 by etran            ###   ########.fr       */
+/*   Updated: 2024/04/27 19:56:38 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -162,9 +162,10 @@ void Renderer::_createPipelines() {
     m_pipelines[(u32)PipelineIndex::SkyboxPipeline] = new SkyboxPipeline();
     m_pipelines[(u32)PipelineIndex::StarfieldPipeline] = new StarfieldPipeline();
 
-    m_pipelines[(u32)PipelineIndex::ScenePipeline]->init(m_device, m_renderPasses[(u32)RenderPassIndex::Main], m_pipelineLayout);
-    m_pipelines[(u32)PipelineIndex::SkyboxPipeline]->init(m_device, m_renderPasses[(u32)RenderPassIndex::Main], m_pipelineLayout);
-    m_pipelines[(u32)PipelineIndex::StarfieldPipeline]->init(m_device, m_renderPasses[(u32)RenderPassIndex::Main], m_pipelineLayout);
+    auto mainRenderPass = m_renderPasses[(u32)RenderPassIndex::Main]->getRenderPass();
+    m_pipelines[(u32)PipelineIndex::ScenePipeline]->init(m_device, mainRenderPass, m_pipelineLayout);
+    m_pipelines[(u32)PipelineIndex::SkyboxPipeline]->init(m_device, mainRenderPass, m_pipelineLayout);
+    m_pipelines[(u32)PipelineIndex::StarfieldPipeline]->init(m_device, mainRenderPass, m_pipelineLayout);
 
     LDEBUG("Pipelines created.");
 }

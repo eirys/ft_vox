@@ -6,12 +6,11 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/27 14:22:51 by etran             #+#    #+#             */
-/*   Updated: 2024/04/03 16:35:13 by etran            ###   ########.fr       */
+/*   Updated: 2024/05/12 20:15:50 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "starfield_pipeline.h"
-#include "render_pass.h"
 #include "device.h"
 #include "icommand_buffer.h"
 #include "descriptor_table.h"
@@ -40,7 +39,7 @@ static constexpr u32 DESCRIPTOR_SET_COUNT = enumSize<StarfieldDescriptorSet>();
 
 void StarfieldPipeline::init(
     const Device& device,
-    const RenderPass* renderPass,
+    const VkRenderPass& renderPass,
     const VkPipelineLayout& pipelineLayout
 ) {
     VkPipelineVertexInputStateCreateInfo vertexInput{};
@@ -60,8 +59,8 @@ void StarfieldPipeline::init(
     rasterizer.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
     rasterizer.polygonMode = VK_POLYGON_MODE_FILL;
     rasterizer.frontFace = VK_FRONT_FACE_CLOCKWISE;
-    // rasterizer.cullMode = VK_CULL_MODE_NONE;
-    rasterizer.cullMode = VK_CULL_MODE_BACK_BIT;
+    rasterizer.cullMode = VK_CULL_MODE_NONE;
+    // rasterizer.cullMode = VK_CULL_MODE_BACK_BIT;
     rasterizer.lineWidth = 1.0f;
 
     VkPipelineMultisampleStateCreateInfo multisample{};
@@ -114,7 +113,7 @@ void StarfieldPipeline::init(
     pipelineInfo.pDepthStencilState = &depthStencil;
     pipelineInfo.pColorBlendState = &colorBlend;
     pipelineInfo.pDynamicState = &dynamicState;
-    pipelineInfo.renderPass = renderPass->getRenderPass();
+    pipelineInfo.renderPass = renderPass;
     pipelineInfo.stageCount = SHADER_STAGE_COUNT;
     pipelineInfo.pStages = shaderStages.data();
     pipelineInfo.layout = pipelineLayout;
@@ -162,7 +161,6 @@ void StarfieldPipeline::record(
         VK_PIPELINE_BIND_POINT_GRAPHICS,
         m_pipeline);
 
-    // For now, draw upper quad
     constexpr u32 INSTANCES = STAR_COUNT;
 
     LDEBUG("Drawing " << INSTANCES << " stars.");
