@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/11 16:56:28 by etran             #+#    #+#             */
-/*   Updated: 2024/04/02 17:04:28 by etran            ###   ########.fr       */
+/*   Updated: 2024/05/14 17:30:28 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,7 @@ namespace game {
 struct Sun final {
     math::Vect3 m_direction;
 
-    float       m_rotationSpeed = 0.2f * M_PI;
+    float       m_rotationSpeed = 0.1f * M_PI;
     bool        m_enabled = true;
 };
 

@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/15 13:46:03 by etran             #+#    #+#             */
-/*   Updated: 2024/04/02 17:01:54 by etran            ###   ########.fr       */
+/*   Updated: 2024/05/14 17:30:17 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,7 +45,7 @@ void GameState::update(const ui::Window& window) {
         const float time = getElapsedTime();
         m_sun.m_direction = math::Vect3(
             std::cos(time * m_sun.m_rotationSpeed),
-            std::sin(time * m_sun.m_rotationSpeed),
+            -std::sin(time * m_sun.m_rotationSpeed),
             0.0f
         );
     }
