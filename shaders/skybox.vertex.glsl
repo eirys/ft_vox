@@ -23,7 +23,7 @@ layout(set = MVP_SET, binding = 1) uniform GameData {
 #define CORNER_G vec3(-1.0,  1.0, -1.0)
 #define CORNER_H vec3(-1.0,  1.0,  1.0)
 
-const vec3 quadCorner[6][4] = {
+const vec3 QUAD_CORNER[6][4] = {
     { CORNER_A, CORNER_D, CORNER_B, CORNER_C }, // Face +X
     { CORNER_E, CORNER_F, CORNER_H, CORNER_G }, // Face -X
     { CORNER_C, CORNER_D, CORNER_G, CORNER_H }, // Face +Y
@@ -34,7 +34,7 @@ const vec3 quadCorner[6][4] = {
 
 void main() {
     outSunDir = vec3(gameData.sunPos, 0.0);
-    outUVW = quadCorner[gl_InstanceIndex][gl_VertexIndex];
+    outUVW = QUAD_CORNER[gl_InstanceIndex][gl_VertexIndex];
 
     gl_Position = viewProj.proj * mat4(mat3(viewProj.view)) * vec4(outUVW, 1.0);
 }

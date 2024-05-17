@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/15 15:24:42 by etran             #+#    #+#             */
-/*   Updated: 2024/03/15 17:51:11 by etran            ###   ########.fr       */
+/*   Updated: 2024/05/17 16:10:00 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,10 @@
 
 namespace game {
 
+/**
+ * @brief The World class represents the game world.
+ * Gives information on chunks and their data.
+ */
 class World final {
 public:
     /* ====================================================================== */

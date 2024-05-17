@@ -17,6 +17,17 @@ layout(set = MVP_SET, binding = 1) uniform GameData {
 
 layout(set = WORLD_SET, binding = 2) uniform sampler2DArray NoiseTex;
 
+const vec3 X_AXIS = vec3(1.0, 0.0, 0.0);
+const vec3 Y_AXIS = vec3(0.0, 1.0, 0.0);
+const vec3 Z_AXIS = vec3(0.0, 0.0, 1.0);
+const float PI = 3.141592;
+const vec3 VERTEX_POS[4] = {
+    vec3(-1.0, -1.0, 0.0), // r
+    vec3( 1.0, -1.0, 0.0), // g
+    vec3(-1.0,  1.0, 0.0), // b
+    vec3( 1.0,  1.0, 0.0), // w
+};
+
 // Generate a rotation matrix from an angle (radians) and an axis
 mat4 rotate(in float angle, in vec3 axis) {
     const float c = cos(angle);
@@ -85,28 +96,6 @@ mat4 scale(in float val) {
     );
 }
 
-const vec3 vertexPos[4] = {
-    vec3(-1.0, -1.0, 0.0), // r
-    vec3( 1.0, -1.0, 0.0), // g
-    vec3(-1.0,  1.0, 0.0), // b
-    vec3( 1.0,  1.0, 0.0), // w
-};
-
-const vec3 vertexColor[4] = {
-    vec3(1.0, 0.0, 0.0),
-    vec3(0.0, 1.0, 0.0),
-    vec3(0.0, 0.0, 1.0),
-    vec3(1.0)
-};
-
-const vec3 X_AXIS = vec3(1.0, 0.0, 0.0);
-const vec3 Y_AXIS = vec3(0.0, 1.0, 0.0);
-const vec3 Z_AXIS = vec3(0.0, 0.0, 1.0);
-const vec3 skyDist = vec3(0.0, 0.0, 150.0);
-const float PI = 3.141592;
-
-#define id mat4(1.0)
-
 vec3 getWorldAxis(in mat4 inverseModel, in vec3 localAxis) {
     return (inverseModel * vec4(localAxis, 0.0)).xyz;
 }
@@ -130,7 +119,8 @@ mat4 getModel(in vec2 moonDir, in vec3 random) {
     const mat4 starHeightInSky = rotate2(moonDir, getWorldAxis(transpose(starAngle) * transpose(drawAway) * transpose(moonCentered) * transpose(alignOnMoon), Z_AXIS));
 
     // Move star to the sky
-    const mat4 starDistance = translate(skyDist);
+    const float skyDist = 150.0;
+    const mat4 starDistance = translate(vec3(0.0, 0.0, skyDist));
 
     // Randomize the size of the star
     const mat4 starSize = scale(random.x * 0.5 + 0.5);
@@ -154,7 +144,7 @@ void main() {
         texture(NoiseTex, vec3(noiseCoord, 2)).r);
 
     const mat4 model = getModel(moonDir, random);
-    const vec4 vertex = vec4(vertexPos[gl_VertexIndex], 1.0);
+    const vec4 vertex = vec4(VERTEX_POS[gl_VertexIndex], 1.0);
     const vec4 worldPos = model * vertex;
 
     outMoonHeight = max(moonDir.y, 0.0);
