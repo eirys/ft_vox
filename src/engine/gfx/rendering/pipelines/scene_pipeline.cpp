@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/07 09:48:27 by etran             #+#    #+#             */
-/*   Updated: 2024/04/08 16:44:59 by etran            ###   ########.fr       */
+/*   Updated: 2024/05/30 01:37:40 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,8 @@
 #include "device.h"
 #include "icommand_buffer.h"
 #include "descriptor_table.h"
-#include "game_decl.h"
+
+#include "game_state.h"
 
 #include <array>
 #include <stdexcept>
@@ -53,10 +54,10 @@ void ScenePipeline::init(
 ) {
     VkPipelineVertexInputStateCreateInfo vertexInput{};
     vertexInput.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-    vertexInput.vertexBindingDescriptionCount = 0;
-    vertexInput.pVertexBindingDescriptions = nullptr;
-    vertexInput.vertexAttributeDescriptionCount = 0;
-    vertexInput.pVertexAttributeDescriptions = nullptr;
+    vertexInput.vertexBindingDescriptionCount = VertexInstance::getBindingDescriptions().size();
+    vertexInput.pVertexBindingDescriptions = VertexInstance::getBindingDescriptions().data();
+    vertexInput.vertexAttributeDescriptionCount = VertexInstance::getAttributeDescriptions().size();
+    vertexInput.pVertexAttributeDescriptions = VertexInstance::getAttributeDescriptions().data();
 
     VkPipelineInputAssemblyStateCreateInfo inputAssembly{};
     inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
@@ -133,10 +134,10 @@ void ScenePipeline::init(
 
     std::array<VkPipelineShaderStageCreateInfo, SHADER_STAGE_COUNT> shaderStages{};
     const VkShaderModule vertexModule = _createShaderModule(device, "obj/shaders/scene.vertex.spv");
-    shaderStages[(u32)ShaderStage::Vertex].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-    shaderStages[(u32)ShaderStage::Vertex].stage = (VkShaderStageFlagBits)ShaderType::VS;
-    shaderStages[(u32)ShaderStage::Vertex].module = vertexModule;
-    shaderStages[(u32)ShaderStage::Vertex].pName = "main";
+    shaderStages[(u32)ShaderStage::VertexInstance].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+    shaderStages[(u32)ShaderStage::VertexInstance].stage = (VkShaderStageFlagBits)ShaderType::VS;
+    shaderStages[(u32)ShaderStage::VertexInstance].module = vertexModule;
+    shaderStages[(u32)ShaderStage::VertexInstance].pName = "main";
 
     const VkShaderModule fragmentModule = _createShaderModule(device, "obj/shaders/scene.fragment.spv");
     shaderStages[(u32)ShaderStage::Fragment].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -173,6 +174,8 @@ void ScenePipeline::init(
 
 void ScenePipeline::destroy(const Device& device) {
     vkDestroyPipeline(device.getDevice(), m_pipeline, nullptr);
+    for (u32 i = 0; i < VERTEX_BUFFER_COUNT; ++i)
+        m_vertexBuffers[i].destroy(device);
 
     LDEBUG("Scene pipeline destroyed.");
 }
@@ -184,9 +187,11 @@ void ScenePipeline::record(
     const DescriptorTable& descriptorTable,
     const ICommandBuffer* cmdBuffer
 ) {
-    std::array<VkDescriptorSet, DESCRIPTOR_SET_COUNT> descriptorSets = {
+    const std::array<VkDescriptorSet, DESCRIPTOR_SET_COUNT> descriptorSets = {
         descriptorTable[(DescriptorSetIndex)SetIndex::PerFrameData]->getSet(),
         descriptorTable[(DescriptorSetIndex)SetIndex::Textures]->getSet() };
+    const std::array<VkDeviceSize, 1> offsets = { 0 };
+    const std::array<VkBuffer, 1> vertexBuffers = { _getCurrentBuffer().getBuffer().getBuffer() };
 
     vkCmdBindDescriptorSets(
         cmdBuffer->getBuffer(),
@@ -201,11 +206,89 @@ void ScenePipeline::record(
         VK_PIPELINE_BIND_POINT_GRAPHICS,
         m_pipeline);
 
-    // For now, draw upper quad
-    constexpr u32 INSTANCES = WORLD_SIZE * CHUNK_AREA;
+    vkCmdBindVertexBuffers(
+        cmdBuffer->getBuffer(),
+        0, vertexBuffers.size(),
+        vertexBuffers.data(),
+        offsets.data());
 
-    LDEBUG("Drawing " << INSTANCES << " instances of scene");
-    vkCmdDraw(cmdBuffer->getBuffer(), 4, INSTANCES, 0, 0);
+    // For now, draw upper quad
+    // constexpr u32 INSTANCES = WORLD_SIZE * CHUNK_AREA;
+
+    // LDEBUG("Drawing " << INSTANCES << " instances of scene");
+    // vkCmdDraw(cmdBuffer->getBuffer(), 4, INSTANCES, 0, 0);
+    vkCmdDraw(cmdBuffer->getBuffer(), 4, _getCurrentBuffer().getInstancesCount(), 0, 0);
+}
+
+void ScenePipeline::_evaluateChunk(const game::Chunk& chunk, std::vector<VertexInstance>& instances) {
+    constexpr u32 UPPER_LIMIT = CHUNK_SIZE - 1;
+    constexpr u32 LOWER_LIMIT = 0;
+
+    for (u32 z = 0; z < CHUNK_SIZE; ++z) {
+        for (u32 x = 0; x < CHUNK_SIZE; ++x) {
+            for (u32 y = 0; y < CHUNK_SIZE; ++y) {
+                if (chunk.getBlock(x, y, z).isVoid())
+                    continue;
+
+                const u16 blockId = (x << 8) | (y << 4) | z;
+                const u16 chunkId = chunk.getId();
+
+                // Check if block face is visible
+                if (y == UPPER_LIMIT || chunk.getBlock(x, y + 1, z).isVoid()) {
+                    instances.emplace_back(BlockFace::Top, blockId, chunkId);
+                }
+                if (y == LOWER_LIMIT || chunk.getBlock(x, y - 1, z).isVoid()) {
+                    instances.emplace_back(BlockFace::Bottom, blockId, chunkId);
+                }
+                if (x == UPPER_LIMIT || chunk.getBlock(x + 1, y, z).isVoid()) {
+                    instances.emplace_back(BlockFace::Right, blockId, chunkId);
+                }
+                if (x == LOWER_LIMIT || chunk.getBlock(x - 1, y, z).isVoid()) {
+                    instances.emplace_back(BlockFace::Left, blockId, chunkId);
+                }
+                if (z == UPPER_LIMIT || chunk.getBlock(x, y, z + 1).isVoid()) {
+                    instances.emplace_back(BlockFace::Front, blockId, chunkId);
+                }
+                if (z == LOWER_LIMIT || chunk.getBlock(x, y, z - 1).isVoid()) {
+                    instances.emplace_back(BlockFace::Back, blockId, chunkId);
+                }
+            }
+        }
+    }
+}
+
+
+void ScenePipeline::buildVertexBuffer(
+    const Device& device,
+    const ICommandBuffer* cmdBuffer,
+    const game::GameState& gameState
+) {
+    std::vector<VertexInstance> instances;
+
+    // Retrieve blocks and cull invisible faces
+    for (u32 z = 0; z < RENDER_DISTANCE; ++z) {
+        for (u32 x = 0; x < RENDER_DISTANCE; ++x) {
+            for (u32 y = 0; y < RENDER_HEIGHT; ++y) {
+                auto& chunk = gameState.getWorld().getChunk(x, y, z);
+
+                _evaluateChunk(chunk, instances);
+            }
+        }
+    }
+
+    _getCurrentBuffer().init(device, cmdBuffer, instances);
+}
+
+/* ========================================================================== */
+/*                                   PRIVATE                                  */
+/* ========================================================================== */
+
+VertexBuffer& ScenePipeline::_getCurrentBuffer() {
+    return m_vertexBuffers[m_currentBuffer];
+}
+
+void ScenePipeline::_switchBuffer() {
+    m_currentBuffer = (m_currentBuffer + 1) % VERTEX_BUFFER_COUNT;
 }
 
 } // namespace vox::gfx

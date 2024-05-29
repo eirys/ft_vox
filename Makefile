@@ -6,7 +6,7 @@
 #    By: etran <etran@student.42.fr>                +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/04/06 03:40:09 by eli               #+#    #+#              #
-#    Updated: 2024/05/01 09:30:31 by etran            ###   ########.fr        #
+#    Updated: 2024/05/28 14:21:01 by etran            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -86,6 +86,7 @@ INC_SUBDIRS	:=	$(addprefix $(SRC_DIR)/,$(SUBDIRS)) \
 SRC_FILES	:=	entrypoint.cpp \
 				$(LOAD_DIR)/ppm_loader.cpp \
 				$(LOAD_DIR)/image_handler.cpp \
+				$(LOAD_DIR)/cache.cpp \
 				$(IO_DIR)/io_helpers.cpp \
 				$(ENGINE_DIR)/engine.cpp \
 				$(GFX_DIR)/renderer.cpp \
@@ -105,6 +106,7 @@ SRC_FILES	:=	entrypoint.cpp \
 				$(DESC_DIR)/descriptor_table.cpp \
 				$(RENDER_DIR)/pipeline.cpp \
 				$(RENDER_DIR)/render_pass.cpp \
+				$(RENDER_DIR)/vertex.cpp \
 				$(PASSES_DIR)/main_render_pass.cpp \
 				$(PIP_DIR)/scene_pipeline.cpp \
 				$(PIP_DIR)/skybox_pipeline.cpp \
@@ -112,6 +114,7 @@ SRC_FILES	:=	entrypoint.cpp \
 				$(DEBUG_PIP_DIR)/debug_tex_pipeline.cpp \
 				$(BUF_DIR)/buffer.cpp \
 				$(BUF_DIR)/image_buffer.cpp \
+				$(BUF_DIR)/vertex_buffer.cpp \
 				$(SYNC_DIR)/fence.cpp \
 				$(SYNC_DIR)/gfx_semaphore.cpp \
 				$(PROC_DIR)/perlin_noise.cpp \
@@ -155,7 +158,7 @@ CFLAGS		:=	$(EXTRA) \
 				-std=c++20 \
 				-MD \
 				-MP \
-				-O3 \
+				-g \
 				$(INCLUDES) \
 				$(DEFINES)
 

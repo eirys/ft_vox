@@ -1,52 +1,52 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   world.h                                            :+:      :+:    :+:   */
+/*   vertex_buffer.h                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/03/15 15:24:42 by etran             #+#    #+#             */
-/*   Updated: 2024/05/28 14:32:58 by etran            ###   ########.fr       */
+/*   Created: 2024/05/20 13:34:05 by etran             #+#    #+#             */
+/*   Updated: 2024/05/28 16:18:18 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
-#include "chunk.h"
+#include <array>
+#include <vector>
+#include <stack>
 
-namespace game {
+#include "buffer.h"
+#include "vertex.h"
 
-/**
- * @brief The World class represents the game world.
- * Gives information on chunks and their data.
- */
-class World final {
+namespace vox::gfx {
+
+class VertexBuffer final {
 public:
-    /* ====================================================================== */
-    /*                                TYPEDEFS                                */
-    /* ====================================================================== */
-
-    using ChunkArray = std::array<Chunk, RENDER_AREA * RENDER_HEIGHT>;
-
     /* ====================================================================== */
     /*                                 METHODS                                */
     /* ====================================================================== */
 
-    void init(const u32 seed);
+    void    init(
+        const Device& device,
+        const ICommandBuffer* cmdBuffer,
+        const std::vector<VertexInstance>& instances);
+    void    destroy(const Device& device);
 
-    const ChunkArray&   getChunks() const noexcept;
-    ChunkArray&         getChunks() noexcept;
+    u32     getInstancesCount() const noexcept;
 
-    Chunk&              getChunk(const u32 x, const u32 y, const u32 z) noexcept;
-    const Chunk&        getChunk(const u32 x, const u32 y, const u32 z) const noexcept;
+    /* ====================================================================== */
+
+    const Buffer& getBuffer() const;
 
 private:
     /* ====================================================================== */
     /*                                  DATA                                  */
     /* ====================================================================== */
 
-    ChunkArray  m_chunks;
+    Buffer  m_buffer;
+    u32     m_instancesCount = 0;
 
-}; // class World
+}; // class ChunkVertexBuffer
 
-} // namespace game
+} // namespace vox::gfx

@@ -1,52 +1,69 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   world.h                                            :+:      :+:    :+:   */
+/*   vertex.h                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/03/15 15:24:42 by etran             #+#    #+#             */
-/*   Updated: 2024/05/28 14:32:58 by etran            ###   ########.fr       */
+/*   Created: 2024/05/28 11:02:25 by etran             #+#    #+#             */
+/*   Updated: 2024/05/28 15:01:33 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
-#include "chunk.h"
+#include <vulkan/vulkan.h>
+#include <array>
 
-namespace game {
+#include "types.h"
 
-/**
- * @brief The World class represents the game world.
- * Gives information on chunks and their data.
- */
-class World final {
+namespace vox::gfx {
+
+enum class BlockFace: u8 {
+    Top = 0,
+    Bottom,
+    Left,
+    Right,
+    Front,
+    Back
+};
+
+class VertexInstance final {
 public:
     /* ====================================================================== */
     /*                                TYPEDEFS                                */
     /* ====================================================================== */
 
-    using ChunkArray = std::array<Chunk, RENDER_AREA * RENDER_HEIGHT>;
+    using AttributesDescription = std::array<VkVertexInputAttributeDescription, 1>;
+    using BindingsDescription = std::array<VkVertexInputBindingDescription, 1>;
 
     /* ====================================================================== */
     /*                                 METHODS                                */
     /* ====================================================================== */
 
-    void init(const u32 seed);
+    VertexInstance(const BlockFace face, const u16 blockId, const u16 chunkId);
 
-    const ChunkArray&   getChunks() const noexcept;
-    ChunkArray&         getChunks() noexcept;
+    VertexInstance() = default;
+    ~VertexInstance() = default;
+    VertexInstance(VertexInstance&& other) = default;
+    VertexInstance& operator=(VertexInstance&& other) = default;
 
-    Chunk&              getChunk(const u32 x, const u32 y, const u32 z) noexcept;
-    const Chunk&        getChunk(const u32 x, const u32 y, const u32 z) const noexcept;
+    VertexInstance(const VertexInstance& other) = delete;
+    VertexInstance& operator=(const VertexInstance& other) = delete;
+
+    /* ====================================================================== */
+
+    static BindingsDescription      getBindingDescriptions() noexcept;
+    static AttributesDescription    getAttributeDescriptions() noexcept;
+    static u32                      getStride() noexcept;
 
 private:
     /* ====================================================================== */
     /*                                  DATA                                  */
     /* ====================================================================== */
 
-    ChunkArray  m_chunks;
+    u32 m_data = 0;
 
-}; // class World
+}; // class VertexInstance
 
-} // namespace game
+} // namespace vox::gfx

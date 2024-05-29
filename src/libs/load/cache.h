@@ -1,66 +1,56 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   controller.h                                       :+:      :+:    :+:   */
+/*   cache.h                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/03/15 19:33:01 by etran             #+#    #+#             */
-/*   Updated: 2024/05/29 12:50:07 by etran            ###   ########.fr       */
+/*   Created: 2024/05/18 14:31:24 by etran             #+#    #+#             */
+/*   Updated: 2024/05/18 15:31:59 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
-#include "vector.h"
-#include "game_decl.h"
+#include "types.h"
 
-namespace ui {
-
-class Window;
+enum class CacheType: u8 {
+    UNDEFINED,
+    CHUNK,
+    PROCEDURAL_TEXTURE,
+};
 
 /**
- * @brief Player controller
- */
-class Controller final {
+ * @brief Cache the data.
+*/
+class Cache final {
 public:
     /* ====================================================================== */
     /*                                 METHODS                                */
     /* ====================================================================== */
 
-    Controller() = default;
-    ~Controller() = default;
+    Cache(const CacheType type, const u32 id) noexcept;
 
-    Controller(Controller&& x) = delete;
-    Controller(const Controller& x) = delete;
-    Controller& operator=(Controller&& rhs) = delete;
-    Controller& operator=(const Controller& rhs) = delete;
+    Cache() = default;
+    ~Cache() = default;
+
+    Cache(Cache&& other) = delete;
+    Cache(const Cache& other) = delete;
+    Cache& operator=(Cache&& other) = delete;
+    Cache& operator=(const Cache& other) = delete;
 
     /* ====================================================================== */
 
-    void init(const Window& win);
-    void update(const Window& win);
+    std::vector<u8>     load() const;
 
-    float               getFov() const noexcept;
-    const math::Vect3&  getView() const;
-    const math::Vect3&  getPosition() const noexcept;
+    void                save(const std::vector<u8>& data) const;
+    void                save(const u8* data, const u32 size) const;
 
-private:
     /* ====================================================================== */
     /*                                  DATA                                  */
     /* ====================================================================== */
 
-    math::Vect3 m_direction = {0.0f, 0.0f, 0.0f};
-    math::Vect3 m_position = {RENDER_DISTANCE / 2.0 * CHUNK_SIZE, 20.0f, RENDER_DISTANCE / 2.0 * CHUNK_SIZE};
+    CacheType   m_type = CacheType::UNDEFINED;
+    u32         m_id = 0;
 
-    float   m_fov = 85.0f;
-
-    float   m_lastX = 0.0f;
-    float   m_lastY = 0.0f;
-
-    float   m_yaw = 0.0f;
-    float   m_pitch = 0.0f;
-
-}; // class Controller
-
-} // namespace ui
+}; // class Cache

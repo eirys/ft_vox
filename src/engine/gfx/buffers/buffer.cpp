@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/27 17:40:32 by etran             #+#    #+#             */
-/*   Updated: 2024/03/15 18:03:08 by etran            ###   ########.fr       */
+/*   Updated: 2024/05/29 12:37:30 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -113,7 +113,7 @@ void Buffer::copyFrom(const void* src) {
  * @brief Copies data from src buffer to dst buffer.
  */
 void Buffer::copyBuffer(
-    ICommandBuffer* cmdBuffer,
+    const ICommandBuffer* cmdBuffer,
     const Buffer& src,
     const u32 srcOffset,
     const u32 dstOffset
@@ -128,6 +128,19 @@ void Buffer::copyBuffer(
         src.getBuffer(),
         m_buffer,
         1, &copyRegion);
+
+    LDEBUG("Buffer " << m_buffer << " copied from " << src.getBuffer() << ".");
+}
+
+Buffer Buffer::createStagingBuffer(const Device& device) const {
+    BufferMetadata stagingMetadata{};
+    stagingMetadata.m_size = m_metadata.m_size;
+    stagingMetadata.m_usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+    stagingMetadata.m_properties = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
+
+    Buffer stagingBuffer{};
+    stagingBuffer.init(device, std::move(stagingMetadata));
+    return stagingBuffer;
 }
 
 /* ========================================================================== */

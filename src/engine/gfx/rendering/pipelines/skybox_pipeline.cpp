@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/19 10:48:36 by etran             #+#    #+#             */
-/*   Updated: 2024/04/08 16:45:03 by etran            ###   ########.fr       */
+/*   Updated: 2024/05/28 12:05:39 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -89,10 +89,10 @@ void SkyboxPipeline::init(
 
     std::array<VkPipelineShaderStageCreateInfo, SHADER_STAGE_COUNT> shaderStages{};
     const VkShaderModule vertexModule = _createShaderModule(device, "obj/shaders/skybox.vertex.spv");
-    shaderStages[(u32)ShaderStage::Vertex].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-    shaderStages[(u32)ShaderStage::Vertex].stage = (VkShaderStageFlagBits)ShaderType::VS;
-    shaderStages[(u32)ShaderStage::Vertex].module = vertexModule;
-    shaderStages[(u32)ShaderStage::Vertex].pName = "main";
+    shaderStages[(u32)ShaderStage::VertexInstance].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+    shaderStages[(u32)ShaderStage::VertexInstance].stage = (VkShaderStageFlagBits)ShaderType::VS;
+    shaderStages[(u32)ShaderStage::VertexInstance].module = vertexModule;
+    shaderStages[(u32)ShaderStage::VertexInstance].pName = "main";
 
     const VkShaderModule fragmentModule = _createShaderModule(device, "obj/shaders/skybox.fragment.spv");
     shaderStages[(u32)ShaderStage::Fragment].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;

@@ -3,7 +3,7 @@
 #include "../src/engine/game/game_decl.h"
 #include "../src/engine/gfx/descriptor/sets/descriptor_decl.h"
 
-layout(location = 0) in vec2 inUV;
+layout(location = 0) in vec3 inUVW;
 layout(location = 1) in vec3 inNormal;
 layout(location = 2) in vec3 inSunDir;
 
@@ -24,13 +24,13 @@ float applyFog(in float distanceToPoint) {
 }
 
 float applyDiffuse(in vec3 normal, in vec3 sunDir) {
-    return max(dot(normal, sunDir), 0.05);
+    return max(dot(normal, sunDir) * step(0.0, inSunDir.y), 0.05);
 }
 
 void main() {
     const float sunHeight = max(inSunDir.y, 0.0);
 
-    vec3 color = texture(GameTex, vec3(inUV, 2)).rgb;
+    vec3 color = texture(GameTex, inUVW).rgb;
 
     const float ambientFactor = 0.1;
     const vec3 ambientColor = mix(MOON_COLOR, SUN_COLOR, sunHeight);
