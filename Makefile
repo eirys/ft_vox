@@ -6,7 +6,7 @@
 #    By: etran <etran@student.42.fr>                +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/04/06 03:40:09 by eli               #+#    #+#              #
-#    Updated: 2024/05/30 16:49:07 by etran            ###   ########.fr        #
+#    Updated: 2024/05/30 19:14:28 by etran            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -44,6 +44,7 @@ SAMPLER_DIR	:=	$(DESC_DIR)/sampler
 RENDER_DIR	:=	$(GFX_DIR)/rendering
 PIP_DIR		:=	$(RENDER_DIR)/pipelines
 PASSES_DIR	:=	$(RENDER_DIR)/passes
+GEO_DIR		:=	$(RENDER_DIR)/geometry
 
 DEBUG_PIP_DIR	:=	$(PIP_DIR)/debug
 
@@ -70,6 +71,7 @@ SUBDIRS		:=	$(LIBS_DIR) \
 				$(SETS_DIR) \
 				$(SYNC_DIR) \
 				$(RENDER_DIR) \
+				$(GEO_DIR) \
 				$(PIP_DIR) \
 				$(PASSES_DIR) \
 				$(PROC_DIR) \
@@ -106,7 +108,8 @@ SRC_FILES	:=	entrypoint.cpp \
 				$(DESC_DIR)/descriptor_table.cpp \
 				$(RENDER_DIR)/pipeline.cpp \
 				$(RENDER_DIR)/render_pass.cpp \
-				$(RENDER_DIR)/vertex.cpp \
+				$(GEO_DIR)/vertex.cpp \
+				$(GEO_DIR)/vertex_buffer.cpp \
 				$(PASSES_DIR)/main_render_pass.cpp \
 				$(PIP_DIR)/scene_pipeline.cpp \
 				$(PIP_DIR)/skybox_pipeline.cpp \
@@ -114,7 +117,6 @@ SRC_FILES	:=	entrypoint.cpp \
 				$(DEBUG_PIP_DIR)/debug_tex_pipeline.cpp \
 				$(BUF_DIR)/buffer.cpp \
 				$(BUF_DIR)/image_buffer.cpp \
-				$(BUF_DIR)/vertex_buffer.cpp \
 				$(SYNC_DIR)/fence.cpp \
 				$(SYNC_DIR)/gfx_semaphore.cpp \
 				$(PROC_DIR)/perlin_noise.cpp \

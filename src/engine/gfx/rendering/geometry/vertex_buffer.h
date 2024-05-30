@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/20 13:34:05 by etran             #+#    #+#             */
-/*   Updated: 2024/05/28 16:18:18 by etran            ###   ########.fr       */
+/*   Updated: 2024/05/30 22:44:55 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,11 @@
 #include "buffer.h"
 #include "vertex.h"
 
+namespace game {
+class GameState;
+class Chunk;
+}
+
 namespace vox::gfx {
 
 class VertexBuffer final {
@@ -30,14 +35,13 @@ public:
     void    init(
         const Device& device,
         const ICommandBuffer* cmdBuffer,
-        const std::vector<VertexInstance>& instances);
+        const game::GameState& gameState);
     void    destroy(const Device& device);
-
-    u32     getInstancesCount() const noexcept;
 
     /* ====================================================================== */
 
-    const Buffer& getBuffer() const;
+    const Buffer&   getBuffer() const;
+    u32             getInstancesCount() const noexcept;
 
 private:
     /* ====================================================================== */
@@ -47,6 +51,13 @@ private:
     Buffer  m_buffer;
     u32     m_instancesCount = 0;
 
-}; // class ChunkVertexBuffer
+    /* ====================================================================== */
+    /*                                 METHODS                                */
+    /* ====================================================================== */
+
+    void                        _evaluateChunk(const game::Chunk& chunk, std::vector<VertexInstance>& instances) const;
+    std::vector<VertexInstance> _computeVerticeInstances(const game::GameState& gameState) const;
+
+}; // class VertexBuffer
 
 } // namespace vox::gfx

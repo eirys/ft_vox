@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/07 09:48:27 by etran             #+#    #+#             */
-/*   Updated: 2024/05/30 17:08:40 by etran            ###   ########.fr       */
+/*   Updated: 2024/05/30 18:47:20 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,8 +14,6 @@
 #include "device.h"
 #include "icommand_buffer.h"
 #include "descriptor_table.h"
-
-#include "game_state.h"
 
 #include <array>
 #include <stdexcept>
@@ -215,68 +213,12 @@ void ScenePipeline::record(
     vkCmdDraw(cmdBuffer->getBuffer(), 4, _getCurrentBuffer().getInstancesCount(), 0, 0);
 }
 
-// TODO: MOve this
-void ScenePipeline::_evaluateChunk(const game::Chunk& chunk, std::vector<VertexInstance>& instances) {
-    constexpr u32 UPPER_LIMIT = CHUNK_SIZE - 1;
-    constexpr u32 LOWER_LIMIT = 0;
-
-    for (u32 z = 0; z < CHUNK_SIZE; ++z) {
-        for (u32 x = 0; x < CHUNK_SIZE; ++x) {
-            for (u32 y = 0; y < CHUNK_SIZE; ++y) {
-                const auto& block = chunk.getBlock(x, y, z);
-
-                if (block.isVoid())
-                    continue;
-
-                const u16 blockId = (x << 8) | (y << 4) | z;
-                const u16 chunkId = chunk.getId();
-
-                // TODO: add frustum culling
-
-                // Check if block face is visible
-                if (y == UPPER_LIMIT || chunk.getBlock(x, y + 1, z).isVoid()) {
-                    instances.emplace_back(game::BlockFace::Top, block.getTextureId(game::BlockFace::Top), blockId, chunkId);
-                }
-                if (y == LOWER_LIMIT || chunk.getBlock(x, y - 1, z).isVoid()) {
-                    instances.emplace_back(game::BlockFace::Bottom, block.getTextureId(game::BlockFace::Bottom), blockId, chunkId);
-                }
-                if (x == UPPER_LIMIT || chunk.getBlock(x + 1, y, z).isVoid()) {
-                    instances.emplace_back(game::BlockFace::Right, block.getTextureId(game::BlockFace::Right), blockId, chunkId);
-                }
-                if (x == LOWER_LIMIT || chunk.getBlock(x - 1, y, z).isVoid()) {
-                    instances.emplace_back(game::BlockFace::Left, block.getTextureId(game::BlockFace::Left), blockId, chunkId);
-                }
-                if (z == UPPER_LIMIT || chunk.getBlock(x, y, z + 1).isVoid()) {
-                    instances.emplace_back(game::BlockFace::Front, block.getTextureId(game::BlockFace::Front), blockId, chunkId);
-                }
-                if (z == LOWER_LIMIT || chunk.getBlock(x, y, z - 1).isVoid()) {
-                    instances.emplace_back(game::BlockFace::Back, block.getTextureId(game::BlockFace::Back), blockId, chunkId);
-                }
-            }
-        }
-    }
-}
-
-
 void ScenePipeline::buildVertexBuffer(
     const Device& device,
     const ICommandBuffer* cmdBuffer,
     const game::GameState& gameState
 ) {
-    std::vector<VertexInstance> instances;
-
-    // Retrieve blocks and cull invisible faces
-    for (u32 z = 0; z < RENDER_DISTANCE; ++z) {
-        for (u32 x = 0; x < RENDER_DISTANCE; ++x) {
-            for (u32 y = 0; y < RENDER_HEIGHT; ++y) {
-                auto& chunk = gameState.getWorld().getChunk(x, y, z);
-
-                _evaluateChunk(chunk, instances);
-            }
-        }
-    }
-
-    _getCurrentBuffer().init(device, cmdBuffer, instances);
+    _getCurrentBuffer().init(device, cmdBuffer, gameState);
 }
 
 /* ========================================================================== */

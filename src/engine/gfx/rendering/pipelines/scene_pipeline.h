@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/29 23:49:38 by etran             #+#    #+#             */
-/*   Updated: 2024/05/28 16:11:50 by etran            ###   ########.fr       */
+/*   Updated: 2024/05/30 18:41:33 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,6 @@
 
 namespace game {
 class GameState;
-class Chunk;
 }
 
 namespace vox::gfx {
@@ -100,8 +99,6 @@ private:
     /* ====================================================================== */
     /*                                 METHODS                                */
     /* ====================================================================== */
-
-    void            _evaluateChunk(const game::Chunk& chunk, std::vector<VertexInstance>& instances);
 
     VertexBuffer&   _getCurrentBuffer();
     void            _switchBuffer();

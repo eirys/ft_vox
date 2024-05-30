@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/11 16:12:13 by etran             #+#    #+#             */
-/*   Updated: 2024/05/30 16:13:26 by etran            ###   ########.fr       */
+/*   Updated: 2024/05/30 22:29:47 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -78,28 +78,21 @@ void PFDSet::fill(const Device& device) {
 }
 
 void PFDSet::update(const game::GameState& state) {
-    constexpr math::Vect3   UP_VEC = {0.0f, 1.0f, 0.0f};
-    const math::Vect3&  position = state.getController().getPosition();
-    const math::Vect3&  front = state.getController().getView();
-    const math::Vect3   right = math::normalize(math::cross(front, UP_VEC));
-    const math::Vect3   up = math::cross(right, front);
+    const ui::Camera&   camera = state.getController().getCamera();
+    static const f32    fovRadians = math::radians(camera.m_fov);
 
-    m_data.m_viewProj.view = math::lookAt(position, front, up, right);
-
-    static const f32    fovRadians = math::radians(state.getController().getFov());
-    constexpr f32       aspectRatio = 1200.0f / 800.0f;
-    constexpr f32       nearPlane = 0.1f;
-    constexpr f32       farPlane = 500.0f;
-
-    m_data.m_viewProj.proj = math::perspective(fovRadians, aspectRatio, nearPlane, farPlane);
-
-    m_data.m_gameData.sunPos = state.getSunPos().xy;
+    m_data.m_viewProj.view = math::lookAt(camera.m_position, camera.m_front, camera.m_up, camera.m_right);
+    m_data.m_viewProj.proj = math::perspective(
+        fovRadians,
+        ui::Camera::ASPECT_RATIO,
+        ui::Camera::NEAR_PLANE,
+        ui::Camera::FAR_PLANE);
 
     constexpr math::Vect3 SUN_COLOR = {1.0f, 1.0f, 0.33f};
     constexpr math::Vect3 MOON_COLOR = {0.5f, 0.5f, 0.5f};
-    const f32 sunHeight = std::max(0.0f, state.getSunPos().y);
 
-    m_data.m_gameData.skyHue = math::lerp(SUN_COLOR, MOON_COLOR, sunHeight);
+    m_data.m_gameData.sunPos = state.getSunPos().xy;
+    m_data.m_gameData.skyHue = math::lerp(SUN_COLOR, MOON_COLOR, std::max(0.0f, state.getSunPos().y));
 
     m_mvpDataBuffer.copyFrom(&m_data);
 }
