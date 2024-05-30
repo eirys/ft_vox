@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/28 11:02:25 by etran             #+#    #+#             */
-/*   Updated: 2024/05/28 15:01:33 by etran            ###   ########.fr       */
+/*   Updated: 2024/05/30 17:07:34 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,18 +15,9 @@
 #include <vulkan/vulkan.h>
 #include <array>
 
-#include "types.h"
+#include "block_decl.h"
 
 namespace vox::gfx {
-
-enum class BlockFace: u8 {
-    Top = 0,
-    Bottom,
-    Left,
-    Right,
-    Front,
-    Back
-};
 
 class VertexInstance final {
 public:
@@ -41,7 +32,11 @@ public:
     /*                                 METHODS                                */
     /* ====================================================================== */
 
-    VertexInstance(const BlockFace face, const u16 blockId, const u16 chunkId);
+    VertexInstance(
+        const game::BlockFace face,
+        const u8 textureId,
+        const u16 blockId,
+        const u16 chunkId);
 
     VertexInstance() = default;
     ~VertexInstance() = default;

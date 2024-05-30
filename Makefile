@@ -6,7 +6,7 @@
 #    By: etran <etran@student.42.fr>                +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/04/06 03:40:09 by eli               #+#    #+#              #
-#    Updated: 2024/05/28 14:21:01 by etran            ###   ########.fr        #
+#    Updated: 2024/05/30 16:49:07 by etran            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -100,7 +100,7 @@ SRC_FILES	:=	entrypoint.cpp \
 				$(SAMPLER_DIR)/chunk_data_sampler.cpp \
 				$(SAMPLER_DIR)/perlin_noise_sampler.cpp \
 				$(SETS_DIR)/descriptor_set.cpp \
-				$(SETS_DIR)/mvp_set.cpp \
+				$(SETS_DIR)/pfd_set.cpp \
 				$(SETS_DIR)/world_set.cpp \
 				$(DESC_DIR)/descriptor_pool.cpp \
 				$(DESC_DIR)/descriptor_table.cpp \
@@ -123,6 +123,7 @@ SRC_FILES	:=	entrypoint.cpp \
 				$(GAME_DIR)/game_state.cpp \
 				$(WORLD_DIR)/world.cpp \
 				$(WORLD_DIR)/chunk.cpp \
+				$(WORLD_DIR)/block.cpp \
 				$(UI_DIR)/controller.cpp \
 				$(UI_DIR)/window.cpp
 

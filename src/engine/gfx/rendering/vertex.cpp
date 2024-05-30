@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/28 11:03:25 by etran             #+#    #+#             */
-/*   Updated: 2024/05/28 15:03:15 by etran            ###   ########.fr       */
+/*   Updated: 2024/05/30 17:07:38 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,8 +18,13 @@ namespace vox::gfx {
 /*                                   VERTEX                                   */
 /* ========================================================================== */
 
-VertexInstance::VertexInstance(const BlockFace face, const u16 blockId, const u16 chunkId) {
-    m_data = ((u8)face << 26) | (blockId << 14) | chunkId;
+VertexInstance::VertexInstance(
+    const game::BlockFace face,
+    const u8 textureId,
+    const u16 blockId,
+    const u16 chunkId
+) {
+    m_data = ((u8)textureId << 29) | ((u8)face << 26) | (blockId << 14) | chunkId;
 }
 
 VertexInstance::BindingsDescription VertexInstance::getBindingDescriptions() noexcept {

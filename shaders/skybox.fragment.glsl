@@ -4,12 +4,17 @@
 #include "../src/engine/gfx/descriptor/sets/descriptor_decl.h"
 
 layout(location = 0) in vec3 inUVW;
-layout(location = 1) in vec3 inSunDir;
 
 layout(location = 0) out vec4 outFragColor;
 
+layout(set = PFD_SET, binding = 1) uniform GameData {
+    vec2 sunPos;
+    vec3 skyHue;
+} gameData;
+
 #if ENABLE_CUBEMAP
-layout(set = WORLD_SET, binding = 3) uniform samplerCube    SkyboxTex;
+// layout(set = WORLD_SET, binding = 3) uniform samplerCube    SkyboxTex;
+layout(set = WORLD_SET, binding = 2) uniform samplerCube SkyboxTex;
 #endif
 
 const float TINT_INTENSITY = 0.02;
@@ -25,9 +30,14 @@ const vec3 SUNSET_TINT = vec3(0.9, 0.3, 0.0);
 const vec3 NIGHT_TINT = vec3(0.0, 0.0, 0.01);
 const vec3 MOONLIGHT_TINT = vec3(0.2, 0.2, 0.3);
 
-vec3 applySun(in vec3 skyColor, in vec3 skyboxPoint, in float horizonLine) {
+vec3 applySun(
+    in vec3 skyColor,
+    in vec3 skyboxPoint,
+    in vec3 sunDir,
+    in float horizonLine
+) {
     const vec3 sunColor = mix(SUN_COLOR, SUNSET_TINT, horizonLine);
-    const float sunIntensity = clamp(dot(skyboxPoint, inSunDir), 0.0, 1.0);
+    const float sunIntensity = clamp(dot(skyboxPoint, sunDir), 0.0, 1.0);
     const float sun =
         (0.02 * pow(sunIntensity, 8.0)) +   // Outer glow
         (0.5 * pow(sunIntensity, 64.0)) +   // More glow
@@ -40,8 +50,13 @@ vec3 applySun(in vec3 skyColor, in vec3 skyboxPoint, in float horizonLine) {
     return mix(skyColor, sunColor, sunAmount);
 }
 
-vec3 applyMoon(in vec3 skyColor, in vec3 skyboxPoint, in float horizonLine) {
-    const float moonIntensity = clamp(dot(skyboxPoint, -inSunDir), 0.0, 1.0);
+vec3 applyMoon(
+    in vec3 skyColor,
+    in vec3 skyboxPoint,
+    in vec3 sunDir,
+    in float horizonLine
+) {
+    const float moonIntensity = clamp(dot(skyboxPoint, -sunDir), 0.0, 1.0);
     const float moon =
         (0.02 * pow(moonIntensity, 8.0)) +  // Outer glow
         (0.2 * pow(moonIntensity, 128.0)) + // More glow
@@ -72,7 +87,8 @@ vec3 computeSkyColor(in vec3 defaultColor, in float sunHeight, in float horizonL
 
 void main() {
     const vec3 skyboxPoint = normalize(inUVW);
-    const float sunHeight = max(inSunDir.y, 0.0);
+    const vec3 sunDir = vec3(gameData.sunPos, 0.0);
+    const float sunHeight = max(sunDir.y, 0.0);
     const float horizonLine = 1.0 - clamp(skyboxPoint.y + 0.15, 0.0, 1.0); // Offset height to lower horizon
 
     vec3 skyColor;
@@ -88,10 +104,10 @@ void main() {
     skyColor = computeSkyColor(skyColor, sunHeight, horizonLine);
 
     // Add moon
-    skyColor = applyMoon(skyColor, skyboxPoint, horizonLine);
+    skyColor = applyMoon(skyColor, skyboxPoint, sunDir, horizonLine);
 
     // Add sun
-    skyColor = applySun(skyColor, skyboxPoint, horizonLine);
+    skyColor = applySun(skyColor, skyboxPoint, sunDir, horizonLine);
 
     outFragColor = vec4(skyColor, 1.0);
 }

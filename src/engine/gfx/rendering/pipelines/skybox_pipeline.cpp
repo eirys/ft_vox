@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/19 10:48:36 by etran             #+#    #+#             */
-/*   Updated: 2024/05/28 12:05:39 by etran            ###   ########.fr       */
+/*   Updated: 2024/05/30 16:13:26 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,10 +22,10 @@
 namespace vox::gfx {
 
 enum class SkyboxDescriptorSet: u32 {
-    Mvp = 0,
+    Pfd = 0,
     WorldData,
 
-    First = Mvp,
+    First = Pfd,
     Last = WorldData
 };
 
@@ -142,7 +142,7 @@ void SkyboxPipeline::record(
     const ICommandBuffer* cmdBuffer
 ) {
     std::array<VkDescriptorSet, DESCRIPTOR_SET_COUNT> descriptorSets = {
-        descriptorTable[(u32)SkyboxDescriptorSet::Mvp]->getSet(),
+        descriptorTable[(u32)SkyboxDescriptorSet::Pfd]->getSet(),
         descriptorTable[(u32)SkyboxDescriptorSet::WorldData]->getSet()
     };
 

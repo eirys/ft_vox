@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/15 16:08:27 by etran             #+#    #+#             */
-/*   Updated: 2024/05/29 11:13:41 by etran            ###   ########.fr       */
+/*   Updated: 2024/05/30 16:56:12 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,7 +34,8 @@ void Chunk::generate(
             for (u32 x = 0; x < CHUNK_SIZE; ++x) {
                 const u8 terrainHeight = (u8)noise.noiseAt(x + (offsetX * CHUNK_SIZE), z + (offsetZ * CHUNK_SIZE));
                 for (u32 y = 0; y < terrainHeight; ++y)
-                    m_blocks[(y * CHUNK_AREA) + (z * CHUNK_SIZE) + x] = 1;
+                    m_blocks[(y * CHUNK_AREA) + (z * CHUNK_SIZE) + x] = MaterialType::DIRT;
+                m_blocks[(terrainHeight * CHUNK_AREA) + (z * CHUNK_SIZE) + x] = MaterialType::GRASS;
             }
         }
     }
@@ -44,7 +45,7 @@ Block& Chunk::operator[](const u32 index) noexcept {
     return m_blocks[index];
 }
 
-Block Chunk::operator[](const u32 index) const noexcept {
+const Block& Chunk::operator[](const u32 index) const noexcept {
     return m_blocks[index];
 }
 
@@ -52,7 +53,7 @@ Block& Chunk::getBlock(const u32 x, const u32 y, const u32 z) noexcept {
     return m_blocks[(y * CHUNK_AREA) + (z * CHUNK_SIZE) + x];
 }
 
-Block Chunk::getBlock(const u32 x, const u32 y, const u32 z) const noexcept {
+const Block& Chunk::getBlock(const u32 x, const u32 y, const u32 z) const noexcept {
     return m_blocks[(y * CHUNK_AREA) + (z * CHUNK_SIZE) + x];
 }
 

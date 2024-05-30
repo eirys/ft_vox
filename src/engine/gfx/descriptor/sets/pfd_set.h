@@ -1,25 +1,25 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   mvp_set.h                                          :+:      :+:    :+:   */
+/*   pfd_set.h                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/28 23:38:00 by etran             #+#    #+#             */
-/*   Updated: 2024/03/20 19:15:21 by etran            ###   ########.fr       */
+/*   Updated: 2024/05/30 16:13:26 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
 #include "descriptor_set.h"
-#include "mvp_ubo.h"
+#include "pfd_ubo.h"
 #include "buffer.h"
 #include "game_texture_sampler.h"
 
 namespace vox::gfx {
 
-class MVPSet final: public DescriptorSet {
+class PFDSet final: public DescriptorSet {
 public:
     /* ====================================================================== */
     /*                                  ENUMS                                 */
@@ -43,7 +43,7 @@ public:
     /*                                 METHODS                                */
     /* ====================================================================== */
 
-    MVPSet(): super(DescriptorSetIndex::Mvp) {}
+    PFDSet(): super(DescriptorSetIndex::Pfd) {}
 
     void    init(const Device& device, const ICommandBuffer* cmdBuffer) override;
     void    destroy(const Device& device) override;
@@ -63,7 +63,7 @@ private:
     /* ====================================================================== */
 
     Buffer  m_mvpDataBuffer;
-    MvpUbo  m_data;
+    PFDUbo  m_data;
 
 };
 

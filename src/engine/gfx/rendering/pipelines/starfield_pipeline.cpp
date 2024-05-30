@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/27 14:22:51 by etran             #+#    #+#             */
-/*   Updated: 2024/05/28 12:05:39 by etran            ###   ########.fr       */
+/*   Updated: 2024/05/30 16:13:26 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,10 +24,10 @@
 namespace vox::gfx {
 
 enum class StarfieldDescriptorSet: u32 {
-    Mvp = 0,
+    Pfd = 0,
     WorldData,
 
-    First = Mvp,
+    First = Pfd,
     Last = WorldData
 };
 
@@ -151,7 +151,7 @@ void StarfieldPipeline::record(
     const ICommandBuffer* cmdBuffer
 ) {
     std::array<VkDescriptorSet, DESCRIPTOR_SET_COUNT> descriptorSets = {
-        descriptorTable[DescriptorSetIndex::Mvp]->getSet(),
+        descriptorTable[DescriptorSetIndex::Pfd]->getSet(),
         descriptorTable[DescriptorSetIndex::WorldData]->getSet()
     };
 

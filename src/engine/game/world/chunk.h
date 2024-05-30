@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/15 13:29:06 by etran             #+#    #+#             */
-/*   Updated: 2024/05/28 14:22:45 by etran            ###   ########.fr       */
+/*   Updated: 2024/05/30 16:56:44 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,10 +52,10 @@ public:
         const u32 offsetY,
         const u32 offsetZ) noexcept;
 
-    Block&  operator[](const u32 index) noexcept;
-    Block   operator[](const u32 index) const noexcept;
-    Block&  getBlock(const u32 x, const u32 y, const u32 z) noexcept;
-    Block   getBlock(const u32 x, const u32 y, const u32 z) const noexcept;
+    Block&          operator[](const u32 index) noexcept;
+    const Block&    operator[](const u32 index) const noexcept;
+    Block&          getBlock(const u32 x, const u32 y, const u32 z) noexcept;
+    const Block&    getBlock(const u32 x, const u32 y, const u32 z) const noexcept;
 
     const BlockArray&   getBlocks() const;
     u16                 getId() const;

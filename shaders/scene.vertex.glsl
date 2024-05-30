@@ -7,19 +7,13 @@ layout(location = 0) in uint inData;
 
 layout(location = 0) out vec3 outUVW;
 layout(location = 1) out vec3 outNormal;
-layout(location = 2) out vec3 outSunDir;
-layout(location = 4) out vec3 tmp;
 
-layout(set = MVP_SET, binding = 0) uniform ViewProj {
+layout(set = PFD_SET, binding = 0) uniform ViewProj {
     mat4 view;
     mat4 proj;
 } viewProj;
 
-layout(set = MVP_SET, binding = 1) uniform GameData {
-    vec2 sunPos;
-} gameData;
-
-layout(set = WORLD_SET, binding = 0) uniform usampler2DArray ChunkData;
+// layout(set = WORLD_SET, binding = 0) uniform usampler2DArray ChunkData;
 
 #define CORNER_A vec3(1.0, 0.0, 1.0)
 #define CORNER_B vec3(1.0, 0.0, 0.0)
@@ -55,18 +49,18 @@ const vec3 NORMALS[6] = {
     {  0.0,  0.0, -1.0 },
 };
 
-const uint TEXTURE_INDEX[6] = { 2, 0, 1, 1, 1, 1 };
-
 struct InstanceData {
     vec3 chunkPos;  // 14 bits
-    vec3 blockPos;  // 8 bits
+    vec3 blockPos;  // 12 bits
     uint face;    // 3 bits
+    uint textureIndex; // 3 bits
 };
 
 InstanceData unpackData(in uint inputData) {
     InstanceData instanceData;
 
-    uint face = (inputData >> 26);
+    uint textureIndex = (inputData >> 29) & 0x7;
+    uint face = (inputData >> 26) & 0x7;
     uint blockId = (inputData >> 14) & 0xFFF;
     uint chunkId = inputData & 0x3FFF;
 
@@ -84,6 +78,8 @@ InstanceData unpackData(in uint inputData) {
 
     instanceData.face = face;
 
+    instanceData.textureIndex = textureIndex;
+
     return instanceData;
 }
 
@@ -95,10 +91,8 @@ void main() {
         instanceData.chunkPos +
         instanceData.blockPos;
 
-    outUVW = vec3(UVS[gl_VertexIndex], TEXTURE_INDEX[instanceData.face]);
+    outUVW = vec3(UVS[gl_VertexIndex], instanceData.textureIndex);
     outNormal = NORMALS[instanceData.face];
-    outSunDir = vec3(gameData.sunPos, 0.0);
-    tmp = instanceData.blockPos;
 
     gl_Position = viewProj.proj * viewProj.view * vec4(worldPos, 1.0);
 }

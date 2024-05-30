@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:16:07 by etran             #+#    #+#             */
-/*   Updated: 2024/03/23 22:46:06 by etran            ###   ########.fr       */
+/*   Updated: 2024/05/30 15:50:47 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -462,6 +462,17 @@ inline Vect3	fma(const Vect3& a, float b, const Vect3& c) noexcept {
 		std::fma(a.y, b, c.y),
 		std::fma(a.z, b, c.z)
 	);
+}
+
+/**
+ * @brief Special lerp for Vect3 and float: a * (1 - t) + b * t.
+ *
+ * @param a		The first vector.
+ * @param b		The second vector.
+ * @param t		The interpolation value.
+*/
+inline Vect3    lerp(const Vect3& a, const Vect3& b, const float t) noexcept {
+    return fma(b - a, t, a);
 }
 
 /* ========================================================================== */
