@@ -6,22 +6,17 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/30 19:14:49 by etran             #+#    #+#             */
-/*   Updated: 2024/05/30 22:22:16 by etran            ###   ########.fr       */
+/*   Updated: 2024/05/31 18:33:02 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
 #include "vector.h"
-#include "bounding_frustum.h"
 
 namespace vox::gfx {
 
-enum class IntersectionType {
-    Outside,
-    Inside,
-    Intersecting
-};
+class BoundingFrustum;
 
 class BoundingBox final {
 public:
@@ -29,9 +24,7 @@ public:
     /*                                 METHODS                                */
     /* ====================================================================== */
 
-    BoundingBox(const math::Vect3& center, const math::Vect3& halfExtent):
-        m_center(center),
-        m_halfExtent(halfExtent) {}
+    BoundingBox(const math::Vect3& center, const math::Vect3& halfExtent);
 
     BoundingBox() = default;
     ~BoundingBox() = default;
@@ -42,22 +35,7 @@ public:
 
     /* ====================================================================== */
 
-    IntersectionType    checkIntersection(const BoundingFrustum& frustum) const {
-        bool isIntersecting = false;
-
-        for (const math::Vect4& plane: frustum.m_planes) {
-            IntersectionType planeIntersection = _checkPlaneIntersection(plane);
-
-            if (planeIntersection == IntersectionType::Outside)
-                return IntersectionType::Outside;
-            else if (planeIntersection == IntersectionType::Intersecting)
-                isIntersecting = true;
-        }
-
-        if (isIntersecting)
-            return IntersectionType::Intersecting;
-        return IntersectionType::Inside;
-    }
+    bool                isVisible(const BoundingFrustum& frustum) const;
 
 private:
     /* ====================================================================== */
@@ -71,17 +49,7 @@ private:
     /*                                 METHODS                                */
     /* ====================================================================== */
 
-    IntersectionType _checkPlaneIntersection(const math::Vect4& plane) const {
-        // Length of diag projected on plane normal
-        const float extent = math::dot(m_halfExtent, abs(plane.xyz));
-        const float signedDistance = math::dot(m_center, plane.xyz) + plane.w;
-
-        if (signedDistance + extent < 0.0f)
-            return IntersectionType::Outside;
-        else if (signedDistance - extent > 0.0f)
-            return IntersectionType::Inside;
-        return IntersectionType::Intersecting;
-    }
+    bool    _isInsidePlane(const math::Vect4& plane) const;
 
 }; // class BoundingBox
 

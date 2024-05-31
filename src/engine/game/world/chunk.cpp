@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/15 16:08:27 by etran             #+#    #+#             */
-/*   Updated: 2024/05/30 16:56:12 by etran            ###   ########.fr       */
+/*   Updated: 2024/05/31 16:52:04 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 #include "perlin_noise.h"
 
 #include "debug.h"
+
 namespace game {
 
 /* ========================================================================== */
@@ -26,6 +27,11 @@ void Chunk::generate(
     const u32 offsetY,
     const u32 offsetZ
 ) noexcept {
+    constexpr math::Vect3 HALF_CHUNK = math::Vect3(CHUNK_SIZE / 2.0f);
+
+    m_boundingBox = vox::gfx::BoundingBox(
+        math::Vect3(offsetX, offsetY, offsetZ) * CHUNK_SIZE + HALF_CHUNK,
+        HALF_CHUNK);
     m_position = { offsetX, offsetY, offsetZ };
 
     // Only generate at height 0
@@ -72,6 +78,10 @@ u16 Chunk::getId() const {
     static_assert((sizeOfX + sizeOfY + sizeOfZ) < 16, "Update id size.");
 
     return (m_position.m_x << (sizeOfZ + sizeOfY)) | (m_position.m_y << sizeOfX) | m_position.m_z;
+}
+
+const vox::gfx::BoundingBox& Chunk::getBoundingBox() const noexcept {
+    return m_boundingBox;
 }
 
 /**

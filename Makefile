@@ -6,7 +6,7 @@
 #    By: etran <etran@student.42.fr>                +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/04/06 03:40:09 by eli               #+#    #+#              #
-#    Updated: 2024/05/30 19:14:28 by etran            ###   ########.fr        #
+#    Updated: 2024/05/31 15:07:36 by etran            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -109,6 +109,7 @@ SRC_FILES	:=	entrypoint.cpp \
 				$(RENDER_DIR)/pipeline.cpp \
 				$(RENDER_DIR)/render_pass.cpp \
 				$(GEO_DIR)/vertex.cpp \
+				$(GEO_DIR)/frustum_culling.cpp \
 				$(GEO_DIR)/vertex_buffer.cpp \
 				$(PASSES_DIR)/main_render_pass.cpp \
 				$(PIP_DIR)/scene_pipeline.cpp \

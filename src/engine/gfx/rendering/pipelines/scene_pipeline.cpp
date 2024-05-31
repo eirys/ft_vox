@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/07 09:48:27 by etran             #+#    #+#             */
-/*   Updated: 2024/05/30 18:47:20 by etran            ###   ########.fr       */
+/*   Updated: 2024/05/31 15:28:01 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -213,12 +213,18 @@ void ScenePipeline::record(
     vkCmdDraw(cmdBuffer->getBuffer(), 4, _getCurrentBuffer().getInstancesCount(), 0, 0);
 }
 
-void ScenePipeline::buildVertexBuffer(
+void ScenePipeline::initVertexBuffer(
     const Device& device,
-    const ICommandBuffer* cmdBuffer,
     const game::GameState& gameState
 ) {
-    _getCurrentBuffer().init(device, cmdBuffer, gameState);
+    _getCurrentBuffer().init(device, gameState);
+}
+
+void ScenePipeline::updateVertexBuffer(
+    const Device& device,
+    const game::GameState& gameState
+) {
+    _getCurrentBuffer().update(device, gameState);
 }
 
 /* ========================================================================== */

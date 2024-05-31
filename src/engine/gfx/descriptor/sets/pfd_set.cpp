@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/11 16:12:13 by etran             #+#    #+#             */
-/*   Updated: 2024/05/30 22:29:47 by etran            ###   ########.fr       */
+/*   Updated: 2024/05/31 02:31:58 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,7 +24,8 @@ namespace vox::gfx {
 
 void PFDSet::init(const Device& device, const ICommandBuffer* cmdBuffer) {
     BufferMetadata bufferData{};
-    bufferData.m_size = sizeof(PFDUbo);
+    bufferData.m_format = sizeof(PFDUbo);
+    bufferData.m_size = 1;
     bufferData.m_usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
     bufferData.m_properties = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
     m_mvpDataBuffer.init(device, std::move(bufferData));

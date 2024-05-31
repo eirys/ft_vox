@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/15 13:29:06 by etran             #+#    #+#             */
-/*   Updated: 2024/05/30 16:56:44 by etran            ###   ########.fr       */
+/*   Updated: 2024/05/31 15:01:25 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,7 @@
 #include "types.h"
 #include "game_decl.h"
 #include "block.h"
+#include "bounding_box.h"
 
 namespace proc {
 class PerlinNoise;
@@ -60,6 +61,8 @@ public:
     const BlockArray&   getBlocks() const;
     u16                 getId() const;
 
+    const vox::gfx::BoundingBox&  getBoundingBox() const noexcept;
+
     /* ====================================================================== */
 
     void                cache() const;
@@ -69,13 +72,14 @@ private:
     /*                                  DATA                                  */
     /* ====================================================================== */
 
-    BlockArray      m_blocks = {};
+    BlockArray              m_blocks = {};
+    vox::gfx::BoundingBox   m_boundingBox;
     struct {
         u32 m_x = 0;
         u32 m_y = 0;
         u32 m_z = 0;
-    }               m_position;
-    bool            m_updated = false;
+    }                       m_position;
+    bool                    m_updated = false;
 
 }; // class Chunk
 

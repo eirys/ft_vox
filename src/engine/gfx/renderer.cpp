@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/23 09:29:35 by etran             #+#    #+#             */
-/*   Updated: 2024/05/28 16:12:34 by etran            ###   ########.fr       */
+/*   Updated: 2024/05/31 15:30:12 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,7 +45,9 @@ void Renderer::init(ui::Window& window, const game::GameState& game) {
     m_descriptorPool.init(m_device, m_descriptorTable);
     m_descriptorTable.fill(m_device);
 
-    ((ScenePipeline*)m_pipelines[(u32)PipelineIndex::ScenePipeline])->buildVertexBuffer(m_device, transferBuffer, game);
+    ((ScenePipeline*)m_pipelines[(u32)PipelineIndex::ScenePipeline])->initVertexBuffer(m_device, game);
+    // ((ScenePipeline*)m_pipelines[(u32)PipelineIndex::ScenePipeline])->updateVertexBuffer(m_device, game);
+
     LDEBUG("Renderer initialized.");
 }
 
@@ -74,6 +76,7 @@ void Renderer::waitIdle() const {
 }
 
 void Renderer::render(const game::GameState& game) {
+    ((ScenePipeline*)m_pipelines[(u32)PipelineIndex::ScenePipeline])->updateVertexBuffer(m_device, game);
     m_descriptorTable.update(game);
 
     // Retrieve swap chain image ------

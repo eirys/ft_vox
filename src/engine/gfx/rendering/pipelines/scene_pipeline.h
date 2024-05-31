@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/29 23:49:38 by etran             #+#    #+#             */
-/*   Updated: 2024/05/30 18:41:33 by etran            ###   ########.fr       */
+/*   Updated: 2024/05/31 12:34:20 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -71,9 +71,11 @@ public:
         const DescriptorTable& descriptorTable,
         const ICommandBuffer* cmdBuffer) override;
 
-    void    buildVertexBuffer(
+    void    initVertexBuffer(
         const Device& device,
-        const ICommandBuffer* cmdBuffer,
+        const game::GameState& gameState);
+    void    updateVertexBuffer(
+        const Device& device,
         const game::GameState& gameState);
 
 private:

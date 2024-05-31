@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/27 17:40:32 by etran             #+#    #+#             */
-/*   Updated: 2024/05/29 12:37:30 by etran            ###   ########.fr       */
+/*   Updated: 2024/05/31 14:54:17 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,7 +33,7 @@ void Buffer::init(const Device& device, BufferMetadata&& metadata) {
 
     VkBufferCreateInfo bufferInfo = {};
     bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-    bufferInfo.size = m_metadata.m_size;
+    bufferInfo.size = m_metadata.m_size * m_metadata.m_format;
     bufferInfo.usage = m_metadata.m_usage;
     bufferInfo.sharingMode = m_metadata.m_sharingMode;
 
@@ -70,7 +70,7 @@ void Buffer::destroy(const Device& device) {
  * @brief Maps buffer memory to CPU accessible memory.
  */
 void Buffer::map(const Device& device) {
-    if (vkMapMemory(device.getDevice(), m_memory, 0, m_metadata.m_size, 0, &m_data) != VK_SUCCESS) {
+    if (vkMapMemory(device.getDevice(), m_memory, 0, m_metadata.m_size * m_metadata.m_format, 0, &m_data) != VK_SUCCESS) {
         throw std::runtime_error("failed to map buffer memory");
     }
 }
@@ -91,7 +91,7 @@ void Buffer::copyTo(void* dst, const u32 size) {
 }
 
 void Buffer::copyTo(void* dst) {
-    memcpy(dst, m_data, m_metadata.m_size);
+    memcpy(dst, m_data, m_metadata.m_size * m_metadata.m_format);
 }
 
 /**
@@ -104,7 +104,7 @@ void Buffer::copyFrom(const void* src, const u32 size, const u32 offset) {
 }
 
 void Buffer::copyFrom(const void* src) {
-    memcpy(m_data, src, m_metadata.m_size);
+    memcpy(m_data, src, m_metadata.m_size * m_metadata.m_format);
 
     LDEBUG("Buffer " << m_buffer << " copied from CPU.");
 }
@@ -121,7 +121,7 @@ void Buffer::copyBuffer(
     VkBufferCopy copyRegion = {};
     copyRegion.srcOffset = srcOffset;
     copyRegion.dstOffset = dstOffset;
-    copyRegion.size = m_metadata.m_size;
+    copyRegion.size = m_metadata.m_size * m_metadata.m_format;
 
     vkCmdCopyBuffer(
         cmdBuffer->getBuffer(),
@@ -134,6 +134,7 @@ void Buffer::copyBuffer(
 
 Buffer Buffer::createStagingBuffer(const Device& device) const {
     BufferMetadata stagingMetadata{};
+    stagingMetadata.m_format = m_metadata.m_format;
     stagingMetadata.m_size = m_metadata.m_size;
     stagingMetadata.m_usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
     stagingMetadata.m_properties = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;

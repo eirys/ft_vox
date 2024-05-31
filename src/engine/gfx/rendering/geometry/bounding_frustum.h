@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/30 19:39:12 by etran             #+#    #+#             */
-/*   Updated: 2024/05/30 22:26:06 by etran            ###   ########.fr       */
+/*   Updated: 2024/05/31 15:08:39 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,10 @@
 
 #include "types.h"
 #include "vector.h"
+
+namespace ui {
+struct Camera;
+} // namespace ui
 
 namespace vox::gfx {
 
@@ -44,30 +48,7 @@ struct BoundingFrustum final {
     /*                                 METHODS                                */
     /* ====================================================================== */
 
-    BoundingFrustum(const ui::Camera& cam) {
-        const float halfHeight = ui::Camera::FAR_PLANE * tanf(cam.m_fov * .5f);
-        const float halfWidth = halfHeight * ui::Camera::ASPECT_RATIO;
-        const math::Vect3 nearFront = ui::Camera::NEAR_PLANE * cam.m_front;
-        const math::Vect3 farFront = ui::Camera::FAR_PLANE * cam.m_front;
-
-        m_near.xyz = cam.m_front;
-        m_near.w = -math::dot(m_near.xyz, cam.m_position + nearFront);
-
-        m_far.xyz = -cam.m_front;
-        m_far.w = -math::dot(m_far.xyz, cam.m_position + farFront);
-
-        m_right.xyz = math::normalize(math::cross(cam.m_up, farFront + (cam.m_right * halfWidth)));
-        m_right.w = -math::dot(m_right.xyz, cam.m_position);
-
-        m_left.xyz = math::normalize(math::cross(farFront - (cam.m_right * halfWidth), cam.m_up));
-        m_left.w = -math::dot(m_left.xyz, cam.m_position);
-
-        m_top.xyz = math::normalize(math::cross(cam.m_right, farFront - (cam.m_up * halfHeight)));
-        m_top.w = -math::dot(m_top.xyz, cam.m_position);
-
-        m_bottom.xyz = math::normalize(math::cross(farFront + (cam.m_up * halfHeight), cam.m_right));
-        m_bottom.w = -math::dot(m_bottom.xyz, cam.m_position);
-    }
+    BoundingFrustum(const ui::Camera& cam);
 
     BoundingFrustum(): m_planes() {}
 

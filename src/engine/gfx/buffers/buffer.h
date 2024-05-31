@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/27 17:14:27 by etran             #+#    #+#             */
-/*   Updated: 2024/05/29 12:36:48 by etran            ###   ########.fr       */
+/*   Updated: 2024/05/31 02:29:42 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,6 +26,7 @@ class ICommandBuffer;
 /* ========================================================================== */
 
 struct BufferMetadata final {
+    u32                     m_format;
     VkDeviceSize            m_size;
     VkBufferUsageFlags      m_usage;
     VkMemoryPropertyFlags   m_properties;
