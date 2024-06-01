@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:13:52 by etran             #+#    #+#             */
-/*   Updated: 2024/05/18 14:31:11 by etran            ###   ########.fr       */
+/*   Updated: 2024/05/31 18:40:55 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -65,7 +65,7 @@ struct NoiseMapInfo {
     float					frequency_0;
     float					frequency_mult;
     float					amplitude_mult;
-    float                   scale = 16;
+    float                   scale = 16.0f;
     float                   shift = 0;
 };
 

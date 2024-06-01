@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/07 09:48:27 by etran             #+#    #+#             */
-/*   Updated: 2024/05/31 15:28:01 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/02 01:24:52 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -213,11 +213,14 @@ void ScenePipeline::record(
     vkCmdDraw(cmdBuffer->getBuffer(), 4, _getCurrentBuffer().getInstancesCount(), 0, 0);
 }
 
+#if ENABLE_FRUSTUM_CULLING
+
 void ScenePipeline::initVertexBuffer(
     const Device& device,
     const game::GameState& gameState
 ) {
-    _getCurrentBuffer().init(device, gameState);
+    for (u32 i = 0; i < VERTEX_BUFFER_COUNT; ++i)
+        m_vertexBuffers[i].init(device, gameState);
 }
 
 void ScenePipeline::updateVertexBuffer(
@@ -225,7 +228,21 @@ void ScenePipeline::updateVertexBuffer(
     const game::GameState& gameState
 ) {
     _getCurrentBuffer().update(device, gameState);
+    _switchBuffer();
 }
+
+#else
+
+void ScenePipeline::initVertexBuffer(
+    const Device& device,
+    const ICommandBuffer* cmdBuffer,
+    const game::GameState& gameState
+) {
+    for (u32 i = 0; i < VERTEX_BUFFER_COUNT; ++i)
+        m_vertexBuffers[i].init(device, cmdBuffer, gameState);
+}
+
+#endif
 
 /* ========================================================================== */
 /*                                   PRIVATE                                  */

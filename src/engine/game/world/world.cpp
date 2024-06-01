@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/15 15:51:38 by etran             #+#    #+#             */
-/*   Updated: 2024/05/29 11:12:25 by etran            ###   ########.fr       */
+/*   Updated: 2024/05/31 18:41:00 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,6 +30,8 @@ void World::init(const u32 seed) {
     info.frequency_0 = 0.03f;
     info.frequency_mult = 2.0f;
     info.amplitude_mult = 0.5f;
+
+    info.scale = CHUNK_SIZE - 1.0f;
 
     proc::PerlinNoise perlin(info);
 

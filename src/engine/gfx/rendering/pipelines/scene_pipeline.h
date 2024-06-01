@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/29 23:49:38 by etran             #+#    #+#             */
-/*   Updated: 2024/05/31 12:34:20 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/02 01:24:46 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,9 +14,7 @@
 
 #include "pipeline.h"
 #include "vertex_buffer.h"
-
-// TODO move
-#define ENABLE_BLOCK_REMOVAL 0
+#include "game_decl.h"
 
 namespace game {
 class GameState;
@@ -71,12 +69,19 @@ public:
         const DescriptorTable& descriptorTable,
         const ICommandBuffer* cmdBuffer) override;
 
+#if ENABLE_FRUSTUM_CULLING
     void    initVertexBuffer(
         const Device& device,
         const game::GameState& gameState);
     void    updateVertexBuffer(
         const Device& device,
         const game::GameState& gameState);
+#else
+    void    initVertexBuffer(
+        const Device& device,
+        const ICommandBuffer* cmdBuffer,
+        const game::GameState& gameState);
+#endif
 
 private:
     /* ====================================================================== */
@@ -84,12 +89,7 @@ private:
     /* ====================================================================== */
 
     static constexpr u32    SHADER_STAGE_COUNT = enumSize<ShaderStage>();
-
-#if ENABLE_BLOCK_REMOVAL
-    static constexpr u32    VERTEX_BUFFER_COUNT = 2;
-#else
     static constexpr u32    VERTEX_BUFFER_COUNT = 1;
-#endif
 
     /* ====================================================================== */
     /*                                  DATA                                  */
