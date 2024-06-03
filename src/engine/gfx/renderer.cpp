@@ -6,17 +6,20 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/23 09:29:35 by etran             #+#    #+#             */
-/*   Updated: 2024/06/03 11:24:54 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/03 20:02:53 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "renderer.h"
 #include "main_render_pass.h"
+#include "shadow_render_pass.h"
 #include "icommand_buffer.h"
 #include "scene_pipeline.h"
 #include "skybox_pipeline.h"
 #include "starfield_pipeline.h"
+#include "shadow_pipeline.h"
 #include "vertex_buffer.h"
+#include "pfd_set.h"
 #include "vox_decl.h"
 
 #include "debug.h"
@@ -102,9 +105,6 @@ void Renderer::render(const game::GameState& game) {
     const ICommandBuffer* drawBuffer = m_commandBuffers[(u32)CommandBufferIndex::Draw];
     const RenderPass* mainRenderPass = m_renderPasses[(u32)RenderPassIndex::Main];
 
-    RecordInfo  recordInfo{};
-    recordInfo.m_targetIndex = m_swapChain.getImageIndex();
-
     drawBuffer->reset();
     drawBuffer->startRecording();
 
@@ -120,7 +120,17 @@ void Renderer::render(const game::GameState& game) {
     scissor.extent = { mainRenderPass->getWidth(), mainRenderPass->getHeight() };
     vkCmdSetScissor(drawBuffer->getBuffer(), 0, 1, &scissor);
 
-    mainRenderPass->begin(drawBuffer, recordInfo);
+#if ENABLE_SHADOW_MAPPING
+    const RenderPass* shadowRenderPass = m_renderPasses[(u32)RenderPassIndex::Shadow];
+
+    shadowRenderPass->begin(drawBuffer, {});
+    m_pipelines[(u32)PipelineIndex::ShadowPipeline]->record(m_pipelineLayout, m_descriptorTable, drawBuffer);
+    shadowRenderPass->end(drawBuffer);
+#endif
+
+    RecordInfo  mainRecordInfo{};
+    mainRecordInfo.m_targetIndex = m_swapChain.getImageIndex();
+    mainRenderPass->begin(drawBuffer, mainRecordInfo);
 #if ENABLE_SKYBOX
     m_pipelines[(u32)PipelineIndex::SkyboxPipeline]->record(m_pipelineLayout, m_descriptorTable, drawBuffer);
     m_pipelines[(u32)PipelineIndex::StarfieldPipeline]->record(m_pipelineLayout, m_descriptorTable, drawBuffer);
@@ -153,9 +163,6 @@ void Renderer::_createCommandBuffers() {
     // Draw buffers
     for (u32 i = 0; i < CMD_BUFFER_COUNT; ++i) m_commandBuffers[i] = m_commandPool.createCommandBuffer(m_device, CommandBufferType::DRAW);
 
-    // m_commandBuffers[(u32)CommandBufferIndex::Draw] = m_commandPool.createCommandBuffer(m_device, CommandBufferType::DRAW);
-    // m_commandBuffers[(u32)CommandBufferIndex::Transfer] = m_commandPool.createCommandBuffer(m_device, CommandBufferType::DRAW);
-
     LDEBUG("Command buffers created.");
 }
 
@@ -175,22 +182,41 @@ void Renderer::_createRenderPasses() {
     mainPassInfo.m_targetWidth = m_swapChain.getImageExtent().width;
     mainPassInfo.m_targetHeight = m_swapChain.getImageExtent().height;
     m_renderPasses[(u32)RenderPassIndex::Main]->init(m_device, &mainPassInfo);
+
+#if ENABLE_SHADOW_MAPPING
+    m_renderPasses[(u32)RenderPassIndex::Shadow] = new ShadowRenderPass();
+
+    const ImageBuffer& shadowmap = ((const PFDSet*)m_descriptorTable[DescriptorSetIndex::Pfd])->getShadowmap();
+
+    ShadowRenderPassInfo shadowPassInfo(shadowmap);
+    shadowPassInfo.m_formats.resize(ShadowRenderPass::RESOURCE_COUNT, shadowmap.getMetaData().m_format);
+    shadowPassInfo.m_samples.resize(ShadowRenderPass::RESOURCE_COUNT, shadowmap.getMetaData().m_sampleCount);
+    shadowPassInfo.m_renderPassWidth = shadowmap.getMetaData().m_width;
+    shadowPassInfo.m_renderPassHeight = shadowmap.getMetaData().m_height;
+    shadowPassInfo.m_targetCount = 1;
+    shadowPassInfo.m_targetWidth = shadowmap.getMetaData().m_width;
+    shadowPassInfo.m_targetHeight = shadowmap.getMetaData().m_height;
+    m_renderPasses[(u32)RenderPassIndex::Shadow]->init(m_device, &shadowPassInfo);
+#endif
 }
 
 void Renderer::_createPipelines() {
     m_pipelines[(u32)PipelineIndex::ScenePipeline] = new ScenePipeline();
 
-#if ENABLE_SKYBOX
-    m_pipelines[(u32)PipelineIndex::SkyboxPipeline] = new SkyboxPipeline();
-    m_pipelines[(u32)PipelineIndex::StarfieldPipeline] = new StarfieldPipeline();
-#endif
-
-    auto mainRenderPass = m_renderPasses[(u32)RenderPassIndex::Main]->getRenderPass();
+    VkRenderPass mainRenderPass = m_renderPasses[(u32)RenderPassIndex::Main]->getRenderPass();
     m_pipelines[(u32)PipelineIndex::ScenePipeline]->init(m_device, mainRenderPass, m_pipelineLayout);
 
 #if ENABLE_SKYBOX
+    m_pipelines[(u32)PipelineIndex::SkyboxPipeline] = new SkyboxPipeline();
+    m_pipelines[(u32)PipelineIndex::StarfieldPipeline] = new StarfieldPipeline();
     m_pipelines[(u32)PipelineIndex::SkyboxPipeline]->init(m_device, mainRenderPass, m_pipelineLayout);
     m_pipelines[(u32)PipelineIndex::StarfieldPipeline]->init(m_device, mainRenderPass, m_pipelineLayout);
+#endif
+#if ENABLE_SHADOW_MAPPING
+    m_pipelines[(u32)PipelineIndex::ShadowPipeline] = new ShadowPipeline();
+
+    VkRenderPass shadowRenderPass = m_renderPasses[(u32)RenderPassIndex::Shadow]->getRenderPass();
+    m_pipelines[(u32)PipelineIndex::ShadowPipeline]->init(m_device, shadowRenderPass, m_pipelineLayout);
 #endif
 
     LDEBUG("Pipelines created.");

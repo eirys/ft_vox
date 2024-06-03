@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/20 15:27:49 by etran             #+#    #+#             */
-/*   Updated: 2024/04/03 00:23:08 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/03 15:59:02 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,10 +27,7 @@ static constexpr u32 TEXTURE_COUNT = 1;
 /*                                   PUBLIC                                   */
 /* ========================================================================== */
 
-void SkyboxSampler::init(
-    const Device& device,
-    const ICommandBuffer* cmdBuffer
-) {
+void SkyboxSampler::init(const Device& device) {
     ImageMetaData textureData{};
     textureData.m_format = VK_FORMAT_R8G8B8A8_SRGB;
     textureData.m_width = TEXTURE_SIZE;

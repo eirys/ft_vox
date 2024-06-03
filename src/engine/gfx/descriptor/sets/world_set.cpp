@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/15 17:03:33 by etran             #+#    #+#             */
-/*   Updated: 2024/06/03 09:57:19 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/03 16:33:20 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,16 +30,14 @@ void WorldSet::init(const Device& device, const ICommandBuffer* cmdBuffer) {
     // m_textures[(u32)Texture::ChunkData] = new ChunkDataSampler();
     m_textures[(u32)Texture::GameTexture] = new GameTextureSampler();
     m_textures[(u32)Texture::PerlinNoise] = new PerlinNoiseSampler();
-
 #if ENABLE_CUBEMAP
     m_textures[(u32)Texture::Cubemap] = new SkyboxSampler();
 #endif
 
-    for (u32 i = 0; i < TEXTURE_COUNT; ++i) m_textures[i]->init(device, cmdBuffer);
+    for (u32 i = 0; i < TEXTURE_COUNT; ++i) m_textures[i]->init(device);
 
     m_textures[(u32)Texture::GameTexture]->fill(device, cmdBuffer);
     m_textures[(u32)Texture::PerlinNoise]->fill(device, cmdBuffer);
-
 #if ENABLE_CUBEMAP
     m_textures[(u32)Texture::Cubemap]->fill(device, cmdBuffer);
 #endif
@@ -51,7 +49,6 @@ void WorldSet::init(const Device& device, const ICommandBuffer* cmdBuffer) {
 #if ENABLE_CUBEMAP
         _createLayoutBinding(DescriptorTypeIndex::CombinedImageSampler, ShaderVisibility::FS, (u32)BindingIndex::Cubemap),
 #endif
-
     };
 
     VkDescriptorSetLayoutCreateInfo layoutInfo{};

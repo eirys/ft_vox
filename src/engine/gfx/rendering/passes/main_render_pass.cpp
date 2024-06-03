@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/07 10:15:26 by etran             #+#    #+#             */
-/*   Updated: 2024/03/22 23:08:04 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/03 15:46:27 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,7 +31,7 @@ void MainRenderPass::init(const Device& device, const RenderPassInfo* info) {
     _createResources(device, info);
     _createTarget(device, info);
 
-    LDEBUG("Scene render pass initialized");
+    LDEBUG("Scene render pass initialized:" << m_vkRenderPass);
 }
 
 void MainRenderPass::destroy(const Device& device) {

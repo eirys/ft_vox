@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/19 23:18:11 by etran             #+#    #+#             */
-/*   Updated: 2024/03/30 23:32:55 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/03 19:10:08 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -288,14 +288,14 @@ Mat4	rotate(const Mat4& mat, float angle, const Vect3& axis) noexcept {
 /**
  * @brief Produces lookAt matrix
  *
- * @param eye:		position of the camera
+ * @param eyePos:		position of the camera
  * @param center:	position of the object to look at
  * @param world_up:	world up vector, usually (0, 0, 1). Used to determine
  * 					orientation of the camera. Should not be parallel
  * 					to the vector from eye to center.
 */
-Mat4	lookAt(const Vect3& eye, const Vect3& center, const Vect3& world_up) noexcept {
-	const Vect3	forward = math::normalize(center - eye);
+Mat4	lookAt(const Vect3& eyePos, const Vect3& center, const Vect3& world_up) noexcept {
+	const Vect3	forward = math::normalize(center - eyePos);
 	const Vect3	right = math::normalize(math::cross(forward, world_up));
 	const Vect3	up = math::cross(right, forward);
 
@@ -307,12 +307,12 @@ Mat4	lookAt(const Vect3& eye, const Vect3& center, const Vect3& world_up) noexce
 		// Col 3
 		right.z, up.z, -forward.z, 0,
 		// Col 4
-		math::dot(-right, eye), math::dot(-up, eye), math::dot(forward, eye), 1
+		math::dot(-right, eyePos), math::dot(-up, eyePos), math::dot(forward, eyePos), 1
 	};
 }
 
 Mat4	lookAt(
-	const Vect3& eye,
+	const Vect3& eyePos,
 	const Vect3& cam_front,
 	const Vect3& cam_up,
 	const Vect3& cam_right
@@ -325,30 +325,7 @@ Mat4	lookAt(
 		// Col 3
 		cam_right.z, cam_up.z, -cam_front.z, 0,
 		// Col 4
-		math::dot(-cam_right, eye), math::dot(-cam_up, eye), math::dot(cam_front, eye), 1
-	};
-}
-
-/**
- * @brief Produces lookAt matrix, but instead of center, takes direction
- *
- * @param eye:		position of the camera
- * @param dir:		direction of the camera. It must be normalized.
- * @param world_up:	up vector, usually (0, 0, 1).
-*/
-Mat4	lookAtDir(const Vect3& eye, const Vect3& dir, const Vect3& world_up) noexcept {
-	const Vect3 right = math::normalize(math::cross(dir, world_up));
-	const Vect3 up = math::cross(right, dir);
-
-	return Mat4 {
-		// Col 1
-		right.x, up.x, -dir.x, 0,
-		// Col 2
-		right.y, up.y, -dir.y, 0,
-		// Col 3
-		right.z, up.z, -dir.z, 0,
-		// Col 4
-		math::dot(-right, eye), math::dot(-up, eye), math::dot(dir, eye), 1
+		math::dot(-cam_right, eyePos), math::dot(-cam_up, eyePos), math::dot(cam_front, eyePos), 1
 	};
 }
 

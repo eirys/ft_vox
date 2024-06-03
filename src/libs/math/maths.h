@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/21 11:25:05 by etran             #+#    #+#             */
-/*   Updated: 2024/05/30 15:34:25 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/03 19:27:42 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,8 +20,7 @@ namespace math {
 f32     radians(f32 degrees) noexcept;
 f32     dregrees(f32 radians) noexcept;
 f32     smoothen(const f32 x) noexcept;
-f32     generateRandomf32();
-void    generateVibrantColor(f32& red, f32& green, f32& blue);
+f32     generateRandomFloat();
 
 template <typename T>
 f32           lerp(T x, T y, f32 t) noexcept {

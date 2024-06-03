@@ -6,7 +6,7 @@
 #    By: etran <etran@student.42.fr>                +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/04/06 03:40:09 by eli               #+#    #+#              #
-#    Updated: 2024/06/03 10:07:02 by etran            ###   ########.fr        #
+#    Updated: 2024/06/03 17:36:34 by etran            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -101,6 +101,7 @@ SRC_FILES	:=	entrypoint.cpp \
 				$(SAMPLER_DIR)/skybox_sampler.cpp \
 				$(SAMPLER_DIR)/chunk_data_sampler.cpp \
 				$(SAMPLER_DIR)/perlin_noise_sampler.cpp \
+				$(SAMPLER_DIR)/shadowmap_sampler.cpp \
 				$(SETS_DIR)/descriptor_set.cpp \
 				$(SETS_DIR)/pfd_set.cpp \
 				$(SETS_DIR)/world_set.cpp \
@@ -112,6 +113,7 @@ SRC_FILES	:=	entrypoint.cpp \
 				$(GEO_DIR)/frustum_culling.cpp \
 				$(GEO_DIR)/vertex_buffer.cpp \
 				$(PASSES_DIR)/main_render_pass.cpp \
+				$(PASSES_DIR)/shadow_render_pass.cpp \
 				$(PIP_DIR)/scene_pipeline.cpp \
 				$(PIP_DIR)/skybox_pipeline.cpp \
 				$(PIP_DIR)/starfield_pipeline.cpp \
@@ -179,6 +181,7 @@ LDFLAGS		:=	-lglfw \
 # ------------------- SHADERS ------------------ #
 SHD_FILES	:=	scene.fragment \
 				scene.vertex \
+				shadowmap.vertex \
 				skybox.vertex \
 				skybox.fragment \
 				starfield.vertex \

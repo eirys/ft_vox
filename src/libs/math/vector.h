@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:16:07 by etran             #+#    #+#             */
-/*   Updated: 2024/05/30 15:50:47 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/03 21:04:56 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -115,6 +115,12 @@ struct Vect3 {
 	constexpr Vect3		operator*(float rhs) const noexcept;
 	constexpr Vect3&	operator/=(float rhs) noexcept;
 	constexpr Vect3		operator/(float rhs) const noexcept;
+	constexpr Vect3&	operator*=(const Vect3& rhs) noexcept;
+	constexpr Vect3		operator*(const Vect3& rhs) const noexcept;
+	constexpr Vect3&	operator/=(const Vect3& rhs) noexcept;
+	constexpr Vect3		operator/(const Vect3& rhs) const noexcept;
+
+    constexpr uint32_t  toRGBA() const noexcept;
 
 	/* BOOLEAN COMPARISON ====================================================== */
 
@@ -169,6 +175,12 @@ struct Vect4 {
 	constexpr Vect4		operator*(float rhs) const noexcept;
 	constexpr Vect4&	operator/=(float rhs) noexcept;
 	constexpr Vect4		operator/(float rhs) const noexcept;
+	constexpr Vect4&	operator*=(const Vect4& rhs) noexcept;
+	constexpr Vect4		operator*(const Vect4& rhs) const noexcept;
+	constexpr Vect4&	operator/=(const Vect4& rhs) noexcept;
+	constexpr Vect4		operator/(const Vect4& rhs) const noexcept;
+
+    constexpr uint32_t  toRGBA() const noexcept;
 
 	/* BOOLEAN COMPARISON ====================================================== */
 
@@ -407,6 +419,40 @@ Vect3	Vect3::operator/(float rhs) const noexcept {
 	return res.operator/=(rhs);
 }
 
+constexpr
+Vect3& Vect3::operator*=(const Vect3& rhs) noexcept {
+	x *= rhs.x;
+	y *= rhs.y;
+	z *= rhs.z;
+	return *this;
+}
+
+constexpr
+Vect3 Vect3::operator*(const Vect3& rhs) const noexcept {
+	Vect3	res(*this);
+	return res.operator*=(rhs);
+}
+
+constexpr
+Vect3& Vect3::operator/=(const Vect3& rhs) noexcept {
+	x /= rhs.x;
+	y /= rhs.y;
+	z /= rhs.z;
+	return *this;
+}
+
+constexpr
+Vect3 Vect3::operator/(const Vect3& rhs) const noexcept {
+	Vect3	res(*this);
+	return res.operator/=(rhs);
+}
+
+constexpr
+uint32_t Vect3::toRGBA() const noexcept {
+    Vect3 color(*this * 255.0f);
+    return ((uint32_t)color.x << 24) | ((uint32_t)color.y << 16) | ((uint32_t)color.z << 8) | 255;
+}
+
 /* BOOLEAN COMPARISON ====================================================== */
 
 constexpr
@@ -587,6 +633,42 @@ Vect4	Vect4::operator/(float rhs) const noexcept {
 	return res.operator/=(rhs);
 }
 
+constexpr
+Vect4& Vect4::operator*=(const Vect4& rhs) noexcept {
+	x *= rhs.x;
+	y *= rhs.y;
+	z *= rhs.z;
+    w *= rhs.w;
+	return *this;
+}
+
+constexpr
+Vect4 Vect4::operator*(const Vect4& rhs) const noexcept {
+	Vect4	res(*this);
+	return res.operator*=(rhs);
+}
+
+constexpr
+Vect4& Vect4::operator/=(const Vect4& rhs) noexcept {
+	x /= rhs.x;
+	y /= rhs.y;
+	z /= rhs.z;
+    w /= rhs.w;
+	return *this;
+}
+
+constexpr
+Vect4 Vect4::operator/(const Vect4& rhs) const noexcept {
+	Vect4	res(*this);
+	return res.operator/=(rhs);
+}
+
+constexpr
+uint32_t Vect4::toRGBA() const noexcept {
+    Vect4 color(*this * 255.0f);
+    return ((uint32_t)color.x << 24) | ((uint32_t)color.y << 16) | ((uint32_t)color.z << 8) | (uint32_t)color.w;
+}
+
 /* BOOLEAN COMPARISON ====================================================== */
 
 constexpr
@@ -650,16 +732,19 @@ inline Vect4	fma(const Vect4& a, float b, const Vect4& c) noexcept {
 /* OPERATIONS =============================================================== */
 
 template <class Vector>
+constexpr
 Vector	operator*(float lhs, const Vector& rhs) noexcept {
 	return rhs.operator*(lhs);
 }
 
 template <class Vector>
+constexpr
 Vector	operator/(float lhs, const Vector& rhs) noexcept {
 	return rhs.operator/(lhs);
 }
 
 template <class Vector>
+constexpr
 Vector	abs(const Vector& vect) noexcept {
 	Vector	copy;
 	int i = 0;

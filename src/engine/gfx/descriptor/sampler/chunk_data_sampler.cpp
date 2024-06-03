@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/17 23:05:38 by etran             #+#    #+#             */
-/*   Updated: 2024/05/18 21:08:30 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/03 15:59:14 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,7 @@ namespace vox::gfx {
 /*                                   PUBLIC                                   */
 /* ========================================================================== */
 
-void ChunkDataSampler::init(const Device& device, const ICommandBuffer* cmdBuffer) {
+void ChunkDataSampler::init(const Device& device) {
     ImageMetaData textureData{};
     textureData.m_format = VK_FORMAT_R32_UINT;
     textureData.m_width = CHUNK_SIZE * 4;

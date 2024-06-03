@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/03 10:06:29 by etran             #+#    #+#             */
-/*   Updated: 2024/06/03 11:14:57 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/03 15:07:30 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,8 +14,7 @@
 #include "device.h"
 #include "descriptor_table.h"
 #include "icommand_buffer.h"
-
-#include <stdexcept>
+#include "vertex_buffer.h"
 
 #include "debug.h"
 
@@ -23,17 +22,14 @@ namespace vox::gfx {
 
 enum class ShadowDescriptorSet: u32 {
     Pfd = 0,
-    WorldData,
 
     First = Pfd,
-    Last = WorldData
+    Last = Pfd
 };
 
 enum class SetIndex: u32 {
-    PerFrameData    = (u32)DescriptorSetIndex::Pfd,
-    Textures        = (u32)DescriptorSetIndex::WorldData,
+    PerFrameData    = (u32)DescriptorSetIndex::Pfd
 };
-
 
 static constexpr u32 DESCRIPTOR_SET_COUNT = enumSize<ShadowDescriptorSet>();
 
@@ -48,6 +44,10 @@ void ShadowPipeline::init(
 ) {
     VkPipelineVertexInputStateCreateInfo vertexInput{};
     vertexInput.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+    vertexInput.vertexBindingDescriptionCount = VertexInstance::getBindingDescriptions().size();
+    vertexInput.pVertexBindingDescriptions = VertexInstance::getBindingDescriptions().data();
+    vertexInput.vertexAttributeDescriptionCount = VertexInstance::getAttributeDescriptions().size();
+    vertexInput.pVertexAttributeDescriptions = VertexInstance::getAttributeDescriptions().data();
 
     VkPipelineInputAssemblyStateCreateInfo inputAssembly{};
     inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
@@ -95,17 +95,11 @@ void ShadowPipeline::init(
     dynamicState.pDynamicStates = dynamicStates.data();
 
     std::array<VkPipelineShaderStageCreateInfo, SHADER_STAGE_COUNT> shaderStages{};
-    const VkShaderModule vertexModule = _createShaderModule(device, "obj/shaders/shadow.vertex.spv");
+    const VkShaderModule vertexModule = _createShaderModule(device, "obj/shaders/shadowmap.vertex.spv");
     shaderStages[(u32)ShaderStage::Vertex].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
     shaderStages[(u32)ShaderStage::Vertex].stage = (VkShaderStageFlagBits)ShaderType::VS;
     shaderStages[(u32)ShaderStage::Vertex].module = vertexModule;
     shaderStages[(u32)ShaderStage::Vertex].pName = "main";
-
-    const VkShaderModule fragmentModule = _createShaderModule(device, "obj/shaders/shadow.fragment.spv");
-    shaderStages[(u32)ShaderStage::Fragment].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-    shaderStages[(u32)ShaderStage::Fragment].stage = (VkShaderStageFlagBits)ShaderType::FS;
-    shaderStages[(u32)ShaderStage::Fragment].module = fragmentModule;
-    shaderStages[(u32)ShaderStage::Fragment].pName = "main";
 
     VkGraphicsPipelineCreateInfo pipelineInfo{};
     pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
@@ -129,7 +123,6 @@ void ShadowPipeline::init(
         throw std::runtime_error("Failed to assemble graphics pipeline.");
 
     vkDestroyShaderModule(device.getDevice(), vertexModule, nullptr);
-    vkDestroyShaderModule(device.getDevice(), fragmentModule, nullptr);
 
     LDEBUG("Shadow pipeline assembled: " << m_pipeline);
 }
@@ -146,8 +139,9 @@ void ShadowPipeline::record(
     const ICommandBuffer* cmdBuffer
 ) {
     const std::array<VkDescriptorSet, DESCRIPTOR_SET_COUNT> descriptorSets = {
-        descriptorTable[(u32)SetIndex::PerFrameData]->getSet(),
-        descriptorTable[(u32)SetIndex::Textures]->getSet() };
+        descriptorTable[(u32)SetIndex::PerFrameData]->getSet() };
+    const std::array<VkDeviceSize, 1> offsets = { 0 };
+    const std::array<VkBuffer, 1> vertexBuffers = { VertexBuffer::getBuffer().getBuffer() };
 
     vkCmdBindDescriptorSets(
         cmdBuffer->getBuffer(),
@@ -161,6 +155,14 @@ void ShadowPipeline::record(
         cmdBuffer->getBuffer(),
         VK_PIPELINE_BIND_POINT_GRAPHICS,
         m_pipeline);
+
+    vkCmdBindVertexBuffers(
+        cmdBuffer->getBuffer(),
+        0, vertexBuffers.size(),
+        vertexBuffers.data(),
+        offsets.data());
+
+    vkCmdDraw(cmdBuffer->getBuffer(), 4, VertexBuffer::getInstancesCount(), 0, 0);
 }
 
 } // namespace vox::gfx

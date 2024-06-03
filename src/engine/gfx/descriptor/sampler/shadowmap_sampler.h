@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   skybox_sampler.h                                   :+:      :+:    :+:   */
+/*   shadowmap_sampler.h                                :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/03/19 02:48:23 by etran             #+#    #+#             */
-/*   Updated: 2024/06/03 15:59:00 by etran            ###   ########.fr       */
+/*   Created: 2024/06/03 16:12:27 by etran             #+#    #+#             */
+/*   Updated: 2024/06/03 16:26:58 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,19 +16,19 @@
 
 namespace vox::gfx {
 
-class SkyboxSampler final: public TextureSampler {
+class ShadowmapSampler final: public TextureSampler {
 public:
     /* ====================================================================== */
     /*                                 METHODS                                */
     /* ====================================================================== */
 
-    SkyboxSampler() = default;
-    ~SkyboxSampler() = default;
+    ShadowmapSampler() = default;
+    ~ShadowmapSampler() = default;
 
-    SkyboxSampler(SkyboxSampler&& other) = delete;
-    SkyboxSampler(const SkyboxSampler& other) = delete;
-    SkyboxSampler& operator=(SkyboxSampler&& other) = delete;
-    SkyboxSampler& operator=(const SkyboxSampler& other) = delete;
+    ShadowmapSampler(ShadowmapSampler&& other) = delete;
+    ShadowmapSampler(const ShadowmapSampler& other) = delete;
+    ShadowmapSampler& operator=(ShadowmapSampler&& other) = delete;
+    ShadowmapSampler& operator=(const ShadowmapSampler& other) = delete;
 
     /* ====================================================================== */
 
@@ -44,6 +44,6 @@ private:
 
     void    _createSampler(const Device& device);
 
-}; // class SkyboxSampler
+}; // class ShadowmapSampler
 
 } // namespace vox::gfx

@@ -10,7 +10,7 @@ layout(location = 0) out vec4 outFragColor;
 
 layout(set = PFD_SET, binding = 1) uniform GameData {
     vec2 sunPos;
-    vec3 skyHue;
+    uint skyHue;
 } gameData;
 
 #if ENABLE_CUBEMAP

@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/20 13:34:05 by etran             #+#    #+#             */
-/*   Updated: 2024/06/03 11:19:25 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/03 11:27:41 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -77,6 +77,7 @@ private:
 
     static u32      ms_instancesCount;
     static u32      ms_visibleAABBsCount;
+
     static u32      ms_maxVertexInstanceCount;
 
     /* ====================================================================== */

@@ -6,13 +6,12 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/11 17:46:33 by etran             #+#    #+#             */
-/*   Updated: 2024/05/29 12:44:09 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/03 16:13:54 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "game_texture_sampler.h"
 #include "device.h"
-#include "perlin_noise.h"
 #include "buffer.h"
 #include "icommand_buffer.h"
 
@@ -27,10 +26,7 @@ static constexpr u32 TEXTURE_COUNT = 3;
 /*                                   PUBLIC                                   */
 /* ========================================================================== */
 
-void GameTextureSampler::init(
-    const Device& device,
-    const ICommandBuffer* cmdBuffer
-) {
+void GameTextureSampler::init(const Device& device) {
     ImageMetaData textureData{};
     textureData.m_format = VK_FORMAT_R8G8B8A8_SRGB;
     textureData.m_width = TEXTURE_SIZE;
