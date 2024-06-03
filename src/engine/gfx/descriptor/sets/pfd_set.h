@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/28 23:38:00 by etran             #+#    #+#             */
-/*   Updated: 2024/05/30 16:13:26 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/03 09:40:14 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,8 +26,10 @@ public:
     /* ====================================================================== */
 
     enum class BindingIndex: u32 {
-        ViewProj = 0,
+        ViewProj,
         GameData,
+
+        Count,
 
         First = ViewProj,
         Last = GameData
@@ -56,7 +58,7 @@ private:
     /*                             STATIC MEMBERS                             */
     /* ====================================================================== */
 
-    static constexpr u32 BINDING_COUNT = enumSize<BindingIndex>();
+    static constexpr u32 BINDING_COUNT = (u32)BindingIndex::Count;
 
     /* ====================================================================== */
     /*                                  DATA                                  */

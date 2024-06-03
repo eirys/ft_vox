@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/19 23:59:08 by etran             #+#    #+#             */
-/*   Updated: 2024/05/31 13:07:33 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/03 09:47:20 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,11 +29,10 @@ enum class ControlKeyIndex {
     Down,
     Speed,
 
-    First = Forward,
-    Last = Speed
+    Count
 };
 
-constexpr u32 CONTROL_KEY_COUNT = enumSize<ControlKeyIndex>();
+constexpr u32 CONTROL_KEY_COUNT = (u32)ControlKeyIndex::Count;
 
 /**
  * @brief Window handler

@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/28 19:54:32 by etran             #+#    #+#             */
-/*   Updated: 2024/03/11 14:07:16 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/03 09:51:57 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -88,6 +88,9 @@ VkWriteDescriptorSet DescriptorSet::_createWriteDescriptorSet(
         case DescriptorTypeIndex::UniformBuffer:
         case DescriptorTypeIndex::StorageBuffer:
             writeDescriptorSet.pBufferInfo = (VkDescriptorBufferInfo*)descriptorInfo;
+            break;
+
+        default:
             break;
     }
 

@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/15 17:03:33 by etran             #+#    #+#             */
-/*   Updated: 2024/06/03 09:08:01 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/03 09:57:19 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,7 +32,7 @@ void WorldSet::init(const Device& device, const ICommandBuffer* cmdBuffer) {
     m_textures[(u32)Texture::PerlinNoise] = new PerlinNoiseSampler();
 
 #if ENABLE_CUBEMAP
-    m_textures[(u32)Texture::Skybox] = new SkyboxSampler();
+    m_textures[(u32)Texture::Cubemap] = new SkyboxSampler();
 #endif
 
     for (u32 i = 0; i < TEXTURE_COUNT; ++i) m_textures[i]->init(device, cmdBuffer);
@@ -41,7 +41,7 @@ void WorldSet::init(const Device& device, const ICommandBuffer* cmdBuffer) {
     m_textures[(u32)Texture::PerlinNoise]->fill(device, cmdBuffer);
 
 #if ENABLE_CUBEMAP
-    m_textures[(u32)Texture::Skybox]->fill(device, cmdBuffer);
+    m_textures[(u32)Texture::Cubemap]->fill(device, cmdBuffer);
 #endif
 
     std::array<VkDescriptorSetLayoutBinding, BINDING_COUNT> bindings = {
@@ -49,7 +49,7 @@ void WorldSet::init(const Device& device, const ICommandBuffer* cmdBuffer) {
         _createLayoutBinding(DescriptorTypeIndex::CombinedImageSampler, ShaderVisibility::FS, (u32)BindingIndex::Textures),
         _createLayoutBinding(DescriptorTypeIndex::CombinedImageSampler, ShaderVisibility::VS, (u32)BindingIndex::Noise),
 #if ENABLE_CUBEMAP
-        _createLayoutBinding(DescriptorTypeIndex::CombinedImageSampler, ShaderVisibility::FS, (u32)BindingIndex::Skybox),
+        _createLayoutBinding(DescriptorTypeIndex::CombinedImageSampler, ShaderVisibility::FS, (u32)BindingIndex::Cubemap),
 #endif
 
     };
@@ -99,9 +99,9 @@ void WorldSet::fill(const Device& device) {
 
 #if ENABLE_CUBEMAP
     VkDescriptorImageInfo skyboxInfo{};
-    skyboxInfo.imageLayout = m_textures[(u32)Texture::Skybox]->getImageBuffer().getMetaData().m_layoutData.m_layout;
-    skyboxInfo.imageView = m_textures[(u32)Texture::Skybox]->getImageBuffer().getView();
-    skyboxInfo.sampler = m_textures[(u32)Texture::Skybox]->getSampler();
+    skyboxInfo.imageLayout = m_textures[(u32)Texture::Cubemap]->getImageBuffer().getMetaData().m_layoutData.m_layout;
+    skyboxInfo.imageView = m_textures[(u32)Texture::Cubemap]->getImageBuffer().getView();
+    skyboxInfo.sampler = m_textures[(u32)Texture::Cubemap]->getSampler();
 #endif
 
     std::array<VkWriteDescriptorSet, BINDING_COUNT> descriptorWrites = {
@@ -109,7 +109,7 @@ void WorldSet::fill(const Device& device) {
         _createWriteDescriptorSet(DescriptorTypeIndex::CombinedImageSampler, &gameSamplerInfo, (u32)BindingIndex::Textures),
         _createWriteDescriptorSet(DescriptorTypeIndex::CombinedImageSampler, &noiseSamplerInfo, (u32)BindingIndex::Noise),
 #if ENABLE_CUBEMAP
-        _createWriteDescriptorSet(DescriptorTypeIndex::CombinedImageSampler, &skyboxInfo, (u32)BindingIndex::Skybox),
+        _createWriteDescriptorSet(DescriptorTypeIndex::CombinedImageSampler, &skyboxInfo, (u32)BindingIndex::Cubemap),
 #endif
     };
     vkUpdateDescriptorSets(device.getDevice(), BINDING_COUNT, descriptorWrites.data(), 0, nullptr);

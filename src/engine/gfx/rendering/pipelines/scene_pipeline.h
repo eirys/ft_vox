@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/29 23:49:38 by etran             #+#    #+#             */
-/*   Updated: 2024/06/03 09:10:21 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/03 09:43:19 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,11 +37,10 @@ public:
     /* ====================================================================== */
 
     enum class ShaderStage: u32 {
-        VertexInstance = 0,
+        VertexInstance,
         Fragment,
 
-        First = VertexInstance,
-        Last = Fragment
+        Count
     };
 
     /* ====================================================================== */
@@ -88,7 +87,7 @@ private:
     /*                             STATIC MEMBERS                             */
     /* ====================================================================== */
 
-    static constexpr u32    SHADER_STAGE_COUNT = enumSize<ShaderStage>();
+    static constexpr u32    SHADER_STAGE_COUNT = (u32)ShaderStage::Count;
     static constexpr u32    VERTEX_BUFFER_COUNT = 1;
 
     /* ====================================================================== */

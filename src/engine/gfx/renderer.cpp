@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/23 09:29:35 by etran             #+#    #+#             */
-/*   Updated: 2024/06/03 09:18:18 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/03 09:59:55 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -119,8 +119,10 @@ void Renderer::render(const game::GameState& game) {
     vkCmdSetScissor(drawBuffer->getBuffer(), 0, 1, &scissor);
 
     mainRenderPass->begin(drawBuffer, recordInfo);
+#if ENABLE_SKYBOX
     m_pipelines[(u32)PipelineIndex::SkyboxPipeline]->record(m_pipelineLayout, m_descriptorTable, drawBuffer);
     m_pipelines[(u32)PipelineIndex::StarfieldPipeline]->record(m_pipelineLayout, m_descriptorTable, drawBuffer);
+#endif
     m_pipelines[(u32)PipelineIndex::ScenePipeline]->record(m_pipelineLayout, m_descriptorTable, drawBuffer);
     mainRenderPass->end(drawBuffer);
 
@@ -175,13 +177,19 @@ void Renderer::_createRenderPasses() {
 
 void Renderer::_createPipelines() {
     m_pipelines[(u32)PipelineIndex::ScenePipeline] = new ScenePipeline();
+
+#if ENABLE_SKYBOX
     m_pipelines[(u32)PipelineIndex::SkyboxPipeline] = new SkyboxPipeline();
     m_pipelines[(u32)PipelineIndex::StarfieldPipeline] = new StarfieldPipeline();
+#endif
 
     auto mainRenderPass = m_renderPasses[(u32)RenderPassIndex::Main]->getRenderPass();
     m_pipelines[(u32)PipelineIndex::ScenePipeline]->init(m_device, mainRenderPass, m_pipelineLayout);
+
+#if ENABLE_SKYBOX
     m_pipelines[(u32)PipelineIndex::SkyboxPipeline]->init(m_device, mainRenderPass, m_pipelineLayout);
     m_pipelines[(u32)PipelineIndex::StarfieldPipeline]->init(m_device, mainRenderPass, m_pipelineLayout);
+#endif
 
     LDEBUG("Pipelines created.");
 }

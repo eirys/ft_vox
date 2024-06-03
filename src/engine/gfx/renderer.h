@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/21 12:17:21 by etran             #+#    #+#             */
-/*   Updated: 2024/06/03 09:11:43 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/03 09:51:10 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,6 +74,8 @@ private:
         Transfer = Draw,
         // Compute,
 
+        Count,
+
         First = Draw,
         Last = Transfer
     };
@@ -82,7 +84,7 @@ private:
     /*                             STATIC MEMBERS                             */
     /* ====================================================================== */
 
-    static constexpr u32    CMD_BUFFER_COUNT = enumSize<CommandBufferIndex>();
+    static constexpr u32    CMD_BUFFER_COUNT = (u32)CommandBufferIndex::Count;
 
     /* ====================================================================== */
     /*                                  DATA                                  */

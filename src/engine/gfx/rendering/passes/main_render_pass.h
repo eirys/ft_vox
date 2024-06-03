@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/07 10:08:33 by etran             #+#    #+#             */
-/*   Updated: 2024/03/22 23:08:24 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/03 09:41:56 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,28 +36,26 @@ public:
     /* ====================================================================== */
 
     enum class Resource: u32 {
-        ColorImage = 0,
+        ColorImage,
         DepthImage,
 
-        First = ColorImage,
-        Last = DepthImage
+        Count
     };
 
     enum class Attachment: u32 {
-        Color = 0,
+        Color,
         Depth,
         ColorResolve,
 
-        First = Color,
-        Last = ColorResolve
+        Count
     };
 
     /* ====================================================================== */
     /*                             STATIC MEMBERS                             */
     /* ====================================================================== */
 
-    static constexpr u32    RESOURCE_COUNT = enumSize<Resource>();
-    static constexpr u32    ATTACHMENT_COUNT = enumSize<Attachment>();
+    static constexpr u32    RESOURCE_COUNT = (u32)Resource::Count;
+    static constexpr u32    ATTACHMENT_COUNT = (u32)Attachment::Count;
 
     /* ====================================================================== */
     /*                                 METHODS                                */

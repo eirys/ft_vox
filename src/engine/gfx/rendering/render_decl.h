@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/07 14:55:18 by etran             #+#    #+#             */
-/*   Updated: 2024/03/21 01:43:26 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/03 09:53:17 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,17 +14,21 @@
 
 #include "types.h"
 #include "enum.h"
+#include "vox_decl.h"
 
 namespace vox::gfx {
 
 enum class RenderPassIndex: u32 {
-    Main = 0,
+    Main,
 
-    First = Main,
-    Last = Main
+#if ENABLE_SHADOW_MAPPING
+    // Shadow,
+#endif
+
+    Count
 };
 
-constexpr u32 RENDER_PASS_COUNT = enumSize<RenderPassIndex>();
+constexpr u32 RENDER_PASS_COUNT = (u32)RenderPassIndex::Count;
 
 struct RecordInfo {
     virtual ~RecordInfo() = default;

@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/28 23:42:29 by etran             #+#    #+#             */
-/*   Updated: 2024/05/30 16:13:42 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/03 09:52:21 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,7 +44,7 @@ constexpr u32 DESCRIPTOR_TABLE_SIZE = enumSize<DescriptorSetIndex>();
 /* ========================================================================== */
 
 enum class DescriptorTypeIndex: u8 {
-    UniformBuffer = 0,
+    UniformBuffer,
     CombinedImageSampler,
     StorageBuffer,
     StorageImage,

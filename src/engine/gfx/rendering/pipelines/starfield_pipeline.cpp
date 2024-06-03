@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/27 14:22:51 by etran             #+#    #+#             */
-/*   Updated: 2024/06/03 09:13:41 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/03 09:50:40 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,6 +29,11 @@ enum class StarfieldDescriptorSet: u32 {
 
     First = Pfd,
     Last = WorldData
+};
+
+enum class SetIndex: u32 {
+    PerFrameData    = (u32)DescriptorSetIndex::Pfd,
+    Textures        = (u32)DescriptorSetIndex::WorldData,
 };
 
 static constexpr u32 DESCRIPTOR_SET_COUNT = enumSize<StarfieldDescriptorSet>();
@@ -151,8 +156,8 @@ void StarfieldPipeline::record(
     const ICommandBuffer* cmdBuffer
 ) {
     std::array<VkDescriptorSet, DESCRIPTOR_SET_COUNT> descriptorSets = {
-        descriptorTable[DescriptorSetIndex::Pfd]->getSet(),
-        descriptorTable[DescriptorSetIndex::WorldData]->getSet()
+        descriptorTable[(u32)SetIndex::PerFrameData]->getSet(),
+        descriptorTable[(u32)SetIndex::Textures]->getSet()
     };
 
     vkCmdBindDescriptorSets(

@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/15 16:21:18 by etran             #+#    #+#             */
-/*   Updated: 2024/06/03 09:07:35 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/03 09:58:04 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,28 +31,24 @@ public:
         // ChunkData,
         Textures,
         Noise,
-        Skybox,
 
-        First = Textures,
 #if ENABLE_CUBEMAP
-        Last = Skybox
-#else
-        Last = Noise
+        Cubemap,
 #endif
+
+        Count
     };
 
     enum class Texture: u32 {
         // ChunkData = 0,
         GameTexture,
         PerlinNoise,
-        Skybox,
 
-        First = GameTexture,
 #if ENABLE_CUBEMAP
-        Last = Skybox
-#else
-        Last = PerlinNoise
+        Skybox,
 #endif
+
+        Count
     };
 
     /* ====================================================================== */
@@ -72,8 +68,8 @@ private:
     /*                             STATIC MEMBERS                             */
     /* ====================================================================== */
 
-    static constexpr u32 BINDING_COUNT = enumSize<BindingIndex>();
-    static constexpr u32 TEXTURE_COUNT = enumSize<Texture>();
+    static constexpr u32 BINDING_COUNT = (u32)BindingIndex::Count;
+    static constexpr u32 TEXTURE_COUNT = (u32)Texture::Count;
 
     /* ====================================================================== */
     /*                                  DATA                                  */

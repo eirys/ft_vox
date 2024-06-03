@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/07 09:48:27 by etran             #+#    #+#             */
-/*   Updated: 2024/06/02 01:24:52 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/03 09:50:48 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,19 +23,16 @@
 namespace vox::gfx {
 
 enum class SceneDescriptorSet: u32 {
-    PerFrameData = 0,
-    Textures,
+    Pfd = 0,
+    WorldData,
 
-    First = PerFrameData,
-    Last = Textures
+    First = Pfd,
+    Last = WorldData
 };
 
 enum class SetIndex: u32 {
     PerFrameData    = (u32)DescriptorSetIndex::Pfd,
     Textures        = (u32)DescriptorSetIndex::WorldData,
-
-    First = PerFrameData,
-    Last = Textures
 };
 
 
@@ -186,8 +183,8 @@ void ScenePipeline::record(
     const ICommandBuffer* cmdBuffer
 ) {
     const std::array<VkDescriptorSet, DESCRIPTOR_SET_COUNT> descriptorSets = {
-        descriptorTable[(DescriptorSetIndex)SetIndex::PerFrameData]->getSet(),
-        descriptorTable[(DescriptorSetIndex)SetIndex::Textures]->getSet() };
+        descriptorTable[(u32)SetIndex::PerFrameData]->getSet(),
+        descriptorTable[(u32)SetIndex::Textures]->getSet() };
     const std::array<VkDeviceSize, 1> offsets = { 0 };
     const std::array<VkBuffer, 1> vertexBuffers = { _getCurrentBuffer().getBuffer().getBuffer() };
 

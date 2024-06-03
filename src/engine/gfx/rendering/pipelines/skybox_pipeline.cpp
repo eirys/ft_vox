@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/19 10:48:36 by etran             #+#    #+#             */
-/*   Updated: 2024/05/30 16:13:26 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/03 09:46:52 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,6 +27,11 @@ enum class SkyboxDescriptorSet: u32 {
 
     First = Pfd,
     Last = WorldData
+};
+
+enum class SetIndex: u32 {
+    PerFrameData    = (u32)DescriptorSetIndex::Pfd,
+    Textures        = (u32)DescriptorSetIndex::WorldData,
 };
 
 static constexpr u32 DESCRIPTOR_SET_COUNT = enumSize<SkyboxDescriptorSet>();
@@ -142,8 +147,8 @@ void SkyboxPipeline::record(
     const ICommandBuffer* cmdBuffer
 ) {
     std::array<VkDescriptorSet, DESCRIPTOR_SET_COUNT> descriptorSets = {
-        descriptorTable[(u32)SkyboxDescriptorSet::Pfd]->getSet(),
-        descriptorTable[(u32)SkyboxDescriptorSet::WorldData]->getSet()
+        descriptorTable[(u32)SetIndex::PerFrameData]->getSet(),
+        descriptorTable[(u32)SetIndex::Textures]->getSet()
     };
 
     vkCmdBindDescriptorSets(
