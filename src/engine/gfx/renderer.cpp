@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/23 09:29:35 by etran             #+#    #+#             */
-/*   Updated: 2024/04/27 19:56:38 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/02 01:37:11 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,6 +45,14 @@ void Renderer::init(ui::Window& window, const game::GameState& game) {
     m_descriptorPool.init(m_device, m_descriptorTable);
     m_descriptorTable.fill(m_device);
 
+#if ENABLE_FRUSTUM_CULLING
+    VertexBuffer::computeMaxVertexInstanceCount(game);
+    ((ScenePipeline*)m_pipelines[(u32)PipelineIndex::ScenePipeline])->initVertexBuffer(m_device, game);
+#else
+    ((ScenePipeline*)m_pipelines[(u32)PipelineIndex::ScenePipeline])->initVertexBuffer(m_device, transferBuffer, game);
+#endif
+    // ((ScenePipeline*)m_pipelines[(u32)PipelineIndex::ScenePipeline])->updateVertexBuffer(m_device, game);
+
     LDEBUG("Renderer initialized.");
 }
 
@@ -77,10 +85,15 @@ void Renderer::render(const game::GameState& game) {
 
     // Retrieve swap chain image ------
     m_fences[(u32)FenceIndex::DrawInFlight].await(m_device);
+    m_fences[(u32)FenceIndex::DrawInFlight].reset(m_device);
+
+#if ENABLE_FRUSTUM_CULLING
+    ((ScenePipeline*)m_pipelines[(u32)PipelineIndex::ScenePipeline])->updateVertexBuffer(m_device, game);
+#endif
+
     if (m_swapChain.acquireNextImage(m_device, m_semaphores[(u32)SemaphoreIndex::ImageAvailable]) == false)
         // TODO: Handle this error
         return;
-    m_fences[(u32)FenceIndex::DrawInFlight].reset(m_device);
     // --------------------------------
 
     // Record command buffer ---------

@@ -1,52 +1,71 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   world.h                                            :+:      :+:    :+:   */
+/*   timer.h                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/03/15 15:24:42 by etran             #+#    #+#             */
-/*   Updated: 2024/05/28 14:32:58 by etran            ###   ########.fr       */
+/*   Created: 2024/05/30 22:51:33 by etran             #+#    #+#             */
+/*   Updated: 2024/05/31 02:22:41 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
-#include "chunk.h"
+#include <chrono>
 
-namespace game {
+#include "types.h"
+#include "debug.h"
 
-/**
- * @brief The World class represents the game world.
- * Gives information on chunks and their data.
- */
-class World final {
+namespace ui {
+
+class Timer final {
 public:
     /* ====================================================================== */
     /*                                TYPEDEFS                                */
     /* ====================================================================== */
 
-    using ChunkArray = std::array<Chunk, RENDER_AREA * RENDER_HEIGHT>;
+    using Clock = std::chrono::high_resolution_clock;
+
+    /* ====================================================================== */
+    /*                             STATIC MEMBERS                             */
+    /* ====================================================================== */
+
+    static constexpr u32    LOG_INTERVAL = 2;
 
     /* ====================================================================== */
     /*                                 METHODS                                */
     /* ====================================================================== */
 
-    void init(const u32 seed);
+    void reset() noexcept {
+        m_startTime = Clock::now();
+        m_counter = 0;
+    }
 
-    const ChunkArray&   getChunks() const noexcept;
-    ChunkArray&         getChunks() noexcept;
+    void update() noexcept {
+        static auto LOG_INTERVAL_S = std::chrono::seconds(LOG_INTERVAL);
 
-    Chunk&              getChunk(const u32 x, const u32 y, const u32 z) noexcept;
-    const Chunk&        getChunk(const u32 x, const u32 y, const u32 z) const noexcept;
+        ++m_counter;
+
+        const Clock::time_point now = Clock::now();
+        const u32               elapsed = (u32)std::chrono::duration<f32>(now - m_startTime).count();
+
+        if (elapsed >= LOG_INTERVAL) {
+            u32 fps = m_counter / elapsed;
+            LLOG("FPS: " << fps);
+
+            reset();
+        }
+    }
 
 private:
     /* ====================================================================== */
     /*                                  DATA                                  */
     /* ====================================================================== */
 
-    ChunkArray  m_chunks;
+    Clock::time_point   m_startTime;
+    u32                 m_counter = 0;
 
-}; // class World
+}; // class Timer
 
-} // namespace game
+} // namespace ui

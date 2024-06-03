@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/11 16:56:28 by etran             #+#    #+#             */
-/*   Updated: 2024/05/14 17:30:28 by etran            ###   ########.fr       */
+/*   Updated: 2024/05/17 16:59:51 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,9 +53,7 @@ public:
     World&                  getWorld() noexcept;
     const World&            getWorld() const noexcept;
     const ui::Controller&   getController() const noexcept;
-    const math::Vect3&      getSunPos() const noexcept {
-        return m_sun.m_direction;
-    }
+    const math::Vect3&      getSunPos() const noexcept;
 
 private:
     /* ====================================================================== */

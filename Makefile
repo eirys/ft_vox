@@ -6,7 +6,7 @@
 #    By: etran <etran@student.42.fr>                +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/04/06 03:40:09 by eli               #+#    #+#              #
-#    Updated: 2024/05/01 09:30:31 by etran            ###   ########.fr        #
+#    Updated: 2024/05/31 15:07:36 by etran            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -44,6 +44,7 @@ SAMPLER_DIR	:=	$(DESC_DIR)/sampler
 RENDER_DIR	:=	$(GFX_DIR)/rendering
 PIP_DIR		:=	$(RENDER_DIR)/pipelines
 PASSES_DIR	:=	$(RENDER_DIR)/passes
+GEO_DIR		:=	$(RENDER_DIR)/geometry
 
 DEBUG_PIP_DIR	:=	$(PIP_DIR)/debug
 
@@ -70,6 +71,7 @@ SUBDIRS		:=	$(LIBS_DIR) \
 				$(SETS_DIR) \
 				$(SYNC_DIR) \
 				$(RENDER_DIR) \
+				$(GEO_DIR) \
 				$(PIP_DIR) \
 				$(PASSES_DIR) \
 				$(PROC_DIR) \
@@ -86,6 +88,7 @@ INC_SUBDIRS	:=	$(addprefix $(SRC_DIR)/,$(SUBDIRS)) \
 SRC_FILES	:=	entrypoint.cpp \
 				$(LOAD_DIR)/ppm_loader.cpp \
 				$(LOAD_DIR)/image_handler.cpp \
+				$(LOAD_DIR)/cache.cpp \
 				$(IO_DIR)/io_helpers.cpp \
 				$(ENGINE_DIR)/engine.cpp \
 				$(GFX_DIR)/renderer.cpp \
@@ -99,12 +102,15 @@ SRC_FILES	:=	entrypoint.cpp \
 				$(SAMPLER_DIR)/chunk_data_sampler.cpp \
 				$(SAMPLER_DIR)/perlin_noise_sampler.cpp \
 				$(SETS_DIR)/descriptor_set.cpp \
-				$(SETS_DIR)/mvp_set.cpp \
+				$(SETS_DIR)/pfd_set.cpp \
 				$(SETS_DIR)/world_set.cpp \
 				$(DESC_DIR)/descriptor_pool.cpp \
 				$(DESC_DIR)/descriptor_table.cpp \
 				$(RENDER_DIR)/pipeline.cpp \
 				$(RENDER_DIR)/render_pass.cpp \
+				$(GEO_DIR)/vertex.cpp \
+				$(GEO_DIR)/frustum_culling.cpp \
+				$(GEO_DIR)/vertex_buffer.cpp \
 				$(PASSES_DIR)/main_render_pass.cpp \
 				$(PIP_DIR)/scene_pipeline.cpp \
 				$(PIP_DIR)/skybox_pipeline.cpp \
@@ -120,6 +126,7 @@ SRC_FILES	:=	entrypoint.cpp \
 				$(GAME_DIR)/game_state.cpp \
 				$(WORLD_DIR)/world.cpp \
 				$(WORLD_DIR)/chunk.cpp \
+				$(WORLD_DIR)/block.cpp \
 				$(UI_DIR)/controller.cpp \
 				$(UI_DIR)/window.cpp
 
@@ -155,7 +162,7 @@ CFLAGS		:=	$(EXTRA) \
 				-std=c++20 \
 				-MD \
 				-MP \
-				-O3 \
+				-g \
 				$(INCLUDES) \
 				$(DEFINES)
 

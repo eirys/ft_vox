@@ -6,14 +6,14 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/28 23:42:29 by etran             #+#    #+#             */
-/*   Updated: 2024/03/28 17:01:07 by etran            ###   ########.fr       */
+/*   Updated: 2024/05/30 16:13:42 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef DESCRIPTOR_DECL_H
 # define DESCRIPTOR_DECL_H
 
-#define MVP_SET 0
+#define PFD_SET 0
 #define WORLD_SET 1
 
 #ifdef VOX_CPP
@@ -32,10 +32,10 @@ namespace vox::gfx {
  * @note The list is stored in the DescriptorTable class.
 */
 enum class DescriptorSetIndex: u32 {
-    Mvp         = MVP_SET,
+    Pfd         = PFD_SET,
     WorldData   = WORLD_SET,
 
-    First = Mvp,
+    First = Pfd,
     Last = WorldData
 };
 
@@ -75,7 +75,8 @@ constexpr VkDescriptorType DESCRIPTOR_TYPES[DESCRIPTOR_TYPE_COUNT] = {
 enum class ShaderVisibility: u8 {
     VS = VK_SHADER_STAGE_VERTEX_BIT,
     FS = VK_SHADER_STAGE_FRAGMENT_BIT,
-    CS = VK_SHADER_STAGE_COMPUTE_BIT
+    CS = VK_SHADER_STAGE_COMPUTE_BIT,
+    VS_FS = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
 };
 
 inline

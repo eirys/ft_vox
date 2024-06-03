@@ -3,19 +3,21 @@
 #include "../src/engine/gfx/descriptor/sets/descriptor_decl.h"
 #include "../src/engine/game/game_decl.h"
 
-layout(location = 0) out float outMoonHeight;
+layout(location = 0) out float outIntensity;
 layout(location = 1) out float outRandom;
+layout(location = 2) out float outHeight;
 
-layout(set = MVP_SET, binding = 0) uniform ViewProj {
+layout(set = PFD_SET, binding = 0) uniform ViewProj {
     mat4 view;
     mat4 proj;
 } viewProj;
 
-layout(set = MVP_SET, binding = 1) uniform GameData {
+layout(set = PFD_SET, binding = 1) uniform GameData {
     vec2 sunPos;
 } gameData;
 
-layout(set = WORLD_SET, binding = 2) uniform sampler2DArray NoiseTex;
+// layout(set = WORLD_SET, binding = 2) uniform sampler2DArray NoiseTex;
+layout(set = WORLD_SET, binding = 1) uniform sampler2DArray NoiseTex;
 
 const vec3 X_AXIS = vec3(1.0, 0.0, 0.0);
 const vec3 Y_AXIS = vec3(0.0, 1.0, 0.0);
@@ -123,7 +125,7 @@ mat4 getModel(in vec2 moonDir, in vec3 random) {
     const mat4 starDistance = translate(vec3(0.0, 0.0, skyDist));
 
     // Randomize the size of the star
-    const mat4 starSize = scale(random.x * 0.5 + 0.5);
+    const mat4 starSize = scale((random.x * 0.5 + 0.5) * 0.8);
 
     return alignOnMoon
          * moonCentered
@@ -147,7 +149,9 @@ void main() {
     const vec4 vertex = vec4(VERTEX_POS[gl_VertexIndex], 1.0);
     const vec4 worldPos = model * vertex;
 
-    outMoonHeight = max(moonDir.y, 0.0);
+    outIntensity = pow(max(moonDir.y, 0.0), 2.0);
     outRandom = texture(NoiseTex, vec3(noiseCoord, 3)).r * 0.8 + 0.2;
+
     gl_Position = viewProj.proj * mat4(mat3(viewProj.view)) * worldPos;
+    outHeight = (viewProj.proj * worldPos).y;
 }

@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/27 18:36:30 by etran             #+#    #+#             */
-/*   Updated: 2024/03/18 16:05:13 by etran            ###   ########.fr       */
+/*   Updated: 2024/05/31 02:32:40 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -268,10 +268,10 @@ void ImageBuffer::generateMipmap(const ICommandBuffer* cmdBuffer) {
  */
 Buffer ImageBuffer::createStagingBuffer(const Device& device) const {
     BufferMetadata  bufferData{};
+    bufferData.m_format = m_metadata.getPixelSize();
     bufferData.m_size = m_metadata.m_width *
                         m_metadata.m_height *
-                        m_metadata.m_layerCount *
-                        m_metadata.getPixelSize();
+                        m_metadata.m_layerCount;
     bufferData.m_usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
     bufferData.m_properties = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
 

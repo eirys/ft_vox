@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/17 23:05:38 by etran             #+#    #+#             */
-/*   Updated: 2024/03/18 12:18:13 by etran            ###   ########.fr       */
+/*   Updated: 2024/05/18 21:08:30 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 #include "chunk.h"
 #include "buffer.h"
 #include "icommand_buffer.h"
+#include "world.h"
 
 #include <stdexcept>
 
@@ -26,10 +27,10 @@ namespace vox::gfx {
 
 void ChunkDataSampler::init(const Device& device, const ICommandBuffer* cmdBuffer) {
     ImageMetaData textureData{};
-    textureData.m_format = VK_FORMAT_R8_UINT;
-    textureData.m_width = CHUNK_SIZE;
-    textureData.m_height = CHUNK_SIZE;
-    textureData.m_layerCount = WORLD_SIZE;
+    textureData.m_format = VK_FORMAT_R32_UINT;
+    textureData.m_width = CHUNK_SIZE * 4;
+    textureData.m_height = CHUNK_SIZE * 4;
+    textureData.m_layerCount = RENDER_AREA; // A layer = a chunk
     textureData.m_usage = VK_IMAGE_USAGE_SAMPLED_BIT |      // Sampled texture
                           VK_IMAGE_USAGE_TRANSFER_DST_BIT;  // Transfer destination
     textureData.m_viewType = VK_IMAGE_VIEW_TYPE_2D_ARRAY;
@@ -47,12 +48,12 @@ void ChunkDataSampler::fill(
         .m_accessMask = VK_ACCESS_SHADER_READ_BIT,
         .m_stageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT };
 
-    const auto& chunks = *(const std::array<game::Chunk, WORLD_SIZE>*)data;
+    const auto& chunks = *(const game::World::ChunkArray*)data;
 
     Buffer stagingBuffer = m_imageBuffer.createStagingBuffer(device);
     stagingBuffer.map(device);
-    for (u32 i = 0; i < WORLD_SIZE; i++)
-        stagingBuffer.copyFrom(chunks[i].getHeights().data(), CHUNK_AREA, i * CHUNK_AREA);
+    for (u32 i = 0; i < RENDER_AREA; i++)
+        stagingBuffer.copyFrom(chunks[i].getBlocks().data(), CHUNK_VOLUME, i * CHUNK_VOLUME);
     stagingBuffer.unmap(device);
 
     cmdBuffer->reset();

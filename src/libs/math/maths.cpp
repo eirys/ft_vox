@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/21 11:30:06 by etran             #+#    #+#             */
-/*   Updated: 2024/03/15 18:48:49 by etran            ###   ########.fr       */
+/*   Updated: 2024/05/30 22:17:10 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,11 +16,11 @@
 namespace math {
 
 f32   radians(f32 degrees) noexcept {
-    return static_cast<f32>(degrees * M_PI / 180);
+    return static_cast<f32>(degrees * M_PI / 180.0f);
 }
 
 f32 dregrees(f32 radians) noexcept {
-    return static_cast<f32>(radians * 180 / M_PI);
+    return static_cast<f32>(radians * 180.0f / M_PI);
 }
 
 f32           smoothen(const f32 x) noexcept {

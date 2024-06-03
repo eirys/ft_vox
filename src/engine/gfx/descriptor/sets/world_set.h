@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/15 16:21:18 by etran             #+#    #+#             */
-/*   Updated: 2024/03/28 17:07:14 by etran            ###   ########.fr       */
+/*   Updated: 2024/05/30 17:18:42 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,12 +27,12 @@ public:
     /* ====================================================================== */
 
     enum class BindingIndex: u32 {
-        BlockPos    = 0,
-        Textures    = 1,
-        Noise       = 2,
-        Skybox      = 3,
+        // ChunkData,
+        Textures,
+        Noise,
+        Skybox,
 
-        First = BlockPos,
+        First = Textures,
 #if ENABLE_CUBEMAP
         Last = Skybox
 #else
@@ -41,12 +41,12 @@ public:
     };
 
     enum class Texture: u32 {
-        ChunkData = 0,
+        // ChunkData = 0,
         GameTexture,
         PerlinNoise,
         Skybox,
 
-        First = ChunkData,
+        First = GameTexture,
 #if ENABLE_CUBEMAP
         Last = Skybox
 #else

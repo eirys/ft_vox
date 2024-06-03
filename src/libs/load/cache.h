@@ -1,54 +1,56 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   engine.h                                           :+:      :+:    :+:   */
+/*   cache.h                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/02/27 18:15:33 by etran             #+#    #+#             */
-/*   Updated: 2024/05/31 02:19:05 by etran            ###   ########.fr       */
+/*   Created: 2024/05/18 14:31:24 by etran             #+#    #+#             */
+/*   Updated: 2024/05/18 15:31:59 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
-#include "controller.h"
-#include "window.h"
-#include "renderer.h"
-#include "game_state.h"
-#include "timer.h"
+#include "types.h"
 
-namespace vox {
+enum class CacheType: u8 {
+    UNDEFINED,
+    CHUNK,
+    PROCEDURAL_TEXTURE,
+};
 
-class Engine final {
+/**
+ * @brief Cache the data.
+*/
+class Cache final {
 public:
     /* ====================================================================== */
     /*                                 METHODS                                */
     /* ====================================================================== */
 
-    Engine();
-    ~Engine();
+    Cache(const CacheType type, const u32 id) noexcept;
 
-    Engine(Engine&& other) = delete;
-    Engine(const Engine& other) = delete;
-    Engine& operator=(Engine&& other) = delete;
-    Engine& operator=(const Engine& other) = delete;
+    Cache() = default;
+    ~Cache() = default;
+
+    Cache(Cache&& other) = delete;
+    Cache(const Cache& other) = delete;
+    Cache& operator=(Cache&& other) = delete;
+    Cache& operator=(const Cache& other) = delete;
 
     /* ====================================================================== */
 
-    void    run();
+    std::vector<u8>     load() const;
 
-private:
+    void                save(const std::vector<u8>& data) const;
+    void                save(const u8* data, const u32 size) const;
+
     /* ====================================================================== */
     /*                                  DATA                                  */
     /* ====================================================================== */
 
-    ui::Window      m_window;
-    gfx::Renderer   m_renderer;
-    ui::Timer       m_timer;
+    CacheType   m_type = CacheType::UNDEFINED;
+    u32         m_id = 0;
 
-    game::GameState m_game;
-
-}; // class Engine
-
-} // namespace vox
+}; // class Cache

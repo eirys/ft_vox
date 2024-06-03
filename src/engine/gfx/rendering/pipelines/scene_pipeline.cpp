@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/07 09:48:27 by etran             #+#    #+#             */
-/*   Updated: 2024/04/08 16:44:59 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/02 01:24:52 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,6 @@
 #include "device.h"
 #include "icommand_buffer.h"
 #include "descriptor_table.h"
-#include "game_decl.h"
 
 #include <array>
 #include <stdexcept>
@@ -32,7 +31,7 @@ enum class SceneDescriptorSet: u32 {
 };
 
 enum class SetIndex: u32 {
-    PerFrameData    = (u32)DescriptorSetIndex::Mvp,
+    PerFrameData    = (u32)DescriptorSetIndex::Pfd,
     Textures        = (u32)DescriptorSetIndex::WorldData,
 
     First = PerFrameData,
@@ -53,10 +52,10 @@ void ScenePipeline::init(
 ) {
     VkPipelineVertexInputStateCreateInfo vertexInput{};
     vertexInput.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-    vertexInput.vertexBindingDescriptionCount = 0;
-    vertexInput.pVertexBindingDescriptions = nullptr;
-    vertexInput.vertexAttributeDescriptionCount = 0;
-    vertexInput.pVertexAttributeDescriptions = nullptr;
+    vertexInput.vertexBindingDescriptionCount = VertexInstance::getBindingDescriptions().size();
+    vertexInput.pVertexBindingDescriptions = VertexInstance::getBindingDescriptions().data();
+    vertexInput.vertexAttributeDescriptionCount = VertexInstance::getAttributeDescriptions().size();
+    vertexInput.pVertexAttributeDescriptions = VertexInstance::getAttributeDescriptions().data();
 
     VkPipelineInputAssemblyStateCreateInfo inputAssembly{};
     inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
@@ -133,10 +132,10 @@ void ScenePipeline::init(
 
     std::array<VkPipelineShaderStageCreateInfo, SHADER_STAGE_COUNT> shaderStages{};
     const VkShaderModule vertexModule = _createShaderModule(device, "obj/shaders/scene.vertex.spv");
-    shaderStages[(u32)ShaderStage::Vertex].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-    shaderStages[(u32)ShaderStage::Vertex].stage = (VkShaderStageFlagBits)ShaderType::VS;
-    shaderStages[(u32)ShaderStage::Vertex].module = vertexModule;
-    shaderStages[(u32)ShaderStage::Vertex].pName = "main";
+    shaderStages[(u32)ShaderStage::VertexInstance].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+    shaderStages[(u32)ShaderStage::VertexInstance].stage = (VkShaderStageFlagBits)ShaderType::VS;
+    shaderStages[(u32)ShaderStage::VertexInstance].module = vertexModule;
+    shaderStages[(u32)ShaderStage::VertexInstance].pName = "main";
 
     const VkShaderModule fragmentModule = _createShaderModule(device, "obj/shaders/scene.fragment.spv");
     shaderStages[(u32)ShaderStage::Fragment].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -173,6 +172,8 @@ void ScenePipeline::init(
 
 void ScenePipeline::destroy(const Device& device) {
     vkDestroyPipeline(device.getDevice(), m_pipeline, nullptr);
+    for (u32 i = 0; i < VERTEX_BUFFER_COUNT; ++i)
+        m_vertexBuffers[i].destroy(device);
 
     LDEBUG("Scene pipeline destroyed.");
 }
@@ -184,9 +185,11 @@ void ScenePipeline::record(
     const DescriptorTable& descriptorTable,
     const ICommandBuffer* cmdBuffer
 ) {
-    std::array<VkDescriptorSet, DESCRIPTOR_SET_COUNT> descriptorSets = {
+    const std::array<VkDescriptorSet, DESCRIPTOR_SET_COUNT> descriptorSets = {
         descriptorTable[(DescriptorSetIndex)SetIndex::PerFrameData]->getSet(),
         descriptorTable[(DescriptorSetIndex)SetIndex::Textures]->getSet() };
+    const std::array<VkDeviceSize, 1> offsets = { 0 };
+    const std::array<VkBuffer, 1> vertexBuffers = { _getCurrentBuffer().getBuffer().getBuffer() };
 
     vkCmdBindDescriptorSets(
         cmdBuffer->getBuffer(),
@@ -201,11 +204,56 @@ void ScenePipeline::record(
         VK_PIPELINE_BIND_POINT_GRAPHICS,
         m_pipeline);
 
-    // For now, draw upper quad
-    constexpr u32 INSTANCES = WORLD_SIZE * CHUNK_AREA;
+    vkCmdBindVertexBuffers(
+        cmdBuffer->getBuffer(),
+        0, vertexBuffers.size(),
+        vertexBuffers.data(),
+        offsets.data());
 
-    LDEBUG("Drawing " << INSTANCES << " instances of scene");
-    vkCmdDraw(cmdBuffer->getBuffer(), 4, INSTANCES, 0, 0);
+    vkCmdDraw(cmdBuffer->getBuffer(), 4, _getCurrentBuffer().getInstancesCount(), 0, 0);
+}
+
+#if ENABLE_FRUSTUM_CULLING
+
+void ScenePipeline::initVertexBuffer(
+    const Device& device,
+    const game::GameState& gameState
+) {
+    for (u32 i = 0; i < VERTEX_BUFFER_COUNT; ++i)
+        m_vertexBuffers[i].init(device, gameState);
+}
+
+void ScenePipeline::updateVertexBuffer(
+    const Device& device,
+    const game::GameState& gameState
+) {
+    _getCurrentBuffer().update(device, gameState);
+    _switchBuffer();
+}
+
+#else
+
+void ScenePipeline::initVertexBuffer(
+    const Device& device,
+    const ICommandBuffer* cmdBuffer,
+    const game::GameState& gameState
+) {
+    for (u32 i = 0; i < VERTEX_BUFFER_COUNT; ++i)
+        m_vertexBuffers[i].init(device, cmdBuffer, gameState);
+}
+
+#endif
+
+/* ========================================================================== */
+/*                                   PRIVATE                                  */
+/* ========================================================================== */
+
+VertexBuffer& ScenePipeline::_getCurrentBuffer() {
+    return m_vertexBuffers[m_currentBuffer];
+}
+
+void ScenePipeline::_switchBuffer() {
+    m_currentBuffer = (m_currentBuffer + 1) % VERTEX_BUFFER_COUNT;
 }
 
 } // namespace vox::gfx

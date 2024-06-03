@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/19 01:29:34 by etran             #+#    #+#             */
-/*   Updated: 2024/03/19 11:11:29 by etran            ###   ########.fr       */
+/*   Updated: 2024/05/28 14:34:14 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,10 +31,10 @@ public:
     /* ====================================================================== */
 
     enum class ShaderStage: u32 {
-        Vertex = 0,
+        VertexInstance = 0,
         Fragment,
 
-        First = Vertex,
+        First = VertexInstance,
         Last = Fragment
     };
 
@@ -70,12 +70,6 @@ private:
     /* ====================================================================== */
 
     static constexpr u32    SHADER_STAGE_COUNT = static_cast<u32>(ShaderStage::Last) + 1;
-
-    /* ====================================================================== */
-    /*                                  DATA                                  */
-    /* ====================================================================== */
-
-    CloudsRenderPass*   m_renderPass = nullptr;
 
 }; // class CloudsPipeline
 

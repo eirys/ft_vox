@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/27 17:14:27 by etran             #+#    #+#             */
-/*   Updated: 2024/03/15 18:00:55 by etran            ###   ########.fr       */
+/*   Updated: 2024/05/31 02:29:42 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,6 +26,7 @@ class ICommandBuffer;
 /* ========================================================================== */
 
 struct BufferMetadata final {
+    u32                     m_format;
     VkDeviceSize            m_size;
     VkBufferUsageFlags      m_usage;
     VkMemoryPropertyFlags   m_properties;
@@ -64,10 +65,12 @@ public:
     void copyFrom(const void* src, const u32 size, const u32 offset);
 
     void copyBuffer(
-        ICommandBuffer* cmdBuffer,
+        const ICommandBuffer* cmdBuffer,
         const Buffer& src,
         const u32 srcOffset = 0,
         const u32 dstOffset = 0);
+
+    Buffer  createStagingBuffer(const Device& device) const;
 
     /* ====================================================================== */
 

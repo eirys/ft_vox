@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/02 12:23:55 by etran             #+#    #+#             */
-/*   Updated: 2024/03/02 12:30:22 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/02 00:52:13 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,10 +21,10 @@ namespace vox::gfx {
 
 enum class FenceIndex: u32 {
     DrawInFlight    = 0,    // Signals that a graphics command is ongoing.
-    ComputeInFlight,        // Signals that a compute command is ongoing.
+    // ComputeInFlight,        // Signals that a compute command is ongoing.
 
     First = DrawInFlight,
-    Last = ComputeInFlight
+    Last = DrawInFlight
 };
 
 constexpr u32 FENCE_COUNT = enumSize<FenceIndex>();
@@ -34,11 +34,12 @@ constexpr u32 FENCE_COUNT = enumSize<FenceIndex>();
 enum class SemaphoreIndex: u32 {
     ImageAvailable  = 0,    // Signals that an image is available for rendering.
     RenderFinished,         // Signals that rendering has finished.
-    ComputeFinished,        // Signals that a compute command has finished.
-    GraphicsFinished,       // Signals that a graphics command has finished.
+    // ComputeFinished,        // Signals that a compute command has finished.
+    // GraphicsFinished,       // Signals that a graphics command has finished.
+    // VertexBufferReady,
 
     First = ImageAvailable,
-    Last = GraphicsFinished
+    Last = RenderFinished
 };
 
 constexpr u32 SEMAPHORE_COUNT = enumSize<SemaphoreIndex>();

@@ -1,54 +1,56 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   engine.h                                           :+:      :+:    :+:   */
+/*   bounding_box.h                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/02/27 18:15:33 by etran             #+#    #+#             */
-/*   Updated: 2024/05/31 02:19:05 by etran            ###   ########.fr       */
+/*   Created: 2024/05/30 19:14:49 by etran             #+#    #+#             */
+/*   Updated: 2024/05/31 18:33:02 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
-#include "controller.h"
-#include "window.h"
-#include "renderer.h"
-#include "game_state.h"
-#include "timer.h"
+#include "vector.h"
 
-namespace vox {
+namespace vox::gfx {
 
-class Engine final {
+class BoundingFrustum;
+
+class BoundingBox final {
 public:
     /* ====================================================================== */
     /*                                 METHODS                                */
     /* ====================================================================== */
 
-    Engine();
-    ~Engine();
+    BoundingBox(const math::Vect3& center, const math::Vect3& halfExtent);
 
-    Engine(Engine&& other) = delete;
-    Engine(const Engine& other) = delete;
-    Engine& operator=(Engine&& other) = delete;
-    Engine& operator=(const Engine& other) = delete;
+    BoundingBox() = default;
+    ~BoundingBox() = default;
+    BoundingBox(BoundingBox&& other) = default;
+    BoundingBox(const BoundingBox& other) = default;
+    BoundingBox& operator=(BoundingBox&& other) = default;
+    BoundingBox& operator=(const BoundingBox& other) = default;
 
     /* ====================================================================== */
 
-    void    run();
+    bool                isVisible(const BoundingFrustum& frustum) const;
 
 private:
     /* ====================================================================== */
     /*                                  DATA                                  */
     /* ====================================================================== */
 
-    ui::Window      m_window;
-    gfx::Renderer   m_renderer;
-    ui::Timer       m_timer;
+    math::Vect3 m_center;
+    math::Vect3 m_halfExtent;
 
-    game::GameState m_game;
+    /* ====================================================================== */
+    /*                                 METHODS                                */
+    /* ====================================================================== */
 
-}; // class Engine
+    bool    _isInsidePlane(const math::Vect4& plane) const;
 
-} // namespace vox
+}; // class BoundingBox
+
+} // namespace vox::gfx
