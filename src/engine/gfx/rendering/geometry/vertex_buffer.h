@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/20 13:34:05 by etran             #+#    #+#             */
-/*   Updated: 2024/06/02 01:36:20 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/03 09:13:27 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,6 @@
 
 #include "buffer.h"
 #include "vertex.h"
-#include "game_decl.h"
 
 namespace game {
 class GameState;

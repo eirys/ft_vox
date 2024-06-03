@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/29 23:49:38 by etran             #+#    #+#             */
-/*   Updated: 2024/06/02 01:24:46 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/03 09:10:21 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 
 #include "pipeline.h"
 #include "vertex_buffer.h"
-#include "game_decl.h"
+#include "vox_decl.h"
 
 namespace game {
 class GameState;

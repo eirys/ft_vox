@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/21 12:17:21 by etran             #+#    #+#             */
-/*   Updated: 2024/03/31 16:06:43 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/03 09:11:43 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,9 +14,11 @@
 
 #include "core.h"
 #include "device.h"
+
 #include "pipeline_decl.h"
 #include "sync_decl.h"
 #include "render_decl.h"
+
 #include "fence.h"
 #include "gfx_semaphore.h"
 #include "swap_chain.h"
@@ -69,7 +71,7 @@ private:
 
     enum class CommandBufferIndex: u32 {
         Draw = 0,
-        Transfer,
+        Transfer = Draw,
         // Compute,
 
         First = Draw,

@@ -1,6 +1,7 @@
 #version 450
 
 #include "../src/engine/game/game_decl.h"
+#include "../src/engine/vox_decl.h"
 #include "../src/engine/gfx/descriptor/sets/descriptor_decl.h"
 
 layout(location = 0) in vec3 inUVW;

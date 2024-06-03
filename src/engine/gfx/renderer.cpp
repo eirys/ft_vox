@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/23 09:29:35 by etran             #+#    #+#             */
-/*   Updated: 2024/06/02 01:37:11 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/03 09:18:18 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,7 @@
 #include "scene_pipeline.h"
 #include "skybox_pipeline.h"
 #include "starfield_pipeline.h"
+#include "vox_decl.h"
 
 #include "debug.h"
 
@@ -51,7 +52,6 @@ void Renderer::init(ui::Window& window, const game::GameState& game) {
 #else
     ((ScenePipeline*)m_pipelines[(u32)PipelineIndex::ScenePipeline])->initVertexBuffer(m_device, transferBuffer, game);
 #endif
-    // ((ScenePipeline*)m_pipelines[(u32)PipelineIndex::ScenePipeline])->updateVertexBuffer(m_device, game);
 
     LDEBUG("Renderer initialized.");
 }
@@ -85,7 +85,6 @@ void Renderer::render(const game::GameState& game) {
 
     // Retrieve swap chain image ------
     m_fences[(u32)FenceIndex::DrawInFlight].await(m_device);
-    m_fences[(u32)FenceIndex::DrawInFlight].reset(m_device);
 
 #if ENABLE_FRUSTUM_CULLING
     ((ScenePipeline*)m_pipelines[(u32)PipelineIndex::ScenePipeline])->updateVertexBuffer(m_device, game);
@@ -94,6 +93,7 @@ void Renderer::render(const game::GameState& game) {
     if (m_swapChain.acquireNextImage(m_device, m_semaphores[(u32)SemaphoreIndex::ImageAvailable]) == false)
         // TODO: Handle this error
         return;
+    m_fences[(u32)FenceIndex::DrawInFlight].reset(m_device);
     // --------------------------------
 
     // Record command buffer ---------
@@ -146,8 +146,11 @@ void Renderer::render(const game::GameState& game) {
 /* ========================================================================== */
 
 void Renderer::_createCommandBuffers() {
-    m_commandBuffers[(u32)CommandBufferIndex::Draw] = m_commandPool.createCommandBuffer(m_device, CommandBufferType::DRAW);
-    m_commandBuffers[(u32)CommandBufferIndex::Transfer] = m_commandPool.createCommandBuffer(m_device, CommandBufferType::DRAW);
+    // Draw buffers
+    for (u32 i = 0; i < CMD_BUFFER_COUNT; ++i) m_commandBuffers[i] = m_commandPool.createCommandBuffer(m_device, CommandBufferType::DRAW);
+
+    // m_commandBuffers[(u32)CommandBufferIndex::Draw] = m_commandPool.createCommandBuffer(m_device, CommandBufferType::DRAW);
+    // m_commandBuffers[(u32)CommandBufferIndex::Transfer] = m_commandPool.createCommandBuffer(m_device, CommandBufferType::DRAW);
 
     LDEBUG("Command buffers created.");
 }

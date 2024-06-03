@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/15 16:21:18 by etran             #+#    #+#             */
-/*   Updated: 2024/05/30 17:18:42 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/03 09:07:35 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 #include "descriptor_set.h"
 #include "texture_sampler.h"
 #include "game_decl.h"
+#include "vox_decl.h"
 
 #include <array>
 

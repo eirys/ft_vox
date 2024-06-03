@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/15 13:35:46 by etran             #+#    #+#             */
-/*   Updated: 2024/06/02 01:30:12 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/03 09:08:11 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,7 +29,4 @@
 # define RENDER_HEIGHT   1  // Number of chunks above and below the player
 # define RENDER_AREA     (RENDER_DISTANCE * RENDER_DISTANCE * RENDER_HEIGHT) // 2048
 
-# define ENABLE_CUBEMAP 0
-# define ENABLE_FRUSTUM_CULLING 0
-
-#endif // GAME_DECL_
+#endif // GAME_DECL_H

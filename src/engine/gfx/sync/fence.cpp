@@ -6,12 +6,13 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/02 11:30:58 by etran             #+#    #+#             */
-/*   Updated: 2024/03/11 13:48:45 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/03 09:18:53 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "fence.h"
 #include "device.h"
+#include "debug.h"
 
 #include <stdexcept>
 
