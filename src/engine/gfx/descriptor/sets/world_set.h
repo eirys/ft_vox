@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/15 16:21:18 by etran             #+#    #+#             */
-/*   Updated: 2024/06/03 09:58:04 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/03 21:49:29 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,7 +45,7 @@ public:
         PerlinNoise,
 
 #if ENABLE_CUBEMAP
-        Skybox,
+        Cubemap,
 #endif
 
         Count

@@ -8,13 +8,11 @@ layout(location = 0) out    vec4 outFragColor;
 
 void main() {
     // Useless in the future, when full world is implemented
-    // if (inHeight > 14.0) {
-    //     discard;
-    // }
+    if (inHeight > 14.0) {
+        discard;
+    }
     // Alpha depends on vertex height and random value
-    // const float starIntensity = clamp(inIntensity * inRandom, 0.0, 1.0);
+    const float starIntensity = clamp(inIntensity * inRandom, 0.0, 1.0);
 
-    // outFragColor = vec4(0.9, 0.9, 0.9, starIntensity);
-
-    outFragColor = vec4(1.0);
+    outFragColor = vec4(0.9, 0.9, 0.9, starIntensity);
 }
