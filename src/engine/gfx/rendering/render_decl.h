@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/07 14:55:18 by etran             #+#    #+#             */
-/*   Updated: 2024/06/03 09:53:17 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/03 10:05:01 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,7 @@ enum class RenderPassIndex: u32 {
     Main,
 
 #if ENABLE_SHADOW_MAPPING
-    // Shadow,
+    Shadow,
 #endif
 
     Count

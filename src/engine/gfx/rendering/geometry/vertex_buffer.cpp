@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/20 14:58:48 by etran             #+#    #+#             */
-/*   Updated: 2024/06/02 01:36:42 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/03 11:26:32 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,7 +24,10 @@ namespace vox::gfx {
 /*                                   PUBLIC                                   */
 /* ========================================================================== */
 
-u32 VertexBuffer::ms_maxVertexInstanceCount = 0;
+Buffer  VertexBuffer::ms_buffer;
+u32     VertexBuffer::ms_instancesCount = 0;
+u32     VertexBuffer::ms_visibleAABBsCount = 0;
+u32     VertexBuffer::ms_maxVertexInstanceCount = 0;
 
 #if ENABLE_FRUSTUM_CULLING
 /**
@@ -40,8 +43,8 @@ void VertexBuffer::init(
     metadata.m_usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
     metadata.m_properties = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
 
-    m_buffer.init(device, std::move(metadata));
-    m_buffer.map(device);
+    ms_buffer.init(device, std::move(metadata));
+    ms_buffer.map(device);
 }
 
 void VertexBuffer::update(const Device& device, const game::GameState& gameState) {
@@ -51,8 +54,8 @@ void VertexBuffer::update(const Device& device, const game::GameState& gameState
     if (visibleAABBs == m_visibleAABBsCount)
         return;
     m_visibleAABBsCount = visibleAABBs;
-    m_instancesCount = instances.size();
-    m_buffer.copyFrom(instances.data(), sizeof(VertexInstance) * m_instancesCount, 0);
+    ms_instancesCount = instances.size();
+    ms_buffer.copyFrom(instances.data(), sizeof(VertexInstance) * ms_instancesCount, 0);
 }
 
 #else
@@ -63,24 +66,24 @@ void VertexBuffer::init(
     const game::GameState& gameState
 ) {
     const auto instances = _computeVertexInstances(gameState);
-    m_instancesCount = instances.size();
+    ms_instancesCount = instances.size();
 
     BufferMetadata metadata{};
     metadata.m_format = sizeof(VertexInstance);
-    metadata.m_size = m_instancesCount;
+    metadata.m_size = ms_instancesCount;
     metadata.m_usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
     metadata.m_properties = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
 
-    m_buffer.init(device, std::move(metadata));
+    ms_buffer.init(device, std::move(metadata));
 
-    Buffer  stagingBuffer = m_buffer.createStagingBuffer(device);
+    Buffer  stagingBuffer = ms_buffer.createStagingBuffer(device);
     stagingBuffer.map(device);
-    stagingBuffer.copyFrom(instances.data(), sizeof(VertexInstance) * m_instancesCount, 0);
+    stagingBuffer.copyFrom(instances.data(), sizeof(VertexInstance) * ms_instancesCount, 0);
     stagingBuffer.unmap(device);
 
     cmdBuffer->reset();
     cmdBuffer->startRecording();
-    m_buffer.copyBuffer(cmdBuffer, stagingBuffer);
+    ms_buffer.copyBuffer(cmdBuffer, stagingBuffer);
     cmdBuffer->stopRecording();
     cmdBuffer->awaitEndOfRecording(device);
 
@@ -91,17 +94,17 @@ void VertexBuffer::init(
 #endif
 
 void VertexBuffer::destroy(const Device& device) {
-    m_buffer.destroy(device);
+    ms_buffer.destroy(device);
 }
 
 /* ========================================================================== */
 
-const Buffer& VertexBuffer::getBuffer() const {
-    return m_buffer;
+const Buffer& VertexBuffer::getBuffer() noexcept {
+    return ms_buffer;
 }
 
-u32 VertexBuffer::getInstancesCount() const noexcept {
-    return m_instancesCount;
+u32 VertexBuffer::getInstancesCount() noexcept {
+    return ms_instancesCount;
 }
 
 /* ========================================================================== */
@@ -173,7 +176,7 @@ void _evaluateChunk(
 std::vector<VertexInstance> VertexBuffer::_computeVertexInstances(
     const game::GameState& gameState,
     u32& visibleAABBs
-) const {
+) {
     std::vector<VertexInstance> instances;
 
     const BoundingFrustum frustum(gameState.getController().getCamera());
@@ -208,7 +211,7 @@ std::vector<VertexInstance> VertexBuffer::_computeVertexInstances(
 
 #else
 
-std::vector<VertexInstance> VertexBuffer::_computeVertexInstances(const game::GameState& gameState) const {
+std::vector<VertexInstance> VertexBuffer::_computeVertexInstances(const game::GameState& gameState) {
     std::vector<VertexInstance> instances;
 
     // Retrieve blocks and cull invisible faces

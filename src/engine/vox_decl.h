@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/03 09:05:39 by etran             #+#    #+#             */
-/*   Updated: 2024/06/03 10:03:21 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/03 11:25:06 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,6 +22,6 @@
 # endif
 
 # define ENABLE_FRUSTUM_CULLING 0
-# define ENABLE_SHADOW_MAPPING 1
+# define ENABLE_SHADOW_MAPPING 0
 
 #endif // VOX_DECL_H

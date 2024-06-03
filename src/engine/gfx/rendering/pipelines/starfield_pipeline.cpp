@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/27 14:22:51 by etran             #+#    #+#             */
-/*   Updated: 2024/06/03 09:50:40 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/03 10:08:17 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -104,10 +104,10 @@ void StarfieldPipeline::init(
 
     std::array<VkPipelineShaderStageCreateInfo, SHADER_STAGE_COUNT> shaderStages{};
     const VkShaderModule vertexModule = _createShaderModule(device, "obj/shaders/starfield.vertex.spv");
-    shaderStages[(u32)ShaderStage::VertexInstance].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-    shaderStages[(u32)ShaderStage::VertexInstance].stage = (VkShaderStageFlagBits)ShaderType::VS;
-    shaderStages[(u32)ShaderStage::VertexInstance].module = vertexModule;
-    shaderStages[(u32)ShaderStage::VertexInstance].pName = "main";
+    shaderStages[(u32)ShaderStage::Vertex].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+    shaderStages[(u32)ShaderStage::Vertex].stage = (VkShaderStageFlagBits)ShaderType::VS;
+    shaderStages[(u32)ShaderStage::Vertex].module = vertexModule;
+    shaderStages[(u32)ShaderStage::Vertex].pName = "main";
 
     const VkShaderModule fragmentModule = _createShaderModule(device, "obj/shaders/starfield.fragment.spv");
     shaderStages[(u32)ShaderStage::Fragment].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;

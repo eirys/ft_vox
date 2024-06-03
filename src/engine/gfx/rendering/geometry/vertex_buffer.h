@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/20 13:34:05 by etran             #+#    #+#             */
-/*   Updated: 2024/06/03 09:13:27 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/03 11:19:25 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,21 +47,22 @@ public:
         const Device& device,
         const game::GameState& gameState);
 #else
-    void    init(
+    static void    init(
         const Device& device,
         const ICommandBuffer* cmdBuffer,
         const game::GameState& gameState);
 #endif
-    void    destroy(const Device& device);
 
-    void    update(
+    static void    destroy(const Device& device);
+
+    static void    update(
         const Device& device,
         const game::GameState& gameState);
 
     /* ====================================================================== */
 
-    const Buffer&   getBuffer() const;
-    u32             getInstancesCount() const noexcept;
+    static const Buffer&   getBuffer() noexcept;
+    static u32             getInstancesCount() noexcept;
 
     /* ====================================================================== */
 
@@ -72,25 +73,20 @@ private:
     /*                             STATIC MEMBERS                             */
     /* ====================================================================== */
 
-    static u32  ms_maxVertexInstanceCount;
+    static Buffer   ms_buffer;
 
-    /* ====================================================================== */
-    /*                                  DATA                                  */
-    /* ====================================================================== */
-
-    Buffer  m_buffer;
-
-    u32     m_instancesCount = 0;
-    u32     m_visibleAABBsCount = 0;
+    static u32      ms_instancesCount;
+    static u32      ms_visibleAABBsCount;
+    static u32      ms_maxVertexInstanceCount;
 
     /* ====================================================================== */
     /*                                 METHODS                                */
     /* ====================================================================== */
 
 #if ENABLE_FRUSTUM_CULLING
-    std::vector<VertexInstance> _computeVertexInstances(const game::GameState& gameState, u32& visibleAABBs) const;
+    static std::vector<VertexInstance> _computeVertexInstances(const game::GameState& gameState, u32& visibleAABBs);
 #else
-    std::vector<VertexInstance> _computeVertexInstances(const game::GameState& gameState) const;
+    static std::vector<VertexInstance> _computeVertexInstances(const game::GameState& gameState);
 #endif
 
 }; // class VertexBuffer

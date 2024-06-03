@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/23 09:29:35 by etran             #+#    #+#             */
-/*   Updated: 2024/06/03 09:59:55 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/03 11:24:54 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,7 @@
 #include "scene_pipeline.h"
 #include "skybox_pipeline.h"
 #include "starfield_pipeline.h"
+#include "vertex_buffer.h"
 #include "vox_decl.h"
 
 #include "debug.h"
@@ -47,16 +48,17 @@ void Renderer::init(ui::Window& window, const game::GameState& game) {
     m_descriptorTable.fill(m_device);
 
 #if ENABLE_FRUSTUM_CULLING
-    VertexBuffer::computeMaxVertexInstanceCount(game);
-    ((ScenePipeline*)m_pipelines[(u32)PipelineIndex::ScenePipeline])->initVertexBuffer(m_device, game);
+    // VertexBuffer::computeMaxVertexInstanceCount(game);
+    VertexBuffer::init(m_device, game);
 #else
-    ((ScenePipeline*)m_pipelines[(u32)PipelineIndex::ScenePipeline])->initVertexBuffer(m_device, transferBuffer, game);
+    VertexBuffer::init(m_device, transferBuffer, game);
 #endif
 
     LDEBUG("Renderer initialized.");
 }
 
 void Renderer::destroy() {
+    VertexBuffer::destroy(m_device);
     m_descriptorTable.destroy(m_device);
     m_descriptorPool.destroy(m_device);
 
@@ -87,7 +89,7 @@ void Renderer::render(const game::GameState& game) {
     m_fences[(u32)FenceIndex::DrawInFlight].await(m_device);
 
 #if ENABLE_FRUSTUM_CULLING
-    ((ScenePipeline*)m_pipelines[(u32)PipelineIndex::ScenePipeline])->updateVertexBuffer(m_device, game);
+    VertexBuffer::update(m_device, game);
 #endif
 
     if (m_swapChain.acquireNextImage(m_device, m_semaphores[(u32)SemaphoreIndex::ImageAvailable]) == false)

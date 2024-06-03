@@ -6,14 +6,13 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/29 23:49:38 by etran             #+#    #+#             */
-/*   Updated: 2024/06/03 09:43:19 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/03 11:24:29 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
 #include "pipeline.h"
-#include "vertex_buffer.h"
 #include "vox_decl.h"
 
 namespace game {
@@ -37,7 +36,7 @@ public:
     /* ====================================================================== */
 
     enum class ShaderStage: u32 {
-        VertexInstance,
+        Vertex,
         Fragment,
 
         Count
@@ -68,41 +67,12 @@ public:
         const DescriptorTable& descriptorTable,
         const ICommandBuffer* cmdBuffer) override;
 
-#if ENABLE_FRUSTUM_CULLING
-    void    initVertexBuffer(
-        const Device& device,
-        const game::GameState& gameState);
-    void    updateVertexBuffer(
-        const Device& device,
-        const game::GameState& gameState);
-#else
-    void    initVertexBuffer(
-        const Device& device,
-        const ICommandBuffer* cmdBuffer,
-        const game::GameState& gameState);
-#endif
-
 private:
     /* ====================================================================== */
     /*                             STATIC MEMBERS                             */
     /* ====================================================================== */
 
     static constexpr u32    SHADER_STAGE_COUNT = (u32)ShaderStage::Count;
-    static constexpr u32    VERTEX_BUFFER_COUNT = 1;
-
-    /* ====================================================================== */
-    /*                                  DATA                                  */
-    /* ====================================================================== */
-
-    std::array<VertexBuffer, VERTEX_BUFFER_COUNT>   m_vertexBuffers;
-    u32                                             m_currentBuffer = 0;
-
-    /* ====================================================================== */
-    /*                                 METHODS                                */
-    /* ====================================================================== */
-
-    VertexBuffer&   _getCurrentBuffer();
-    void            _switchBuffer();
 
 }; // class ScenePipeline
 

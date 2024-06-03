@@ -6,7 +6,7 @@
 #    By: etran <etran@student.42.fr>                +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/04/06 03:40:09 by eli               #+#    #+#              #
-#    Updated: 2024/05/31 15:07:36 by etran            ###   ########.fr        #
+#    Updated: 2024/06/03 10:07:02 by etran            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -115,6 +115,7 @@ SRC_FILES	:=	entrypoint.cpp \
 				$(PIP_DIR)/scene_pipeline.cpp \
 				$(PIP_DIR)/skybox_pipeline.cpp \
 				$(PIP_DIR)/starfield_pipeline.cpp \
+				$(PIP_DIR)/shadow_pipeline.cpp \
 				$(DEBUG_PIP_DIR)/debug_tex_pipeline.cpp \
 				$(BUF_DIR)/buffer.cpp \
 				$(BUF_DIR)/image_buffer.cpp \
