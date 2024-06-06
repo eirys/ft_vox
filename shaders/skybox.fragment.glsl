@@ -40,10 +40,10 @@ vec3 applySun(
     const vec3 sunColor = mix(SUN_COLOR, SUNSET_TINT, horizonLine);
     const float sunIntensity = clamp(dot(skyboxPoint, sunDir), 0.0, 1.0);
     const float sun =
-        (0.02 * pow(sunIntensity, 8.0)) +   // Outer glow
-        (0.5 * pow(sunIntensity, 64.0)) +   // More glow
+        (0.1 * pow(sunIntensity, 8.0)) +   // Outer glow
+        (0.5 * pow(sunIntensity, 32.0)) +   // More glow
         (1.0 * pow(sunIntensity, 256.0)) +  // MORE glow
-        step(0.995, sunIntensity);          // Sun disk
+        step(0.992, sunIntensity);          // Sun disk
 
     const float horizonEffect = pow(horizonLine, 16.0);
     const float sunAmount = clamp((1.0 - horizonEffect) * sun, 0.0, 1.0);

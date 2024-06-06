@@ -10,16 +10,15 @@ layout(location = 0) out vec3 outUVW;
 layout(location = 1) out vec3 outNormal;
 layout(location = 2) out vec3 outShadowCoords;
 
-layout(set = PFD_SET, binding = 0) uniform CameraViewProj {
+layout(set = PFD_SET, binding = 0) uniform Camera {
     mat4 view;
     mat4 proj;
-} camViewProj;
+} camera;
 
 #if ENABLE_SHADOW_MAPPING
-layout(set = PFD_SET, binding = 2) uniform ProjectorViewProj {
-    mat4 view;
-    mat4 proj;
-} projectorViewProj;
+layout(set = PFD_SET, binding = 2) uniform Projector {
+    mat4 viewProj;
+} projector;
 #endif
 
 // layout(set = WORLD_SET, binding = 0) uniform usampler2DArray ChunkData;
@@ -104,8 +103,8 @@ void main() {
     outUVW = vec3(UVS[gl_VertexIndex], instanceData.textureIndex);
     outNormal = NORMALS[instanceData.face];
 #if ENABLE_SHADOW_MAPPING
-    outShadowCoords = (projectorViewProj.proj * projectorViewProj.view * worldPos).xyz;
+    outShadowCoords = (projector.viewProj * worldPos).xyz;
+    outShadowCoords.xy = 0.5 * outShadowCoords.xy + 0.5;
 #endif
-
-    gl_Position = camViewProj.proj * camViewProj.view * worldPos;
+    gl_Position = camera.proj * camera.view * worldPos;
 }

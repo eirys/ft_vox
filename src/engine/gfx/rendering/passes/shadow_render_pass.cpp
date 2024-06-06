@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/03 12:53:21 by etran             #+#    #+#             */
-/*   Updated: 2024/06/03 17:18:45 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/06 03:06:47 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,6 +46,18 @@ void ShadowRenderPass::updateResources(const Device& device, const RenderPassInf
 }
 
 void ShadowRenderPass::begin(const ICommandBuffer* cmdBuffer, const RecordInfo& recordInfo) const {
+    VkViewport viewport{};
+    viewport.width = (f32)m_width;
+    viewport.height = (f32)m_height;
+    viewport.minDepth = 0.0f;
+    viewport.maxDepth = 1.0f;
+    vkCmdSetViewport(cmdBuffer->getBuffer(), 0, 1, &viewport);
+
+    VkRect2D scissor{};
+    scissor.offset = { 0, 0 };
+    scissor.extent = { m_width, m_height };
+    vkCmdSetScissor(cmdBuffer->getBuffer(), 0, 1, &scissor);
+
     std::array<VkClearValue, RESOURCE_COUNT> clearValues{};
     clearValues[(u32)Attachment::Depth].depthStencil = { 1.0f, 0 };
 
@@ -99,8 +111,8 @@ void ShadowRenderPass::_createRenderPass(const Device& device, const RenderPassI
     dependencies[0].dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
     dependencies[0].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
 
-    dependencies[1].srcSubpass = VK_SUBPASS_EXTERNAL;
-    dependencies[1].dstSubpass = 0;
+    dependencies[1].srcSubpass = 0;
+    dependencies[1].dstSubpass = VK_SUBPASS_EXTERNAL;
     dependencies[1].srcStageMask = VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
     dependencies[1].dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
     dependencies[1].srcAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;

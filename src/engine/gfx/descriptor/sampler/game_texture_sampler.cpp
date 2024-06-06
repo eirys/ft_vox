@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/11 17:46:33 by etran             #+#    #+#             */
-/*   Updated: 2024/06/03 16:13:54 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/04 17:08:04 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -69,8 +69,8 @@ void GameTextureSampler::fill(
     const ICommandBuffer* cmdBuffer,
     const void* data
 ) {
-    static const u32 IMAGE_SIZE = m_imageBuffer.getMetaData().getLayerSize()
-                                * m_imageBuffer.getMetaData().getPixelSize();
+    const u32 IMAGE_SIZE = m_imageBuffer.getMetaData().getLayerSize()
+                           * m_imageBuffer.getMetaData().getPixelSize();
 
     std::array<scop::Image, TEXTURE_COUNT> textures = _loadAssets();
 

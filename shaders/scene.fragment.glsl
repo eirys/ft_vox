@@ -34,37 +34,26 @@ float applyFog(in float distanceToPoint) {
     return clamp(fog, 0.0, 1.0);
 }
 
-float isFragInShadow(vec3 shadowCoords) {
+float applyShadow(in vec3 shadowCoords) {
 #if ENABLE_SHADOW_MAPPING
-    if (shadowCoords.z > 0.0 && shadowCoords.z < 1.0) {
-        float dist = texture(Shadowmap, shadowCoords.xy).r;
-        if (dist + 0.001 < shadowCoords.z)
-            return 1.0;
-    }
+    const float depthValue = texture(Shadowmap, shadowCoords.xy).r;
+    const float distanceToLight = shadowCoords.z;
+
+    const float shouldDisplayShadow = step(distanceToLight, 1.0);
+    return shouldDisplayShadow * step(distanceToLight - 0.005, depthValue) + (1.0 - shouldDisplayShadow) * 1.0;
 #endif
-    return 0.0;
+    return 1.0;
 }
 
-float applyDiffuse(in vec3 normal, in vec3 sunDir, in float sunHeight) {
-    if (sunHeight <= 0.0)
-        return 0.0;
-
-    const float sunHeightFactor = min(1.0, pow(sunHeight, 2.0) + (0.5 * sunHeight));
+float applyDiffuse(in vec3 normal, in vec3 sunDir) {
     const float illumination = max(dot(normal, sunDir), 0.0);
-
-    const float isInShadow = isFragInShadow(inShadowCoords);// * step(0.0, sunHeight);
-
-    return
-        mix(
-              mix(0.05, illumination, sunHeightFactor),
-             0.0,
-              isInShadow
-        );
+    return illumination;
 }
 
 void main() {
     const vec3 sunDir = vec3(gameData.sunPos, 0.0);
     const float sunHeight = max(sunDir.y, 0.0);
+    const float sunHeightFactor = min(1.0, pow(sunHeight, 2.0) + (0.5 * sunHeight));
 
     vec3 color = texture(GameTex, inUVW).rgb;
 
@@ -76,8 +65,9 @@ void main() {
     color = mix(color, skyHue, 0.005);
 
     // Lighting
-    const float diffuseFactor = applyDiffuse(inNormal, sunDir, sunHeight);
-    color = (diffuseFactor + AMBIENT_TINT) * color;
+    const float shadow = applyShadow(inShadowCoords);
+    const float diffuseLight = sunHeightFactor * applyDiffuse(inNormal, sunDir);
+    color = ((shadow * diffuseLight) + AMBIENT_TINT) * color;
 
     // Fog
     const vec3 fogColor = FOG_COLOR * (sunHeight * 0.9 + 0.1);

@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/03 22:11:27 by etran             #+#    #+#             */
-/*   Updated: 2024/06/03 10:09:03 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/04 02:42:05 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,14 +20,14 @@
 namespace vox::gfx {
 
 enum class DebugTexSet: u32 {
-    TextureSet = 0,
+    Pfd = 0,
 
-    First = TextureSet,
-    Last = TextureSet
+    First = Pfd,
+    Last = Pfd
 };
 
 enum class SetIndex: u32 {
-    TextureSet = (u32)DescriptorSetIndex::WorldData
+    PerFrameData    = (u32)DescriptorSetIndex::Pfd,
 };
 
 static constexpr u32 DESCRIPTOR_SET_COUNT = enumSize<DebugTexSet>();
@@ -57,7 +57,7 @@ void DebugTexPipeline::init(
     rasterizer.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
     rasterizer.polygonMode = VK_POLYGON_MODE_FILL;
     rasterizer.lineWidth = 1.0f;
-    rasterizer.frontFace = VK_FRONT_FACE_CLOCKWISE;
+    rasterizer.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
     rasterizer.cullMode = VK_CULL_MODE_BACK_BIT;
 
     VkPipelineMultisampleStateCreateInfo multisample{};
@@ -83,7 +83,7 @@ void DebugTexPipeline::init(
     depthStencil.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
     depthStencil.depthTestEnable = VK_FALSE;
     depthStencil.depthWriteEnable = VK_FALSE;
-    depthStencil.depthCompareOp = VK_COMPARE_OP_LESS;
+    depthStencil.depthCompareOp = VK_COMPARE_OP_NEVER;
 
     const std::array<VkDynamicState, 2> dynamicStates = { VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR };
     VkPipelineDynamicStateCreateInfo dynamicState{};
@@ -145,7 +145,7 @@ void DebugTexPipeline::record(
     const ICommandBuffer* cmdBuffer
 ) {
     std::array<VkDescriptorSet, DESCRIPTOR_SET_COUNT> descriptorSets = {
-        descriptorTable[(DescriptorSetIndex)SetIndex::TextureSet]->getSet() };
+        descriptorTable[(u32)SetIndex::PerFrameData]->getSet() };
 
     vkCmdBindDescriptorSets(
         cmdBuffer->getBuffer(),

@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/19 23:18:11 by etran             #+#    #+#             */
-/*   Updated: 2024/06/03 19:10:08 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/06 15:11:44 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,17 +60,11 @@ Mat4&	Mat4::operator=(const Mat4& rhs) noexcept {
 
 /* ACCESSORS =============================================================== */
 
-constexpr float&	Mat4::operator[](std::size_t index) {
-	if (index >= 16) {
-		throw std::out_of_range("Matrix index out of range");
-	}
+float&	Mat4::operator[](std::size_t index) {
 	return mat[index];
 }
 
-constexpr float	Mat4::operator[](std::size_t index) const {
-	if (index >= 16) {
-		throw std::out_of_range("Matrix index out of range");
-	}
+float	Mat4::operator[](std::size_t index) const {
 	return mat[index];
 }
 
@@ -361,18 +355,15 @@ Mat4	orthographic(
 	float near,
 	float far
 ) noexcept {
-	const float width = right - left;
-	const float height = bot - top;
-	const float	range = near - far;
 	return Mat4{
 		// Col 1
-		2 / width, 0, 0, 0,
+		2.0f / (right - left), 0.0f, 0.0f, 0.0f,
 		// Col 2
-		0, -2 / height, 0, 0,
+		0.0f, -2.0f / (top - bot), 0.0f, 0.0f,
 		// Col 3
-		0, 0, 1.0f / (range), 0,
+		0.0f, 0.0f, -1.0f / (far - near), 0.0f,
 		// Col 4
-		-(right + left) / width, -(top + bot) / height, near / range, 1 };
+		-(right + left) / (right - left), -(top + bot) / (top - bot), -near / (far - near), 1.0f };
 }
 
 /**

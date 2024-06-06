@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/11 16:12:13 by etran             #+#    #+#             */
-/*   Updated: 2024/06/03 21:10:32 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/06 13:44:11 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -130,15 +130,18 @@ void PFDSet::update(const game::GameState& state) {
 #if ENABLE_SHADOW_MAPPING
     constexpr float	TERRAIN_SIZE = CHUNK_SIZE * RENDER_DISTANCE;
     constexpr float	TERRAIN_HALF = TERRAIN_SIZE / 2.0f;
-    constexpr math::Vect3 ORIGIN = WORLD_ORIGIN;
+    constexpr float	LIGHT_DISTANCE = TERRAIN_HALF;
 
-    const math::Vect3 lighPosition = state.getSunPos() * TERRAIN_HALF + ORIGIN;
-
-    m_data.m_projectorViewProj.view = math::lookAt(lighPosition, ORIGIN, { 0.0f, 1.0f, 0.0f });
-    m_data.m_projectorViewProj.proj = math::orthographic(
+    const math::Mat4 projectorView = math::lookAt(
+        state.getSunPos() * LIGHT_DISTANCE + state.getWorld().getOrigin(),
+        state.getWorld().getOrigin(),
+        WORLD_Y);
+    const math::Mat4 projectorProj = math::orthographic(
         -TERRAIN_HALF, TERRAIN_HALF,
         -TERRAIN_HALF, TERRAIN_HALF,
-        0.1f, TERRAIN_SIZE);
+        0.0f, TERRAIN_SIZE * 1.5f);
+
+    m_data.m_projectorViewProj = projectorProj * projectorView;
 #endif
 
     m_mvpDataBuffer.copyFrom(&m_data);

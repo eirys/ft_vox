@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/15 16:21:18 by etran             #+#    #+#             */
-/*   Updated: 2024/06/03 21:49:29 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/05 22:00:04 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,7 +31,6 @@ public:
         // ChunkData,
         Textures,
         Noise,
-
 #if ENABLE_CUBEMAP
         Cubemap,
 #endif
@@ -43,7 +42,6 @@ public:
         // ChunkData = 0,
         GameTexture,
         PerlinNoise,
-
 #if ENABLE_CUBEMAP
         Cubemap,
 #endif

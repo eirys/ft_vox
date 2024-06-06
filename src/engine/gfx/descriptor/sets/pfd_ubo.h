@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/07 13:46:39 by etran             #+#    #+#             */
-/*   Updated: 2024/06/03 21:11:06 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/05 22:09:38 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,10 +35,7 @@ struct PFDUbo final {
     }           m_gameData;
 
 #if ENABLE_SHADOW_MAPPING
-    struct {
-        math::Mat4  view;
-        math::Mat4  proj;
-    }           m_projectorViewProj;
+    math::Mat4  m_projectorViewProj;
 #endif
 
     /* ====================================================================== */

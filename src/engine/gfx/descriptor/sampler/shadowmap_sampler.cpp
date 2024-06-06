@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/03 16:13:11 by etran             #+#    #+#             */
-/*   Updated: 2024/06/03 18:59:32 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/06 14:22:28 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,7 @@
 
 namespace vox::gfx {
 
-static constexpr u32 TEXTURE_SIZE = 1024;
+static constexpr u32 TEXTURE_SIZE = 2048;
 
 /* ========================================================================== */
 /*                                   PUBLIC                                   */
@@ -69,13 +69,13 @@ void ShadowmapSampler::_createSampler(const Device& device) {
     samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER;
     samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER;
     samplerInfo.anisotropyEnable = VK_FALSE;
-    samplerInfo.maxAnisotropy = 0.0f;
+    samplerInfo.maxAnisotropy = 1.0f;
     samplerInfo.compareEnable = VK_FALSE;
     samplerInfo.compareOp = VK_COMPARE_OP_NEVER;
     samplerInfo.mipLodBias = 0.0f;
     samplerInfo.minLod = 0.0f;
     samplerInfo.maxLod = 1.0f;
-    samplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
+    samplerInfo.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
 
     if (vkCreateSampler(device.getDevice(), &samplerInfo, nullptr, &m_sampler) != VK_SUCCESS)
         throw std::runtime_error("failed to create shadow sampler");

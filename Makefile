@@ -6,7 +6,7 @@
 #    By: etran <etran@student.42.fr>                +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/04/06 03:40:09 by eli               #+#    #+#              #
-#    Updated: 2024/06/03 17:36:34 by etran            ###   ########.fr        #
+#    Updated: 2024/06/04 02:46:41 by etran            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -185,7 +185,9 @@ SHD_FILES	:=	scene.fragment \
 				skybox.vertex \
 				skybox.fragment \
 				starfield.vertex \
-				starfield.fragment
+				starfield.fragment \
+				debug.vertex \
+				debug.fragment
 
 SHD			:=	$(addprefix $(SHD_BIN_DIR)/,$(SHD_FILES))
 SHD_BIN		:=	$(addsuffix .spv,$(SHD))
@@ -193,7 +195,8 @@ SHD_DEP		:=	$(addsuffix .d,$(SHD))
 
 # -------------------- MISC -------------------- #
 GLSLC		?=	glslc
-GLSLC_FLAGS	:=	-MD
+GLSLC_FLAGS	:=	-MD \
+				-O
 
 RM			:=	rm -rf
 

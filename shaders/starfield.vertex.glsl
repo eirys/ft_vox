@@ -7,10 +7,10 @@ layout(location = 0) out float outIntensity;
 layout(location = 1) out float outRandom;
 layout(location = 2) out float outHeight;
 
-layout(set = PFD_SET, binding = 0) uniform CamViewProj {
+layout(set = PFD_SET, binding = 0) uniform Camera {
     mat4 view;
     mat4 proj;
-} camViewProj;
+} camera;
 
 layout(set = PFD_SET, binding = 1) uniform GameData {
     vec2 sunPos;
@@ -151,7 +151,7 @@ void main() {
 
     outIntensity = pow(max(moonDir.y, 0.0), 2.0);
     outRandom = texture(NoiseTex, vec3(noiseCoord, 3)).r * 0.8 + 0.2;
+    outHeight = (camera.proj * worldPos).y;
 
-    gl_Position = camViewProj.proj * mat4(mat3(camViewProj.view)) * worldPos;
-    outHeight = (camViewProj.proj * worldPos).y;
+    gl_Position = camera.proj * mat4(mat3(camera.view)) * worldPos;
 }

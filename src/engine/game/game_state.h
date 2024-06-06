@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/11 16:56:28 by etran             #+#    #+#             */
-/*   Updated: 2024/05/17 16:59:51 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/06 02:22:35 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,19 +21,27 @@ namespace game {
 
 struct Sun final {
     math::Vect3 m_direction;
-
     float       m_rotationSpeed = 0.1f * M_PI;
-    bool        m_enabled = true;
+};
+
+struct Clock final {
+
+    using Chrono = std::chrono::steady_clock;
+    using Time = Chrono::time_point;
+
+    void init() noexcept {
+        m_start = Chrono::now();
+    }
+
+    float getElapsedTime() const noexcept {
+        return std::chrono::duration<float>(Chrono::now() - m_start).count();
+    }
+
+    Time m_start;
 };
 
 class GameState final {
 public:
-    /* ====================================================================== */
-    /*                                TYPEDEFS                                */
-    /* ====================================================================== */
-
-    using Clock = std::chrono::high_resolution_clock;
-
     /* ====================================================================== */
     /*                                 METHODS                                */
     /* ====================================================================== */
@@ -45,7 +53,6 @@ public:
 
     /* ====================================================================== */
 
-    float getStartTime() const noexcept;
     float getElapsedTime() const noexcept;
 
     /* ====================================================================== */
@@ -64,8 +71,7 @@ private:
     ui::Controller      m_controller;
 
     Sun                 m_sun;
-
-    Clock::time_point   m_startTime;
+    Clock               m_gameClock;
 
 };
 

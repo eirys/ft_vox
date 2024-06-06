@@ -5,10 +5,9 @@
 
 layout(location = 0) in uint inData;
 
-layout(set = PFD_SET, binding = 2) uniform ProjectorViewProj {
-    mat4 view;
-    mat4 proj;
-} projectorViewProj;
+layout(set = PFD_SET, binding = 2) uniform Projector {
+    mat4 viewProj;
+} projector;
 
 #define CORNER_A vec3(1.0, 0.0, 1.0)
 #define CORNER_B vec3(1.0, 0.0, 0.0)
@@ -70,5 +69,5 @@ void main() {
         instanceData.chunkPos +
         instanceData.blockPos;
 
-    gl_Position = projectorViewProj.proj * projectorViewProj.view * vec4(worldPos, 1.0);
+    gl_Position = projector.viewProj * vec4(worldPos, 1.0);
 }

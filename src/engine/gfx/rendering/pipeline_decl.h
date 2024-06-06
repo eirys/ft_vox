@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/29 22:37:23 by etran             #+#    #+#             */
-/*   Updated: 2024/06/03 10:04:54 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/04 01:47:57 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,6 +34,8 @@ enum class PipelineIndex: u32 {
 #if ENABLE_SHADOW_MAPPING
     ShadowPipeline,
 #endif
+
+    DebugPipeline,
 
     Count
 };

@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/23 09:29:35 by etran             #+#    #+#             */
-/*   Updated: 2024/06/03 20:02:53 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/06 03:05:54 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,9 +18,11 @@
 #include "skybox_pipeline.h"
 #include "starfield_pipeline.h"
 #include "shadow_pipeline.h"
+#include "debug_tex_pipeline.h"
 #include "vertex_buffer.h"
 #include "pfd_set.h"
 #include "vox_decl.h"
+#include "game_state.h"
 
 #include "debug.h"
 
@@ -108,18 +110,6 @@ void Renderer::render(const game::GameState& game) {
     drawBuffer->reset();
     drawBuffer->startRecording();
 
-    VkViewport viewport{};
-    viewport.width = (f32)mainRenderPass->getWidth();
-    viewport.height = (f32)mainRenderPass->getHeight();
-    viewport.minDepth = 0.0f;
-    viewport.maxDepth = 1.0f;
-    vkCmdSetViewport(drawBuffer->getBuffer(), 0, 1, &viewport);
-
-    VkRect2D scissor{};
-    scissor.offset = { 0, 0 };
-    scissor.extent = { mainRenderPass->getWidth(), mainRenderPass->getHeight() };
-    vkCmdSetScissor(drawBuffer->getBuffer(), 0, 1, &scissor);
-
 #if ENABLE_SHADOW_MAPPING
     const RenderPass* shadowRenderPass = m_renderPasses[(u32)RenderPassIndex::Shadow];
 
@@ -136,6 +126,9 @@ void Renderer::render(const game::GameState& game) {
     m_pipelines[(u32)PipelineIndex::StarfieldPipeline]->record(m_pipelineLayout, m_descriptorTable, drawBuffer);
 #endif
     m_pipelines[(u32)PipelineIndex::ScenePipeline]->record(m_pipelineLayout, m_descriptorTable, drawBuffer);
+
+    if (game.getController().showDebug())
+        m_pipelines[(u32)PipelineIndex::DebugPipeline]->record(m_pipelineLayout, m_descriptorTable, drawBuffer);
     mainRenderPass->end(drawBuffer);
 
     drawBuffer->stopRecording();
@@ -218,6 +211,9 @@ void Renderer::_createPipelines() {
     VkRenderPass shadowRenderPass = m_renderPasses[(u32)RenderPassIndex::Shadow]->getRenderPass();
     m_pipelines[(u32)PipelineIndex::ShadowPipeline]->init(m_device, shadowRenderPass, m_pipelineLayout);
 #endif
+
+    m_pipelines[(u32)PipelineIndex::DebugPipeline] = new DebugTexPipeline();
+    m_pipelines[(u32)PipelineIndex::DebugPipeline]->init(m_device, mainRenderPass, m_pipelineLayout);
 
     LDEBUG("Pipelines created.");
 }

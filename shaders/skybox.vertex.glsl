@@ -4,10 +4,10 @@
 
 layout(location = 0) out vec3 outUVW;
 
-layout(set = PFD_SET, binding = 0) uniform CamViewProj {
+layout(set = PFD_SET, binding = 0) uniform Camera {
     mat4 view;
     mat4 proj;
-} camViewProj;
+} camera;
 
 #define CORNER_A vec3( 1.0, -1.0,  1.0)
 #define CORNER_B vec3( 1.0, -1.0, -1.0)
@@ -30,5 +30,5 @@ const vec3 QUAD_CORNER[6][4] = {
 void main() {
     outUVW = QUAD_CORNER[gl_InstanceIndex][gl_VertexIndex];
 
-    gl_Position = camViewProj.proj * mat4(mat3(camViewProj.view)) * vec4(outUVW, 1.0);
+    gl_Position = camera.proj * mat4(mat3(camera.view)) * vec4(outUVW, 1.0);
 }

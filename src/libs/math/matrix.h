@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:16:40 by etran             #+#    #+#             */
-/*   Updated: 2024/06/03 19:09:55 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/04 16:06:16 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,8 +43,8 @@ struct Mat4 {
 
 	/* ACCESSORS =============================================================== */
 
-	constexpr float&	operator[](std::size_t index);
-	constexpr float 	operator[](std::size_t index) const;
+	float&	        operator[](std::size_t index);
+	float 	        operator[](std::size_t index) const;
 
 	/* OPERATORS =============================================================== */
 
