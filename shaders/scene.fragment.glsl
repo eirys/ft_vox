@@ -34,6 +34,25 @@ float applyFog(in float distanceToPoint) {
     return clamp(fog, 0.0, 1.0);
 }
 
+#if 0
+float applyShadowPCF(in vec3 shadowCoords) {
+    const vec2 texelSize = 1.0 / textureSize(Shadowmap, 0);
+
+    float shadow = 0.0;
+
+    for (int y = -1; y <= 1; y++) {
+        for (int x = -1; x <= 1; x++) {
+            const vec2 offset = vec2(x, y) * texelSize;
+            const float depthValue = texture(Shadowmap, shadowCoords.xy + offset).r;
+            const float distanceToLight = shadowCoords.z;
+            shadow += step(distanceToLight - 0.005, depthValue);
+        }
+    }
+
+    return shadow / 9.0;
+}
+#endif
+
 float applyShadow(in vec3 shadowCoords) {
 #if ENABLE_SHADOW_MAPPING
     const float depthValue = texture(Shadowmap, shadowCoords.xy).r;
@@ -65,9 +84,9 @@ void main() {
     color = mix(color, skyHue, 0.005);
 
     // Lighting
-    const float shadow = applyShadow(inShadowCoords);
+    const float shadow = applyShadowPCF(inShadowCoords);
     const float diffuseLight = sunHeightFactor * applyDiffuse(inNormal, sunDir);
-    color = ((shadow * diffuseLight) + AMBIENT_TINT) * color;
+    color = (shadow * diffuseLight + AMBIENT_TINT) * color;
 
     // Fog
     const vec3 fogColor = FOG_COLOR * (sunHeight * 0.9 + 0.1);
