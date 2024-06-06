@@ -84,7 +84,7 @@ void main() {
     color = mix(color, skyHue, 0.005);
 
     // Lighting
-    const float shadow = applyShadowPCF(inShadowCoords);
+    const float shadow = applyShadow(inShadowCoords);
     const float diffuseLight = sunHeightFactor * applyDiffuse(inNormal, sunDir);
     color = (shadow * diffuseLight + AMBIENT_TINT) * color;
 
