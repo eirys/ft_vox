@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/15 15:51:38 by etran             #+#    #+#             */
-/*   Updated: 2024/05/31 18:41:00 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/07 01:50:23 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,7 +27,7 @@ void World::init(const u32 seed) {
     info.width = RENDER_DISTANCE * CHUNK_SIZE;
     info.height = RENDER_DISTANCE * CHUNK_SIZE;
     info.layers = 3;
-    info.frequency_0 = 0.03f;
+    info.frequency_0 = 0.05f;
     info.frequency_mult = 2.0f;
     info.amplitude_mult = 0.5f;
 
@@ -43,7 +43,8 @@ void World::init(const u32 seed) {
         }
     }
 
-    LINFO("World initialized");
+    m_origin = WORLD_ORIGIN;
+    m_origin.y = perlin.noiseAt(m_origin.x, m_origin.z);
 }
 
 /* ========================================================================== */
@@ -62,6 +63,10 @@ Chunk& World::getChunk(const u32 x, const u32 y, const u32 z) noexcept {
 
 const Chunk& World::getChunk(const u32 x, const u32 y, const u32 z) const noexcept {
     return m_chunks[(y * RENDER_AREA) + (z * RENDER_DISTANCE) + x];
+}
+
+const math::Vect3& World::getOrigin() const noexcept {
+    return m_origin;
 }
 
 } // namespace game

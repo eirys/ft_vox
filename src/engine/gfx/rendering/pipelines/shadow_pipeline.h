@@ -1,26 +1,24 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   debug_tex_pipeline.h                               :+:      :+:    :+:   */
+/*   shadow_pipeline.h                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/04/03 22:06:00 by etran             #+#    #+#             */
-/*   Updated: 2024/06/03 10:09:09 by etran            ###   ########.fr       */
+/*   Created: 2024/06/03 10:05:50 by etran             #+#    #+#             */
+/*   Updated: 2024/06/03 14:33:27 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
-#include "pipeline.h"
+# include "pipeline.h"
 
 namespace vox::gfx {
 
-/**
- * @brief Debug texture pipeline.
- * Displays the wanted texture on the screen.
- */
-class DebugTexPipeline final: public Pipeline {
+class ShadowRenderPass;
+
+class ShadowPipeline final: public Pipeline {
 public:
     /* ====================================================================== */
     /*                                TYPEDEFS                                */
@@ -33,24 +31,22 @@ public:
     /* ====================================================================== */
 
     enum class ShaderStage: u32 {
-        Vertex = 0,
-        Fragment,
+        Vertex,
 
-        First = Vertex,
-        Last = Fragment
+        Count
     };
 
     /* ====================================================================== */
     /*                                 METHODS                                */
     /* ====================================================================== */
 
-    DebugTexPipeline() = default;
-    ~DebugTexPipeline() = default;
+    ShadowPipeline() = default;
+    ~ShadowPipeline() = default;
 
-    DebugTexPipeline(DebugTexPipeline&& other) = delete;
-    DebugTexPipeline(const DebugTexPipeline& other) = delete;
-    DebugTexPipeline& operator=(DebugTexPipeline&& other) = delete;
-    DebugTexPipeline& operator=(const DebugTexPipeline& other) = delete;
+    ShadowPipeline(ShadowPipeline&& other) = delete;
+    ShadowPipeline(const ShadowPipeline& other) = delete;
+    ShadowPipeline& operator=(ShadowPipeline&& other) = delete;
+    ShadowPipeline& operator=(const ShadowPipeline& other) = delete;
 
     /* ====================================================================== */
 
@@ -70,8 +66,8 @@ private:
     /*                             STATIC MEMBERS                             */
     /* ====================================================================== */
 
-    static constexpr u32 SHADER_STAGE_COUNT = enumSize<ShaderStage>();
+    static constexpr u32    SHADER_STAGE_COUNT = (u32)ShaderStage::Count;
 
-}; // class DebugTexPipeline
+}; // class ShadowPipeline
 
-}  // namespace vox::gfx
+} // namespace vox::gfx

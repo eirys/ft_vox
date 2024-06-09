@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/27 15:41:25 by etran             #+#    #+#             */
-/*   Updated: 2024/05/15 10:53:20 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/03 15:59:37 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,7 @@ namespace vox::gfx {
 /*                                   PUBLIC                                   */
 /* ========================================================================== */
 
-void PerlinNoiseSampler::init(const Device& device, const ICommandBuffer* cmdBuffer) {
+void PerlinNoiseSampler::init(const Device& device) {
     ImageMetaData textureData{};
     textureData.m_format = VK_FORMAT_R8G8B8A8_SRGB;
     textureData.m_width = NOISEMAP_SIZE;

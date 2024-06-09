@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/19 23:59:08 by etran             #+#    #+#             */
-/*   Updated: 2024/06/03 09:47:20 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/06 15:10:22 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,6 +28,9 @@ enum class ControlKeyIndex {
     Up,
     Down,
     Speed,
+
+    DisplayDebug,
+    DisableTime,
 
     Count
 };
@@ -84,12 +87,16 @@ public:
     // void    toggleFrameBufferResized(bool resized) noexcept;
     void    toggleMouse() noexcept;
     void    toggleUpdate() noexcept;
-    void    toggleKey(const ControlKeyIndex ControlKeyIndex) noexcept;
-    void    untoggleKey(const ControlKeyIndex ControlKeyIndex) noexcept;
     void    retrieveFramebufferSize(int& width, int& height) const;
     void    updateMousePos(double x, double y) noexcept;
 
+    void    toggleKey(const ControlKeyIndex ControlKeyIndex) noexcept;
+    void    untoggleKey(const ControlKeyIndex ControlKeyIndex) noexcept;
+
+    void    switchKey(const ControlKeyIndex ControlKeyIndex) noexcept;
+
     /* ========================================================================= */
+
     const MousePos&     getMousePos() const noexcept;
     bool                isKeyPressed(const ControlKeyIndex ControlKeyIndex) const noexcept;
     bool                isMouseActive() const noexcept;

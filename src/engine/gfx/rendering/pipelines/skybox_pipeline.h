@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/19 10:48:41 by etran             #+#    #+#             */
-/*   Updated: 2024/05/28 12:05:39 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/03 10:08:08 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,10 +29,10 @@ public:
     /* ====================================================================== */
 
     enum class ShaderStage: u32 {
-        VertexInstance = 0,
+        Vertex = 0,
         Fragment,
 
-        First = VertexInstance,
+        First = Vertex,
         Last = Fragment
     };
 

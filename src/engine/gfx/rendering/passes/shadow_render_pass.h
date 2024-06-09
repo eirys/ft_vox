@@ -1,50 +1,43 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   main_render_pass.h                                 :+:      :+:    :+:   */
+/*   shadow_render_pass.h                               :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/03/07 10:08:33 by etran             #+#    #+#             */
-/*   Updated: 2024/06/03 16:10:08 by etran            ###   ########.fr       */
+/*   Created: 2024/06/03 11:35:43 by etran             #+#    #+#             */
+/*   Updated: 2024/06/03 17:18:48 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
 #include "render_pass.h"
-#include "enum.h"
 
 namespace vox::gfx {
 
-/* ========================================================================== */
-/*                               HELPER OBJECTS                               */
-/* ========================================================================== */
+struct ShadowRenderPassInfo final: public RenderPassInfo {
+    ShadowRenderPassInfo(const ImageBuffer& texture): m_texture(texture) {}
+    ShadowRenderPassInfo() = delete;
 
-struct MainRenderPassInfo final: public RenderPassInfo {
-    MainRenderPassInfo(const std::vector<VkImageView>& swapViews): m_swapChainImageViews(swapViews) {}
-    MainRenderPassInfo() = delete;
-
-    const std::vector<VkImageView>& m_swapChainImageViews;
+    const ImageBuffer& m_texture;
 };
 
-class MainRenderPass final: public RenderPass {
+
+class ShadowRenderPass final: public RenderPass {
 public:
     /* ====================================================================== */
     /*                                  ENUMS                                 */
     /* ====================================================================== */
 
     enum class Resource: u32 {
-        ColorImage,
         DepthImage,
 
         Count
     };
 
     enum class Attachment: u32 {
-        Color,
         Depth,
-        ColorResolve,
 
         Count
     };
@@ -60,13 +53,13 @@ public:
     /*                                 METHODS                                */
     /* ====================================================================== */
 
-    MainRenderPass() = default;
-    ~MainRenderPass() = default;
+    ShadowRenderPass() = default;
+    ~ShadowRenderPass() = default;
 
-    MainRenderPass(MainRenderPass&& other) = delete;
-    MainRenderPass(const MainRenderPass& other) = delete;
-    MainRenderPass& operator=(MainRenderPass&& other) = delete;
-    MainRenderPass& operator=(const MainRenderPass& other) = delete;
+    ShadowRenderPass(ShadowRenderPass&& other) = delete;
+    ShadowRenderPass(const ShadowRenderPass& other) = delete;
+    ShadowRenderPass& operator=(ShadowRenderPass&& other) = delete;
+    ShadowRenderPass& operator=(const ShadowRenderPass& other) = delete;
 
     /* ====================================================================== */
 
@@ -82,12 +75,11 @@ private:
     /* ====================================================================== */
 
     void    _createRenderPass(const Device& device, const RenderPassInfo* info);
-    void    _createResources(const Device& device, const RenderPassInfo* info);
+    void    _importResources(const Device& device, const RenderPassInfo* info);
     void    _createTarget(const Device& device, const RenderPassInfo* info);
 
     void    _destroyTarget(const Device& device);
-    void    _destroyResources(const Device& device);
 
-}; // class MainRenderPass
+}; // class ShadowRenderPass
 
 } // namespace vox::gfx

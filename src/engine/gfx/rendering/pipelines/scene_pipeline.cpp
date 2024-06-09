@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/07 09:48:27 by etran             #+#    #+#             */
-/*   Updated: 2024/06/03 09:50:48 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/06 03:16:07 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 #include "device.h"
 #include "icommand_buffer.h"
 #include "descriptor_table.h"
+#include "vertex_buffer.h"
 
 #include <array>
 #include <stdexcept>
@@ -74,11 +75,7 @@ void ScenePipeline::init(
     rasterizer.depthBiasEnable = VK_FALSE;
     rasterizer.depthBiasConstantFactor = 0.0f;
     rasterizer.depthBiasClamp = 0.0f;
-    #ifdef __DEBUG
-    rasterizer.cullMode = VK_CULL_MODE_NONE;
-    #else
     rasterizer.cullMode = VK_CULL_MODE_BACK_BIT;
-    #endif
     rasterizer.depthBiasSlopeFactor = 0.0f;
 
     VkPipelineMultisampleStateCreateInfo multisample{};
@@ -129,10 +126,10 @@ void ScenePipeline::init(
 
     std::array<VkPipelineShaderStageCreateInfo, SHADER_STAGE_COUNT> shaderStages{};
     const VkShaderModule vertexModule = _createShaderModule(device, "obj/shaders/scene.vertex.spv");
-    shaderStages[(u32)ShaderStage::VertexInstance].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-    shaderStages[(u32)ShaderStage::VertexInstance].stage = (VkShaderStageFlagBits)ShaderType::VS;
-    shaderStages[(u32)ShaderStage::VertexInstance].module = vertexModule;
-    shaderStages[(u32)ShaderStage::VertexInstance].pName = "main";
+    shaderStages[(u32)ShaderStage::Vertex].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+    shaderStages[(u32)ShaderStage::Vertex].stage = (VkShaderStageFlagBits)ShaderType::VS;
+    shaderStages[(u32)ShaderStage::Vertex].module = vertexModule;
+    shaderStages[(u32)ShaderStage::Vertex].pName = "main";
 
     const VkShaderModule fragmentModule = _createShaderModule(device, "obj/shaders/scene.fragment.spv");
     shaderStages[(u32)ShaderStage::Fragment].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -169,8 +166,6 @@ void ScenePipeline::init(
 
 void ScenePipeline::destroy(const Device& device) {
     vkDestroyPipeline(device.getDevice(), m_pipeline, nullptr);
-    for (u32 i = 0; i < VERTEX_BUFFER_COUNT; ++i)
-        m_vertexBuffers[i].destroy(device);
 
     LDEBUG("Scene pipeline destroyed.");
 }
@@ -186,7 +181,7 @@ void ScenePipeline::record(
         descriptorTable[(u32)SetIndex::PerFrameData]->getSet(),
         descriptorTable[(u32)SetIndex::Textures]->getSet() };
     const std::array<VkDeviceSize, 1> offsets = { 0 };
-    const std::array<VkBuffer, 1> vertexBuffers = { _getCurrentBuffer().getBuffer().getBuffer() };
+    const std::array<VkBuffer, 1> vertexBuffers = { VertexBuffer::getBuffer().getBuffer() };
 
     vkCmdBindDescriptorSets(
         cmdBuffer->getBuffer(),
@@ -207,50 +202,7 @@ void ScenePipeline::record(
         vertexBuffers.data(),
         offsets.data());
 
-    vkCmdDraw(cmdBuffer->getBuffer(), 4, _getCurrentBuffer().getInstancesCount(), 0, 0);
-}
-
-#if ENABLE_FRUSTUM_CULLING
-
-void ScenePipeline::initVertexBuffer(
-    const Device& device,
-    const game::GameState& gameState
-) {
-    for (u32 i = 0; i < VERTEX_BUFFER_COUNT; ++i)
-        m_vertexBuffers[i].init(device, gameState);
-}
-
-void ScenePipeline::updateVertexBuffer(
-    const Device& device,
-    const game::GameState& gameState
-) {
-    _getCurrentBuffer().update(device, gameState);
-    _switchBuffer();
-}
-
-#else
-
-void ScenePipeline::initVertexBuffer(
-    const Device& device,
-    const ICommandBuffer* cmdBuffer,
-    const game::GameState& gameState
-) {
-    for (u32 i = 0; i < VERTEX_BUFFER_COUNT; ++i)
-        m_vertexBuffers[i].init(device, cmdBuffer, gameState);
-}
-
-#endif
-
-/* ========================================================================== */
-/*                                   PRIVATE                                  */
-/* ========================================================================== */
-
-VertexBuffer& ScenePipeline::_getCurrentBuffer() {
-    return m_vertexBuffers[m_currentBuffer];
-}
-
-void ScenePipeline::_switchBuffer() {
-    m_currentBuffer = (m_currentBuffer + 1) % VERTEX_BUFFER_COUNT;
+    vkCmdDraw(cmdBuffer->getBuffer(), 4, VertexBuffer::getInstancesCount(), 0, 0);
 }
 
 } // namespace vox::gfx

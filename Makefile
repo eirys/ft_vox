@@ -6,7 +6,7 @@
 #    By: etran <etran@student.42.fr>                +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/04/06 03:40:09 by eli               #+#    #+#              #
-#    Updated: 2024/05/31 15:07:36 by etran            ###   ########.fr        #
+#    Updated: 2024/06/04 02:46:41 by etran            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -101,6 +101,7 @@ SRC_FILES	:=	entrypoint.cpp \
 				$(SAMPLER_DIR)/skybox_sampler.cpp \
 				$(SAMPLER_DIR)/chunk_data_sampler.cpp \
 				$(SAMPLER_DIR)/perlin_noise_sampler.cpp \
+				$(SAMPLER_DIR)/shadowmap_sampler.cpp \
 				$(SETS_DIR)/descriptor_set.cpp \
 				$(SETS_DIR)/pfd_set.cpp \
 				$(SETS_DIR)/world_set.cpp \
@@ -112,9 +113,11 @@ SRC_FILES	:=	entrypoint.cpp \
 				$(GEO_DIR)/frustum_culling.cpp \
 				$(GEO_DIR)/vertex_buffer.cpp \
 				$(PASSES_DIR)/main_render_pass.cpp \
+				$(PASSES_DIR)/shadow_render_pass.cpp \
 				$(PIP_DIR)/scene_pipeline.cpp \
 				$(PIP_DIR)/skybox_pipeline.cpp \
 				$(PIP_DIR)/starfield_pipeline.cpp \
+				$(PIP_DIR)/shadow_pipeline.cpp \
 				$(DEBUG_PIP_DIR)/debug_tex_pipeline.cpp \
 				$(BUF_DIR)/buffer.cpp \
 				$(BUF_DIR)/image_buffer.cpp \
@@ -178,10 +181,13 @@ LDFLAGS		:=	-lglfw \
 # ------------------- SHADERS ------------------ #
 SHD_FILES	:=	scene.fragment \
 				scene.vertex \
+				shadowmap.vertex \
 				skybox.vertex \
 				skybox.fragment \
 				starfield.vertex \
-				starfield.fragment
+				starfield.fragment \
+				debug.vertex \
+				debug.fragment
 
 SHD			:=	$(addprefix $(SHD_BIN_DIR)/,$(SHD_FILES))
 SHD_BIN		:=	$(addsuffix .spv,$(SHD))
@@ -189,7 +195,8 @@ SHD_DEP		:=	$(addsuffix .d,$(SHD))
 
 # -------------------- MISC -------------------- #
 GLSLC		?=	glslc
-GLSLC_FLAGS	:=	-MD
+GLSLC_FLAGS	:=	-MD \
+				-O
 
 RM			:=	rm -rf
 

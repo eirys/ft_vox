@@ -2,26 +2,12 @@
 
 #include "../src/engine/game/game_decl.h"
 #include "../src/engine/gfx/descriptor/sets/descriptor_decl.h"
-#include "../src/engine/vox_decl.h"
 
 layout(location = 0) in uint inData;
 
-layout(location = 0) out vec3 outUVW;
-layout(location = 1) out vec3 outNormal;
-layout(location = 2) out vec3 outShadowCoords;
-
-layout(set = PFD_SET, binding = 0) uniform Camera {
-    mat4 view;
-    mat4 proj;
-} camera;
-
-#if ENABLE_SHADOW_MAPPING
 layout(set = PFD_SET, binding = 2) uniform Projector {
     mat4 viewProj;
 } projector;
-#endif
-
-// layout(set = WORLD_SET, binding = 0) uniform usampler2DArray ChunkData;
 
 #define CORNER_A vec3(1.0, 0.0, 1.0)
 #define CORNER_B vec3(1.0, 0.0, 0.0)
@@ -39,22 +25,6 @@ const vec3 CUBE_FACE[6][4] = {
     { CORNER_A, CORNER_D, CORNER_B, CORNER_C }, // Right
     { CORNER_E, CORNER_H, CORNER_A, CORNER_D }, // Front
     { CORNER_B, CORNER_C, CORNER_F, CORNER_G }, // Back
-};
-
-const vec2 UVS[4] = {
-    { 1.0, 1.0 },
-    { 1.0, 0.0 },
-    { 0.0, 1.0 },
-    { 0.0, 0.0 },
-};
-
-const vec3 NORMALS[6] = {
-    {  0.0,  1.0,  0.0 },
-    {  0.0, -1.0,  0.0 },
-    { -1.0,  0.0,  0.0 },
-    {  1.0,  0.0,  0.0 },
-    {  0.0,  0.0,  1.0 },
-    {  0.0,  0.0, -1.0 },
 };
 
 struct InstanceData {
@@ -94,17 +64,10 @@ InstanceData unpackData(in uint inputData) {
 void main() {
     InstanceData instanceData = unpackData(inData);
 
-    vec4 worldPos = vec4(
+    vec3 worldPos =
         CUBE_FACE[instanceData.face][gl_VertexIndex] +
         instanceData.chunkPos +
-        instanceData.blockPos,
-        1.0);
+        instanceData.blockPos;
 
-    outUVW = vec3(UVS[gl_VertexIndex], instanceData.textureIndex);
-    outNormal = NORMALS[instanceData.face];
-#if ENABLE_SHADOW_MAPPING
-    outShadowCoords = (projector.viewProj * worldPos).xyz;
-    outShadowCoords.xy = 0.5 * outShadowCoords.xy + 0.5;
-#endif
-    gl_Position = camera.proj * camera.view * worldPos;
+    gl_Position = projector.viewProj * vec4(worldPos, 1.0);
 }

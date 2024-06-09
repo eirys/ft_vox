@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/15 15:24:42 by etran             #+#    #+#             */
-/*   Updated: 2024/05/28 14:32:58 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/07 01:50:03 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,11 +34,15 @@ public:
 
     void init(const u32 seed);
 
+    /* ====================================================================== */
+
     const ChunkArray&   getChunks() const noexcept;
     ChunkArray&         getChunks() noexcept;
 
     Chunk&              getChunk(const u32 x, const u32 y, const u32 z) noexcept;
     const Chunk&        getChunk(const u32 x, const u32 y, const u32 z) const noexcept;
+
+    const math::Vect3&  getOrigin() const noexcept;
 
 private:
     /* ====================================================================== */
@@ -46,6 +50,8 @@ private:
     /* ====================================================================== */
 
     ChunkArray  m_chunks;
+
+    math::Vect3 m_origin = { 0.0f, 0.0f, 0.0f };
 
 }; // class World
 

@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:16:40 by etran             #+#    #+#             */
-/*   Updated: 2024/02/21 11:48:23 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/04 16:06:16 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,8 +43,8 @@ struct Mat4 {
 
 	/* ACCESSORS =============================================================== */
 
-	constexpr float&	operator[](std::size_t index);
-	constexpr float 	operator[](std::size_t index) const;
+	float&	        operator[](std::size_t index);
+	float 	        operator[](std::size_t index) const;
 
 	/* OPERATORS =============================================================== */
 
@@ -68,13 +68,8 @@ struct Mat4 {
 
 }; // struct Mat4
 
-Mat4	lookAt(const Vect3& eye, const Vect3& center, const Vect3& world_up) noexcept;
-Mat4	lookAt(
-	const Vect3& eye,
-	const Vect3& cam_front,
-	const Vect3& cam_up,
-	const Vect3& cam_right) noexcept;
-Mat4	lookAtDir(const Vect3& eye, const Vect3& dir, const Vect3& world_up) noexcept;
+Mat4	lookAt(const Vect3& eyePos, const Vect3& center, const Vect3& world_up) noexcept;
+Mat4	lookAt(const Vect3& eyePos, const Vect3& cam_front, const Vect3& cam_up, const Vect3& cam_right) noexcept;
 Mat4	perspective(float fov, float aspect_ratio, float near, float far) noexcept;
 Mat4	orthographic(
 			float bot,

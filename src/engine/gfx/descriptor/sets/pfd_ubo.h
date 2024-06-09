@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/07 13:46:39 by etran             #+#    #+#             */
-/*   Updated: 2024/05/30 16:12:39 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/05 22:09:38 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 
 #include "matrix.h"
 #include "vector.h"
+#include "vox_decl.h"
 
 namespace vox::gfx {
 
@@ -25,25 +26,35 @@ struct PFDUbo final {
     struct {
         math::Mat4  view;
         math::Mat4  proj;
-    }           m_viewProj;
+    }           m_cameraViewProj;
 
     struct {
         math::Vect2 sunPos;
-        math::Vect3 skyHue;
-        u32         padding[3];
+        u32         skyHue;
+        u32         padding[13];
     }           m_gameData;
+
+#if ENABLE_SHADOW_MAPPING
+    math::Mat4  m_projectorViewProj;
+#endif
 
     /* ====================================================================== */
     /*                                  ENUMS                                 */
     /* ====================================================================== */
 
     enum class Offset: u32 {
-        ViewProj    = 0,
-        GameData    = ViewProj + sizeof(m_viewProj),
+        CameraViewProj      = 0,
+        GameData            = CameraViewProj + sizeof(m_cameraViewProj),
+#if ENABLE_SHADOW_MAPPING
+        ProjectorViewProj   = GameData + sizeof(m_gameData)
+#endif
     };
 
 }; // struct PFDUbo
 
-static_assert(sizeof(PFDUbo) % 16 == 0);
+static_assert(sizeof(PFDUbo) % 0x40 == 0, "PFD UBO size is must be a multiple of 64 bytes. Check value of PADDING_NEEDED.");
+
+// For missing padding:
+constexpr u32 PADDING_NEEDED = (0x40 - (sizeof(PFDUbo) % 0x40)) / sizeof(u32);
 
 } // namespace vox::gfx

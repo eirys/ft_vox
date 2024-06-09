@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/27 15:26:15 by etran             #+#    #+#             */
-/*   Updated: 2024/03/27 15:43:08 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/03 15:59:43 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,7 +32,7 @@ public:
 
     /* ====================================================================== */
 
-    void    init(const Device& device, const ICommandBuffer* cmdBuffer) override;
+    void    init(const Device& device) override;
     void    destroy(const Device& device) override;
 
     void    fill(const Device& device, const ICommandBuffer* cmdBuffer, const void* data = nullptr) override;

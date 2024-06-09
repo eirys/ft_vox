@@ -6,17 +6,23 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/23 09:29:35 by etran             #+#    #+#             */
-/*   Updated: 2024/06/03 09:59:55 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/06 03:05:54 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "renderer.h"
 #include "main_render_pass.h"
+#include "shadow_render_pass.h"
 #include "icommand_buffer.h"
 #include "scene_pipeline.h"
 #include "skybox_pipeline.h"
 #include "starfield_pipeline.h"
+#include "shadow_pipeline.h"
+#include "debug_tex_pipeline.h"
+#include "vertex_buffer.h"
+#include "pfd_set.h"
 #include "vox_decl.h"
+#include "game_state.h"
 
 #include "debug.h"
 
@@ -47,16 +53,17 @@ void Renderer::init(ui::Window& window, const game::GameState& game) {
     m_descriptorTable.fill(m_device);
 
 #if ENABLE_FRUSTUM_CULLING
-    VertexBuffer::computeMaxVertexInstanceCount(game);
-    ((ScenePipeline*)m_pipelines[(u32)PipelineIndex::ScenePipeline])->initVertexBuffer(m_device, game);
+    // VertexBuffer::computeMaxVertexInstanceCount(game);
+    VertexBuffer::init(m_device, game);
 #else
-    ((ScenePipeline*)m_pipelines[(u32)PipelineIndex::ScenePipeline])->initVertexBuffer(m_device, transferBuffer, game);
+    VertexBuffer::init(m_device, transferBuffer, game);
 #endif
 
     LDEBUG("Renderer initialized.");
 }
 
 void Renderer::destroy() {
+    VertexBuffer::destroy(m_device);
     m_descriptorTable.destroy(m_device);
     m_descriptorPool.destroy(m_device);
 
@@ -87,7 +94,7 @@ void Renderer::render(const game::GameState& game) {
     m_fences[(u32)FenceIndex::DrawInFlight].await(m_device);
 
 #if ENABLE_FRUSTUM_CULLING
-    ((ScenePipeline*)m_pipelines[(u32)PipelineIndex::ScenePipeline])->updateVertexBuffer(m_device, game);
+    VertexBuffer::update(m_device, game);
 #endif
 
     if (m_swapChain.acquireNextImage(m_device, m_semaphores[(u32)SemaphoreIndex::ImageAvailable]) == false)
@@ -100,30 +107,28 @@ void Renderer::render(const game::GameState& game) {
     const ICommandBuffer* drawBuffer = m_commandBuffers[(u32)CommandBufferIndex::Draw];
     const RenderPass* mainRenderPass = m_renderPasses[(u32)RenderPassIndex::Main];
 
-    RecordInfo  recordInfo{};
-    recordInfo.m_targetIndex = m_swapChain.getImageIndex();
-
     drawBuffer->reset();
     drawBuffer->startRecording();
 
-    VkViewport viewport{};
-    viewport.width = (f32)mainRenderPass->getWidth();
-    viewport.height = (f32)mainRenderPass->getHeight();
-    viewport.minDepth = 0.0f;
-    viewport.maxDepth = 1.0f;
-    vkCmdSetViewport(drawBuffer->getBuffer(), 0, 1, &viewport);
+#if ENABLE_SHADOW_MAPPING
+    const RenderPass* shadowRenderPass = m_renderPasses[(u32)RenderPassIndex::Shadow];
 
-    VkRect2D scissor{};
-    scissor.offset = { 0, 0 };
-    scissor.extent = { mainRenderPass->getWidth(), mainRenderPass->getHeight() };
-    vkCmdSetScissor(drawBuffer->getBuffer(), 0, 1, &scissor);
+    shadowRenderPass->begin(drawBuffer, {});
+    m_pipelines[(u32)PipelineIndex::ShadowPipeline]->record(m_pipelineLayout, m_descriptorTable, drawBuffer);
+    shadowRenderPass->end(drawBuffer);
+#endif
 
-    mainRenderPass->begin(drawBuffer, recordInfo);
+    RecordInfo  mainRecordInfo{};
+    mainRecordInfo.m_targetIndex = m_swapChain.getImageIndex();
+    mainRenderPass->begin(drawBuffer, mainRecordInfo);
 #if ENABLE_SKYBOX
     m_pipelines[(u32)PipelineIndex::SkyboxPipeline]->record(m_pipelineLayout, m_descriptorTable, drawBuffer);
     m_pipelines[(u32)PipelineIndex::StarfieldPipeline]->record(m_pipelineLayout, m_descriptorTable, drawBuffer);
 #endif
     m_pipelines[(u32)PipelineIndex::ScenePipeline]->record(m_pipelineLayout, m_descriptorTable, drawBuffer);
+
+    if (game.getController().showDebug())
+        m_pipelines[(u32)PipelineIndex::DebugPipeline]->record(m_pipelineLayout, m_descriptorTable, drawBuffer);
     mainRenderPass->end(drawBuffer);
 
     drawBuffer->stopRecording();
@@ -151,9 +156,6 @@ void Renderer::_createCommandBuffers() {
     // Draw buffers
     for (u32 i = 0; i < CMD_BUFFER_COUNT; ++i) m_commandBuffers[i] = m_commandPool.createCommandBuffer(m_device, CommandBufferType::DRAW);
 
-    // m_commandBuffers[(u32)CommandBufferIndex::Draw] = m_commandPool.createCommandBuffer(m_device, CommandBufferType::DRAW);
-    // m_commandBuffers[(u32)CommandBufferIndex::Transfer] = m_commandPool.createCommandBuffer(m_device, CommandBufferType::DRAW);
-
     LDEBUG("Command buffers created.");
 }
 
@@ -173,23 +175,45 @@ void Renderer::_createRenderPasses() {
     mainPassInfo.m_targetWidth = m_swapChain.getImageExtent().width;
     mainPassInfo.m_targetHeight = m_swapChain.getImageExtent().height;
     m_renderPasses[(u32)RenderPassIndex::Main]->init(m_device, &mainPassInfo);
+
+#if ENABLE_SHADOW_MAPPING
+    m_renderPasses[(u32)RenderPassIndex::Shadow] = new ShadowRenderPass();
+
+    const ImageBuffer& shadowmap = ((const PFDSet*)m_descriptorTable[DescriptorSetIndex::Pfd])->getShadowmap();
+
+    ShadowRenderPassInfo shadowPassInfo(shadowmap);
+    shadowPassInfo.m_formats.resize(ShadowRenderPass::RESOURCE_COUNT, shadowmap.getMetaData().m_format);
+    shadowPassInfo.m_samples.resize(ShadowRenderPass::RESOURCE_COUNT, shadowmap.getMetaData().m_sampleCount);
+    shadowPassInfo.m_renderPassWidth = shadowmap.getMetaData().m_width;
+    shadowPassInfo.m_renderPassHeight = shadowmap.getMetaData().m_height;
+    shadowPassInfo.m_targetCount = 1;
+    shadowPassInfo.m_targetWidth = shadowmap.getMetaData().m_width;
+    shadowPassInfo.m_targetHeight = shadowmap.getMetaData().m_height;
+    m_renderPasses[(u32)RenderPassIndex::Shadow]->init(m_device, &shadowPassInfo);
+#endif
 }
 
 void Renderer::_createPipelines() {
     m_pipelines[(u32)PipelineIndex::ScenePipeline] = new ScenePipeline();
 
-#if ENABLE_SKYBOX
-    m_pipelines[(u32)PipelineIndex::SkyboxPipeline] = new SkyboxPipeline();
-    m_pipelines[(u32)PipelineIndex::StarfieldPipeline] = new StarfieldPipeline();
-#endif
-
-    auto mainRenderPass = m_renderPasses[(u32)RenderPassIndex::Main]->getRenderPass();
+    VkRenderPass mainRenderPass = m_renderPasses[(u32)RenderPassIndex::Main]->getRenderPass();
     m_pipelines[(u32)PipelineIndex::ScenePipeline]->init(m_device, mainRenderPass, m_pipelineLayout);
 
 #if ENABLE_SKYBOX
+    m_pipelines[(u32)PipelineIndex::SkyboxPipeline] = new SkyboxPipeline();
+    m_pipelines[(u32)PipelineIndex::StarfieldPipeline] = new StarfieldPipeline();
     m_pipelines[(u32)PipelineIndex::SkyboxPipeline]->init(m_device, mainRenderPass, m_pipelineLayout);
     m_pipelines[(u32)PipelineIndex::StarfieldPipeline]->init(m_device, mainRenderPass, m_pipelineLayout);
 #endif
+#if ENABLE_SHADOW_MAPPING
+    m_pipelines[(u32)PipelineIndex::ShadowPipeline] = new ShadowPipeline();
+
+    VkRenderPass shadowRenderPass = m_renderPasses[(u32)RenderPassIndex::Shadow]->getRenderPass();
+    m_pipelines[(u32)PipelineIndex::ShadowPipeline]->init(m_device, shadowRenderPass, m_pipelineLayout);
+#endif
+
+    m_pipelines[(u32)PipelineIndex::DebugPipeline] = new DebugTexPipeline();
+    m_pipelines[(u32)PipelineIndex::DebugPipeline]->init(m_device, mainRenderPass, m_pipelineLayout);
 
     LDEBUG("Pipelines created.");
 }

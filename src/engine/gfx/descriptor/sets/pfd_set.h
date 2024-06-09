@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/28 23:38:00 by etran             #+#    #+#             */
-/*   Updated: 2024/06/03 09:40:14 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/03 20:03:49 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,7 @@
 #include "pfd_ubo.h"
 #include "buffer.h"
 #include "game_texture_sampler.h"
+#include "vox_decl.h"
 
 namespace vox::gfx {
 
@@ -26,13 +27,22 @@ public:
     /* ====================================================================== */
 
     enum class BindingIndex: u32 {
-        ViewProj,
+        CameraViewProj,
         GameData,
+#if ENABLE_SHADOW_MAPPING
+        ProjectorViewProj,
+        Shadowmap,
+#endif
 
-        Count,
+        Count
+    };
 
-        First = ViewProj,
-        Last = GameData
+    enum class Texture: u32 {
+#if ENABLE_SHADOW_MAPPING
+        Shadowmap,
+#endif
+
+        Count
     };
 
     /* ====================================================================== */
@@ -53,19 +63,28 @@ public:
     void    fill(const Device& device) override;
     void    update(const game::GameState& state);
 
+    /* ====================================================================== */
+
+#if ENABLE_SHADOW_MAPPING
+    const ImageBuffer&  getShadowmap() const noexcept;
+#endif
+
 private:
     /* ====================================================================== */
     /*                             STATIC MEMBERS                             */
     /* ====================================================================== */
 
     static constexpr u32 BINDING_COUNT = (u32)BindingIndex::Count;
+    static constexpr u32 TEXTURE_COUNT = (u32)Texture::Count;
 
     /* ====================================================================== */
     /*                                  DATA                                  */
     /* ====================================================================== */
 
-    Buffer  m_mvpDataBuffer;
-    PFDUbo  m_data;
+    std::array<TextureSampler*, TEXTURE_COUNT>  m_textures;
+
+    Buffer                                      m_mvpDataBuffer;
+    PFDUbo                                      m_data;
 
 };
 

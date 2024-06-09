@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/20 00:02:09 by etran             #+#    #+#             */
-/*   Updated: 2024/05/31 13:07:29 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/06 15:10:40 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,6 +26,8 @@ void keyCallback(GLFWwindow* win, int key, int scancode, int action, int mods) {
             case GLFW_KEY_ESCAPE:       if (isPressed) glfwSetWindowShouldClose(win, GLFW_TRUE); return;
 
             case GLFW_KEY_M:            if (isPressed) window->toggleMouse(); break;
+            case GLFW_KEY_O:            if (isPressed) window->switchKey(ControlKeyIndex::DisplayDebug); break;
+            case GLFW_KEY_T:            if (isPressed) window->switchKey(ControlKeyIndex::DisableTime); break;
 
             case GLFW_KEY_W:            isPressed ? window->toggleKey(ControlKeyIndex::Forward) : window->untoggleKey(ControlKeyIndex::Forward); break;
             case GLFW_KEY_S:            isPressed ? window->toggleKey(ControlKeyIndex::Backward) : window->untoggleKey(ControlKeyIndex::Backward); break;
@@ -130,6 +132,14 @@ void    Window::toggleUpdate() noexcept {
     m_isUpdated = !m_isUpdated;
 }
 
+void Window::retrieveFramebufferSize(int& width, int& height) const {
+    glfwGetFramebufferSize(m_window, &width, &height);
+}
+
+void Window::updateMousePos(double x, double y) noexcept {
+    m_mousePos = {x, y};
+}
+
 void Window::toggleKey(const ControlKeyIndex ControlKeyIndex) noexcept {
     if (isKeyPressed(ControlKeyIndex))
         return;
@@ -142,12 +152,8 @@ void Window::untoggleKey(const ControlKeyIndex ControlKeyIndex) noexcept {
     m_pressedKeys[(u32)ControlKeyIndex] = false;
 }
 
-void Window::retrieveFramebufferSize(int& width, int& height) const {
-    glfwGetFramebufferSize(m_window, &width, &height);
-}
-
-void Window::updateMousePos(double x, double y) noexcept {
-    m_mousePos = {x, y};
+void Window::switchKey(const ControlKeyIndex ControlKeyIndex) noexcept {
+    m_pressedKeys[(u32)ControlKeyIndex] = !m_pressedKeys[(u32)ControlKeyIndex];
 }
 
 /* ========================================================================== */

@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/07 10:15:26 by etran             #+#    #+#             */
-/*   Updated: 2024/03/22 23:08:04 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/06 03:05:31 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,7 +31,7 @@ void MainRenderPass::init(const Device& device, const RenderPassInfo* info) {
     _createResources(device, info);
     _createTarget(device, info);
 
-    LDEBUG("Scene render pass initialized");
+    LDEBUG("Scene render pass initialized:" << m_vkRenderPass);
 }
 
 void MainRenderPass::destroy(const Device& device) {
@@ -50,6 +50,18 @@ void MainRenderPass::updateResources(const Device& device, const RenderPassInfo*
 }
 
 void MainRenderPass::begin(const ICommandBuffer* cmdBuffer, const RecordInfo& recordInfo) const {
+    VkViewport viewport{};
+    viewport.width = (f32)m_width;
+    viewport.height = (f32)m_height;
+    viewport.minDepth = 0.0f;
+    viewport.maxDepth = 1.0f;
+    vkCmdSetViewport(cmdBuffer->getBuffer(), 0, 1, &viewport);
+
+    VkRect2D scissor{};
+    scissor.offset = { 0, 0 };
+    scissor.extent = { m_width, m_height };
+    vkCmdSetScissor(cmdBuffer->getBuffer(), 0, 1, &scissor);
+
     std::array<VkClearValue, RESOURCE_COUNT> clearValues{};
     clearValues[(u32)Attachment::Color].color = {{ 0.0f, 0.0f, 0.0f, 1.0f }};
     clearValues[(u32)Attachment::Depth].depthStencil = { 1.0f, 0 };

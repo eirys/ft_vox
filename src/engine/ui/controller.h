@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/15 19:33:01 by etran             #+#    #+#             */
-/*   Updated: 2024/05/30 22:23:46 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/06 13:38:24 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,21 +15,25 @@
 #include "vector.h"
 #include "game_decl.h"
 #include "types.h"
+#include "debug.h"
 
 namespace ui {
 
 class Window;
 
 struct Camera {
+
     static constexpr f32    NEAR_PLANE = 0.1f;
     static constexpr f32    FAR_PLANE = 500.0f;
     static constexpr f32    ASPECT_RATIO = 1200.0f / 800.0f;
+    static constexpr f32    FOV = 85.0f;
 
-    math::Vect3 m_position = {RENDER_DISTANCE / 2.0 * CHUNK_SIZE, 20.0f, RENDER_DISTANCE / 2.0 * CHUNK_SIZE};
+    math::Vect3 m_position;
     math::Vect3 m_front;
     math::Vect3 m_right;
     math::Vect3 m_up;
-    float       m_fov = 85.0f;
+    float       m_fov = FOV;
+
 };
 
 /**
@@ -55,6 +59,8 @@ public:
     void update(const Window& win);
 
     const Camera&   getCamera() const noexcept;
+    bool            showDebug() const noexcept;
+    bool            isTimeEnabled() const noexcept;
 
 private:
     /* ====================================================================== */
@@ -63,11 +69,15 @@ private:
 
     Camera  m_camera;
 
-    float   m_lastX = 0.0f;
-    float   m_lastY = 0.0f;
+    struct {
+        float   m_lastX = 0.0f;
+        float   m_lastY = 0.0f;
+        float   m_yaw = 0.0f;
+        float   m_pitch = 0.0f;
+    }       m_state;
 
-    float   m_yaw = 0.0f;
-    float   m_pitch = 0.0f;
+    bool    m_showDebug;
+    bool    m_isTimeEnabled;
 
 }; // class Controller
 
