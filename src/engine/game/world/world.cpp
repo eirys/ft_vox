@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/15 15:51:38 by etran             #+#    #+#             */
-/*   Updated: 2024/06/06 14:20:43 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/07 01:50:23 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,7 +27,7 @@ void World::init(const u32 seed) {
     info.width = RENDER_DISTANCE * CHUNK_SIZE;
     info.height = RENDER_DISTANCE * CHUNK_SIZE;
     info.layers = 3;
-    info.frequency_0 = 0.03f;
+    info.frequency_0 = 0.05f;
     info.frequency_mult = 2.0f;
     info.amplitude_mult = 0.5f;
 

@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/11 16:12:13 by etran             #+#    #+#             */
-/*   Updated: 2024/06/06 13:44:11 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/08 12:37:52 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -139,7 +139,7 @@ void PFDSet::update(const game::GameState& state) {
     const math::Mat4 projectorProj = math::orthographic(
         -TERRAIN_HALF, TERRAIN_HALF,
         -TERRAIN_HALF, TERRAIN_HALF,
-        0.0f, TERRAIN_SIZE * 1.5f);
+        0.0f, TERRAIN_SIZE * 1.25f);
 
     m_data.m_projectorViewProj = projectorProj * projectorView;
 #endif

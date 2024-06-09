@@ -22,6 +22,7 @@ layout(set = PFD_SET, binding = 1) uniform GameData {
 // layout(set = WORLD_SET, binding = 1) uniform sampler2DArray GameTex;
 layout(set = WORLD_SET, binding = 0) uniform sampler2DArray GameTex;
 
+const float BIAS = 0.005;
 const vec3 AMBIENT_TINT = vec3(0.07, 0.07, 0.05);
 const vec3 FOG_COLOR = vec3(0.3, 0.4, 0.6);
 
@@ -45,7 +46,7 @@ float applyShadowPCF(in vec3 shadowCoords) {
             const vec2 offset = vec2(x, y) * texelSize;
             const float depthValue = texture(Shadowmap, shadowCoords.xy + offset).r;
             const float distanceToLight = shadowCoords.z;
-            shadow += step(distanceToLight - 0.005, depthValue);
+            shadow += step(distanceToLight - BIAS, depthValue);
         }
     }
 
@@ -59,7 +60,7 @@ float applyShadow(in vec3 shadowCoords) {
     const float distanceToLight = shadowCoords.z;
 
     const float shouldDisplayShadow = step(distanceToLight, 1.0);
-    return shouldDisplayShadow * step(distanceToLight - 0.005, depthValue) + (1.0 - shouldDisplayShadow) * 1.0;
+    return shouldDisplayShadow * step(distanceToLight - BIAS, depthValue) + (1.0 - shouldDisplayShadow) * 1.0;
 #endif
     return 1.0;
 }
@@ -72,7 +73,6 @@ float applyDiffuse(in vec3 normal, in vec3 sunDir) {
 void main() {
     const vec3 sunDir = vec3(gameData.sunPos, 0.0);
     const float sunHeight = max(sunDir.y, 0.0);
-    const float sunHeightFactor = min(1.0, pow(sunHeight, 2.0) + (0.5 * sunHeight));
 
     vec3 color = texture(GameTex, inUVW).rgb;
 
@@ -84,9 +84,10 @@ void main() {
     color = mix(color, skyHue, 0.005);
 
     // Lighting
+    const float diffuse = max(dot(inNormal, sunDir), 0.0);
     const float shadow = applyShadow(inShadowCoords);
-    const float diffuseLight = sunHeightFactor * applyDiffuse(inNormal, sunDir);
-    color = (shadow * diffuseLight + AMBIENT_TINT) * color;
+    const float sunAmount = min(1.0, pow(sunHeight, 2.0) + (0.5 * sunHeight));
+    color = (shadow * diffuse * sunAmount + AMBIENT_TINT) * color;
 
     // Fog
     const vec3 fogColor = FOG_COLOR * (sunHeight * 0.9 + 0.1);
