@@ -22,7 +22,7 @@ layout(set = PFD_SET, binding = 1) uniform GameData {
 // layout(set = WORLD_SET, binding = 1) uniform sampler2DArray GameTex;
 layout(set = WORLD_SET, binding = 0) uniform sampler2DArray GameTex;
 
-const float BIAS = 0.005;
+const float BIAS = 0.00025;
 const vec3 AMBIENT_TINT = vec3(0.07, 0.07, 0.05);
 const vec3 FOG_COLOR = vec3(0.3, 0.4, 0.6);
 
@@ -56,18 +56,12 @@ float applyShadowPCF(in vec3 shadowCoords) {
 
 float applyShadow(in vec3 shadowCoords) {
 #if ENABLE_SHADOW_MAPPING
-    const float depthValue = texture(Shadowmap, shadowCoords.xy).r;
-    const float distanceToLight = shadowCoords.z;
-
-    const float shouldDisplayShadow = step(distanceToLight, 1.0);
-    return shouldDisplayShadow * step(distanceToLight - BIAS, depthValue) + (1.0 - shouldDisplayShadow) * 1.0;
-#endif
+    const float shouldDisplayShadow = step(shadowCoords.z, 1.0);
+    const float shadow = step(shadowCoords.z - BIAS, texture(Shadowmap, shadowCoords.xy).r);
+    return shouldDisplayShadow * shadow + (1.0 - shouldDisplayShadow) * 1.0;
+#else
     return 1.0;
-}
-
-float applyDiffuse(in vec3 normal, in vec3 sunDir) {
-    const float illumination = max(dot(normal, sunDir), 0.0);
-    return illumination;
+#endif
 }
 
 void main() {

@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/23 09:29:35 by etran             #+#    #+#             */
-/*   Updated: 2024/06/06 03:05:54 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/10 15:14:27 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -88,15 +88,12 @@ void Renderer::waitIdle() const {
 }
 
 void Renderer::render(const game::GameState& game) {
-    m_descriptorTable.update(game);
-
-    // Retrieve swap chain image ------
+    // Prepare frame resources ---------
     m_fences[(u32)FenceIndex::DrawInFlight].await(m_device);
-
+    m_descriptorTable.update(game);
 #if ENABLE_FRUSTUM_CULLING
     VertexBuffer::update(m_device, game);
 #endif
-
     if (m_swapChain.acquireNextImage(m_device, m_semaphores[(u32)SemaphoreIndex::ImageAvailable]) == false)
         // TODO: Handle this error
         return;
@@ -105,7 +102,7 @@ void Renderer::render(const game::GameState& game) {
 
     // Record command buffer ---------
     const ICommandBuffer* drawBuffer = m_commandBuffers[(u32)CommandBufferIndex::Draw];
-    const RenderPass* mainRenderPass = m_renderPasses[(u32)RenderPassIndex::Main];
+    RecordInfo  recordInfo{};
 
     drawBuffer->reset();
     drawBuffer->startRecording();
@@ -113,14 +110,16 @@ void Renderer::render(const game::GameState& game) {
 #if ENABLE_SHADOW_MAPPING
     const RenderPass* shadowRenderPass = m_renderPasses[(u32)RenderPassIndex::Shadow];
 
-    shadowRenderPass->begin(drawBuffer, {});
+    recordInfo.m_targetIndex = 0;
+    shadowRenderPass->begin(drawBuffer, recordInfo);
     m_pipelines[(u32)PipelineIndex::ShadowPipeline]->record(m_pipelineLayout, m_descriptorTable, drawBuffer);
     shadowRenderPass->end(drawBuffer);
 #endif
 
-    RecordInfo  mainRecordInfo{};
-    mainRecordInfo.m_targetIndex = m_swapChain.getImageIndex();
-    mainRenderPass->begin(drawBuffer, mainRecordInfo);
+    const RenderPass* mainRenderPass = m_renderPasses[(u32)RenderPassIndex::Main];
+
+    recordInfo.m_targetIndex = m_swapChain.getImageIndex();
+    mainRenderPass->begin(drawBuffer, recordInfo);
 #if ENABLE_SKYBOX
     m_pipelines[(u32)PipelineIndex::SkyboxPipeline]->record(m_pipelineLayout, m_descriptorTable, drawBuffer);
     m_pipelines[(u32)PipelineIndex::StarfieldPipeline]->record(m_pipelineLayout, m_descriptorTable, drawBuffer);

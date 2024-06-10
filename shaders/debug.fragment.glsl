@@ -12,6 +12,9 @@ layout(location = 0) out vec4 outColor;
 #endif
 
 void main() {
+    outColor = vec4(0.0);
+#if ENABLE_SHADOW_MAPPING
     float depthValue = texture(Shadowmap, inUV).r;
     outColor = vec4(vec3(depthValue), 1.0);
+#endif
 }

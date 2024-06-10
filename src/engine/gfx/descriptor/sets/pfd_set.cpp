@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/11 16:12:13 by etran             #+#    #+#             */
-/*   Updated: 2024/06/08 12:37:52 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/10 15:25:40 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -112,11 +112,10 @@ void PFDSet::fill(const Device& device) {
 
 void PFDSet::update(const game::GameState& state) {
     const ui::Camera&   camera = state.getController().getCamera();
-    static const f32    fovRadians = math::radians(camera.m_fov);
 
     m_data.m_cameraViewProj.view = math::lookAt(camera.m_position, camera.m_front, camera.m_up, camera.m_right);
     m_data.m_cameraViewProj.proj = math::perspective(
-        fovRadians,
+        math::radians(camera.m_fov),
         ui::Camera::ASPECT_RATIO,
         ui::Camera::NEAR_PLANE,
         ui::Camera::FAR_PLANE);
@@ -129,17 +128,17 @@ void PFDSet::update(const game::GameState& state) {
 
 #if ENABLE_SHADOW_MAPPING
     constexpr float	TERRAIN_SIZE = CHUNK_SIZE * RENDER_DISTANCE;
-    constexpr float	TERRAIN_HALF = TERRAIN_SIZE / 2.0f;
+    constexpr float	TERRAIN_HALF = TERRAIN_SIZE * 0.5f;
     constexpr float	LIGHT_DISTANCE = TERRAIN_HALF;
 
     const math::Mat4 projectorView = math::lookAt(
         state.getSunPos() * LIGHT_DISTANCE + state.getWorld().getOrigin(),
         state.getWorld().getOrigin(),
         WORLD_Y);
-    const math::Mat4 projectorProj = math::orthographic(
+    static const math::Mat4 projectorProj = math::orthographic(
         -TERRAIN_HALF, TERRAIN_HALF,
         -TERRAIN_HALF, TERRAIN_HALF,
-        0.0f, TERRAIN_SIZE * 1.25f);
+        0.0f, TERRAIN_SIZE);
 
     m_data.m_projectorViewProj = projectorProj * projectorView;
 #endif
