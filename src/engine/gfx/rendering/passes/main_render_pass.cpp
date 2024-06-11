@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/07 10:15:26 by etran             #+#    #+#             */
-/*   Updated: 2024/06/06 03:05:31 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/11 15:27:42 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,7 +31,7 @@ void MainRenderPass::init(const Device& device, const RenderPassInfo* info) {
     _createResources(device, info);
     _createTarget(device, info);
 
-    LDEBUG("Scene render pass initialized:" << m_vkRenderPass);
+    LDEBUG("Main render pass initialized:" << m_vkRenderPass);
 }
 
 void MainRenderPass::destroy(const Device& device) {
@@ -155,7 +155,7 @@ void MainRenderPass::_createRenderPass(const Device& device, const RenderPassInf
 
     if (vkCreateRenderPass(device.getDevice(), &renderPassInfo, nullptr, &m_vkRenderPass) != VK_SUCCESS)
         throw std::runtime_error("failed to create scene render pass");
-    LDEBUG("Scene render pass created.");
+    LDEBUG("Main render pass created.");
 }
 
 void MainRenderPass::_createResources(const Device& device, const RenderPassInfo* info) {
@@ -186,7 +186,7 @@ void MainRenderPass::_createResources(const Device& device, const RenderPassInfo
     m_resources[(u32)Resource::DepthImage].initImage(device, std::move(depthImageMetaData));
     m_resources[(u32)Resource::DepthImage].initView(device);
 
-    LDEBUG("Scene render pass resources created.");
+    LDEBUG("Main render pass resources created.");
 }
 
 void MainRenderPass::_createTarget(const Device& device, const RenderPassInfo* info) {

@@ -6,7 +6,7 @@
 #    By: etran <etran@student.42.fr>                +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/04/06 03:40:09 by eli               #+#    #+#              #
-#    Updated: 2024/06/04 02:46:41 by etran            ###   ########.fr        #
+#    Updated: 2024/06/12 00:03:26 by etran            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -86,9 +86,9 @@ INC_SUBDIRS	:=	$(addprefix $(SRC_DIR)/,$(SUBDIRS)) \
 
 # ---------------- SOURCE FILES ---------------- #
 SRC_FILES	:=	entrypoint.cpp \
+				$(LOAD_DIR)/voxmap.cpp \
 				$(LOAD_DIR)/ppm_loader.cpp \
 				$(LOAD_DIR)/image_handler.cpp \
-				$(LOAD_DIR)/cache.cpp \
 				$(IO_DIR)/io_helpers.cpp \
 				$(ENGINE_DIR)/engine.cpp \
 				$(GFX_DIR)/renderer.cpp \
@@ -142,6 +142,7 @@ MACROS		:=	GLFW_INCLUDE_VULKAN \
 				__LOG \
 				__INFO \
 				__LINUX \
+				VOX_SEED=42 \
 				VOX_CPP
 DEFINES		:=	$(addprefix -D,$(MACROS))
 
@@ -156,18 +157,16 @@ DEFINES		:=	$(addprefix -D,$(MACROS))
 ## VOX_CPP : Enables C++ code.
 ## NDEBUG : Disables assertions (if using <cassert>).
 
-# EXTRA		?=	-Wall \
-# 				-Werror \
-# 				-Wextra
+EXTRA		:=	-Wall \
+				-Werror \
+				-Wextra
 INCLUDES	:=	$(addprefix -I./,$(INC_SUBDIRS))
 
-CFLAGS		:=	$(EXTRA) \
-				-std=c++20 \
+CFLAGS		:=	-std=c++20 \
 				-MD \
 				-MP \
 				-g \
-				$(INCLUDES) \
-				$(DEFINES)
+				-O3
 
 LDFLAGS		:=	-lglfw \
 				-lvulkan \
@@ -200,31 +199,53 @@ GLSLC_FLAGS	:=	-MD \
 
 RM			:=	rm -rf
 
+VOR_MAP		:= assets/maps/voronoi.voxmap
+
 # ============================================================================ #
 #                                     RULES                                    #
 # ============================================================================ #
 
+# PROJECT ==================================================================== #
+
+-include $(DEP)
+-include $(SHD_DEP)
+
 .PHONY: all
-all: $(NAME)
+all: $(VOR_MAP) $(NAME)
 
 .PHONY: run
 run: all
 	@./$(NAME)
 
--include $(DEP)
--include $(SHD_DEP)
+.PHONY: fclean
+fclean: clean remove_map
+	@$(RM) $(NAME)
+	@echo "Removed $(NAME)."
 
+.PHONY: re
+re: fclean all
+
+.PHONY: force
+force: shaders_re run
+
+# CPP ======================================================================== #
 # Compile binary
 $(NAME): shaders $(OBJ)
-	@$(CXX) $(CFLAGS) $(OBJ) -o $(NAME) $(LDFLAGS)
+	@$(CXX) $(CFLAGS) $(INCLUDES) $(DEFINES) $(OBJ) -o $(NAME) $(LDFLAGS)
 	@echo "\`$(NAME)\` successfully created."
 
 # Compile obj files
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
 	@mkdir -p $(OBJ_DIR) $(OBJ_SUBDIRS)
 	@echo "Compiling file $<..."
-	@$(CXX) $(CFLAGS) -c $< -o $@
+	@$(CXX) $(CFLAGS) $(INCLUDES) $(DEFINES) -c $< -o $@
 
+.PHONY: clean
+clean:
+	@$(RM) $(OBJ_DIR)
+	@echo "Cleaning object files and dependencies."
+
+# SHADERS ==================================================================== #
 # Compile shader binaries
 $(SHD_BIN_DIR)/%.spv: $(SHD_DIR)/%.glsl
 	@mkdir -p $(OBJ_DIR) $(SHD_BIN_DIR)
@@ -234,20 +255,6 @@ $(SHD_BIN_DIR)/%.spv: $(SHD_DIR)/%.glsl
 .PHONY: shaders
 shaders: $(SHD_BIN)
 
-
-.PHONY: clean
-clean:
-	@$(RM) $(OBJ_DIR)
-	@echo "Cleaning object files and dependencies."
-
-.PHONY: fclean
-fclean: clean
-	@$(RM) $(NAME)
-	@echo "Removed $(NAME)."
-
-.PHONY: re
-re: fclean all
-
 .PHONY: clean_shaders
 clean_shaders:
 	@$(RM) $(SHD_BIN_DIR)
@@ -256,6 +263,15 @@ clean_shaders:
 .PHONY: shaders_re
 shaders_re: clean_shaders $(SHD_BIN)
 
-.PHONY: force
-force:
-	@make -S shaders_re all
+# ASSETS ===================================================================== #
+$(VOR_MAP):
+	@echo "Generating maps..."
+	@mkdir -p assets/maps
+	@$(CXX) $(CFLAGS) $(DEFINES) src/$(PROC_DIR)/voronoi_diagram.cpp -o obj/$(PROC_DIR)/voronoi_diagram_gen
+	@./obj/$(PROC_DIR)/voronoi_diagram_gen
+	@echo "Voronoi diagram generated."
+
+.PHONY: remove_map
+remove_map:
+	@$(RM) $(VOR_MAP)
+	@echo "Removed $(VOR_MAP)."

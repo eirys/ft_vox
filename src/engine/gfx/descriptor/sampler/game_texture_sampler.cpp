@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/11 17:46:33 by etran             #+#    #+#             */
-/*   Updated: 2024/06/04 17:08:04 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/10 20:22:30 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,7 @@
 namespace vox::gfx {
 
 static constexpr u32 TEXTURE_SIZE = 16;
-static constexpr u32 TEXTURE_COUNT = 3;
+static constexpr u32 TEXTURE_COUNT = 5;
 
 /* ========================================================================== */
 /*                                   PUBLIC                                   */
@@ -53,7 +53,9 @@ std::array<scop::Image, TEXTURE_COUNT> _loadAssets() {
     std::array<std::string, TEXTURE_COUNT> texturePaths = {
         "assets/textures/dirt.ppm",
         "assets/textures/grass_side.ppm",
-        "assets/textures/grass_top.ppm"
+        "assets/textures/grass_top.ppm",
+        "assets/textures/stone.ppm",
+        "assets/textures/sand.ppm"
     };
 
     for (u32 i = 0; i < TEXTURE_COUNT; ++i) {

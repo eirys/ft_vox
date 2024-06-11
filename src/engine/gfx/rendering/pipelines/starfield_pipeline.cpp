@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/27 14:22:51 by etran             #+#    #+#             */
-/*   Updated: 2024/06/03 22:01:27 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/11 15:27:14 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -138,13 +138,13 @@ void StarfieldPipeline::init(
     vkDestroyShaderModule(device.getDevice(), vertexModule, nullptr);
     vkDestroyShaderModule(device.getDevice(), fragmentModule, nullptr);
 
-    LDEBUG("Scene pipeline assembled: " << m_pipeline);
+    LDEBUG("Starfield pipeline assembled: " << m_pipeline);
 }
 
 void StarfieldPipeline::destroy(const Device& device) {
     vkDestroyPipeline(device.getDevice(), m_pipeline, nullptr);
 
-    LDEBUG("Scene pipeline destroyed.");
+    LDEBUG("Starfield pipeline destroyed.");
 }
 
 /* ========================================================================== */

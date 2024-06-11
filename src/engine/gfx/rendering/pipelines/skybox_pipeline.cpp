@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/19 10:48:36 by etran             #+#    #+#             */
-/*   Updated: 2024/06/03 10:08:13 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/11 15:26:54 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -136,7 +136,7 @@ void SkyboxPipeline::init(
 void SkyboxPipeline::destroy(const Device& device) {
     vkDestroyPipeline(device.getDevice(), m_pipeline, nullptr);
 
-    LDEBUG("Scene pipeline destroyed.");
+    LDEBUG("Skybox pipeline destroyed.");
 }
 
 /* ========================================================================== */

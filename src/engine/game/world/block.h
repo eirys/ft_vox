@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/28 12:10:34 by etran             #+#    #+#             */
-/*   Updated: 2024/05/30 17:12:53 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/10 17:17:53 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,7 +24,7 @@ public:
     /*                                 METHODS                                */
     /* ====================================================================== */
 
-    Block(const MaterialType material);
+    Block(const MaterialType material, const Biome biome = Biome::Plains);
 
     Block() = default;
     ~Block() = default;
@@ -36,12 +36,13 @@ public:
 
     /* ====================================================================== */
 
-    bool            isVoid() const noexcept;
-    MaterialType    getMaterial() const noexcept;
     void            setMaterial(const MaterialType newMaterial) noexcept;
 
     u8              getTextureId(const BlockFace face) const noexcept;
+    MaterialType    getMaterial() const noexcept;
+    Biome           getBiome() const noexcept;
 
+    bool            isVoid() const noexcept;
     explicit operator MaterialType() const noexcept;
 
 private:
@@ -50,7 +51,9 @@ private:
     /* ====================================================================== */
 
     std::array<u8, 6>   m_textureId = { 0, 0, 0, 0, 0, 0 };
-    MaterialType        m_material = MaterialType::AIR;
+
+    MaterialType        m_material = MaterialType::Air;
+    Biome               m_biome = Biome::Plains;
 
     /* ====================================================================== */
     /*                                 METHODS                                */

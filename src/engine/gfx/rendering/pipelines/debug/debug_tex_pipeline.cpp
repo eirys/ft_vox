@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/03 22:11:27 by etran             #+#    #+#             */
-/*   Updated: 2024/06/04 02:42:05 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/11 15:27:54 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -128,13 +128,13 @@ void DebugTexPipeline::init(
     vkDestroyShaderModule(device.getDevice(), vertexModule, nullptr);
     vkDestroyShaderModule(device.getDevice(), fragmentModule, nullptr);
 
-    LDEBUG("Scene pipeline assembled: " << m_pipeline);
+    LDEBUG("Debug pipeline assembled: " << m_pipeline);
 }
 
 void DebugTexPipeline::destroy(const Device& device) {
     vkDestroyPipeline(device.getDevice(), m_pipeline, nullptr);
 
-    LDEBUG("Scene pipeline destroyed.");
+    LDEBUG("Debug pipeline destroyed.");
 }
 
 /* ========================================================================== */

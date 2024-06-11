@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/07 09:48:27 by etran             #+#    #+#             */
-/*   Updated: 2024/06/06 03:16:07 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/11 15:37:04 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,6 +43,7 @@ static constexpr u32 DESCRIPTOR_SET_COUNT = enumSize<SceneDescriptorSet>();
 /*                                   PUBLIC                                   */
 /* ========================================================================== */
 
+__attribute__ ((optnone))
 void ScenePipeline::init(
     const Device& device,
     const VkRenderPass& renderPass,
