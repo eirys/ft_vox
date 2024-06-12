@@ -6,7 +6,7 @@
 #    By: etran <etran@student.42.fr>                +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/04/06 03:40:09 by eli               #+#    #+#              #
-#    Updated: 2024/06/12 00:03:26 by etran            ###   ########.fr        #
+#    Updated: 2024/06/12 09:50:55 by etran            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -21,6 +21,7 @@ NAME		:=	ft_vox
 SRC_DIR		:=	src
 OBJ_DIR		:=	obj
 SHD_DIR		:=	shaders
+MAP_DIR		:=	assets/maps
 
 # shader binaries
 SHD_BIN_DIR	:=	$(OBJ_DIR)/shaders
@@ -199,16 +200,13 @@ GLSLC_FLAGS	:=	-MD \
 
 RM			:=	rm -rf
 
-VOR_MAP		:= assets/maps/voronoi.voxmap
+VOR_MAP		:= $(MAP_DIR)/voronoi.voxmap
 
 # ============================================================================ #
 #                                     RULES                                    #
 # ============================================================================ #
 
 # PROJECT ==================================================================== #
-
--include $(DEP)
--include $(SHD_DEP)
 
 .PHONY: all
 all: $(VOR_MAP) $(NAME)
@@ -229,6 +227,9 @@ re: fclean all
 force: shaders_re run
 
 # CPP ======================================================================== #
+-include $(DEP)
+-include $(SHD_DEP)
+
 # Compile binary
 $(NAME): shaders $(OBJ)
 	@$(CXX) $(CFLAGS) $(INCLUDES) $(DEFINES) $(OBJ) -o $(NAME) $(LDFLAGS)
@@ -266,12 +267,17 @@ shaders_re: clean_shaders $(SHD_BIN)
 # ASSETS ===================================================================== #
 $(VOR_MAP):
 	@echo "Generating maps..."
-	@mkdir -p assets/maps
-	@$(CXX) $(CFLAGS) $(DEFINES) src/$(PROC_DIR)/voronoi_diagram.cpp -o obj/$(PROC_DIR)/voronoi_diagram_gen
+	@mkdir -p $(MAP_DIR)
+	@$(CXX) $(CFLAGS) $(DEFINES) $(SRC_DIR)/$(PROC_DIR)/voronoi_diagram.cpp -o $(OBJ_DIR)/$(PROC_DIR)/voronoi_diagram_gen
 	@./obj/$(PROC_DIR)/voronoi_diagram_gen
 	@echo "Voronoi diagram generated."
 
 .PHONY: remove_map
 remove_map:
-	@$(RM) $(VOR_MAP)
-	@echo "Removed $(VOR_MAP)."
+	@$(RM) $(MAP_DIR)
+	@echo "Removed $(MAP_DIR)."
+
+
+tmp:
+	$(CXX) $(CFLAGS) $(DEFINES) $(SRC_DIR)/$(PROC_DIR)/voronoi_diagram.cpp -o $(OBJ_DIR)/$(PROC_DIR)/voronoi_diagram_gen
+	./obj/$(PROC_DIR)/voronoi_diagram_gen
