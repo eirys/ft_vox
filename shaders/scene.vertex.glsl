@@ -10,13 +10,13 @@ layout(location = 0) out vec3 outUVW;
 layout(location = 1) out vec3 outNormal;
 layout(location = 2) out vec3 outShadowCoords;
 
-layout(set = PFD_SET, binding = 0) uniform Camera {
+layout(push_constant) uniform Camera {
     mat4 view;
     mat4 proj;
 } camera;
 
 #if ENABLE_SHADOW_MAPPING
-layout(set = PFD_SET, binding = 2) uniform Projector {
+layout(set = PFD_SET, binding = 1) uniform Projector {
     mat4 viewProj;
 } projector;
 #endif

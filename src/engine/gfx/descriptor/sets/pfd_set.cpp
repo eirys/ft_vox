@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/11 16:12:13 by etran             #+#    #+#             */
-/*   Updated: 2024/06/10 15:25:40 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/13 15:30:41 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,7 +39,6 @@ void PFDSet::init(const Device& device, const ICommandBuffer* cmdBuffer) {
     for (u32 i = 0; i < TEXTURE_COUNT; ++i) m_textures[i]->init(device);
 
     std::array<VkDescriptorSetLayoutBinding, BINDING_COUNT> bindings = {
-        _createLayoutBinding(DescriptorTypeIndex::UniformBuffer, ShaderVisibility::VS, (u32)BindingIndex::CameraViewProj),
         _createLayoutBinding(DescriptorTypeIndex::UniformBuffer, ShaderVisibility::VS_FS, (u32)BindingIndex::GameData),
 #if ENABLE_SHADOW_MAPPING
         _createLayoutBinding(DescriptorTypeIndex::UniformBuffer, ShaderVisibility::VS, (u32)BindingIndex::ProjectorViewProj),
@@ -75,11 +74,6 @@ void PFDSet::destroy(const Device& device) {
 /* ========================================================================== */
 
 void PFDSet::fill(const Device& device) {
-    VkDescriptorBufferInfo cameraInfo{};
-    cameraInfo.buffer = m_mvpDataBuffer.getBuffer();
-    cameraInfo.offset = (VkDeviceSize)PFDUbo::Offset::CameraViewProj;
-    cameraInfo.range = sizeof(PFDUbo::m_cameraViewProj);
-
     VkDescriptorBufferInfo gameDataInfo{};
     gameDataInfo.buffer = m_mvpDataBuffer.getBuffer();
     gameDataInfo.offset = (VkDeviceSize)PFDUbo::Offset::GameData;
@@ -98,7 +92,6 @@ void PFDSet::fill(const Device& device) {
 #endif
 
     std::array<VkWriteDescriptorSet, BINDING_COUNT> descriptorWrites = {
-        _createWriteDescriptorSet(DescriptorTypeIndex::UniformBuffer, &cameraInfo, (u32)BindingIndex::CameraViewProj),
         _createWriteDescriptorSet(DescriptorTypeIndex::UniformBuffer, &gameDataInfo, (u32)BindingIndex::GameData),
 #if ENABLE_SHADOW_MAPPING
         _createWriteDescriptorSet(DescriptorTypeIndex::UniformBuffer, &projectorInfo, (u32)BindingIndex::ProjectorViewProj),
@@ -111,15 +104,6 @@ void PFDSet::fill(const Device& device) {
 }
 
 void PFDSet::update(const game::GameState& state) {
-    const ui::Camera&   camera = state.getController().getCamera();
-
-    m_data.m_cameraViewProj.view = math::lookAt(camera.m_position, camera.m_front, camera.m_up, camera.m_right);
-    m_data.m_cameraViewProj.proj = math::perspective(
-        math::radians(camera.m_fov),
-        ui::Camera::ASPECT_RATIO,
-        ui::Camera::NEAR_PLANE,
-        ui::Camera::FAR_PLANE);
-
     constexpr math::Vect3 SUN_COLOR = {1.0f, 1.0f, 0.33f};
     constexpr math::Vect3 MOON_COLOR = {0.5f, 0.5f, 0.5f};
 

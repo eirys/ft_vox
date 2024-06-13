@@ -7,12 +7,12 @@ layout(location = 0) out float outIntensity;
 layout(location = 1) out float outRandom;
 layout(location = 2) out float outHeight;
 
-layout(set = PFD_SET, binding = 0) uniform Camera {
+layout(push_constant) uniform Camera {
     mat4 view;
     mat4 proj;
 } camera;
 
-layout(set = PFD_SET, binding = 1) uniform GameData {
+layout(set = PFD_SET, binding = 0) uniform GameData {
     vec2 sunPos;
 } gameData;
 

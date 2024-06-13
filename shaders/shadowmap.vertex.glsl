@@ -5,7 +5,7 @@
 
 layout(location = 0) in uint inData;
 
-layout(set = PFD_SET, binding = 2) uniform Projector {
+layout(set = PFD_SET, binding = 1) uniform Projector {
     mat4 viewProj;
 } projector;
 

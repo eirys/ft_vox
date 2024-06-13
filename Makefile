@@ -6,7 +6,7 @@
 #    By: etran <etran@student.42.fr>                +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/04/06 03:40:09 by eli               #+#    #+#              #
-#    Updated: 2024/06/12 09:50:55 by etran            ###   ########.fr        #
+#    Updated: 2024/06/13 10:53:21 by etran            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -47,8 +47,6 @@ PIP_DIR		:=	$(RENDER_DIR)/pipelines
 PASSES_DIR	:=	$(RENDER_DIR)/passes
 GEO_DIR		:=	$(RENDER_DIR)/geometry
 
-DEBUG_PIP_DIR	:=	$(PIP_DIR)/debug
-
 # libraries
 LIBS_DIR	:=	libs
 MATH_DIR	:=	$(LIBS_DIR)/math
@@ -78,8 +76,7 @@ SUBDIRS		:=	$(LIBS_DIR) \
 				$(PROC_DIR) \
 				$(GAME_DIR) \
 				$(LOAD_DIR) \
-				$(WORLD_DIR) \
-				$(DEBUG_PIP_DIR)
+				$(WORLD_DIR)
 
 OBJ_SUBDIRS	:=	$(addprefix $(OBJ_DIR)/,$(SUBDIRS))
 INC_SUBDIRS	:=	$(addprefix $(SRC_DIR)/,$(SUBDIRS)) \
@@ -108,18 +105,20 @@ SRC_FILES	:=	entrypoint.cpp \
 				$(SETS_DIR)/world_set.cpp \
 				$(DESC_DIR)/descriptor_pool.cpp \
 				$(DESC_DIR)/descriptor_table.cpp \
-				$(RENDER_DIR)/pipeline.cpp \
-				$(RENDER_DIR)/render_pass.cpp \
+				$(RENDER_DIR)/pipeline_layout.cpp \
+				$(RENDER_DIR)/push_constant.cpp \
 				$(GEO_DIR)/vertex.cpp \
 				$(GEO_DIR)/frustum_culling.cpp \
 				$(GEO_DIR)/vertex_buffer.cpp \
+				$(PASSES_DIR)/render_pass.cpp \
 				$(PASSES_DIR)/main_render_pass.cpp \
 				$(PASSES_DIR)/shadow_render_pass.cpp \
+				$(PIP_DIR)/pipeline.cpp \
 				$(PIP_DIR)/scene_pipeline.cpp \
 				$(PIP_DIR)/skybox_pipeline.cpp \
 				$(PIP_DIR)/starfield_pipeline.cpp \
 				$(PIP_DIR)/shadow_pipeline.cpp \
-				$(DEBUG_PIP_DIR)/debug_tex_pipeline.cpp \
+				$(PIP_DIR)/debug_tex_pipeline.cpp \
 				$(BUF_DIR)/buffer.cpp \
 				$(BUF_DIR)/image_buffer.cpp \
 				$(SYNC_DIR)/fence.cpp \

@@ -6,14 +6,12 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/23 22:43:14 by etran             #+#    #+#             */
-/*   Updated: 2024/03/22 23:07:21 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/12 11:33:22 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "command_buffer.h"
 #include "device.h"
-#include "graphics_command_buffer.h"
-#include "compute_command_buffer.h"
 #include "gfx_semaphore.h"
 #include "debug.h"
 
@@ -23,6 +21,11 @@ namespace vox::gfx {
 
 /* ========================================================================== */
 /*                                   PUBLIC                                   */
+/* ========================================================================== */
+
+CommandBuffer::CommandBuffer(CommandBufferType type) noexcept:
+    m_type(type) {}
+
 /* ========================================================================== */
 
 void CommandBuffer::init(
@@ -102,6 +105,23 @@ void CommandBuffer::submitRecording(
 
     if (vkQueueSubmit(_getQueue(), 1, &submitInfo, fence.getFence()) != VK_SUCCESS)
         throw std::runtime_error("failed to submit command buffer to queue");
+}
+
+void CommandBuffer::bindPipeline(const VkPipeline& pipeline) const {
+    vkCmdBindPipeline(m_buffer, (VkPipelineBindPoint)m_type, pipeline);
+}
+
+void CommandBuffer::bindDescriptorSets(
+    const VkPipelineLayout& layout,
+    const VkDescriptorSet* descriptorSets,
+    const u32 setCount
+) const {
+    vkCmdBindDescriptorSets(
+        m_buffer,
+        (VkPipelineBindPoint)m_type,
+        layout,
+        0, setCount, descriptorSets,
+        0, nullptr);
 }
 
 /* ========================================================================== */

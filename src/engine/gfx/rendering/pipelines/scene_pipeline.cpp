@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/07 09:48:27 by etran             #+#    #+#             */
-/*   Updated: 2024/06/11 15:37:04 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/13 15:55:29 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -181,27 +181,10 @@ void ScenePipeline::record(
     const std::array<VkDescriptorSet, DESCRIPTOR_SET_COUNT> descriptorSets = {
         descriptorTable[(u32)SetIndex::PerFrameData]->getSet(),
         descriptorTable[(u32)SetIndex::Textures]->getSet() };
-    const std::array<VkDeviceSize, 1> offsets = { 0 };
-    const std::array<VkBuffer, 1> vertexBuffers = { VertexBuffer::getBuffer().getBuffer() };
 
-    vkCmdBindDescriptorSets(
-        cmdBuffer->getBuffer(),
-        VK_PIPELINE_BIND_POINT_GRAPHICS,
-        layout,
-        (u32)SceneDescriptorSet::First,
-        DESCRIPTOR_SET_COUNT, descriptorSets.data(),
-        0, nullptr);
-
-    vkCmdBindPipeline(
-        cmdBuffer->getBuffer(),
-        VK_PIPELINE_BIND_POINT_GRAPHICS,
-        m_pipeline);
-
-    vkCmdBindVertexBuffers(
-        cmdBuffer->getBuffer(),
-        0, vertexBuffers.size(),
-        vertexBuffers.data(),
-        offsets.data());
+    cmdBuffer->bindDescriptorSets(layout, descriptorSets.data(), DESCRIPTOR_SET_COUNT);
+    cmdBuffer->bindPipeline(m_pipeline);
+    VertexBuffer::bind(cmdBuffer);
 
     vkCmdDraw(cmdBuffer->getBuffer(), 4, VertexBuffer::getInstancesCount(), 0, 0);
 }

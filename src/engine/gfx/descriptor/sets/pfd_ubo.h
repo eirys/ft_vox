@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/07 13:46:39 by etran             #+#    #+#             */
-/*   Updated: 2024/06/05 22:09:38 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/13 15:30:58 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,11 +24,6 @@ struct PFDUbo final {
     /* ====================================================================== */
 
     struct {
-        math::Mat4  view;
-        math::Mat4  proj;
-    }           m_cameraViewProj;
-
-    struct {
         math::Vect2 sunPos;
         u32         skyHue;
         u32         padding[13];
@@ -43,8 +38,7 @@ struct PFDUbo final {
     /* ====================================================================== */
 
     enum class Offset: u32 {
-        CameraViewProj      = 0,
-        GameData            = CameraViewProj + sizeof(m_cameraViewProj),
+        GameData      = 0,
 #if ENABLE_SHADOW_MAPPING
         ProjectorViewProj   = GameData + sizeof(m_gameData)
 #endif

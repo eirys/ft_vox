@@ -8,7 +8,7 @@ layout(location = 0) in vec3 inUVW;
 
 layout(location = 0) out vec4 outFragColor;
 
-layout(set = PFD_SET, binding = 1) uniform GameData {
+layout(set = PFD_SET, binding = 0) uniform GameData {
     vec2 sunPos;
     uint skyHue;
 } gameData;
@@ -25,7 +25,7 @@ const vec3 SUN_COLOR = vec3(1.0, 1.0, 0.33);
 const vec3 MOON_COLOR = vec3(0.8, 0.8, 0.9);
 const vec3 VOID_COLOR = vec3(0.0);
 
-const vec3 DAY_TINT = vec3(0.6, 0.8, 1.0);
+const vec3 DAY_TINT = vec3(0.7, 0.85, 1.0);
 const vec3 SUNSET_TINT = vec3(0.9, 0.3, 0.0);
 
 const vec3 NIGHT_TINT = vec3(0.0, 0.0, 0.01);

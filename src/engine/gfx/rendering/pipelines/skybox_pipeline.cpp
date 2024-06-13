@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/19 10:48:36 by etran             #+#    #+#             */
-/*   Updated: 2024/06/11 15:26:54 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/12 11:41:53 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -151,18 +151,8 @@ void SkyboxPipeline::record(
         descriptorTable[(u32)SetIndex::Textures]->getSet()
     };
 
-    vkCmdBindDescriptorSets(
-        cmdBuffer->getBuffer(),
-        VK_PIPELINE_BIND_POINT_GRAPHICS,
-        layout,
-        (u32)SkyboxDescriptorSet::First,
-        DESCRIPTOR_SET_COUNT, descriptorSets.data(),
-        0, nullptr);
-
-    vkCmdBindPipeline(
-        cmdBuffer->getBuffer(),
-        VK_PIPELINE_BIND_POINT_GRAPHICS,
-        m_pipeline);
+    cmdBuffer->bindDescriptorSets(layout, descriptorSets.data(), DESCRIPTOR_SET_COUNT);
+    cmdBuffer->bindPipeline(m_pipeline);
 
     // Draw skybox
     vkCmdDraw(cmdBuffer->getBuffer(), 4, 6, 0, 0);

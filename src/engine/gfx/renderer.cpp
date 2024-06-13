@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/23 09:29:35 by etran             #+#    #+#             */
-/*   Updated: 2024/06/10 15:14:27 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/13 15:52:36 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,7 @@
 #include "debug_tex_pipeline.h"
 #include "vertex_buffer.h"
 #include "pfd_set.h"
+#include "push_constant.h"
 #include "vox_decl.h"
 #include "game_state.h"
 
@@ -44,7 +45,7 @@ void Renderer::init(ui::Window& window, const game::GameState& game) {
     m_descriptorTable.init(m_device, transferBuffer, game);
 
     _createRenderPasses();
-    _createPipelineLayout();
+    _createPipelineLayouts();
     _createPipelines();
     _createFences();
     _createGfxSemaphores();
@@ -53,7 +54,6 @@ void Renderer::init(ui::Window& window, const game::GameState& game) {
     m_descriptorTable.fill(m_device);
 
 #if ENABLE_FRUSTUM_CULLING
-    // VertexBuffer::computeMaxVertexInstanceCount(game);
     VertexBuffer::init(m_device, game);
 #else
     VertexBuffer::init(m_device, transferBuffer, game);
@@ -69,6 +69,7 @@ void Renderer::destroy() {
 
     _destroyGfxSemaphores();
     _destroyFences();
+    _destroyPipelineLayouts();
     _destroyPipelines();
     _destroyRenderPasses();
     _destroyCommandBuffers();
@@ -90,6 +91,7 @@ void Renderer::waitIdle() const {
 void Renderer::render(const game::GameState& game) {
     // Prepare frame resources ---------
     m_fences[(u32)FenceIndex::DrawInFlight].await(m_device);
+    m_pipelineLayouts[(u32)PipelineLayoutIndex::Main].updatePushConstant(game);
     m_descriptorTable.update(game);
 #if ENABLE_FRUSTUM_CULLING
     VertexBuffer::update(m_device, game);
@@ -102,17 +104,20 @@ void Renderer::render(const game::GameState& game) {
 
     // Record command buffer ---------
     const ICommandBuffer* drawBuffer = m_commandBuffers[(u32)CommandBufferIndex::Draw];
+    const VkPipelineLayout mainLayout = m_pipelineLayouts[(u32)PipelineLayoutIndex::Main].getLayout();
     RecordInfo  recordInfo{};
 
     drawBuffer->reset();
     drawBuffer->startRecording();
+
+    m_pipelineLayouts[(u32)PipelineLayoutIndex::Main].bindPushConstantRange(drawBuffer);
 
 #if ENABLE_SHADOW_MAPPING
     const RenderPass* shadowRenderPass = m_renderPasses[(u32)RenderPassIndex::Shadow];
 
     recordInfo.m_targetIndex = 0;
     shadowRenderPass->begin(drawBuffer, recordInfo);
-    m_pipelines[(u32)PipelineIndex::ShadowPipeline]->record(m_pipelineLayout, m_descriptorTable, drawBuffer);
+    m_pipelines[(u32)PipelineIndex::ShadowPipeline]->record(mainLayout, m_descriptorTable, drawBuffer);
     shadowRenderPass->end(drawBuffer);
 #endif
 
@@ -121,13 +126,13 @@ void Renderer::render(const game::GameState& game) {
     recordInfo.m_targetIndex = m_swapChain.getImageIndex();
     mainRenderPass->begin(drawBuffer, recordInfo);
 #if ENABLE_SKYBOX
-    m_pipelines[(u32)PipelineIndex::SkyboxPipeline]->record(m_pipelineLayout, m_descriptorTable, drawBuffer);
-    m_pipelines[(u32)PipelineIndex::StarfieldPipeline]->record(m_pipelineLayout, m_descriptorTable, drawBuffer);
+    m_pipelines[(u32)PipelineIndex::SkyboxPipeline]->record(mainLayout, m_descriptorTable, drawBuffer);
+    m_pipelines[(u32)PipelineIndex::StarfieldPipeline]->record(mainLayout, m_descriptorTable, drawBuffer);
 #endif
-    m_pipelines[(u32)PipelineIndex::ScenePipeline]->record(m_pipelineLayout, m_descriptorTable, drawBuffer);
+    m_pipelines[(u32)PipelineIndex::ScenePipeline]->record(mainLayout, m_descriptorTable, drawBuffer);
 
     if (game.getController().showDebug())
-        m_pipelines[(u32)PipelineIndex::DebugPipeline]->record(m_pipelineLayout, m_descriptorTable, drawBuffer);
+        m_pipelines[(u32)PipelineIndex::DebugPipeline]->record(mainLayout, m_descriptorTable, drawBuffer);
     mainRenderPass->end(drawBuffer);
 
     drawBuffer->stopRecording();
@@ -152,6 +157,8 @@ void Renderer::render(const game::GameState& game) {
 /* ========================================================================== */
 
 void Renderer::_createCommandBuffers() {
+    m_commandBuffers.reserve(CMD_BUFFER_COUNT);
+
     // Draw buffers
     for (u32 i = 0; i < CMD_BUFFER_COUNT; ++i) m_commandBuffers[i] = m_commandPool.createCommandBuffer(m_device, CommandBufferType::DRAW);
 
@@ -159,6 +166,8 @@ void Renderer::_createCommandBuffers() {
 }
 
 void Renderer::_createRenderPasses() {
+    m_renderPasses.reserve(RENDER_PASS_COUNT);
+
     m_renderPasses[(u32)RenderPassIndex::Main] = new MainRenderPass();
 
     MainRenderPassInfo mainPassInfo(m_swapChain.getImageViews());
@@ -193,75 +202,75 @@ void Renderer::_createRenderPasses() {
 }
 
 void Renderer::_createPipelines() {
-    m_pipelines[(u32)PipelineIndex::ScenePipeline] = new ScenePipeline();
+    m_pipelines.reserve(PIPELINE_COUNT);
 
-    VkRenderPass mainRenderPass = m_renderPasses[(u32)RenderPassIndex::Main]->getRenderPass();
-    m_pipelines[(u32)PipelineIndex::ScenePipeline]->init(m_device, mainRenderPass, m_pipelineLayout);
+    const VkRenderPass mainRenderPass = m_renderPasses[(u32)RenderPassIndex::Main]->getRenderPass();
+    const VkPipelineLayout mainLayout = m_pipelineLayouts[(u32)PipelineLayoutIndex::Main].getLayout();
+
+    m_pipelines[(u32)PipelineIndex::ScenePipeline] = new ScenePipeline();
+    m_pipelines[(u32)PipelineIndex::ScenePipeline]->init(m_device, mainRenderPass, mainLayout);
 
 #if ENABLE_SKYBOX
     m_pipelines[(u32)PipelineIndex::SkyboxPipeline] = new SkyboxPipeline();
     m_pipelines[(u32)PipelineIndex::StarfieldPipeline] = new StarfieldPipeline();
-    m_pipelines[(u32)PipelineIndex::SkyboxPipeline]->init(m_device, mainRenderPass, m_pipelineLayout);
-    m_pipelines[(u32)PipelineIndex::StarfieldPipeline]->init(m_device, mainRenderPass, m_pipelineLayout);
+    m_pipelines[(u32)PipelineIndex::SkyboxPipeline]->init(m_device, mainRenderPass, mainLayout);
+    m_pipelines[(u32)PipelineIndex::StarfieldPipeline]->init(m_device, mainRenderPass, mainLayout);
 #endif
 #if ENABLE_SHADOW_MAPPING
-    m_pipelines[(u32)PipelineIndex::ShadowPipeline] = new ShadowPipeline();
-
     VkRenderPass shadowRenderPass = m_renderPasses[(u32)RenderPassIndex::Shadow]->getRenderPass();
-    m_pipelines[(u32)PipelineIndex::ShadowPipeline]->init(m_device, shadowRenderPass, m_pipelineLayout);
+
+    m_pipelines[(u32)PipelineIndex::ShadowPipeline] = new ShadowPipeline();
+    m_pipelines[(u32)PipelineIndex::ShadowPipeline]->init(m_device, shadowRenderPass, mainLayout);
 #endif
 
     m_pipelines[(u32)PipelineIndex::DebugPipeline] = new DebugTexPipeline();
-    m_pipelines[(u32)PipelineIndex::DebugPipeline]->init(m_device, mainRenderPass, m_pipelineLayout);
+    m_pipelines[(u32)PipelineIndex::DebugPipeline]->init(m_device, mainRenderPass, mainLayout);
 
     LDEBUG("Pipelines created.");
 }
 
-void Renderer::_createPipelineLayout() {
-    std::array<VkDescriptorSetLayout, DESCRIPTOR_TABLE_SIZE> setLayouts;
-    for (u32 i = 0; i < DESCRIPTOR_TABLE_SIZE; ++i)
-        setLayouts[i] = m_descriptorTable[i]->getLayout();
+void Renderer::_createPipelineLayouts() {
+    m_pipelineLayouts.resize(PIPELINE_LAYOUT_COUNT);
 
-    VkPipelineLayoutCreateInfo layoutInfo{};
-    layoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-    layoutInfo.setLayoutCount = DESCRIPTOR_TABLE_SIZE;
-    layoutInfo.pSetLayouts = setLayouts.data();
-    layoutInfo.pushConstantRangeCount = 0;
-    layoutInfo.pPushConstantRanges = nullptr;
+    std::vector<VkDescriptorSetLayout> setLayouts(DESCRIPTOR_TABLE_SIZE);
+    for (u32 i = 0; i < DESCRIPTOR_TABLE_SIZE; ++i) setLayouts[i] = m_descriptorTable[i]->getLayout();
 
-    if (vkCreatePipelineLayout(m_device.getDevice(), &layoutInfo, nullptr, &m_pipelineLayout) != VK_SUCCESS)
-        throw std::runtime_error("Failed to create pipeline layout.");
+    m_pipelineLayouts[(u32)PipelineLayoutIndex::Main].init(m_device, setLayouts, new MainPushConstant());
+
+#if ENABLE_SSAO
+#endif
 }
 
 void Renderer::_createGfxSemaphores() {
+    m_semaphores.resize(SEMAPHORE_COUNT);
     for (GfxSemaphore& semaphore : m_semaphores) semaphore.init(m_device);
 }
 
 void Renderer::_createFences() {
+    m_fences.resize(FENCE_COUNT);
     for (Fence& fence : m_fences) fence.init(m_device, VK_FENCE_CREATE_SIGNALED_BIT);
 }
-
-/* ========================================================================== */
 
 void Renderer::_destroyCommandBuffers() {
     for (u32 i = 0; i < CMD_BUFFER_COUNT; ++i) m_commandPool.destroyBuffer(m_device, m_commandBuffers[i]);
 }
 
 void Renderer::_destroyRenderPasses() {
-    for (u32 i = 0; i < RENDER_PASS_COUNT; i++) m_renderPasses[i]->destroy(m_device);
+    for (u32 i = 0; i < RENDER_PASS_COUNT; i++) {
+        m_renderPasses[i]->destroy(m_device);
+        delete m_renderPasses[i];
+    }
 }
 
 void Renderer::_destroyPipelines() {
-    _destroyPipelineLayout();
-
     for (u32 i = 0; i < PIPELINE_COUNT; ++i) {
         m_pipelines[i]->destroy(m_device);
         delete m_pipelines[i];
     }
 }
 
-void Renderer::_destroyPipelineLayout() {
-    vkDestroyPipelineLayout(m_device.getDevice(), m_pipelineLayout, nullptr);
+void Renderer::_destroyPipelineLayouts() {
+    for (PipelineLayout& layout : m_pipelineLayouts) layout.destroy(m_device);
 }
 
 void Renderer::_destroyGfxSemaphores() {

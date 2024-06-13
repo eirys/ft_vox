@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/23 20:01:10 by etran             #+#    #+#             */
-/*   Updated: 2024/03/22 23:07:34 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/12 11:34:56 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,6 +42,12 @@ public:
         const std::vector<VkSemaphore> signalSemaphore,
         const Fence& fence) const override;
 
+    void    bindPipeline(const VkPipeline& pipeline) const override;
+    void    bindDescriptorSets(
+        const VkPipelineLayout& layout,
+        const VkDescriptorSet* descriptorSets,
+        const u32 setCount) const override;
+
     VkCommandBuffer getBuffer() const noexcept override;
 
 protected:
@@ -51,13 +57,15 @@ protected:
 
     VkCommandBuffer     m_buffer;
     Fence               m_awaitFence;
+    CommandBufferType   m_type;
 
     /* ====================================================================== */
     /*                                 METHODS                                */
     /* ====================================================================== */
 
-    CommandBuffer() = default;
+    CommandBuffer(const CommandBufferType type) noexcept;
 
+    CommandBuffer() = delete;
     CommandBuffer(CommandBuffer&& other) = delete;
     CommandBuffer(const CommandBuffer& other) = delete;
     CommandBuffer& operator=(CommandBuffer&& other) = delete;

@@ -8,7 +8,7 @@ layout(location = 0) in vec2 inUV;
 layout(location = 0) out vec4 outColor;
 
 #if ENABLE_SHADOW_MAPPING
-    layout(set = PFD_SET, binding = 3) uniform sampler2D Shadowmap;
+    layout(set = PFD_SET, binding = 2) uniform sampler2D Shadowmap;
 #endif
 
 void main() {

@@ -1,60 +1,63 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   gfx_semaphore.h                                    :+:      :+:    :+:   */
+/*   pipeline_layout.h                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/03/02 10:43:33 by etran             #+#    #+#             */
-/*   Updated: 2024/06/12 12:03:19 by etran            ###   ########.fr       */
+/*   Created: 2024/06/12 10:38:03 by etran             #+#    #+#             */
+/*   Updated: 2024/06/13 11:17:59 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
-#include <vulkan/vulkan.h>
+#include <vector>
+
+#include "types.h"
+#include "push_constant.h"
 
 namespace vox::gfx {
 
 class Device;
+class ICommandBuffer;
 
-/**
- * @brief Manager for VkSemaphores. Synchronizes GPU commands.
-*/
-class GfxSemaphore final {
+class PipelineLayout final {
 public:
     /* ====================================================================== */
     /*                                 METHODS                                */
     /* ====================================================================== */
 
-    GfxSemaphore() = default;
-    GfxSemaphore(GfxSemaphore&& other) = default;
-    GfxSemaphore& operator=(GfxSemaphore&& other) = default;
-    ~GfxSemaphore() = default;
+    PipelineLayout() = default;
+    PipelineLayout(PipelineLayout&& other) = default;
+    PipelineLayout& operator=(PipelineLayout&& other) = default;
+    ~PipelineLayout() = default;
 
-    GfxSemaphore(const GfxSemaphore& other) = delete;
-    GfxSemaphore& operator=(const GfxSemaphore& other) = delete;
+    PipelineLayout(const PipelineLayout& other) = delete;
+    PipelineLayout& operator=(const PipelineLayout& other) = delete;
 
     /* ====================================================================== */
 
-    void init(const Device& device);
+    void init(
+        const Device& device,
+        const std::vector<VkDescriptorSetLayout>& setLayouts,
+        PushConstant* pushConstant);
     void destroy(const Device& device);
 
-    /* ====================================================================== */
+    void updatePushConstant(const game::GameState& gameState) const;
+    void bindPushConstantRange(const ICommandBuffer* commandBuffer) const;
 
-    void signal(const VkQueue queue);
-
-    /* ====================================================================== */
-
-    VkSemaphore getSemaphore() const noexcept;
+    VkPipelineLayout    getLayout() const noexcept;
 
 private:
     /* ====================================================================== */
     /*                                  DATA                                  */
     /* ====================================================================== */
 
-    VkSemaphore m_semaphore = VK_NULL_HANDLE;
+    VkPipelineLayout    m_layout = VK_NULL_HANDLE;
 
-}; // class GfxSemaphore
+    PushConstant*       m_pushConstant = nullptr;
+
+}; // class PipelineLayout
 
 } // namespace vox::gfx

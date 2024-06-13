@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/23 23:09:22 by etran             #+#    #+#             */
-/*   Updated: 2024/03/11 09:26:49 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/12 11:28:01 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,6 +31,7 @@ public:
     /* ====================================================================== */
 
     ComputeCommandBuffer(const VkCommandPool& pool, const VkQueue& queue):
+        super(CommandBufferType::COMPUTE),
         m_pool(pool),
         m_queue(queue) {}
     ~ComputeCommandBuffer() = default;

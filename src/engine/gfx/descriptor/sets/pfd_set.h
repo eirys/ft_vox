@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/28 23:38:00 by etran             #+#    #+#             */
-/*   Updated: 2024/06/03 20:03:49 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/13 15:33:15 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,7 +27,6 @@ public:
     /* ====================================================================== */
 
     enum class BindingIndex: u32 {
-        CameraViewProj,
         GameData,
 #if ENABLE_SHADOW_MAPPING
         ProjectorViewProj,
@@ -57,6 +56,8 @@ public:
 
     PFDSet(): super(DescriptorSetIndex::Pfd) {}
 
+    /* ====================================================================== */
+
     void    init(const Device& device, const ICommandBuffer* cmdBuffer) override;
     void    destroy(const Device& device) override;
 
@@ -82,9 +83,8 @@ private:
     /* ====================================================================== */
 
     std::array<TextureSampler*, TEXTURE_COUNT>  m_textures;
-
-    Buffer                                      m_mvpDataBuffer;
-    PFDUbo                                      m_data;
+    Buffer  m_mvpDataBuffer;
+    PFDUbo  m_data;
 
 };
 

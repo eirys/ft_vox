@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/27 14:22:51 by etran             #+#    #+#             */
-/*   Updated: 2024/06/11 15:27:14 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/12 11:42:12 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -159,23 +159,10 @@ void StarfieldPipeline::record(
         descriptorTable[(u32)SetIndex::Textures]->getSet()
     };
 
-    vkCmdBindDescriptorSets(
-        cmdBuffer->getBuffer(),
-        VK_PIPELINE_BIND_POINT_GRAPHICS,
-        layout,
-        (u32)StarfieldDescriptorSet::First,
-        DESCRIPTOR_SET_COUNT, descriptorSets.data(),
-        0, nullptr);
+    cmdBuffer->bindDescriptorSets(layout, descriptorSets.data(), DESCRIPTOR_SET_COUNT);
+    cmdBuffer->bindPipeline(m_pipeline);
 
-    vkCmdBindPipeline(
-        cmdBuffer->getBuffer(),
-        VK_PIPELINE_BIND_POINT_GRAPHICS,
-        m_pipeline);
-
-    constexpr u32 INSTANCES = STAR_COUNT;
-
-    LDEBUG("Drawing " << INSTANCES << " stars.");
-    vkCmdDraw(cmdBuffer->getBuffer(), 4, INSTANCES, 0, 0);
+    vkCmdDraw(cmdBuffer->getBuffer(), 4, STAR_COUNT, 0, 0);
 }
 
 } // namespace vox::gfx

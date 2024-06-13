@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/15 16:08:27 by etran             #+#    #+#             */
-/*   Updated: 2024/06/11 23:49:40 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/13 15:50:32 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -119,7 +119,7 @@ void Chunk::cache() const {
 
 Biome Chunk::_getBiome(const f32 cellValue, const f32 moisture) const noexcept {
     if (cellValue < 0.4f && moisture > 0.0f) return Biome::Oceans;
-    else if (cellValue < 0.5f) return Biome::Plains;
+    else if (cellValue < 0.3f) return Biome::Plains;
     else if (cellValue < 0.6f) return Biome::Desert;
     else if (cellValue < 0.9f) return Biome::RockMountains;
     return Biome::SnowMountains;

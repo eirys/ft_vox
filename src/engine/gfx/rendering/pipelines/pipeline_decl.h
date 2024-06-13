@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/29 22:37:23 by etran             #+#    #+#             */
-/*   Updated: 2024/06/04 01:47:57 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/12 10:28:27 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,7 +24,7 @@ namespace vox::gfx {
  * @brief List of all pipelines.
 */
 enum class PipelineIndex: u32 {
-    ScenePipeline = 0,
+    ScenePipeline,
 
 #if ENABLE_SKYBOX
     SkyboxPipeline,
@@ -40,7 +40,20 @@ enum class PipelineIndex: u32 {
     Count
 };
 
+enum class PipelineLayoutIndex: u32 {
+    Main,
+
+#if ENABLE_SSAO
+    Offscreen,
+    SSAO,
+    SSAOBlur,
+#endif
+
+    Count
+};
+
 constexpr u32 PIPELINE_COUNT = (u32)PipelineIndex::Count;
+constexpr u32 PIPELINE_LAYOUT_COUNT = (u32)PipelineLayoutIndex::Count;
 
 enum class ShaderType: u8 {
     VS = VK_SHADER_STAGE_VERTEX_BIT,
