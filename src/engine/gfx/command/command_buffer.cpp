@@ -6,13 +6,15 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/23 22:43:14 by etran             #+#    #+#             */
-/*   Updated: 2024/06/12 11:33:22 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/14 19:28:16 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "command_buffer.h"
 #include "device.h"
 #include "gfx_semaphore.h"
+#include "pipeline_layout.h"
+
 #include "debug.h"
 
 #include <stdexcept>
@@ -88,10 +90,10 @@ void CommandBuffer::awaitEndOfRecording(const Device& device) const {
 }
 
 void CommandBuffer::submitRecording(
-    const std::vector<VkSemaphore> waitSemaphores,
-    const std::vector<VkPipelineStageFlags> waitStages,
-    const std::vector<VkSemaphore> signalSemaphore,
-    const Fence& fence
+    const std::vector<VkSemaphore>& waitSemaphores,
+    const std::vector<VkPipelineStageFlags>& waitStages,
+    const std::vector<VkSemaphore>& signalSemaphore,
+    const VkFence fence
 ) const {
     VkSubmitInfo submitInfo{};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -103,7 +105,7 @@ void CommandBuffer::submitRecording(
     submitInfo.pSignalSemaphores = signalSemaphore.data();
     submitInfo.signalSemaphoreCount = (u32)signalSemaphore.size();
 
-    if (vkQueueSubmit(_getQueue(), 1, &submitInfo, fence.getFence()) != VK_SUCCESS)
+    if (vkQueueSubmit(_getQueue(), 1, &submitInfo, fence) != VK_SUCCESS)
         throw std::runtime_error("failed to submit command buffer to queue");
 }
 
@@ -111,16 +113,13 @@ void CommandBuffer::bindPipeline(const VkPipeline& pipeline) const {
     vkCmdBindPipeline(m_buffer, (VkPipelineBindPoint)m_type, pipeline);
 }
 
-void CommandBuffer::bindDescriptorSets(
-    const VkPipelineLayout& layout,
-    const VkDescriptorSet* descriptorSets,
-    const u32 setCount
-) const {
+void CommandBuffer::bindDescriptorSets(const PipelineLayout& pipelineLayout) const {
     vkCmdBindDescriptorSets(
         m_buffer,
         (VkPipelineBindPoint)m_type,
-        layout,
-        0, setCount, descriptorSets,
+        pipelineLayout.getLayout(),
+        0, pipelineLayout.getSets().size(),
+        pipelineLayout.getSets().data(),
         0, nullptr);
 }
 

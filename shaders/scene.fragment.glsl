@@ -4,23 +4,18 @@
 #include "../src/engine/gfx/descriptor/sets/descriptor_decl.h"
 #include "../src/engine/vox_decl.h"
 
-layout(location = 0) in vec3 inUVW;
-layout(location = 1) in vec3 inNormal;
-layout(location = 2) in vec3 inShadowCoords;
+layout(location = 0) in vec2 inUV;
 
 layout(location = 0) out vec4 outFragColor;
+
+layout(set = GBUFFER_SET, binding = 0) uniform sampler2D PositionTex;
+layout(set = GBUFFER_SET, binding = 1) uniform sampler2D NormalTex;
+layout(set = GBUFFER_SET, binding = 2) uniform sampler2D AlbedoTex;
 
 layout(set = PFD_SET, binding = 0) uniform GameData {
     vec2 sunPos;
     uint skyHue;
 } gameData;
-
-#if ENABLE_SHADOW_MAPPING
-    layout(set = PFD_SET, binding = 2) uniform sampler2D Shadowmap;
-#endif
-
-// layout(set = WORLD_SET, binding = 1) uniform sampler2DArray GameTex;
-layout(set = WORLD_SET, binding = 0) uniform sampler2DArray GameTex;
 
 const float BIAS = 0.00025;
 const vec3 AMBIENT_TINT = vec3(0.07, 0.07, 0.05);
@@ -35,21 +30,20 @@ float applyFog(in float distanceToPoint) {
     return clamp(fog, 0.0, 1.0);
 }
 
-float applyShadow(in vec3 shadowCoords) {
-#if ENABLE_SHADOW_MAPPING
-    const float shouldDisplayShadow = step(shadowCoords.z, 1.0);
-    const float shadow = step(shadowCoords.z - BIAS, texture(Shadowmap, shadowCoords.xy).r);
-    return shouldDisplayShadow * shadow + (1.0 - shouldDisplayShadow) * 1.0;
-#else
-    return 1.0;
-#endif
-}
-
 void main() {
+    // Retrieve data
+    const vec4 fragPos = texture(PositionTex, inUV);
+    const vec3 normal = texture(NormalTex, inUV).rgb;
+    const vec4 albedo = texture(AlbedoTex, inUV);
+
+    if (albedo.a == 0.0)
+        discard;
+
+    // External data
     const vec3 sunDir = vec3(gameData.sunPos, 0.0);
     const float sunHeight = max(sunDir.y, 0.0);
 
-    vec3 color = texture(GameTex, inUVW).rgb;
+    vec3 color = albedo.rgb;
 
     // Sky hue
     const vec3 skyHue = vec3(
@@ -59,15 +53,26 @@ void main() {
     color = mix(color, skyHue, 0.005);
 
     // Lighting
-    const float diffuse = max(dot(inNormal, sunDir), 0.0);
-    const float shadow = applyShadow(inShadowCoords);
+    const float diffuse = max(dot(normal, sunDir), 0.0);
+    // const float shadow = applyShadow(inShadowCoords);
     const float sunAmount = min(1.0, pow(sunHeight, 2.0) + (0.5 * sunHeight));
-    color = (shadow * diffuse * sunAmount + AMBIENT_TINT) * color;
+    color = (diffuse * sunAmount + AMBIENT_TINT) * color;
 
     // Fog
     const vec3 fogColor = FOG_COLOR * (sunHeight * 0.9 + 0.1);
-    const float fogAmount = applyFog(gl_FragCoord.z / gl_FragCoord.w);
+    const float fogAmount = applyFog(fragPos.w);
     color = mix(color, fogColor, fogAmount);
 
     outFragColor = vec4(color, 1.0);
+
 }
+
+// float applyShadow(in vec3 shadowCoords) {
+// #if ENABLE_SHADOW_MAPPING
+//     const float shouldDisplayShadow = step(shadowCoords.z, 1.0);
+//     const float shadow = step(shadowCoords.z - BIAS, texture(Shadowmap, shadowCoords.xy).r);
+//     return shouldDisplayShadow * shadow + (1.0 - shouldDisplayShadow) * 1.0;
+// #else
+//     return 1.0;
+// #endif
+// }

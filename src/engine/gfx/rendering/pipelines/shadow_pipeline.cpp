@@ -6,32 +6,18 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/03 10:06:29 by etran             #+#    #+#             */
-/*   Updated: 2024/06/13 15:55:38 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/14 19:36:25 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "shadow_pipeline.h"
 #include "device.h"
-#include "descriptor_table.h"
 #include "icommand_buffer.h"
 #include "vertex_buffer.h"
 
 #include "debug.h"
 
 namespace vox::gfx {
-
-enum class ShadowDescriptorSet: u32 {
-    Pfd = 0,
-
-    First = Pfd,
-    Last = Pfd
-};
-
-enum class SetIndex: u32 {
-    PerFrameData    = (u32)DescriptorSetIndex::Pfd
-};
-
-static constexpr u32 DESCRIPTOR_SET_COUNT = enumSize<ShadowDescriptorSet>();
 
 /* ========================================================================== */
 /*                                   PUBLIC                                   */
@@ -138,15 +124,8 @@ void ShadowPipeline::destroy(const Device& device) {
     LDEBUG("Shadow pipeline destroyed.");
 }
 
-void ShadowPipeline::record(
-    const VkPipelineLayout layout,
-    const DescriptorTable& descriptorTable,
-    const ICommandBuffer* cmdBuffer
-) {
-    const std::array<VkDescriptorSet, DESCRIPTOR_SET_COUNT> descriptorSets = {
-        descriptorTable[(u32)SetIndex::PerFrameData]->getSet() };
-
-    cmdBuffer->bindDescriptorSets(layout, descriptorSets.data(), DESCRIPTOR_SET_COUNT);
+void ShadowPipeline::record(const PipelineLayout& pipelineLayout, const ICommandBuffer* cmdBuffer) const {
+    cmdBuffer->bindDescriptorSets(pipelineLayout);
     cmdBuffer->bindPipeline(m_pipeline);
     VertexBuffer::bind(cmdBuffer);
 

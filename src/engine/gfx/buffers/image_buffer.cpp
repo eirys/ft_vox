@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/27 18:36:30 by etran             #+#    #+#             */
-/*   Updated: 2024/05/31 02:32:40 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/14 02:41:10 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -83,7 +83,7 @@ void ImageBuffer::initView(const Device& device) {
     LDEBUG("Image view initialized: view::" << m_view );
 }
 
-void ImageBuffer::destroy(const Device& device) {
+void ImageBuffer::destroy(const Device& device) const {
     vkDestroyImage(device.getDevice(), m_image, nullptr);
     vkFreeMemory(device.getDevice(), m_memory, nullptr);
     vkDestroyImageView(device.getDevice(), m_view, nullptr);

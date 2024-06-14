@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/21 12:17:21 by etran             #+#    #+#             */
-/*   Updated: 2024/06/13 15:52:43 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/13 19:51:23 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -73,12 +73,10 @@ private:
     enum class CommandBufferIndex: u32 {
         Draw = 0,
         Transfer = Draw,
+        Offscreen,
         // Compute,
 
-        Count,
-
-        First = Draw,
-        Last = Transfer
+        Count
     };
 
     /* ====================================================================== */

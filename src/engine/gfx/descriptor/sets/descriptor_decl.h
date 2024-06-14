@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/28 23:42:29 by etran             #+#    #+#             */
-/*   Updated: 2024/06/03 09:52:21 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/13 23:46:40 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 
 #define PFD_SET 0
 #define WORLD_SET 1
+#define GBUFFER_SET 2
 
 #ifdef VOX_CPP
 
@@ -34,12 +35,12 @@ namespace vox::gfx {
 enum class DescriptorSetIndex: u32 {
     Pfd         = PFD_SET,
     WorldData   = WORLD_SET,
+    GBuffer     = GBUFFER_SET,
 
-    First = Pfd,
-    Last = WorldData
+    Count
 };
 
-constexpr u32 DESCRIPTOR_TABLE_SIZE = enumSize<DescriptorSetIndex>();
+constexpr u32 DESCRIPTOR_TABLE_SIZE = (u32)DescriptorSetIndex::Count;
 
 /* ========================================================================== */
 

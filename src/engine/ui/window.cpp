@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/20 00:02:09 by etran             #+#    #+#             */
-/*   Updated: 2024/06/06 15:10:40 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/14 15:40:33 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,9 +26,15 @@ void keyCallback(GLFWwindow* win, int key, int scancode, int action, int mods) {
             case GLFW_KEY_ESCAPE:       if (isPressed) glfwSetWindowShouldClose(win, GLFW_TRUE); return;
 
             case GLFW_KEY_M:            if (isPressed) window->toggleMouse(); break;
+
+            // Debug
             case GLFW_KEY_O:            if (isPressed) window->switchKey(ControlKeyIndex::DisplayDebug); break;
             case GLFW_KEY_T:            if (isPressed) window->switchKey(ControlKeyIndex::DisableTime); break;
 
+            case GLFW_KEY_RIGHT:        if (isPressed) window->m_selectedValue = (window->m_selectedValue + 1) % 3; break;
+            case GLFW_KEY_LEFT:         if (isPressed) window->m_selectedValue = (window->m_selectedValue + (3 - 1)) % 3; break;
+
+            // Movement
             case GLFW_KEY_W:            isPressed ? window->toggleKey(ControlKeyIndex::Forward) : window->untoggleKey(ControlKeyIndex::Forward); break;
             case GLFW_KEY_S:            isPressed ? window->toggleKey(ControlKeyIndex::Backward) : window->untoggleKey(ControlKeyIndex::Backward); break;
             case GLFW_KEY_A:            isPressed ? window->toggleKey(ControlKeyIndex::Left) : window->untoggleKey(ControlKeyIndex::Left); break;

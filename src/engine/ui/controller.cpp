@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/15 20:35:46 by etran             #+#    #+#             */
-/*   Updated: 2024/06/06 15:11:01 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/14 15:42:34 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -86,6 +86,7 @@ void Controller::update(const Window& win) {
 
     m_showDebug = win.isKeyPressed(ControlKeyIndex::DisplayDebug);
     m_isTimeEnabled = !win.isKeyPressed(ui::ControlKeyIndex::DisableTime);
+    m_selectDebug = win.m_selectedValue;
 }
 
 const Camera& Controller::getCamera() const noexcept {
@@ -98,6 +99,10 @@ bool Controller::showDebug() const noexcept {
 
 bool Controller::isTimeEnabled() const noexcept {
     return m_isTimeEnabled;
+}
+
+u32 Controller::getDebugIndex() const noexcept {
+    return m_selectDebug;
 }
 
 } // namespace ui

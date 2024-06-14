@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/07 13:46:39 by etran             #+#    #+#             */
-/*   Updated: 2024/06/13 15:30:58 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/14 14:27:31 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,7 +26,8 @@ struct PFDUbo final {
     struct {
         math::Vect2 sunPos;
         u32         skyHue;
-        u32         padding[13];
+        u32         debugIndex;
+        u32         padding[12];
     }           m_gameData;
 
 #if ENABLE_SHADOW_MAPPING

@@ -6,21 +6,25 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/23 09:29:35 by etran             #+#    #+#             */
-/*   Updated: 2024/06/13 15:52:36 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/14 20:16:44 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "renderer.h"
 #include "main_render_pass.h"
 #include "shadow_render_pass.h"
+#include "deferred_render_pass.h"
 #include "icommand_buffer.h"
 #include "scene_pipeline.h"
+#include "deferred_pipeline.h"
 #include "skybox_pipeline.h"
 #include "starfield_pipeline.h"
 #include "shadow_pipeline.h"
 #include "debug_tex_pipeline.h"
 #include "vertex_buffer.h"
 #include "pfd_set.h"
+#include "world_set.h"
+#include "gbuffer_set.h"
 #include "push_constant.h"
 #include "vox_decl.h"
 #include "game_state.h"
@@ -45,13 +49,14 @@ void Renderer::init(ui::Window& window, const game::GameState& game) {
     m_descriptorTable.init(m_device, transferBuffer, game);
 
     _createRenderPasses();
+
+    m_descriptorPool.init(m_device, m_descriptorTable);
+    m_descriptorTable.fill(m_device);
+
     _createPipelineLayouts();
     _createPipelines();
     _createFences();
     _createGfxSemaphores();
-
-    m_descriptorPool.init(m_device, m_descriptorTable);
-    m_descriptorTable.fill(m_device);
 
 #if ENABLE_FRUSTUM_CULLING
     VertexBuffer::init(m_device, game);
@@ -102,47 +107,69 @@ void Renderer::render(const game::GameState& game) {
     m_fences[(u32)FenceIndex::DrawInFlight].reset(m_device);
     // --------------------------------
 
-    // Record command buffer ---------
-    const ICommandBuffer* drawBuffer = m_commandBuffers[(u32)CommandBufferIndex::Draw];
-    const VkPipelineLayout mainLayout = m_pipelineLayouts[(u32)PipelineLayoutIndex::Main].getLayout();
     RecordInfo  recordInfo{};
 
+    // Record draw commands -----------
+    const ICommandBuffer* drawBuffer = m_commandBuffers[(u32)CommandBufferIndex::Draw];
     drawBuffer->reset();
     drawBuffer->startRecording();
 
     m_pipelineLayouts[(u32)PipelineLayoutIndex::Main].bindPushConstantRange(drawBuffer);
 
 #if ENABLE_SHADOW_MAPPING
+    // Shadow pass
     const RenderPass* shadowRenderPass = m_renderPasses[(u32)RenderPassIndex::Shadow];
-
     recordInfo.m_targetIndex = 0;
     shadowRenderPass->begin(drawBuffer, recordInfo);
-    m_pipelines[(u32)PipelineIndex::ShadowPipeline]->record(mainLayout, m_descriptorTable, drawBuffer);
+    m_pipelines[(u32)PipelineIndex::ShadowPipeline]->record(m_pipelineLayouts[(u32)PipelineLayoutIndex::Main], drawBuffer);
     shadowRenderPass->end(drawBuffer);
 #endif
 
+    // Scene pass
     const RenderPass* mainRenderPass = m_renderPasses[(u32)RenderPassIndex::Main];
-
     recordInfo.m_targetIndex = m_swapChain.getImageIndex();
     mainRenderPass->begin(drawBuffer, recordInfo);
 #if ENABLE_SKYBOX
-    m_pipelines[(u32)PipelineIndex::SkyboxPipeline]->record(mainLayout, m_descriptorTable, drawBuffer);
-    m_pipelines[(u32)PipelineIndex::StarfieldPipeline]->record(mainLayout, m_descriptorTable, drawBuffer);
+    m_pipelines[(u32)PipelineIndex::SkyboxPipeline]->record(m_pipelineLayouts[(u32)PipelineLayoutIndex::Main], drawBuffer);
+    m_pipelines[(u32)PipelineIndex::StarfieldPipeline]->record(m_pipelineLayouts[(u32)PipelineLayoutIndex::Main], drawBuffer);
 #endif
-    m_pipelines[(u32)PipelineIndex::ScenePipeline]->record(mainLayout, m_descriptorTable, drawBuffer);
-
+    m_pipelines[(u32)PipelineIndex::ScenePipeline]->record(m_pipelineLayouts[(u32)PipelineLayoutIndex::Main], drawBuffer);
     if (game.getController().showDebug())
-        m_pipelines[(u32)PipelineIndex::DebugPipeline]->record(mainLayout, m_descriptorTable, drawBuffer);
+        m_pipelines[(u32)PipelineIndex::DebugPipeline]->record(m_pipelineLayouts[(u32)PipelineLayoutIndex::Main], drawBuffer);
     mainRenderPass->end(drawBuffer);
 
     drawBuffer->stopRecording();
     // --------------------------------
 
+    // Record offscreen commands -------
+    const ICommandBuffer* offscreenBuffer = m_commandBuffers[(u32)CommandBufferIndex::Offscreen];
+    const RenderPass* deferredRenderPass = m_renderPasses[(u32)RenderPassIndex::Deferred];
+    offscreenBuffer->reset();
+    offscreenBuffer->startRecording();
+
+    m_pipelineLayouts[(u32)PipelineLayoutIndex::Main].bindPushConstantRange(offscreenBuffer);
+
+    recordInfo.m_targetIndex = 0;
+    deferredRenderPass->begin(offscreenBuffer, recordInfo);
+    m_pipelines[(u32)PipelineIndex::Offscreen]->record(m_pipelineLayouts[(u32)PipelineLayoutIndex::Main], offscreenBuffer);
+    deferredRenderPass->end(offscreenBuffer);
+
+    offscreenBuffer->stopRecording();
+    // --------------------------------
+
     // Submit command buffer ---------
-    static const std::vector<VkSemaphore>           signalSemaphores = { m_semaphores[(u32)SemaphoreIndex::RenderFinished].getSemaphore() };
-    static const std::vector<VkSemaphore>           waitSemaphores = { m_semaphores[(u32)SemaphoreIndex::ImageAvailable].getSemaphore() };
-    static const std::vector<VkPipelineStageFlags>  waitStages = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
-    drawBuffer->submitRecording(waitSemaphores, waitStages, signalSemaphores, m_fences[(u32)FenceIndex::DrawInFlight]);
+    { // Offscreen buffer
+        static const std::vector<VkPipelineStageFlags>  waitStages = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
+        static const std::vector<VkSemaphore>           waitSemaphores = { m_semaphores[(u32)SemaphoreIndex::ImageAvailable].getSemaphore() };
+        static const std::vector<VkSemaphore>           signalSemaphores = { m_semaphores[(u32)SemaphoreIndex::OffscreenFinished].getSemaphore() };
+        offscreenBuffer->submitRecording(waitSemaphores, waitStages, signalSemaphores);
+    }
+    { // Draw buffer
+        static const std::vector<VkPipelineStageFlags>  waitStages = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
+        static const std::vector<VkSemaphore>           waitSemaphores = { m_semaphores[(u32)SemaphoreIndex::OffscreenFinished].getSemaphore() };
+        static const std::vector<VkSemaphore>           signalSemaphores = { m_semaphores[(u32)SemaphoreIndex::RenderFinished].getSemaphore() };
+        drawBuffer->submitRecording(waitSemaphores, waitStages, signalSemaphores, m_fences[(u32)FenceIndex::DrawInFlight].getFence());
+    }
     // --------------------------------
 
     // Present image ------------------
@@ -168,6 +195,7 @@ void Renderer::_createCommandBuffers() {
 void Renderer::_createRenderPasses() {
     m_renderPasses.reserve(RENDER_PASS_COUNT);
 
+    // Composition pass
     m_renderPasses[(u32)RenderPassIndex::Main] = new MainRenderPass();
 
     MainRenderPassInfo mainPassInfo(m_swapChain.getImageViews());
@@ -177,17 +205,38 @@ void Renderer::_createRenderPasses() {
     mainPassInfo.m_samples.resize(MainRenderPass::RESOURCE_COUNT, VK_SAMPLE_COUNT_1_BIT);
     mainPassInfo.m_samples[(u32)MainRenderPass::Resource::ColorImage] = m_device.getMsaaCount();
     mainPassInfo.m_samples[(u32)MainRenderPass::Resource::DepthImage] = m_device.getMsaaCount();
-    mainPassInfo.m_renderPassWidth = m_swapChain.getImageExtent().width;
-    mainPassInfo.m_renderPassHeight = m_swapChain.getImageExtent().height;
+    mainPassInfo.m_renderPassWidth = SwapChain::getImageExtent().width;
+    mainPassInfo.m_renderPassHeight = SwapChain::getImageExtent().height;
     mainPassInfo.m_targetCount = m_swapChain.getImageViews().size();
-    mainPassInfo.m_targetWidth = m_swapChain.getImageExtent().width;
-    mainPassInfo.m_targetHeight = m_swapChain.getImageExtent().height;
+    mainPassInfo.m_targetWidth = SwapChain::getImageExtent().width;
+    mainPassInfo.m_targetHeight = SwapChain::getImageExtent().height;
     m_renderPasses[(u32)RenderPassIndex::Main]->init(m_device, &mainPassInfo);
+
+    // Deferred pass
+    m_renderPasses[(u32)RenderPassIndex::Deferred] = new DeferredRenderPass();
+
+    const ImageBuffer& positionTex = m_descriptorTable[DescriptorSetIndex::GBuffer]->getImageBuffer((u32)GBufferSet::Texture::PositionTexture);
+    const ImageBuffer& normalTex = m_descriptorTable[DescriptorSetIndex::GBuffer]->getImageBuffer((u32)GBufferSet::Texture::NormalTexture);
+    const ImageBuffer& albedoTex = m_descriptorTable[DescriptorSetIndex::GBuffer]->getImageBuffer((u32)GBufferSet::Texture::AlbedoTexture);
+
+    DeferredRenderPassInfo  deferredPassInfo(positionTex, normalTex, albedoTex);
+    deferredPassInfo.m_formats.resize(DeferredRenderPass::RESOURCE_COUNT);
+    deferredPassInfo.m_formats[(u32)DeferredRenderPass::Resource::ColorPosition] = positionTex.getMetaData().m_format;
+    deferredPassInfo.m_formats[(u32)DeferredRenderPass::Resource::ColorNormal] = normalTex.getMetaData().m_format;
+    deferredPassInfo.m_formats[(u32)DeferredRenderPass::Resource::ColorAlbedo] = albedoTex.getMetaData().m_format;
+    deferredPassInfo.m_formats[(u32)DeferredRenderPass::Resource::DepthImage] = SwapChain::getDepthFormat();
+    deferredPassInfo.m_samples.resize(DeferredRenderPass::RESOURCE_COUNT, VK_SAMPLE_COUNT_1_BIT);
+    deferredPassInfo.m_renderPassWidth = SwapChain::getImageExtent().width;
+    deferredPassInfo.m_renderPassHeight = SwapChain::getImageExtent().height;
+    deferredPassInfo.m_targetCount = 1;
+    deferredPassInfo.m_targetWidth = SwapChain::getImageExtent().width;
+    deferredPassInfo.m_targetHeight = SwapChain::getImageExtent().height;
+    m_renderPasses[(u32)RenderPassIndex::Deferred]->init(m_device, &deferredPassInfo);
 
 #if ENABLE_SHADOW_MAPPING
     m_renderPasses[(u32)RenderPassIndex::Shadow] = new ShadowRenderPass();
 
-    const ImageBuffer& shadowmap = ((const PFDSet*)m_descriptorTable[DescriptorSetIndex::Pfd])->getShadowmap();
+    const ImageBuffer& shadowmap = m_descriptorTable[DescriptorSetIndex::Pfd]->getImageBuffer((u32)PFDSet::Texture::Shadowmap);
 
     ShadowRenderPassInfo shadowPassInfo(shadowmap);
     shadowPassInfo.m_formats.resize(ShadowRenderPass::RESOURCE_COUNT, shadowmap.getMetaData().m_format);
@@ -210,12 +259,22 @@ void Renderer::_createPipelines() {
     m_pipelines[(u32)PipelineIndex::ScenePipeline] = new ScenePipeline();
     m_pipelines[(u32)PipelineIndex::ScenePipeline]->init(m_device, mainRenderPass, mainLayout);
 
+    m_pipelines[(u32)PipelineIndex::DebugPipeline] = new DebugTexPipeline();
+    m_pipelines[(u32)PipelineIndex::DebugPipeline]->init(m_device, mainRenderPass, mainLayout);
+
 #if ENABLE_SKYBOX
     m_pipelines[(u32)PipelineIndex::SkyboxPipeline] = new SkyboxPipeline();
-    m_pipelines[(u32)PipelineIndex::StarfieldPipeline] = new StarfieldPipeline();
     m_pipelines[(u32)PipelineIndex::SkyboxPipeline]->init(m_device, mainRenderPass, mainLayout);
+
+    m_pipelines[(u32)PipelineIndex::StarfieldPipeline] = new StarfieldPipeline();
     m_pipelines[(u32)PipelineIndex::StarfieldPipeline]->init(m_device, mainRenderPass, mainLayout);
 #endif
+
+    const VkRenderPass deferredRenderpass = m_renderPasses[(u32)RenderPassIndex::Deferred]->getRenderPass();
+
+    m_pipelines[(u32)PipelineIndex::Offscreen] = new DeferredPipeline();
+    m_pipelines[(u32)PipelineIndex::Offscreen]->init(m_device, deferredRenderpass, mainLayout);
+
 #if ENABLE_SHADOW_MAPPING
     VkRenderPass shadowRenderPass = m_renderPasses[(u32)RenderPassIndex::Shadow]->getRenderPass();
 
@@ -223,19 +282,17 @@ void Renderer::_createPipelines() {
     m_pipelines[(u32)PipelineIndex::ShadowPipeline]->init(m_device, shadowRenderPass, mainLayout);
 #endif
 
-    m_pipelines[(u32)PipelineIndex::DebugPipeline] = new DebugTexPipeline();
-    m_pipelines[(u32)PipelineIndex::DebugPipeline]->init(m_device, mainRenderPass, mainLayout);
-
     LDEBUG("Pipelines created.");
 }
 
 void Renderer::_createPipelineLayouts() {
     m_pipelineLayouts.resize(PIPELINE_LAYOUT_COUNT);
 
-    std::vector<VkDescriptorSetLayout> setLayouts(DESCRIPTOR_TABLE_SIZE);
-    for (u32 i = 0; i < DESCRIPTOR_TABLE_SIZE; ++i) setLayouts[i] = m_descriptorTable[i]->getLayout();
-
-    m_pipelineLayouts[(u32)PipelineLayoutIndex::Main].init(m_device, setLayouts, new MainPushConstant());
+    std::vector<IDescriptorSet*> sets = {
+        m_descriptorTable[DescriptorSetIndex::Pfd],
+        m_descriptorTable[DescriptorSetIndex::WorldData],
+        m_descriptorTable[DescriptorSetIndex::GBuffer] };
+    m_pipelineLayouts[(u32)PipelineLayoutIndex::Main].init(m_device, sets, new MainPushConstant());
 
 #if ENABLE_SSAO
 #endif

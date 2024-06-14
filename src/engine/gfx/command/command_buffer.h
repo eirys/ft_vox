@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/23 20:01:10 by etran             #+#    #+#             */
-/*   Updated: 2024/06/12 11:34:56 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/14 19:28:30 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,16 +37,13 @@ public:
     void    awaitEndOfRecording(const Device& device) const override;
 
     void    submitRecording(
-        const std::vector<VkSemaphore> waitSemaphores,
-        const std::vector<VkPipelineStageFlags> waitStages,
-        const std::vector<VkSemaphore> signalSemaphore,
-        const Fence& fence) const override;
+        const std::vector<VkSemaphore>& waitSemaphores,
+        const std::vector<VkPipelineStageFlags>& waitStages,
+        const std::vector<VkSemaphore>& signalSemaphore,
+        const VkFence fence = VK_NULL_HANDLE) const override;
 
     void    bindPipeline(const VkPipeline& pipeline) const override;
-    void    bindDescriptorSets(
-        const VkPipelineLayout& layout,
-        const VkDescriptorSet* descriptorSets,
-        const u32 setCount) const override;
+    void    bindDescriptorSets(const PipelineLayout& pipelineLayout) const override;
 
     VkCommandBuffer getBuffer() const noexcept override;
 
@@ -55,7 +52,7 @@ protected:
     /*                                  DATA                                  */
     /* ====================================================================== */
 
-    VkCommandBuffer     m_buffer;
+    VkCommandBuffer     m_buffer = VK_NULL_HANDLE;
     Fence               m_awaitFence;
     CommandBufferType   m_type;
 

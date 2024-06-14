@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/27 18:36:32 by etran             #+#    #+#             */
-/*   Updated: 2024/03/18 16:05:06 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/14 02:41:17 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,7 +74,7 @@ public:
     /* ====================================================================== */
 
     void initImage(const Device& device, ImageMetaData&& metadata);
-    void destroy(const Device& device);
+    void destroy(const Device& device) const;
     void initView(const Device& device);
 
     /* ====================================================================== */

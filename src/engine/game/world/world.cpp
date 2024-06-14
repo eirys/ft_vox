@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/15 15:51:38 by etran             #+#    #+#             */
-/*   Updated: 2024/06/11 13:24:04 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/14 17:16:06 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,16 +36,9 @@ void World::init(const u32 seed) {
     proc::PerlinNoise perlin(noiseInfo);
 
     proc::VoronoiDiagram voronoi;
-    if (voronoi.load("assets/maps/voronoi.voxmap") == false) {
-        throw std::runtime_error("Failed to load voronoi map.");
+    if (voronoi.load("assets/maps/biomes.voxmap") == false) {
+        throw std::runtime_error("Failed to load biome map.");
     }
-
-    // voronoi.SetNoiseType(proc::VoronoiDiagram::NoiseType::NoiseType_Cellular);
-    // voronoi.SetSeed(seed);
-    // voronoi.SetFrequency(0.01f);
-    // voronoi.SetCellularDistanceFunction(proc::VoronoiDiagram::CellularDistanceFunction::CellularDistanceFunction_Euclidean);
-    // voronoi.SetCellularReturnType(proc::VoronoiDiagram::CellularReturnType::CellularReturnType_CellValue);
-    // voronoi.SetCellularJitter(1.0f);
 
     for (u32 z = 0; z < RENDER_DISTANCE; ++z) {
         for (u32 x = 0; x < RENDER_DISTANCE; ++x) {

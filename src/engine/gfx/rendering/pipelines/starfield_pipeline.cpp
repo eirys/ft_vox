@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/27 14:22:51 by etran             #+#    #+#             */
-/*   Updated: 2024/06/12 11:42:12 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/14 19:38:24 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -149,20 +149,12 @@ void StarfieldPipeline::destroy(const Device& device) {
 
 /* ========================================================================== */
 
-void StarfieldPipeline::record(
-    const VkPipelineLayout layout,
-    const DescriptorTable& descriptorTable,
-    const ICommandBuffer* cmdBuffer
-) {
-    std::array<VkDescriptorSet, DESCRIPTOR_SET_COUNT> descriptorSets = {
-        descriptorTable[(u32)SetIndex::PerFrameData]->getSet(),
-        descriptorTable[(u32)SetIndex::Textures]->getSet()
-    };
-
-    cmdBuffer->bindDescriptorSets(layout, descriptorSets.data(), DESCRIPTOR_SET_COUNT);
+void StarfieldPipeline::record(const PipelineLayout& pipelineLayout, const ICommandBuffer* cmdBuffer) const {
+    cmdBuffer->bindDescriptorSets(pipelineLayout);
     cmdBuffer->bindPipeline(m_pipeline);
 
     vkCmdDraw(cmdBuffer->getBuffer(), 4, STAR_COUNT, 0, 0);
+    LDEBUG("Drawing "<< STAR_COUNT <<" stars");
 }
 
 } // namespace vox::gfx

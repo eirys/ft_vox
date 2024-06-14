@@ -6,31 +6,18 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/03 22:11:27 by etran             #+#    #+#             */
-/*   Updated: 2024/06/11 15:27:54 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/14 19:30:07 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "debug_tex_pipeline.h"
 #include "device.h"
 #include "icommand_buffer.h"
-#include "descriptor_table.h"
-
 #include "debug.h"
 
+#include <array>
+
 namespace vox::gfx {
-
-enum class DebugTexSet: u32 {
-    Pfd = 0,
-
-    First = Pfd,
-    Last = Pfd
-};
-
-enum class SetIndex: u32 {
-    PerFrameData    = (u32)DescriptorSetIndex::Pfd,
-};
-
-static constexpr u32 DESCRIPTOR_SET_COUNT = enumSize<DebugTexSet>();
 
 /* ========================================================================== */
 /*                                   PUBLIC                                   */
@@ -139,26 +126,9 @@ void DebugTexPipeline::destroy(const Device& device) {
 
 /* ========================================================================== */
 
-void DebugTexPipeline::record(
-    const VkPipelineLayout layout,
-    const DescriptorTable& descriptorTable,
-    const ICommandBuffer* cmdBuffer
-) {
-    std::array<VkDescriptorSet, DESCRIPTOR_SET_COUNT> descriptorSets = {
-        descriptorTable[(u32)SetIndex::PerFrameData]->getSet() };
-
-    vkCmdBindDescriptorSets(
-        cmdBuffer->getBuffer(),
-        VK_PIPELINE_BIND_POINT_GRAPHICS,
-        layout,
-        (u32)DebugTexSet::First,
-        DESCRIPTOR_SET_COUNT, descriptorSets.data(),
-        0, nullptr);
-
-    vkCmdBindPipeline(
-        cmdBuffer->getBuffer(),
-        VK_PIPELINE_BIND_POINT_GRAPHICS,
-        m_pipeline);
+void DebugTexPipeline::record(const PipelineLayout& pipelineLayout, const ICommandBuffer* cmdBuffer) const {
+    cmdBuffer->bindDescriptorSets(pipelineLayout);
+    cmdBuffer->bindPipeline(m_pipeline);
 
     vkCmdDraw(cmdBuffer->getBuffer(), 4, 1, 0, 0);
 }

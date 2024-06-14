@@ -6,13 +6,14 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/28 19:55:31 by etran             #+#    #+#             */
-/*   Updated: 2024/05/30 16:13:42 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/14 00:02:12 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "descriptor_table.h"
 #include "pfd_set.h"
 #include "world_set.h"
+#include "gbuffer_set.h"
 
 #include "debug.h"
 
@@ -25,6 +26,7 @@ namespace vox::gfx {
 DescriptorTable::DescriptorTable() {
     m_sets[(u32)DescriptorSetIndex::Pfd] = new PFDSet();
     m_sets[(u32)DescriptorSetIndex::WorldData] = new WorldSet();
+    m_sets[(u32)DescriptorSetIndex::GBuffer] = new GBufferSet();
 }
 
 DescriptorTable::~DescriptorTable() {
@@ -39,9 +41,6 @@ void DescriptorTable::init(
     const game::GameState& state
 ) {
     for (u32 i = 0; i < DESCRIPTOR_TABLE_SIZE; ++i) m_sets[i]->init(device, cmdBuffer);
-
-    WorldSet* world = (WorldSet*)m_sets[(u32)DescriptorSetIndex::WorldData];
-    world->update(device, state, cmdBuffer);
 
     LINFO("Descriptor table initialized.");
 }

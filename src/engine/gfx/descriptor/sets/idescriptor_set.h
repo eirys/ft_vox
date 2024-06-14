@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/28 20:41:22 by etran             #+#    #+#             */
-/*   Updated: 2024/03/15 16:39:53 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/13 18:45:27 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,6 +27,7 @@ namespace vox::gfx {
 
 class Device;
 class ICommandBuffer;
+class ImageBuffer;
 
 class IDescriptorSet {
 public:
@@ -56,6 +57,7 @@ public:
     virtual VkDescriptorSetLayout   getLayout() const noexcept = 0;
     virtual VkDescriptorSet         getSet() const noexcept = 0;
     virtual DescriptorSetIndex      getSetIndex() const noexcept = 0;
+    virtual const ImageBuffer&      getImageBuffer(const u32 index) const noexcept = 0;
 
 protected:
     /* ====================================================================== */

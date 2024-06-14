@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/02 21:26:12 by etran             #+#    #+#             */
-/*   Updated: 2024/03/22 23:10:09 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/14 02:23:41 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,14 +33,6 @@ u32 RenderPass::getWidth() const noexcept {
 
 u32 RenderPass::getHeight() const noexcept {
     return m_height;
-}
-
-const std::vector<VkFramebuffer>& RenderPass::getTargets() const noexcept {
-    return m_targets;
-}
-
-const std::vector<ImageBuffer>& RenderPass::getResources() const noexcept {
-    return m_resources;
 }
 
 } // namespace vox::gfx

@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/03 22:06:00 by etran             #+#    #+#             */
-/*   Updated: 2024/06/03 10:09:09 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/14 18:48:29 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,9 +61,8 @@ public:
     void    destroy(const Device& device) override;
 
     void    record(
-        const VkPipelineLayout layout,
-        const DescriptorTable& descriptorTable,
-        const ICommandBuffer* cmdBuffer) override;
+        const PipelineLayout& pipeline,
+        const ICommandBuffer* cmdBuffer) const override;
 
 private:
     /* ====================================================================== */

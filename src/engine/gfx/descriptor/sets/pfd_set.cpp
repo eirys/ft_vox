@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/11 16:12:13 by etran             #+#    #+#             */
-/*   Updated: 2024/06/13 15:30:41 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/14 15:42:40 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -109,6 +109,7 @@ void PFDSet::update(const game::GameState& state) {
 
     m_data.m_gameData.sunPos = state.getSunPos().xy;
     m_data.m_gameData.skyHue = math::lerp(SUN_COLOR, MOON_COLOR, std::max(0.0f, state.getSunPos().y)).toRGBA();
+    m_data.m_gameData.debugIndex = state.getController().getDebugIndex();
 
 #if ENABLE_SHADOW_MAPPING
     constexpr float	TERRAIN_SIZE = CHUNK_SIZE * RENDER_DISTANCE;
@@ -132,10 +133,8 @@ void PFDSet::update(const game::GameState& state) {
 
 /* ========================================================================== */
 
-#if ENABLE_SHADOW_MAPPING
-const ImageBuffer& PFDSet::getShadowmap() const noexcept {
-    return m_textures[(u32)Texture::Shadowmap]->getImageBuffer();
+const ImageBuffer& PFDSet::getImageBuffer(const u32 index) const noexcept {
+    return m_textures[index]->getImageBuffer();
 }
-#endif
 
 } // namespace vox::gfx

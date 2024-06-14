@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/19 23:59:08 by etran             #+#    #+#             */
-/*   Updated: 2024/06/06 15:10:22 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/14 15:37:07 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,7 @@
 namespace ui {
 
 enum class ControlKeyIndex {
+    // Movement
     Forward = 0,
     Backward,
     Left,
@@ -29,10 +30,14 @@ enum class ControlKeyIndex {
     Down,
     Speed,
 
+    // Debug
     DisplayDebug,
     DisableTime,
 
-    Count
+    Count,
+
+    ToNext,
+    ToPrev,
 };
 
 constexpr u32 CONTROL_KEY_COUNT = (u32)ControlKeyIndex::Count;
@@ -104,6 +109,7 @@ public:
     GLFWwindow*         getWindow() noexcept;
     GLFWwindow const*   getWindow() const noexcept;
 
+    u32             m_selectedValue = 0;
 private:
     /* ========================================================================= */
     /*                                    DATA                                   */

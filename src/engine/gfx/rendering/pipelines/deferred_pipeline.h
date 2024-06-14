@@ -1,24 +1,28 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   clouds_pipeline.h                                  :+:      :+:    :+:   */
+/*   deferred_pipeline.h                                :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/03/19 01:29:34 by etran             #+#    #+#             */
-/*   Updated: 2024/05/28 14:34:14 by etran            ###   ########.fr       */
+/*   Created: 2024/06/13 17:04:18 by etran             #+#    #+#             */
+/*   Updated: 2024/06/14 18:48:42 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
-# include "pipeline.h"
+#include "pipeline.h"
+
+namespace game {
+class GameState;
+} // namespace game
 
 namespace vox::gfx {
 
-class CloudsRenderPass;
+class ICommandBuffer;
 
-class CloudsPipeline final: public Pipeline {
+class DeferredPipeline final: public Pipeline {
 public:
     /* ====================================================================== */
     /*                                TYPEDEFS                                */
@@ -31,46 +35,43 @@ public:
     /* ====================================================================== */
 
     enum class ShaderStage: u32 {
-        VertexInstance = 0,
+        Vertex,
         Fragment,
 
-        First = VertexInstance,
-        Last = Fragment
+        Count
     };
 
     /* ====================================================================== */
     /*                                 METHODS                                */
     /* ====================================================================== */
 
-    CloudsPipeline();
-    ~CloudsPipeline();
+    DeferredPipeline() = default;
+    ~DeferredPipeline() = default;
 
-    CloudsPipeline(CloudsPipeline&& other) = delete;
-    CloudsPipeline(const CloudsPipeline& other) = delete;
-    CloudsPipeline& operator=(CloudsPipeline&& other) = delete;
-    CloudsPipeline& operator=(const CloudsPipeline& other) = delete;
+    DeferredPipeline(DeferredPipeline&& other) = delete;
+    DeferredPipeline(const DeferredPipeline& other) = delete;
+    DeferredPipeline& operator=(DeferredPipeline&& other) = delete;
+    DeferredPipeline& operator=(const DeferredPipeline& other) = delete;
 
     /* ====================================================================== */
 
     void    init(
         const Device& device,
-        const RenderPassInfo* info,
+        const VkRenderPass& renderPass,
         const VkPipelineLayout& pipelineLayout) override;
     void    destroy(const Device& device) override;
 
     void    record(
-        const VkPipelineLayout layout,
-        const DescriptorTable& descriptorTable,
-        const ICommandBuffer* cmdBuffer,
-        const RecordInfo& drawInfo) override;
+        const PipelineLayout& pipeline,
+        const ICommandBuffer* cmdBuffer) const override;
 
 private:
     /* ====================================================================== */
     /*                             STATIC MEMBERS                             */
     /* ====================================================================== */
 
-    static constexpr u32    SHADER_STAGE_COUNT = static_cast<u32>(ShaderStage::Last) + 1;
+    static constexpr u32    SHADER_STAGE_COUNT = (u32)ShaderStage::Count;
 
-}; // class CloudsPipeline
+}; // class DeferredPipeline
 
 } // namespace vox::gfx

@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/15 19:33:01 by etran             #+#    #+#             */
-/*   Updated: 2024/06/06 13:38:24 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/14 15:42:46 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,6 +61,7 @@ public:
     const Camera&   getCamera() const noexcept;
     bool            showDebug() const noexcept;
     bool            isTimeEnabled() const noexcept;
+    u32             getDebugIndex() const noexcept;
 
 private:
     /* ====================================================================== */
@@ -76,6 +77,7 @@ private:
         float   m_pitch = 0.0f;
     }       m_state;
 
+    u32     m_selectDebug;
     bool    m_showDebug;
     bool    m_isTimeEnabled;
 

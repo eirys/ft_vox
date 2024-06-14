@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/15 16:21:18 by etran             #+#    #+#             */
-/*   Updated: 2024/06/05 22:00:04 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/14 14:03:23 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,9 +28,9 @@ public:
     /* ====================================================================== */
 
     enum class BindingIndex: u32 {
-        // ChunkData,
         Textures,
         Noise,
+
 #if ENABLE_CUBEMAP
         Cubemap,
 #endif
@@ -39,9 +39,9 @@ public:
     };
 
     enum class Texture: u32 {
-        // ChunkData = 0,
         GameTexture,
         PerlinNoise,
+
 #if ENABLE_CUBEMAP
         Cubemap,
 #endif
@@ -59,7 +59,10 @@ public:
     void    destroy(const Device& device) override;
 
     void    fill(const Device& device) override;
-    void    update(const Device& device, const game::GameState& state, const ICommandBuffer* cmdBuffer);
+
+    /* ====================================================================== */
+
+    const ImageBuffer&  getImageBuffer(const u32 index) const noexcept override;
 
 private:
     /* ====================================================================== */

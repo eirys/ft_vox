@@ -6,7 +6,7 @@
 #    By: etran <etran@student.42.fr>                +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/04/06 03:40:09 by eli               #+#    #+#              #
-#    Updated: 2024/06/13 10:53:21 by etran            ###   ########.fr        #
+#    Updated: 2024/06/14 17:53:36 by etran            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -55,6 +55,9 @@ IO_DIR		:=	$(LIBS_DIR)/io
 PROC_DIR	:=	$(LIBS_DIR)/procedural
 LOAD_DIR	:=	$(LIBS_DIR)/load
 
+# other
+SETUP_DIR	:=	setup
+
 # ---------------- SUBDIRECTORIES -------------- #
 SUBDIRS		:=	$(LIBS_DIR) \
 				$(MATH_DIR) \
@@ -97,12 +100,13 @@ SRC_FILES	:=	entrypoint.cpp \
 				$(CMD_DIR)/command_buffer.cpp \
 				$(SAMPLER_DIR)/game_texture_sampler.cpp \
 				$(SAMPLER_DIR)/skybox_sampler.cpp \
-				$(SAMPLER_DIR)/chunk_data_sampler.cpp \
+				$(SAMPLER_DIR)/gbuffer_textures.cpp \
 				$(SAMPLER_DIR)/perlin_noise_sampler.cpp \
 				$(SAMPLER_DIR)/shadowmap_sampler.cpp \
 				$(SETS_DIR)/descriptor_set.cpp \
 				$(SETS_DIR)/pfd_set.cpp \
 				$(SETS_DIR)/world_set.cpp \
+				$(SETS_DIR)/gbuffer_set.cpp \
 				$(DESC_DIR)/descriptor_pool.cpp \
 				$(DESC_DIR)/descriptor_table.cpp \
 				$(RENDER_DIR)/pipeline_layout.cpp \
@@ -112,8 +116,10 @@ SRC_FILES	:=	entrypoint.cpp \
 				$(GEO_DIR)/vertex_buffer.cpp \
 				$(PASSES_DIR)/render_pass.cpp \
 				$(PASSES_DIR)/main_render_pass.cpp \
+				$(PASSES_DIR)/deferred_render_pass.cpp \
 				$(PASSES_DIR)/shadow_render_pass.cpp \
 				$(PIP_DIR)/pipeline.cpp \
+				$(PIP_DIR)/deferred_pipeline.cpp \
 				$(PIP_DIR)/scene_pipeline.cpp \
 				$(PIP_DIR)/skybox_pipeline.cpp \
 				$(PIP_DIR)/starfield_pipeline.cpp \
@@ -144,6 +150,7 @@ MACROS		:=	GLFW_INCLUDE_VULKAN \
 				__LINUX \
 				VOX_SEED=42 \
 				VOX_CPP
+
 DEFINES		:=	$(addprefix -D,$(MACROS))
 
 ## All macros:
@@ -160,6 +167,7 @@ DEFINES		:=	$(addprefix -D,$(MACROS))
 EXTRA		:=	-Wall \
 				-Werror \
 				-Wextra
+
 INCLUDES	:=	$(addprefix -I./,$(INC_SUBDIRS))
 
 CFLAGS		:=	-std=c++20 \
@@ -180,13 +188,16 @@ LDFLAGS		:=	-lglfw \
 # ------------------- SHADERS ------------------ #
 SHD_FILES	:=	scene.fragment \
 				scene.vertex \
-				shadowmap.vertex \
 				skybox.vertex \
 				skybox.fragment \
 				starfield.vertex \
 				starfield.fragment \
+				deferred.vertex \
+				deferred.fragment \
 				debug.vertex \
 				debug.fragment
+
+# shadowmap.vertex
 
 SHD			:=	$(addprefix $(SHD_BIN_DIR)/,$(SHD_FILES))
 SHD_BIN		:=	$(addsuffix .spv,$(SHD))
@@ -199,7 +210,8 @@ GLSLC_FLAGS	:=	-MD \
 
 RM			:=	rm -rf
 
-VOR_MAP		:= $(MAP_DIR)/voronoi.voxmap
+MAPS		:=	$(MAP_DIR)/biomes.voxmap \
+				# $(MAP_DIR)/heightmap.voxmap
 
 # ============================================================================ #
 #                                     RULES                                    #
@@ -208,7 +220,7 @@ VOR_MAP		:= $(MAP_DIR)/voronoi.voxmap
 # PROJECT ==================================================================== #
 
 .PHONY: all
-all: $(VOR_MAP) $(NAME)
+all: $(MAPS) $(NAME)
 
 .PHONY: run
 run: all
@@ -264,19 +276,17 @@ clean_shaders:
 shaders_re: clean_shaders $(SHD_BIN)
 
 # ASSETS ===================================================================== #
-$(VOR_MAP):
-	@echo "Generating maps..."
-	@mkdir -p $(MAP_DIR)
-	@$(CXX) $(CFLAGS) $(DEFINES) $(SRC_DIR)/$(PROC_DIR)/voronoi_diagram.cpp -o $(OBJ_DIR)/$(PROC_DIR)/voronoi_diagram_gen
-	@./obj/$(PROC_DIR)/voronoi_diagram_gen
-	@echo "Voronoi diagram generated."
+.PHONY: maps
+maps: $(MAPS)
 
-.PHONY: remove_map
+$(MAPS):
+	@echo "Generating maps..."
+	@mkdir -p $(MAP_DIR) $(OBJ_DIR)/$(SETUP_DIR)
+	@$(CXX) $(CFLAGS) $(DEFINES) $(SRC_DIR)/$(SETUP_DIR)/map_generator.cpp -o $(OBJ_DIR)/$(SETUP_DIR)/map_generator
+	@./obj/$(SETUP_DIR)/map_generator
+	@echo "Maps generated."
+
+.PHONY: remove_maps
 remove_map:
 	@$(RM) $(MAP_DIR)
 	@echo "Removed $(MAP_DIR)."
-
-
-tmp:
-	$(CXX) $(CFLAGS) $(DEFINES) $(SRC_DIR)/$(PROC_DIR)/voronoi_diagram.cpp -o $(OBJ_DIR)/$(PROC_DIR)/voronoi_diagram_gen
-	./obj/$(PROC_DIR)/voronoi_diagram_gen

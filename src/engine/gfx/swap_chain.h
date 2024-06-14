@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/03 21:16:45 by etran             #+#    #+#             */
-/*   Updated: 2024/03/07 13:21:05 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/14 00:39:27 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,7 +67,7 @@ public:
     VkFormat                        getImageFormat() const noexcept;
     const std::vector<VkImageView>& getImageViews() const noexcept;
     u32                             getImageIndex() const noexcept;
-    VkExtent2D                      getImageExtent() const noexcept;
+    static VkExtent2D               getImageExtent() noexcept;
 
     static void     setDepthFormat(const VkFormat format) noexcept;
     static VkFormat getDepthFormat() noexcept;
@@ -78,6 +78,7 @@ private:
     /* ====================================================================== */
 
     static VkFormat             ms_depthFormat;
+    static VkExtent2D           ms_imageExtent;
 
     /* ====================================================================== */
     /*                                  DATA                                  */
@@ -89,7 +90,6 @@ private:
 
     VkFormat                    m_imageFormat = VK_FORMAT_UNDEFINED;
     u32                         m_imageIndex;
-    VkExtent2D                  m_imageExtent = { 0, 0 };
 
     /* ====================================================================== */
     /*                                 METHODS                                */

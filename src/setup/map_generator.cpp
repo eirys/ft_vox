@@ -1,17 +1,17 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   voronoi_diagram.cpp                                :+:      :+:    :+:   */
+/*   map_generator.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/10 18:06:14 by etran             #+#    #+#             */
-/*   Updated: 2024/06/12 10:16:04 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/13 19:07:00 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "other/FastNoiseLite.h"
-#include "../../engine/game/game_decl.h"
+#include "../libs/procedural/other/FastNoiseLite.h"
+#include "../engine/game/game_decl.h"
 
 using u8 = unsigned char;
 using u32 = unsigned int;
@@ -44,7 +44,7 @@ void fillFile(std::ofstream& file, u32 eleSize, F f) {
 
 static
 void debug(const FastNoiseLite& noise, u32 size) {
-    std::ofstream file("assets/maps/voronoi_debug.ppm");
+    std::ofstream file("assets/maps/biomes_debug.ppm");
 
     file << "P6\n" << 256 << ' ' << 256 << "\n255\n";
 
@@ -71,13 +71,28 @@ void setVoronoi() {
 }
 
 static
-void generateVoronoi() {
+void generateBiomeMap() {
     if (DEBUG) {
         debug(noise, size);
     } else {
-        std::ofstream file("assets/maps/voronoi.voxmap");
+        std::ofstream file("assets/maps/biomes.voxmap");
 
         file << "VXM " << "VOR " << size << ' ';
+
+        fillFile(file, 4U, [](f32 val) -> u32 {
+            return *(u32*)(&val);
+        });
+    }
+}
+
+static
+void generateHeightMap() {
+    if (DEBUG) {
+        debug(noise, size);
+    } else {
+        std::ofstream file("assets/maps/heigtmap.voxmap");
+
+        file << "VXM " << "PER " << size << ' ';
 
         fillFile(file, 4U, [](f32 val) -> u32 {
             return *(u32*)(&val);
@@ -89,5 +104,5 @@ void generateVoronoi() {
 
 int main() {
     proc::setVoronoi();
-    proc::generateVoronoi();
+    proc::generateBiomeMap();
 }

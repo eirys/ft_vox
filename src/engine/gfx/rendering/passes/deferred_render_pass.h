@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   shadow_render_pass.h                               :+:      :+:    :+:   */
+/*   deferred_render_pass.h                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/06/03 11:35:43 by etran             #+#    #+#             */
-/*   Updated: 2024/06/14 02:35:34 by etran            ###   ########.fr       */
+/*   Created: 2024/06/13 17:25:43 by etran             #+#    #+#             */
+/*   Updated: 2024/06/14 13:18:38 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,26 +16,41 @@
 
 namespace vox::gfx {
 
-struct ShadowRenderPassInfo final: public RenderPassInfo {
-    ShadowRenderPassInfo(const ImageBuffer& texture): m_texture(&texture) {}
-    ShadowRenderPassInfo() = delete;
+struct DeferredRenderPassInfo final: public RenderPassInfo {
+    DeferredRenderPassInfo(
+        const ImageBuffer& positionTexture,
+        const ImageBuffer& normalTexture,
+        const ImageBuffer& albedoTexture):
+        m_positionTexture(positionTexture),
+        m_normalTexture(normalTexture),
+        m_albedoTexture(albedoTexture) {};
 
-    const ImageBuffer* m_texture;
+    DeferredRenderPassInfo() = delete;
+
+    const ImageBuffer& m_positionTexture;
+    const ImageBuffer& m_normalTexture;
+    const ImageBuffer& m_albedoTexture;
 };
 
-class ShadowRenderPass final: public RenderPass {
+class DeferredRenderPass final: public RenderPass {
 public:
     /* ====================================================================== */
     /*                                  ENUMS                                 */
     /* ====================================================================== */
 
     enum class Resource: u32 {
+        ColorPosition,
+        ColorNormal,
+        ColorAlbedo,
         DepthImage,
 
         Count
     };
 
     enum class Attachment: u32 {
+        ColorPosition,
+        ColorNormal,
+        ColorAlbedo,
         Depth,
 
         Count
@@ -52,15 +67,16 @@ public:
     /*                                 METHODS                                */
     /* ====================================================================== */
 
-    ShadowRenderPass() = default;
-    ~ShadowRenderPass() = default;
+    DeferredRenderPass() = default;
+    ~DeferredRenderPass() = default;
 
-    ShadowRenderPass(ShadowRenderPass&& other) = delete;
-    ShadowRenderPass(const ShadowRenderPass& other) = delete;
-    ShadowRenderPass& operator=(ShadowRenderPass&& other) = delete;
-    ShadowRenderPass& operator=(const ShadowRenderPass& other) = delete;
+    DeferredRenderPass(DeferredRenderPass&& other) = delete;
+    DeferredRenderPass(const DeferredRenderPass& other) = delete;
+    DeferredRenderPass& operator=(DeferredRenderPass&& other) = delete;
+    DeferredRenderPass& operator=(const DeferredRenderPass& other) = delete;
 
     /* ====================================================================== */
+
 
     void    init(const Device& device, const RenderPassInfo* info) override;
     void    destroy(const Device& device) override;
@@ -75,10 +91,11 @@ private:
 
     void    _createRenderPass(const Device& device, const RenderPassInfo* info);
     void    _importResources(const Device& device, const RenderPassInfo* info);
-    void    _createTarget(const Device& device, const RenderPassInfo* info);
+    void    _createTargets(const Device& device, const RenderPassInfo* info);
 
-    void    _destroyTarget(const Device& device);
+    void    _destroyTargets(const Device& device);
 
-}; // class ShadowRenderPass
+}; // class DeferredRenderPass
+
 
 } // namespace vox::gfx

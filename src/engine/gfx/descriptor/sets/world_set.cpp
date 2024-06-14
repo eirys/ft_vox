@@ -6,14 +6,13 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/15 17:03:33 by etran             #+#    #+#             */
-/*   Updated: 2024/06/05 21:59:52 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/14 14:03:25 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "world_set.h"
 #include "device.h"
 #include "game_state.h"
-#include "chunk_data_sampler.h"
 #include "game_texture_sampler.h"
 #include "skybox_sampler.h"
 #include "perlin_noise_sampler.h"
@@ -27,7 +26,6 @@ namespace vox::gfx {
 /* ========================================================================== */
 
 void WorldSet::init(const Device& device, const ICommandBuffer* cmdBuffer) {
-    // m_textures[(u32)Texture::ChunkData] = new ChunkDataSampler();
     m_textures[(u32)Texture::GameTexture] = new GameTextureSampler();
     m_textures[(u32)Texture::PerlinNoise] = new PerlinNoiseSampler();
 #if ENABLE_CUBEMAP
@@ -43,7 +41,6 @@ void WorldSet::init(const Device& device, const ICommandBuffer* cmdBuffer) {
 #endif
 
     std::array<VkDescriptorSetLayoutBinding, BINDING_COUNT> bindings = {
-        // _createLayoutBinding(DescriptorTypeIndex::CombinedImageSampler, ShaderVisibility::VS, (u32)BindingIndex::BlockPos),
         _createLayoutBinding(DescriptorTypeIndex::CombinedImageSampler, ShaderVisibility::FS, (u32)BindingIndex::Textures),
         _createLayoutBinding(DescriptorTypeIndex::CombinedImageSampler, ShaderVisibility::VS, (u32)BindingIndex::Noise),
 #if ENABLE_CUBEMAP
@@ -79,11 +76,6 @@ void WorldSet::destroy(const Device& device) {
 void WorldSet::fill(const Device& device) {
     LDEBUG("Filling WorldSet descriptor set");
 
-    // VkDescriptorImageInfo chunkSamplerInfo{};
-    // chunkSamplerInfo.imageLayout = m_textures[(u32)Texture::ChunkData]->getImageBuffer().getMetaData().m_layoutData.m_layout;
-    // chunkSamplerInfo.imageView = m_textures[(u32)Texture::ChunkData]->getImageBuffer().getView();
-    // chunkSamplerInfo.sampler = m_textures[(u32)Texture::ChunkData]->getSampler();
-
     VkDescriptorImageInfo gameSamplerInfo{};
     gameSamplerInfo.imageLayout = m_textures[(u32)Texture::GameTexture]->getImageBuffer().getMetaData().m_layoutData.m_layout;
     gameSamplerInfo.imageView = m_textures[(u32)Texture::GameTexture]->getImageBuffer().getView();
@@ -102,7 +94,6 @@ void WorldSet::fill(const Device& device) {
 #endif
 
     std::array<VkWriteDescriptorSet, BINDING_COUNT> descriptorWrites = {
-        // _createWriteDescriptorSet(DescriptorTypeIndex::CombinedImageSampler, &chunkSamplerInfo, (u32)BindingIndex::BlockPos),
         _createWriteDescriptorSet(DescriptorTypeIndex::CombinedImageSampler, &gameSamplerInfo, (u32)BindingIndex::Textures),
         _createWriteDescriptorSet(DescriptorTypeIndex::CombinedImageSampler, &noiseSamplerInfo, (u32)BindingIndex::Noise),
 #if ENABLE_CUBEMAP
@@ -111,11 +102,13 @@ void WorldSet::fill(const Device& device) {
     };
     vkUpdateDescriptorSets(device.getDevice(), BINDING_COUNT, descriptorWrites.data(), 0, nullptr);
 
-    LDEBUG("WorldSet descriptor set filled");
+    LDEBUG("World descriptor set filled");
 }
 
-void WorldSet::update(const Device& device, const game::GameState& state, const ICommandBuffer* cmdBuffer) {
-    // m_textures[(u32)Texture::ChunkData]->fill(device, cmdBuffer, &state.getWorld().getChunks());
+/* ========================================================================== */
+
+const ImageBuffer& WorldSet::getImageBuffer(const u32 index) const noexcept {
+    return m_textures[index]->getImageBuffer();
 }
 
 } // namespace vox::gfx

@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/02 19:56:22 by etran             #+#    #+#             */
-/*   Updated: 2024/03/22 23:08:17 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/14 02:36:00 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -71,17 +71,14 @@ public:
     u32             getWidth() const noexcept;
     u32             getHeight() const noexcept;
 
-    const std::vector<VkFramebuffer>&   getTargets() const noexcept;
-    const std::vector<ImageBuffer>&     getResources() const noexcept;
-
 protected:
     /* ====================================================================== */
     /*                                  DATA                                  */
     /* ====================================================================== */
 
-    VkRenderPass                m_vkRenderPass = VK_NULL_HANDLE;
-    std::vector<VkFramebuffer>  m_targets;
-    std::vector<ImageBuffer>    m_resources;
+    VkRenderPass                    m_vkRenderPass = VK_NULL_HANDLE;
+    std::vector<VkFramebuffer>      m_targets;
+    std::vector<const ImageBuffer*> m_resources;
 
     u32                         m_width = 0;
     u32                         m_height = 0;
