@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/20 00:02:09 by etran             #+#    #+#             */
-/*   Updated: 2024/06/14 15:40:33 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/15 01:48:27 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,8 +31,8 @@ void keyCallback(GLFWwindow* win, int key, int scancode, int action, int mods) {
             case GLFW_KEY_O:            if (isPressed) window->switchKey(ControlKeyIndex::DisplayDebug); break;
             case GLFW_KEY_T:            if (isPressed) window->switchKey(ControlKeyIndex::DisableTime); break;
 
-            case GLFW_KEY_RIGHT:        if (isPressed) window->m_selectedValue = (window->m_selectedValue + 1) % 3; break;
-            case GLFW_KEY_LEFT:         if (isPressed) window->m_selectedValue = (window->m_selectedValue + (3 - 1)) % 3; break;
+            case GLFW_KEY_RIGHT:        if (isPressed) window->m_selectedValue = (window->m_selectedValue + 1) % 4; break;
+            case GLFW_KEY_LEFT:         if (isPressed) window->m_selectedValue = (window->m_selectedValue + (4 - 1)) % 4; break;
 
             // Movement
             case GLFW_KEY_W:            isPressed ? window->toggleKey(ControlKeyIndex::Forward) : window->untoggleKey(ControlKeyIndex::Forward); break;

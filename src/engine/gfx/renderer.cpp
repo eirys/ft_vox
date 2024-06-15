@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/23 09:29:35 by etran             #+#    #+#             */
-/*   Updated: 2024/06/14 20:16:44 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/14 22:32:24 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -94,9 +94,11 @@ void Renderer::waitIdle() const {
 }
 
 void Renderer::render(const game::GameState& game) {
+    const PipelineLayout& mainLayout = m_pipelineLayouts[(u32)PipelineLayoutIndex::Main];
+
     // Prepare frame resources ---------
     m_fences[(u32)FenceIndex::DrawInFlight].await(m_device);
-    m_pipelineLayouts[(u32)PipelineLayoutIndex::Main].updatePushConstant(game);
+    mainLayout.updatePushConstant(game);
     m_descriptorTable.update(game);
 #if ENABLE_FRUSTUM_CULLING
     VertexBuffer::update(m_device, game);
@@ -109,52 +111,53 @@ void Renderer::render(const game::GameState& game) {
 
     RecordInfo  recordInfo{};
 
-    // Record draw commands -----------
-    const ICommandBuffer* drawBuffer = m_commandBuffers[(u32)CommandBufferIndex::Draw];
-    drawBuffer->reset();
-    drawBuffer->startRecording();
+    // Record offscreen commands -------
+    const ICommandBuffer* offscreenBuffer = m_commandBuffers[(u32)CommandBufferIndex::Offscreen];
+    offscreenBuffer->reset();
+    offscreenBuffer->startRecording();
 
-    m_pipelineLayouts[(u32)PipelineLayoutIndex::Main].bindPushConstantRange(drawBuffer);
+    mainLayout.bindPushConstantRange(offscreenBuffer);
 
 #if ENABLE_SHADOW_MAPPING
     // Shadow pass
     const RenderPass* shadowRenderPass = m_renderPasses[(u32)RenderPassIndex::Shadow];
     recordInfo.m_targetIndex = 0;
-    shadowRenderPass->begin(drawBuffer, recordInfo);
-    m_pipelines[(u32)PipelineIndex::ShadowPipeline]->record(m_pipelineLayouts[(u32)PipelineLayoutIndex::Main], drawBuffer);
-    shadowRenderPass->end(drawBuffer);
+    shadowRenderPass->begin(offscreenBuffer, recordInfo);
+    m_pipelines[(u32)PipelineIndex::ShadowPipeline]->record(mainLayout, offscreenBuffer);
+    shadowRenderPass->end(offscreenBuffer);
 #endif
+
+    // Deferred pass
+    const RenderPass* deferredRenderPass = m_renderPasses[(u32)RenderPassIndex::Deferred];
+    recordInfo.m_targetIndex = 0;
+    deferredRenderPass->begin(offscreenBuffer, recordInfo);
+    m_pipelines[(u32)PipelineIndex::Offscreen]->record(mainLayout, offscreenBuffer);
+    deferredRenderPass->end(offscreenBuffer);
+
+    offscreenBuffer->stopRecording();
+    // --------------------------------
+
+    // Record draw commands -----------
+    const ICommandBuffer* drawBuffer = m_commandBuffers[(u32)CommandBufferIndex::Draw];
+    drawBuffer->reset();
+    drawBuffer->startRecording();
+
+    mainLayout.bindPushConstantRange(drawBuffer);
 
     // Scene pass
     const RenderPass* mainRenderPass = m_renderPasses[(u32)RenderPassIndex::Main];
     recordInfo.m_targetIndex = m_swapChain.getImageIndex();
     mainRenderPass->begin(drawBuffer, recordInfo);
 #if ENABLE_SKYBOX
-    m_pipelines[(u32)PipelineIndex::SkyboxPipeline]->record(m_pipelineLayouts[(u32)PipelineLayoutIndex::Main], drawBuffer);
-    m_pipelines[(u32)PipelineIndex::StarfieldPipeline]->record(m_pipelineLayouts[(u32)PipelineLayoutIndex::Main], drawBuffer);
+    m_pipelines[(u32)PipelineIndex::SkyboxPipeline]->record(mainLayout, drawBuffer);
+    m_pipelines[(u32)PipelineIndex::StarfieldPipeline]->record(mainLayout, drawBuffer);
 #endif
-    m_pipelines[(u32)PipelineIndex::ScenePipeline]->record(m_pipelineLayouts[(u32)PipelineLayoutIndex::Main], drawBuffer);
+    m_pipelines[(u32)PipelineIndex::ScenePipeline]->record(mainLayout, drawBuffer);
     if (game.getController().showDebug())
-        m_pipelines[(u32)PipelineIndex::DebugPipeline]->record(m_pipelineLayouts[(u32)PipelineLayoutIndex::Main], drawBuffer);
+        m_pipelines[(u32)PipelineIndex::DebugPipeline]->record(mainLayout, drawBuffer);
     mainRenderPass->end(drawBuffer);
 
     drawBuffer->stopRecording();
-    // --------------------------------
-
-    // Record offscreen commands -------
-    const ICommandBuffer* offscreenBuffer = m_commandBuffers[(u32)CommandBufferIndex::Offscreen];
-    const RenderPass* deferredRenderPass = m_renderPasses[(u32)RenderPassIndex::Deferred];
-    offscreenBuffer->reset();
-    offscreenBuffer->startRecording();
-
-    m_pipelineLayouts[(u32)PipelineLayoutIndex::Main].bindPushConstantRange(offscreenBuffer);
-
-    recordInfo.m_targetIndex = 0;
-    deferredRenderPass->begin(offscreenBuffer, recordInfo);
-    m_pipelines[(u32)PipelineIndex::Offscreen]->record(m_pipelineLayouts[(u32)PipelineLayoutIndex::Main], offscreenBuffer);
-    deferredRenderPass->end(offscreenBuffer);
-
-    offscreenBuffer->stopRecording();
     // --------------------------------
 
     // Submit command buffer ---------
@@ -234,6 +237,7 @@ void Renderer::_createRenderPasses() {
     m_renderPasses[(u32)RenderPassIndex::Deferred]->init(m_device, &deferredPassInfo);
 
 #if ENABLE_SHADOW_MAPPING
+    // Shadow pass
     m_renderPasses[(u32)RenderPassIndex::Shadow] = new ShadowRenderPass();
 
     const ImageBuffer& shadowmap = m_descriptorTable[DescriptorSetIndex::Pfd]->getImageBuffer((u32)PFDSet::Texture::Shadowmap);

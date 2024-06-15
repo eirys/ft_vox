@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/11 16:12:13 by etran             #+#    #+#             */
-/*   Updated: 2024/06/14 15:42:40 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/15 01:42:41 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,7 +41,7 @@ void PFDSet::init(const Device& device, const ICommandBuffer* cmdBuffer) {
     std::array<VkDescriptorSetLayoutBinding, BINDING_COUNT> bindings = {
         _createLayoutBinding(DescriptorTypeIndex::UniformBuffer, ShaderVisibility::VS_FS, (u32)BindingIndex::GameData),
 #if ENABLE_SHADOW_MAPPING
-        _createLayoutBinding(DescriptorTypeIndex::UniformBuffer, ShaderVisibility::VS, (u32)BindingIndex::ProjectorViewProj),
+        _createLayoutBinding(DescriptorTypeIndex::UniformBuffer, ShaderVisibility::VS_FS, (u32)BindingIndex::ProjectorViewProj),
         _createLayoutBinding(DescriptorTypeIndex::CombinedImageSampler, ShaderVisibility::FS, (u32)BindingIndex::Shadowmap),
 #endif
     };

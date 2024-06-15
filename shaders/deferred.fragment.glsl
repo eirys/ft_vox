@@ -15,7 +15,7 @@ layout(location = 2) out vec4 outAlbedo;
 layout(set = WORLD_SET, binding = 0) uniform sampler2DArray GameTex;
 
 void main() {
-    outPosition = vec4(inPosition, gl_FragCoord.z / gl_FragCoord.w); // clip space to world space
-    outNormal = vec4(inNormal, 1.0);
+    outPosition = vec4(inPosition, gl_FragCoord.w);
+    outNormal = vec4(inNormal, gl_FragCoord.z / gl_FragCoord.w);
     outAlbedo = texture(GameTex, inUVW);
 }

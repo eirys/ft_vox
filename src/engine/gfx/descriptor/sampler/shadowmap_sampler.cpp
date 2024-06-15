@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/03 16:13:11 by etran             #+#    #+#             */
-/*   Updated: 2024/06/10 14:56:52 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/14 21:59:53 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 #include "device.h"
 #include "buffer.h"
 #include "icommand_buffer.h"
+#include "swap_chain.h"
 
 #include "ppm_loader.h"
 
@@ -27,7 +28,7 @@ static constexpr u32 TEXTURE_SIZE = 4096;
 
 void ShadowmapSampler::init(const Device& device) {
     ImageMetaData depthImageMetaData{};
-    depthImageMetaData.m_format = VK_FORMAT_D16_UNORM;
+    depthImageMetaData.m_format = SwapChain::getDepthFormat();
     depthImageMetaData.m_sampleCount = VK_SAMPLE_COUNT_1_BIT;
     depthImageMetaData.m_width = TEXTURE_SIZE;
     depthImageMetaData.m_height = TEXTURE_SIZE;

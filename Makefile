@@ -6,7 +6,7 @@
 #    By: etran <etran@student.42.fr>                +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/04/06 03:40:09 by eli               #+#    #+#              #
-#    Updated: 2024/06/14 17:53:36 by etran            ###   ########.fr        #
+#    Updated: 2024/06/15 01:47:59 by etran            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -195,9 +195,8 @@ SHD_FILES	:=	scene.fragment \
 				deferred.vertex \
 				deferred.fragment \
 				debug.vertex \
-				debug.fragment
-
-# shadowmap.vertex
+				debug.fragment \
+				shadowmap.vertex
 
 SHD			:=	$(addprefix $(SHD_BIN_DIR)/,$(SHD_FILES))
 SHD_BIN		:=	$(addsuffix .spv,$(SHD))

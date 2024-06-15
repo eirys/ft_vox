@@ -18,17 +18,16 @@ layout(set = GBUFFER_SET, binding = 0) uniform sampler2D PositionTex;
 layout(set = GBUFFER_SET, binding = 1) uniform sampler2D NormalTex;
 layout(set = GBUFFER_SET, binding = 2) uniform sampler2D AlbedoTex;
 
-// #if ENABLE_SHADOW_MAPPING
-//     layout(set = PFD_SET, binding = 2) uniform sampler2D Shadowmap;
-// #endif
+#if ENABLE_SHADOW_MAPPING
+    layout(set = PFD_SET, binding = 2) uniform sampler2D Shadowmap;
+#endif
 
 void main() {
     outColor = vec4(1.0);
 
     switch (gameData.debugIndex) {
         case 0:
-            vec4 fragPos = texture(PositionTex, inUV);
-            outColor.rgb = fragPos.rgb / fragPos.w;
+            outColor.rgb = texture(PositionTex, inUV).www;
             break;
         case 1:
             outColor.rgb = texture(NormalTex, inUV).rgb;
@@ -36,12 +35,12 @@ void main() {
         case 2:
             outColor.rgb = texture(AlbedoTex, inUV).rgb;
             break;
+#if ENABLE_SHADOW_MAPPING
+        case 3:
+            outColor.rgb = texture(Shadowmap, inUV).rrr;
+            break;
+#endif
         default:
             break;
     }
-
-// #if ENABLE_SHADOW_MAPPING
-//     float depthValue = texture(Shadowmap, inUV).r;
-//     outColor = vec4(vec3(depthValue), 1.0);
-// #endif
 }
