@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/15 19:33:01 by etran             #+#    #+#             */
-/*   Updated: 2024/06/14 15:42:46 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/15 11:32:51 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,9 +59,8 @@ public:
     void update(const Window& win);
 
     const Camera&   getCamera() const noexcept;
-    bool            showDebug() const noexcept;
     bool            isTimeEnabled() const noexcept;
-    u32             getDebugIndex() const noexcept;
+    u32             showDebug() const noexcept;
 
 private:
     /* ====================================================================== */
@@ -78,7 +77,6 @@ private:
     }       m_state;
 
     u32     m_selectDebug;
-    bool    m_showDebug;
     bool    m_isTimeEnabled;
 
 }; // class Controller

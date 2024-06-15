@@ -26,20 +26,22 @@ void main() {
     outColor = vec4(1.0);
 
     switch (gameData.debugIndex) {
-        case 0:
+        case 1:
             outColor.rgb = texture(PositionTex, inUV).www;
             break;
-        case 1:
+        case 2:
             outColor.rgb = texture(NormalTex, inUV).rgb;
             break;
-        case 2:
+        case 3:
             outColor.rgb = texture(AlbedoTex, inUV).rgb;
             break;
+        case 4:
 #if ENABLE_SHADOW_MAPPING
-        case 3:
             outColor.rgb = texture(Shadowmap, inUV).rrr;
-            break;
+#else
+            outColor.rgb = vec3(0.0);
 #endif
+            break;
         default:
             break;
     }

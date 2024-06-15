@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/15 20:35:46 by etran             #+#    #+#             */
-/*   Updated: 2024/06/14 15:42:34 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/15 11:32:44 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,42 +67,37 @@ void Controller::update(const Window& win) {
     constexpr float NORMAL_SPEED = 0.15f;
     constexpr float HIGH_SPEED = 0.8f;
 
-    const float moveSpeed = win.isKeyPressed(ControlKeyIndex::Speed) ? HIGH_SPEED : NORMAL_SPEED;
+    const float moveSpeed = win.isKeyToggled(KeyToggleIndex::Speed) ? HIGH_SPEED : NORMAL_SPEED;
 
-    if (win.isKeyPressed(ControlKeyIndex::Forward))
+    if (win.isKeyToggled(KeyToggleIndex::Forward))
         m_camera.m_position += math::Vect3(cosYaw, 0.0f, sinYaw) * moveSpeed;
-    else if (win.isKeyPressed(ControlKeyIndex::Backward))
+    else if (win.isKeyToggled(KeyToggleIndex::Backward))
         m_camera.m_position -= math::Vect3(cosYaw, 0.0f, sinYaw) * moveSpeed;
 
-    if (win.isKeyPressed(ControlKeyIndex::Left))
+    if (win.isKeyToggled(KeyToggleIndex::Left))
         m_camera.m_position += math::Vect3(sinYaw, 0.0f, -cosYaw) * moveSpeed;
-    else if (win.isKeyPressed(ControlKeyIndex::Right))
+    else if (win.isKeyToggled(KeyToggleIndex::Right))
         m_camera.m_position -= math::Vect3(sinYaw, 0.0f, -cosYaw) * moveSpeed;
 
-    if (win.isKeyPressed(ControlKeyIndex::Up))
+    if (win.isKeyToggled(KeyToggleIndex::Up))
         m_camera.m_position.y += moveSpeed;
-    else if (win.isKeyPressed(ControlKeyIndex::Down))
+    else if (win.isKeyToggled(KeyToggleIndex::Down))
         m_camera.m_position.y -= moveSpeed;
 
-    m_showDebug = win.isKeyPressed(ControlKeyIndex::DisplayDebug);
-    m_isTimeEnabled = !win.isKeyPressed(ui::ControlKeyIndex::DisableTime);
-    m_selectDebug = win.m_selectedValue;
+    m_isTimeEnabled = !win.isKeyOn(KeySwitchIndex::DisableTime);
+    m_selectDebug = win.getKeyValue(KeyValueIndex::DisplayDebug);
 }
 
 const Camera& Controller::getCamera() const noexcept {
     return m_camera;
 }
 
-bool Controller::showDebug() const noexcept {
-    return m_showDebug;
+u32 Controller::showDebug() const noexcept {
+    return m_selectDebug;
 }
 
 bool Controller::isTimeEnabled() const noexcept {
     return m_isTimeEnabled;
-}
-
-u32 Controller::getDebugIndex() const noexcept {
-    return m_selectDebug;
 }
 
 } // namespace ui

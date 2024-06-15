@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/11 16:12:13 by etran             #+#    #+#             */
-/*   Updated: 2024/06/15 01:42:41 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/15 11:33:34 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -109,7 +109,7 @@ void PFDSet::update(const game::GameState& state) {
 
     m_data.m_gameData.sunPos = state.getSunPos().xy;
     m_data.m_gameData.skyHue = math::lerp(SUN_COLOR, MOON_COLOR, std::max(0.0f, state.getSunPos().y)).toRGBA();
-    m_data.m_gameData.debugIndex = state.getController().getDebugIndex();
+    m_data.m_gameData.debugIndex = state.getController().showDebug();
 
 #if ENABLE_SHADOW_MAPPING
     constexpr float	TERRAIN_SIZE = CHUNK_SIZE * RENDER_DISTANCE;
