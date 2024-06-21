@@ -6,14 +6,13 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/29 23:49:38 by etran             #+#    #+#             */
-/*   Updated: 2024/06/03 11:24:29 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/16 15:14:01 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
 #include "pipeline.h"
-#include "vox_decl.h"
 
 namespace game {
 class GameState;
@@ -59,13 +58,10 @@ public:
     void    init(
         const Device& device,
         const VkRenderPass& renderPass,
-        const VkPipelineLayout& pipelineLayout) override;
+        const PipelineLayout& pipelineLayout) override;
     void    destroy(const Device& device) override;
 
-    void    record(
-        const VkPipelineLayout layout,
-        const DescriptorTable& descriptorTable,
-        const ICommandBuffer* cmdBuffer) override;
+    void    record(const ICommandBuffer* cmdBuffer) const override;
 
 private:
     /* ====================================================================== */

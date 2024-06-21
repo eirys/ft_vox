@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/02 10:43:33 by etran             #+#    #+#             */
-/*   Updated: 2024/03/02 12:31:38 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/12 12:03:19 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,11 +28,11 @@ public:
     /* ====================================================================== */
 
     GfxSemaphore() = default;
+    GfxSemaphore(GfxSemaphore&& other) = default;
+    GfxSemaphore& operator=(GfxSemaphore&& other) = default;
     ~GfxSemaphore() = default;
 
-    GfxSemaphore(GfxSemaphore&& other) = delete;
     GfxSemaphore(const GfxSemaphore& other) = delete;
-    GfxSemaphore& operator=(GfxSemaphore&& other) = delete;
     GfxSemaphore& operator=(const GfxSemaphore& other) = delete;
 
     /* ====================================================================== */
@@ -53,7 +53,7 @@ private:
     /*                                  DATA                                  */
     /* ====================================================================== */
 
-    VkSemaphore m_semaphore;
+    VkSemaphore m_semaphore = VK_NULL_HANDLE;
 
 }; // class GfxSemaphore
 

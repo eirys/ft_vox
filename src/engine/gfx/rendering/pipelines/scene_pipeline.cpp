@@ -6,15 +6,14 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/07 09:48:27 by etran             #+#    #+#             */
-/*   Updated: 2024/06/06 03:16:07 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/16 15:16:35 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "scene_pipeline.h"
 #include "device.h"
 #include "icommand_buffer.h"
-#include "descriptor_table.h"
-#include "vertex_buffer.h"
+#include "pipeline_layout.h"
 
 #include <array>
 #include <stdexcept>
@@ -23,37 +22,20 @@
 
 namespace vox::gfx {
 
-enum class SceneDescriptorSet: u32 {
-    Pfd = 0,
-    WorldData,
-
-    First = Pfd,
-    Last = WorldData
-};
-
-enum class SetIndex: u32 {
-    PerFrameData    = (u32)DescriptorSetIndex::Pfd,
-    Textures        = (u32)DescriptorSetIndex::WorldData,
-};
-
-
-static constexpr u32 DESCRIPTOR_SET_COUNT = enumSize<SceneDescriptorSet>();
-
 /* ========================================================================== */
 /*                                   PUBLIC                                   */
 /* ========================================================================== */
 
+__attribute__ ((optnone))
 void ScenePipeline::init(
     const Device& device,
     const VkRenderPass& renderPass,
-    const VkPipelineLayout& pipelineLayout
+    const PipelineLayout& pipelineLayout
 ) {
+    m_pipelineLayout = &pipelineLayout;
+
     VkPipelineVertexInputStateCreateInfo vertexInput{};
     vertexInput.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-    vertexInput.vertexBindingDescriptionCount = VertexInstance::getBindingDescriptions().size();
-    vertexInput.pVertexBindingDescriptions = VertexInstance::getBindingDescriptions().data();
-    vertexInput.vertexAttributeDescriptionCount = VertexInstance::getAttributeDescriptions().size();
-    vertexInput.pVertexAttributeDescriptions = VertexInstance::getAttributeDescriptions().data();
 
     VkPipelineInputAssemblyStateCreateInfo inputAssembly{};
     inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
@@ -72,20 +54,13 @@ void ScenePipeline::init(
     rasterizer.polygonMode = VK_POLYGON_MODE_FILL;
     rasterizer.lineWidth = 1.0f;
     rasterizer.frontFace = VK_FRONT_FACE_CLOCKWISE;
-    rasterizer.depthBiasEnable = VK_FALSE;
-    rasterizer.depthBiasConstantFactor = 0.0f;
-    rasterizer.depthBiasClamp = 0.0f;
     rasterizer.cullMode = VK_CULL_MODE_BACK_BIT;
-    rasterizer.depthBiasSlopeFactor = 0.0f;
 
     VkPipelineMultisampleStateCreateInfo multisample{};
     multisample.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
     multisample.sampleShadingEnable = VK_FALSE;
     multisample.minSampleShading = 1.0f;
-    multisample.pSampleMask = nullptr;
     multisample.rasterizationSamples = device.getMsaaCount();
-    multisample.alphaToCoverageEnable = VK_FALSE;
-    multisample.alphaToOneEnable = VK_FALSE;
 
     VkPipelineColorBlendAttachmentState colorBlendAttachment{};
     colorBlendAttachment.blendEnable = VK_FALSE;
@@ -101,10 +76,6 @@ void ScenePipeline::init(
     colorBlend.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
     colorBlend.logicOpEnable = VK_FALSE;
     colorBlend.logicOp = VK_LOGIC_OP_COPY;
-    colorBlend.blendConstants[0] = 0.0f;
-    colorBlend.blendConstants[1] = 0.0f;
-    colorBlend.blendConstants[2] = 0.0f;
-    colorBlend.blendConstants[3] = 0.0f;
     colorBlend.attachmentCount = 1;
     colorBlend.pAttachments = &colorBlendAttachment;
 
@@ -150,10 +121,8 @@ void ScenePipeline::init(
     pipelineInfo.renderPass = renderPass;
     pipelineInfo.stageCount = SHADER_STAGE_COUNT;
     pipelineInfo.pStages = shaderStages.data();
-    pipelineInfo.layout = pipelineLayout;
+    pipelineInfo.layout = m_pipelineLayout->getLayout();
     pipelineInfo.subpass = 0;
-    pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
-    pipelineInfo.basePipelineIndex = -1;
 
     if (vkCreateGraphicsPipelines(device.getDevice(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &m_pipeline) != VK_SUCCESS)
         throw std::runtime_error("Failed to assemble graphics pipeline.");
@@ -172,37 +141,13 @@ void ScenePipeline::destroy(const Device& device) {
 
 /* ========================================================================== */
 
-void ScenePipeline::record(
-    const VkPipelineLayout layout,
-    const DescriptorTable& descriptorTable,
-    const ICommandBuffer* cmdBuffer
-) {
-    const std::array<VkDescriptorSet, DESCRIPTOR_SET_COUNT> descriptorSets = {
-        descriptorTable[(u32)SetIndex::PerFrameData]->getSet(),
-        descriptorTable[(u32)SetIndex::Textures]->getSet() };
-    const std::array<VkDeviceSize, 1> offsets = { 0 };
-    const std::array<VkBuffer, 1> vertexBuffers = { VertexBuffer::getBuffer().getBuffer() };
+void ScenePipeline::record(const ICommandBuffer* cmdBuffer) const {
+    cmdBuffer->bindDescriptorSets(*m_pipelineLayout);
+    cmdBuffer->bindPipeline(m_pipeline);
 
-    vkCmdBindDescriptorSets(
-        cmdBuffer->getBuffer(),
-        VK_PIPELINE_BIND_POINT_GRAPHICS,
-        layout,
-        (u32)SceneDescriptorSet::First,
-        DESCRIPTOR_SET_COUNT, descriptorSets.data(),
-        0, nullptr);
-
-    vkCmdBindPipeline(
-        cmdBuffer->getBuffer(),
-        VK_PIPELINE_BIND_POINT_GRAPHICS,
-        m_pipeline);
-
-    vkCmdBindVertexBuffers(
-        cmdBuffer->getBuffer(),
-        0, vertexBuffers.size(),
-        vertexBuffers.data(),
-        offsets.data());
-
-    vkCmdDraw(cmdBuffer->getBuffer(), 4, VertexBuffer::getInstancesCount(), 0, 0);
+    // Draw quad
+    vkCmdDraw(cmdBuffer->getBuffer(), 3, 1, 0, 0);
+    LDEBUG("Drawing scene/composition quad");
 }
 
 } // namespace vox::gfx

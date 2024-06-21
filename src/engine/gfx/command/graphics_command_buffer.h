@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/23 22:27:11 by etran             #+#    #+#             */
-/*   Updated: 2024/03/11 09:26:43 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/12 11:27:25 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,6 +31,7 @@ public:
     /* ====================================================================== */
 
     GraphicsCommandBuffer(const VkCommandPool& pool, const VkQueue& queue):
+        super(CommandBufferType::DRAW),
         m_pool(pool),
         m_queue(queue) {}
 

@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/03 12:53:21 by etran             #+#    #+#             */
-/*   Updated: 2024/06/06 03:06:47 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/14 02:36:25 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -148,7 +148,7 @@ void ShadowRenderPass::_importResources(const Device& device, const RenderPassIn
 void ShadowRenderPass::_createTarget(const Device& device, const RenderPassInfo* info) {
     m_targets.resize(info->m_targetCount);
 
-    std::array<VkImageView, ATTACHMENT_COUNT> attachments = { m_resources[(u32)Attachment::Depth].getView() };
+    std::array<VkImageView, ATTACHMENT_COUNT> attachments = { m_resources[(u32)Attachment::Depth]->getView() };
 
     VkFramebufferCreateInfo framebufferInfo{};
     framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;

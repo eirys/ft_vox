@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/20 14:58:48 by etran             #+#    #+#             */
-/*   Updated: 2024/06/03 11:26:32 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/12 12:10:07 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -95,6 +95,13 @@ void VertexBuffer::init(
 
 void VertexBuffer::destroy(const Device& device) {
     ms_buffer.destroy(device);
+}
+
+void VertexBuffer::bind(const ICommandBuffer* cmdBuffer) {
+    const VkDeviceSize  offset = 0;
+    const VkBuffer      buffer = ms_buffer.getBuffer();
+
+    vkCmdBindVertexBuffers(cmdBuffer->getBuffer(), 0, 1, &buffer, &offset);
 }
 
 /* ========================================================================== */

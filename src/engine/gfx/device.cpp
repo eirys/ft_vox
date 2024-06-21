@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/21 23:37:02 by etran             #+#    #+#             */
-/*   Updated: 2024/03/11 23:24:12 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/14 01:46:08 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -229,9 +229,9 @@ bool _hasExpectedFormatProperties(const VkPhysicalDevice physDevice) {
     for (const VkFormat format: BLITTED_IMAGE_FORMATS) {
         VkFormatProperties	properties;
         vkGetPhysicalDeviceFormatProperties(physDevice, format, &properties);
-        const bool hasLinearTiling = (bool)(properties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT);
 
-        if (!hasLinearTiling) return false;
+        if (!(bool)(properties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT))
+            return false;
     }
 
     // Swap chain support for depth format
@@ -246,8 +246,7 @@ bool _hasExpectedFormatProperties(const VkPhysicalDevice physDevice) {
             default: break;
         }
 
-        const bool hasRequiredSwapChainFeatures = (bool)(features & SwapChain::DEPTH_FEATURES);
-        if (hasRequiredSwapChainFeatures) {
+        if ((bool)(features & SwapChain::DEPTH_FEATURES)) {
             SwapChain::setDepthFormat(format);
             break;
         }

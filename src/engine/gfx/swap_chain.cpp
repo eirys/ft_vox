@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/04 00:33:46 by etran             #+#    #+#             */
-/*   Updated: 2024/03/20 15:14:01 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/14 00:39:33 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,6 +29,7 @@ namespace vox::gfx {
 /* ========================================================================== */
 
 VkFormat    SwapChain::ms_depthFormat = VK_FORMAT_UNDEFINED;
+VkExtent2D  SwapChain::ms_imageExtent = { 0, 0 };
 
 /* ========================================================================== */
 /*                                   PUBLIC                                   */
@@ -100,8 +101,8 @@ u32 SwapChain::getImageIndex() const noexcept {
     return m_imageIndex;
 }
 
-VkExtent2D SwapChain::getImageExtent() const noexcept {
-    return m_imageExtent;
+VkExtent2D SwapChain::getImageExtent() noexcept {
+    return ms_imageExtent;
 }
 
 /* ========================================================================== */
@@ -202,7 +203,7 @@ void SwapChain::_createSwapChain(const Core& core, const Device& device, const u
 
 
     m_imageFormat = surfaceFormat.format;
-    m_imageExtent = extent;
+    ms_imageExtent = extent;
 }
 
 /* ========================================================================== */

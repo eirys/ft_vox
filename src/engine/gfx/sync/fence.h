@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/02 11:11:32 by etran             #+#    #+#             */
-/*   Updated: 2024/03/11 13:51:05 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/12 12:03:23 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,11 +29,11 @@ public:
     /* ====================================================================== */
 
     Fence() = default;
+    Fence(Fence&& other) = default;
+    Fence& operator=(Fence&& other) = default;
     ~Fence() = default;
 
-    Fence(Fence&& other) = delete;
     Fence(const Fence& other) = delete;
-    Fence& operator=(Fence&& other) = delete;
     Fence& operator=(const Fence& other) = delete;
 
     /* ====================================================================== */

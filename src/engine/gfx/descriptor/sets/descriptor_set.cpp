@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/28 19:54:32 by etran             #+#    #+#             */
-/*   Updated: 2024/06/03 09:51:57 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/20 19:08:21 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,10 +17,6 @@ namespace vox::gfx {
 
 /* ========================================================================== */
 /*                                   PUBLIC                                   */
-/* ========================================================================== */
-
-DescriptorSet::DescriptorSet(const DescriptorSetIndex index): m_index(index) {}
-
 /* ========================================================================== */
 
 void DescriptorSet::setDescriptorSet(const VkDescriptorSet set) noexcept {
@@ -39,10 +35,6 @@ VkDescriptorSet DescriptorSet::getSet() const noexcept {
 
 const DescriptorSet::PoolSizes& DescriptorSet::getSizes() const noexcept {
     return m_poolSizes;
-}
-
-DescriptorSetIndex DescriptorSet::getSetIndex() const noexcept {
-    return m_index;
 }
 
 /* ========================================================================== */
@@ -67,7 +59,7 @@ VkDescriptorSetLayoutBinding DescriptorSet::_createLayoutBinding(
 
 VkWriteDescriptorSet DescriptorSet::_createWriteDescriptorSet(
     const DescriptorTypeIndex typeIndex,
-    const void* descriptorInfo,
+    const VkDescriptorBufferInfo& bufferInfo,
     const u32 bindingIndex
 ) const {
     VkWriteDescriptorSet writeDescriptorSet = {};
@@ -77,22 +69,24 @@ VkWriteDescriptorSet DescriptorSet::_createWriteDescriptorSet(
     writeDescriptorSet.dstArrayElement = 0;
     writeDescriptorSet.descriptorCount = 1;
     writeDescriptorSet.descriptorType = DESCRIPTOR_TYPES[(u32)typeIndex];
+    writeDescriptorSet.pBufferInfo = &bufferInfo;
 
-    switch (typeIndex) {
-        case DescriptorTypeIndex::CombinedImageSampler:
-        case DescriptorTypeIndex::SampledImage:
-        case DescriptorTypeIndex::StorageImage:
-            writeDescriptorSet.pImageInfo = (VkDescriptorImageInfo*)descriptorInfo;
-            break;
+    return writeDescriptorSet;
+}
 
-        case DescriptorTypeIndex::UniformBuffer:
-        case DescriptorTypeIndex::StorageBuffer:
-            writeDescriptorSet.pBufferInfo = (VkDescriptorBufferInfo*)descriptorInfo;
-            break;
-
-        default:
-            break;
-    }
+VkWriteDescriptorSet DescriptorSet::_createWriteDescriptorSet(
+    const DescriptorTypeIndex typeIndex,
+    const VkDescriptorImageInfo& imageInfo,
+    const u32 bindingIndex
+) const {
+    VkWriteDescriptorSet writeDescriptorSet = {};
+    writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    writeDescriptorSet.dstSet = m_set;
+    writeDescriptorSet.dstBinding = bindingIndex;
+    writeDescriptorSet.dstArrayElement = 0;
+    writeDescriptorSet.descriptorCount = 1;
+    writeDescriptorSet.descriptorType = DESCRIPTOR_TYPES[(u32)typeIndex];
+    writeDescriptorSet.pImageInfo = &imageInfo;
 
     return writeDescriptorSet;
 }

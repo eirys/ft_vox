@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/07 10:15:26 by etran             #+#    #+#             */
-/*   Updated: 2024/06/06 03:05:31 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/21 02:01:56 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,7 +31,7 @@ void MainRenderPass::init(const Device& device, const RenderPassInfo* info) {
     _createResources(device, info);
     _createTarget(device, info);
 
-    LDEBUG("Scene render pass initialized:" << m_vkRenderPass);
+    LDEBUG("Main render pass initialized:" << m_vkRenderPass);
 }
 
 void MainRenderPass::destroy(const Device& device) {
@@ -155,7 +155,7 @@ void MainRenderPass::_createRenderPass(const Device& device, const RenderPassInf
 
     if (vkCreateRenderPass(device.getDevice(), &renderPassInfo, nullptr, &m_vkRenderPass) != VK_SUCCESS)
         throw std::runtime_error("failed to create scene render pass");
-    LDEBUG("Scene render pass created.");
+    LDEBUG("Main render pass created.");
 }
 
 void MainRenderPass::_createResources(const Device& device, const RenderPassInfo* info) {
@@ -164,8 +164,6 @@ void MainRenderPass::_createResources(const Device& device, const RenderPassInfo
     m_width = scenePassInfo->m_renderPassWidth;
     m_height = scenePassInfo->m_renderPassHeight;
 
-    m_resources.resize(RESOURCE_COUNT);
-
     ImageMetaData colorImageMetaData{};
     colorImageMetaData.m_width = m_width;
     colorImageMetaData.m_height = m_height;
@@ -173,8 +171,9 @@ void MainRenderPass::_createResources(const Device& device, const RenderPassInfo
     colorImageMetaData.m_sampleCount = scenePassInfo->m_samples[(u32)Resource::ColorImage];
     colorImageMetaData.m_usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT;
     colorImageMetaData.m_aspectFlags = VK_IMAGE_ASPECT_COLOR_BIT;
-    m_resources[(u32)Resource::ColorImage].initImage(device, std::move(colorImageMetaData));
-    m_resources[(u32)Resource::ColorImage].initView(device);
+    ImageBuffer* colorImage = new ImageBuffer(true);
+    colorImage->initImage(device, std::move(colorImageMetaData));
+    colorImage->initView(device);
 
     ImageMetaData depthImageMetaData{};
     depthImageMetaData.m_width = m_width;
@@ -183,10 +182,13 @@ void MainRenderPass::_createResources(const Device& device, const RenderPassInfo
     depthImageMetaData.m_sampleCount = scenePassInfo->m_samples[(u32)Resource::DepthImage];
     depthImageMetaData.m_usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
     depthImageMetaData.m_aspectFlags = VK_IMAGE_ASPECT_DEPTH_BIT;
-    m_resources[(u32)Resource::DepthImage].initImage(device, std::move(depthImageMetaData));
-    m_resources[(u32)Resource::DepthImage].initView(device);
+    ImageBuffer* depthImage = new ImageBuffer(true);
+    depthImage->initImage(device, std::move(depthImageMetaData));
+    depthImage->initView(device);
 
-    LDEBUG("Scene render pass resources created.");
+    m_resources = { colorImage, depthImage };
+
+    LDEBUG("Main render pass resources created.");
 }
 
 void MainRenderPass::_createTarget(const Device& device, const RenderPassInfo* info) {
@@ -195,8 +197,8 @@ void MainRenderPass::_createTarget(const Device& device, const RenderPassInfo* i
     m_targets.resize(scenePassInfo->m_targetCount);
 
     std::array<VkImageView, ATTACHMENT_COUNT> attachments = {
-        m_resources[(u32)Attachment::Color].getView(),
-        m_resources[(u32)Attachment::Depth].getView() };
+        m_resources[(u32)Attachment::Color]->getView(),
+        m_resources[(u32)Attachment::Depth]->getView() };
 
     for (u32 i = 0; i < scenePassInfo->m_targetCount; ++i) {
         attachments[(u32)Attachment::ColorResolve] = scenePassInfo->m_swapChainImageViews[i];
@@ -221,7 +223,10 @@ void MainRenderPass::_destroyTarget(const Device& device) {
 }
 
 void MainRenderPass::_destroyResources(const Device& device) {
-    for (u32 i = 0; i < RESOURCE_COUNT; ++i) m_resources[i].destroy(device);
+    for (u32 i = 0; i < RESOURCE_COUNT; ++i) {
+        m_resources[i]->destroy(device);
+        delete m_resources[i];
+    }
 }
 
 } // namespace vox::gfx

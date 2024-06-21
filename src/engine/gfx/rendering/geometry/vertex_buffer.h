@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/20 13:34:05 by etran             #+#    #+#             */
-/*   Updated: 2024/06/03 11:27:41 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/12 12:07:53 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,21 +43,14 @@ public:
     /* ====================================================================== */
 
 #if ENABLE_FRUSTUM_CULLING
-    void    init(
-        const Device& device,
-        const game::GameState& gameState);
+    static void     init(const Device& device, const game::GameState& gameState);
+    static void     update(const Device& device, const game::GameState& gameState);
 #else
-    static void    init(
-        const Device& device,
-        const ICommandBuffer* cmdBuffer,
-        const game::GameState& gameState);
+    static void     init(const Device& device, const ICommandBuffer* cmdBuffer, const game::GameState& gameState);
 #endif
+    static void     destroy(const Device& device);
 
-    static void    destroy(const Device& device);
-
-    static void    update(
-        const Device& device,
-        const game::GameState& gameState);
+    static void     bind(const ICommandBuffer* cmdBuffer);
 
     /* ====================================================================== */
 

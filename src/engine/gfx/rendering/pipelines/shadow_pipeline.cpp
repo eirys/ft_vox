@@ -6,42 +6,32 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/03 10:06:29 by etran             #+#    #+#             */
-/*   Updated: 2024/06/06 12:49:33 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/16 15:16:59 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "shadow_pipeline.h"
 #include "device.h"
-#include "descriptor_table.h"
 #include "icommand_buffer.h"
+#include "pipeline_layout.h"
 #include "vertex_buffer.h"
 
 #include "debug.h"
 
 namespace vox::gfx {
 
-enum class ShadowDescriptorSet: u32 {
-    Pfd = 0,
-
-    First = Pfd,
-    Last = Pfd
-};
-
-enum class SetIndex: u32 {
-    PerFrameData    = (u32)DescriptorSetIndex::Pfd
-};
-
-static constexpr u32 DESCRIPTOR_SET_COUNT = enumSize<ShadowDescriptorSet>();
-
 /* ========================================================================== */
 /*                                   PUBLIC                                   */
 /* ========================================================================== */
 
+__attribute__ ((optnone))
 void ShadowPipeline::init(
     const Device& device,
     const VkRenderPass& renderPass,
-    const VkPipelineLayout& pipelineLayout
+    const PipelineLayout& pipelineLayout
 ) {
+    m_pipelineLayout = &pipelineLayout;
+
     VkPipelineVertexInputStateCreateInfo vertexInput{};
     vertexInput.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
     vertexInput.vertexBindingDescriptionCount = VertexInstance::getBindingDescriptions().size();
@@ -118,7 +108,7 @@ void ShadowPipeline::init(
     pipelineInfo.renderPass = renderPass;
     pipelineInfo.stageCount = SHADER_STAGE_COUNT;
     pipelineInfo.pStages = shaderStages.data();
-    pipelineInfo.layout = pipelineLayout;
+    pipelineInfo.layout = m_pipelineLayout->getLayout();
     pipelineInfo.subpass = 0;
     pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
     pipelineInfo.basePipelineIndex = -1;
@@ -137,34 +127,10 @@ void ShadowPipeline::destroy(const Device& device) {
     LDEBUG("Shadow pipeline destroyed.");
 }
 
-void ShadowPipeline::record(
-    const VkPipelineLayout layout,
-    const DescriptorTable& descriptorTable,
-    const ICommandBuffer* cmdBuffer
-) {
-    const std::array<VkDescriptorSet, DESCRIPTOR_SET_COUNT> descriptorSets = {
-        descriptorTable[(u32)SetIndex::PerFrameData]->getSet() };
-    const std::array<VkDeviceSize, 1> offsets = { 0 };
-    const std::array<VkBuffer, 1> vertexBuffers = { VertexBuffer::getBuffer().getBuffer() };
-
-    vkCmdBindDescriptorSets(
-        cmdBuffer->getBuffer(),
-        VK_PIPELINE_BIND_POINT_GRAPHICS,
-        layout,
-        (u32)ShadowDescriptorSet::First,
-        DESCRIPTOR_SET_COUNT, descriptorSets.data(),
-        0, nullptr);
-
-    vkCmdBindPipeline(
-        cmdBuffer->getBuffer(),
-        VK_PIPELINE_BIND_POINT_GRAPHICS,
-        m_pipeline);
-
-    vkCmdBindVertexBuffers(
-        cmdBuffer->getBuffer(),
-        0, vertexBuffers.size(),
-        vertexBuffers.data(),
-        offsets.data());
+void ShadowPipeline::record(const ICommandBuffer* cmdBuffer) const {
+    cmdBuffer->bindDescriptorSets(*m_pipelineLayout);
+    cmdBuffer->bindPipeline(m_pipeline);
+    VertexBuffer::bind(cmdBuffer);
 
     vkCmdDraw(cmdBuffer->getBuffer(), 4, VertexBuffer::getInstancesCount(), 0, 0);
 }

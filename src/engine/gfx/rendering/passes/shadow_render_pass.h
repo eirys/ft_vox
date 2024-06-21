@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/03 11:35:43 by etran             #+#    #+#             */
-/*   Updated: 2024/06/03 17:18:48 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/14 02:35:34 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,12 +17,11 @@
 namespace vox::gfx {
 
 struct ShadowRenderPassInfo final: public RenderPassInfo {
-    ShadowRenderPassInfo(const ImageBuffer& texture): m_texture(texture) {}
+    ShadowRenderPassInfo(const ImageBuffer& texture): m_texture(&texture) {}
     ShadowRenderPassInfo() = delete;
 
-    const ImageBuffer& m_texture;
+    const ImageBuffer* m_texture;
 };
-
 
 class ShadowRenderPass final: public RenderPass {
 public:

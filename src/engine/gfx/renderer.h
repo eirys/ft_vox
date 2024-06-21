@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/21 12:17:21 by etran             #+#    #+#             */
-/*   Updated: 2024/06/03 09:51:10 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/20 16:05:06 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,9 @@
 #include "gfx_semaphore.h"
 #include "swap_chain.h"
 #include "descriptor_table.h"
+#include "texture_table.h"
 #include "descriptor_pool.h"
+#include "pipeline_layout.h"
 #include "command_pool.h"
 
 namespace ui {
@@ -72,12 +74,10 @@ private:
     enum class CommandBufferIndex: u32 {
         Draw = 0,
         Transfer = Draw,
+        Offscreen,
         // Compute,
 
-        Count,
-
-        First = Draw,
-        Last = Transfer
+        Count
     };
 
     /* ====================================================================== */
@@ -90,20 +90,22 @@ private:
     /*                                  DATA                                  */
     /* ====================================================================== */
 
-    Core                                    m_core;
-    Device                                  m_device;
-    SwapChain                               m_swapChain;
-    CommandPool                             m_commandPool;
-    DescriptorPool                          m_descriptorPool;
+    Core                                m_core;
+    Device                              m_device;
+    SwapChain                           m_swapChain;
+    CommandPool                         m_commandPool;
+    DescriptorPool                      m_descriptorPool;
 
-    std::array<Fence, FENCE_COUNT>                  m_fences;
-    std::array<GfxSemaphore, SEMAPHORE_COUNT>       m_semaphores;
-    std::array<ICommandBuffer*, CMD_BUFFER_COUNT>   m_commandBuffers;
-    std::array<Pipeline*, PIPELINE_COUNT>           m_pipelines;
-    std::array<RenderPass*, RENDER_PASS_COUNT>      m_renderPasses;
+    DescriptorTable                     m_descriptorTable;
+    TextureTable                        m_textureTable;
 
-    DescriptorTable                         m_descriptorTable;
-    VkPipelineLayout                        m_pipelineLayout;
+    std::vector<Fence>                  m_fences;
+    std::vector<GfxSemaphore>           m_semaphores;
+    std::vector<PipelineLayout>         m_pipelineLayouts;
+    std::vector<ICommandBuffer*>        m_commandBuffers;
+    std::vector<Pipeline*>              m_pipelines;
+    std::vector<RenderPass*>            m_renderPasses;
+    std::vector<PushConstant*>          m_pushConstants;
 
     /* ====================================================================== */
     /*                                 METHODS                                */
@@ -111,15 +113,17 @@ private:
 
     void    _createCommandBuffers();
     void    _createRenderPasses();
+    void    _createPushConstants();
+    void    _createPipelineLayouts();
     void    _createPipelines();
-    void    _createPipelineLayout();
     void    _createGfxSemaphores();
     void    _createFences();
 
     void    _destroyFences();
     void    _destroyGfxSemaphores();
-    void    _destroyPipelineLayout();
     void    _destroyPipelines();
+    void    _destroyPipelineLayouts();
+    void    _destroyPushConstants();
     void    _destroyRenderPasses();
     void    _destroyCommandBuffers();
 

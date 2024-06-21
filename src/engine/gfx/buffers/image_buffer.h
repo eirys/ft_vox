@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/27 18:36:32 by etran             #+#    #+#             */
-/*   Updated: 2024/03/18 16:05:06 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/18 15:14:37 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,17 +64,20 @@ public:
     /*                                 PUBLIC                                 */
     /* ====================================================================== */
 
-    ImageBuffer() = default;
+    ImageBuffer(const bool isFramebuffer = false);
+
     ImageBuffer(ImageBuffer&& other) = default;
-    ImageBuffer(const ImageBuffer& other) = default;
     ImageBuffer& operator=(ImageBuffer&& other) = default;
-    ImageBuffer& operator=(const ImageBuffer& other) = default;
     ~ImageBuffer() = default;
+
+    ImageBuffer() = delete;
+    ImageBuffer(const ImageBuffer& other) = delete;
+    ImageBuffer& operator=(const ImageBuffer& other) = delete;
 
     /* ====================================================================== */
 
     void initImage(const Device& device, ImageMetaData&& metadata);
-    void destroy(const Device& device);
+    void destroy(const Device& device) const;
     void initView(const Device& device);
 
     /* ====================================================================== */
@@ -106,6 +109,8 @@ private:
     VkImage         m_image = VK_NULL_HANDLE;
     VkDeviceMemory  m_memory = VK_NULL_HANDLE;
     VkImageView     m_view = VK_NULL_HANDLE;
+
+    bool            m_isFrameBuffer = false;
 };
 
 } // namespace vox::gfx

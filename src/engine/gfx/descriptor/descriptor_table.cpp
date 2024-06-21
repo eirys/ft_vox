@@ -6,13 +6,18 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/28 19:55:31 by etran             #+#    #+#             */
-/*   Updated: 2024/05/30 16:13:42 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/21 14:21:59 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "descriptor_table.h"
 #include "pfd_set.h"
 #include "world_set.h"
+#include "gbuffer_set.h"
+
+#if ENABLE_SSAO
+#include "ssao_sets.h"
+#endif
 
 #include "debug.h"
 
@@ -25,6 +30,12 @@ namespace vox::gfx {
 DescriptorTable::DescriptorTable() {
     m_sets[(u32)DescriptorSetIndex::Pfd] = new PFDSet();
     m_sets[(u32)DescriptorSetIndex::WorldData] = new WorldSet();
+    m_sets[(u32)DescriptorSetIndex::GBuffer] = new GBufferSet();
+
+#if ENABLE_SSAO
+    m_sets[(u32)DescriptorSetIndex::Ssao] = new SSAOSet();
+    m_sets[(u32)DescriptorSetIndex::SsaoBlur] = new SSAOBlurSet();
+#endif
 }
 
 DescriptorTable::~DescriptorTable() {
@@ -35,14 +46,11 @@ DescriptorTable::~DescriptorTable() {
 
 void DescriptorTable::init(
     const Device& device,
-    const ICommandBuffer* cmdBuffer,
-    const game::GameState& state
+    const ICommandBuffer* cmdBuffer
 ) {
-    for (u32 i = 0; i < DESCRIPTOR_TABLE_SIZE; ++i) m_sets[i]->init(device, cmdBuffer);
-
-    WorldSet* world = (WorldSet*)m_sets[(u32)DescriptorSetIndex::WorldData];
-    world->update(device, state, cmdBuffer);
-
+    for (auto& set: m_sets) {
+        set->init(device, cmdBuffer);
+    }
     LINFO("Descriptor table initialized.");
 }
 
@@ -55,7 +63,7 @@ void DescriptorTable::destroy(const Device& device) {
 void DescriptorTable::fill(const Device& device) {
     for (u32 i = 0; i < DESCRIPTOR_TABLE_SIZE; ++i) m_sets[i]->fill(device);
 
-    LINFO("Descriptor table flled up.");
+    LINFO("Descriptor table filled up.");
 }
 
 void DescriptorTable::update(const game::GameState& state) {
@@ -65,19 +73,11 @@ void DescriptorTable::update(const game::GameState& state) {
 
 /* ========================================================================== */
 
-IDescriptorSet const* DescriptorTable::operator[](const DescriptorSetIndex index) const noexcept {
+const IDescriptorSet* DescriptorTable::operator[](const DescriptorSetIndex index) const noexcept {
     return m_sets[(u32)index];
 }
 
 IDescriptorSet* DescriptorTable::operator[](const DescriptorSetIndex index) noexcept {
-    return m_sets[(u32)index];
-}
-
-IDescriptorSet const* DescriptorTable::operator[](const u32 index) const noexcept {
-    return m_sets[(u32)index];
-}
-
-IDescriptorSet* DescriptorTable::operator[](const u32 index) noexcept {
     return m_sets[(u32)index];
 }
 

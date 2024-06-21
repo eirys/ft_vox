@@ -6,23 +6,34 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/23 09:29:35 by etran             #+#    #+#             */
-/*   Updated: 2024/06/10 15:14:27 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/21 03:45:28 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "renderer.h"
+#include "icommand_buffer.h"
+#include "vertex_buffer.h"
+#include "pfd_set.h"
+#include "world_set.h"
+#include "gbuffer_set.h"
+#include "push_constant.h"
+#include "game_state.h"
+#include "texture.h"
+
 #include "main_render_pass.h"
 #include "shadow_render_pass.h"
-#include "icommand_buffer.h"
+#include "deferred_render_pass.h"
+#include "ssao_render_pass.h"
+#include "ssao_blur_render_pass.h"
+
 #include "scene_pipeline.h"
+#include "deferred_pipeline.h"
 #include "skybox_pipeline.h"
 #include "starfield_pipeline.h"
 #include "shadow_pipeline.h"
 #include "debug_tex_pipeline.h"
-#include "vertex_buffer.h"
-#include "pfd_set.h"
-#include "vox_decl.h"
-#include "game_state.h"
+#include "ssao_pipeline.h"
+#include "ssao_blur_pipeline.h"
 
 #include "debug.h"
 
@@ -41,19 +52,21 @@ void Renderer::init(ui::Window& window, const game::GameState& game) {
     _createCommandBuffers();
 
     const ICommandBuffer* transferBuffer = m_commandBuffers[(u32)CommandBufferIndex::Transfer];
-    m_descriptorTable.init(m_device, transferBuffer, game);
+    m_textureTable.init(m_device, transferBuffer);
+    m_descriptorTable.init(m_device, transferBuffer);
 
     _createRenderPasses();
-    _createPipelineLayout();
-    _createPipelines();
-    _createFences();
-    _createGfxSemaphores();
 
     m_descriptorPool.init(m_device, m_descriptorTable);
     m_descriptorTable.fill(m_device);
 
+    _createPushConstants();
+    _createPipelineLayouts();
+    _createPipelines();
+    _createFences();
+    _createGfxSemaphores();
+
 #if ENABLE_FRUSTUM_CULLING
-    // VertexBuffer::computeMaxVertexInstanceCount(game);
     VertexBuffer::init(m_device, game);
 #else
     VertexBuffer::init(m_device, transferBuffer, game);
@@ -64,12 +77,15 @@ void Renderer::init(ui::Window& window, const game::GameState& game) {
 
 void Renderer::destroy() {
     VertexBuffer::destroy(m_device);
+    m_textureTable.destroy(m_device);
     m_descriptorTable.destroy(m_device);
     m_descriptorPool.destroy(m_device);
 
     _destroyGfxSemaphores();
     _destroyFences();
     _destroyPipelines();
+    _destroyPipelineLayouts();
+    _destroyPushConstants();
     _destroyRenderPasses();
     _destroyCommandBuffers();
 
@@ -88,9 +104,12 @@ void Renderer::waitIdle() const {
 }
 
 void Renderer::render(const game::GameState& game) {
+    const PushConstant* cameraConstant = m_pushConstants[(u32)PushConstantIndex::Camera];
+
     // Prepare frame resources ---------
     m_fences[(u32)FenceIndex::DrawInFlight].await(m_device);
-    m_descriptorTable.update(game);
+    m_pushConstants[(u32)PushConstantIndex::Camera]->update(game);
+    m_descriptorTable.update(game, cameraConstant);
 #if ENABLE_FRUSTUM_CULLING
     VertexBuffer::update(m_device, game);
 #endif
@@ -100,44 +119,84 @@ void Renderer::render(const game::GameState& game) {
     m_fences[(u32)FenceIndex::DrawInFlight].reset(m_device);
     // --------------------------------
 
-    // Record command buffer ---------
-    const ICommandBuffer* drawBuffer = m_commandBuffers[(u32)CommandBufferIndex::Draw];
     RecordInfo  recordInfo{};
 
+    // Record offscreen commands -------
+    const ICommandBuffer* offscreenBuffer = m_commandBuffers[(u32)CommandBufferIndex::Offscreen];
+    offscreenBuffer->reset();
+    offscreenBuffer->startRecording();
+    recordInfo.m_targetIndex = 0;
+
+#if ENABLE_SHADOW_MAPPING
+    // Shadow pass
+    m_renderPasses[(u32)RenderPassIndex::Shadow]->begin(offscreenBuffer, recordInfo);
+    m_pipelines[(u32)PipelineIndex::ShadowPipeline]->record(offscreenBuffer);
+    m_renderPasses[(u32)RenderPassIndex::Shadow]->end(offscreenBuffer);
+#endif
+
+    cameraConstant->bind(offscreenBuffer, m_pipelineLayouts[(u32)PipelineLayoutIndex::Deferred]);
+
+    // Deferred pass
+    m_renderPasses[(u32)RenderPassIndex::Deferred]->begin(offscreenBuffer, recordInfo);
+    m_pipelines[(u32)PipelineIndex::Deferred]->record(offscreenBuffer);
+    m_renderPasses[(u32)RenderPassIndex::Deferred]->end(offscreenBuffer);
+
+#if ENABLE_SSAO
+    cameraConstant->bind(offscreenBuffer, m_pipelineLayouts[(u32)PipelineLayoutIndex::Ssao]);
+
+    // Ssao pass
+    m_renderPasses[(u32)RenderPassIndex::Ssao]->begin(offscreenBuffer, recordInfo);
+    m_pipelines[(u32)PipelineIndex::Ssao]->record(offscreenBuffer);
+    m_renderPasses[(u32)RenderPassIndex::Ssao]->end(offscreenBuffer);
+
+    // Ssao blur pass
+    m_renderPasses[(u32)RenderPassIndex::SsaoBlur]->begin(offscreenBuffer, recordInfo);
+    m_pipelines[(u32)PipelineIndex::SsaoBlur]->record(offscreenBuffer);
+    m_renderPasses[(u32)RenderPassIndex::SsaoBlur]->end(offscreenBuffer);
+#endif
+
+    offscreenBuffer->stopRecording();
+    // --------------------------------
+
+    // Record composition commands ----
+    const ICommandBuffer* drawBuffer = m_commandBuffers[(u32)CommandBufferIndex::Draw];
     drawBuffer->reset();
     drawBuffer->startRecording();
 
-#if ENABLE_SHADOW_MAPPING
-    const RenderPass* shadowRenderPass = m_renderPasses[(u32)RenderPassIndex::Shadow];
-
-    recordInfo.m_targetIndex = 0;
-    shadowRenderPass->begin(drawBuffer, recordInfo);
-    m_pipelines[(u32)PipelineIndex::ShadowPipeline]->record(m_pipelineLayout, m_descriptorTable, drawBuffer);
-    shadowRenderPass->end(drawBuffer);
-#endif
-
-    const RenderPass* mainRenderPass = m_renderPasses[(u32)RenderPassIndex::Main];
-
+    // Main pass
     recordInfo.m_targetIndex = m_swapChain.getImageIndex();
-    mainRenderPass->begin(drawBuffer, recordInfo);
-#if ENABLE_SKYBOX
-    m_pipelines[(u32)PipelineIndex::SkyboxPipeline]->record(m_pipelineLayout, m_descriptorTable, drawBuffer);
-    m_pipelines[(u32)PipelineIndex::StarfieldPipeline]->record(m_pipelineLayout, m_descriptorTable, drawBuffer);
-#endif
-    m_pipelines[(u32)PipelineIndex::ScenePipeline]->record(m_pipelineLayout, m_descriptorTable, drawBuffer);
 
+    m_renderPasses[(u32)RenderPassIndex::Main]->begin(drawBuffer, recordInfo);
+#if ENABLE_SKYBOX
+    cameraConstant->bind(drawBuffer, m_pipelineLayouts[(u32)PipelineLayoutIndex::Sky]);
+
+    m_pipelines[(u32)PipelineIndex::SkyboxPipeline]->record(drawBuffer);
+    m_pipelines[(u32)PipelineIndex::StarfieldPipeline]->record(drawBuffer);
+#endif
+
+    cameraConstant->bind(drawBuffer, m_pipelineLayouts[(u32)PipelineLayoutIndex::Scene]);
+
+    m_pipelines[(u32)PipelineIndex::ScenePipeline]->record(drawBuffer);
     if (game.getController().showDebug())
-        m_pipelines[(u32)PipelineIndex::DebugPipeline]->record(m_pipelineLayout, m_descriptorTable, drawBuffer);
-    mainRenderPass->end(drawBuffer);
+        m_pipelines[(u32)PipelineIndex::DebugPipeline]->record(drawBuffer);
+    m_renderPasses[(u32)RenderPassIndex::Main]->end(drawBuffer);
 
     drawBuffer->stopRecording();
     // --------------------------------
 
     // Submit command buffer ---------
-    static const std::vector<VkSemaphore>           signalSemaphores = { m_semaphores[(u32)SemaphoreIndex::RenderFinished].getSemaphore() };
-    static const std::vector<VkSemaphore>           waitSemaphores = { m_semaphores[(u32)SemaphoreIndex::ImageAvailable].getSemaphore() };
-    static const std::vector<VkPipelineStageFlags>  waitStages = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
-    drawBuffer->submitRecording(waitSemaphores, waitStages, signalSemaphores, m_fences[(u32)FenceIndex::DrawInFlight]);
+    { // Offscreen buffer
+        static const std::vector<VkPipelineStageFlags>  waitStages = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
+        static const std::vector<VkSemaphore>           waitSemaphores = { m_semaphores[(u32)SemaphoreIndex::ImageAvailable].getSemaphore() };
+        static const std::vector<VkSemaphore>           signalSemaphores = { m_semaphores[(u32)SemaphoreIndex::OffscreenFinished].getSemaphore() };
+        offscreenBuffer->submitRecording(waitSemaphores, waitStages, signalSemaphores);
+    }
+    { // Draw buffer
+        static const std::vector<VkPipelineStageFlags>  waitStages = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
+        static const std::vector<VkSemaphore>           waitSemaphores = { m_semaphores[(u32)SemaphoreIndex::OffscreenFinished].getSemaphore() };
+        static const std::vector<VkSemaphore>           signalSemaphores = { m_semaphores[(u32)SemaphoreIndex::RenderFinished].getSemaphore() };
+        drawBuffer->submitRecording(waitSemaphores, waitStages, signalSemaphores, m_fences[(u32)FenceIndex::DrawInFlight].getFence());
+    }
     // --------------------------------
 
     // Present image ------------------
@@ -152,6 +211,8 @@ void Renderer::render(const game::GameState& game) {
 /* ========================================================================== */
 
 void Renderer::_createCommandBuffers() {
+    m_commandBuffers.reserve(CMD_BUFFER_COUNT);
+
     // Draw buffers
     for (u32 i = 0; i < CMD_BUFFER_COUNT; ++i) m_commandBuffers[i] = m_commandPool.createCommandBuffer(m_device, CommandBufferType::DRAW);
 
@@ -159,26 +220,90 @@ void Renderer::_createCommandBuffers() {
 }
 
 void Renderer::_createRenderPasses() {
-    m_renderPasses[(u32)RenderPassIndex::Main] = new MainRenderPass();
+    m_renderPasses.reserve(RENDER_PASS_COUNT);
 
-    MainRenderPassInfo mainPassInfo(m_swapChain.getImageViews());
-    mainPassInfo.m_formats.resize(MainRenderPass::RESOURCE_COUNT, VK_FORMAT_UNDEFINED);
-    mainPassInfo.m_formats[(u32)MainRenderPass::Resource::ColorImage] = m_swapChain.getImageFormat();
-    mainPassInfo.m_formats[(u32)MainRenderPass::Resource::DepthImage] = m_swapChain.getDepthFormat();
-    mainPassInfo.m_samples.resize(MainRenderPass::RESOURCE_COUNT, VK_SAMPLE_COUNT_1_BIT);
-    mainPassInfo.m_samples[(u32)MainRenderPass::Resource::ColorImage] = m_device.getMsaaCount();
-    mainPassInfo.m_samples[(u32)MainRenderPass::Resource::DepthImage] = m_device.getMsaaCount();
-    mainPassInfo.m_renderPassWidth = m_swapChain.getImageExtent().width;
-    mainPassInfo.m_renderPassHeight = m_swapChain.getImageExtent().height;
-    mainPassInfo.m_targetCount = m_swapChain.getImageViews().size();
-    mainPassInfo.m_targetWidth = m_swapChain.getImageExtent().width;
-    mainPassInfo.m_targetHeight = m_swapChain.getImageExtent().height;
-    m_renderPasses[(u32)RenderPassIndex::Main]->init(m_device, &mainPassInfo);
+    { // Composition pass
+        m_renderPasses[(u32)RenderPassIndex::Main] = new MainRenderPass();
+
+        MainRenderPassInfo mainPassInfo(m_swapChain.getImageViews());
+        mainPassInfo.m_formats.resize(MainRenderPass::RESOURCE_COUNT, VK_FORMAT_UNDEFINED);
+        mainPassInfo.m_formats[(u32)MainRenderPass::Resource::ColorImage] = m_swapChain.getImageFormat();
+        mainPassInfo.m_formats[(u32)MainRenderPass::Resource::DepthImage] = m_swapChain.getDepthFormat();
+        mainPassInfo.m_samples.resize(MainRenderPass::RESOURCE_COUNT, VK_SAMPLE_COUNT_1_BIT);
+        mainPassInfo.m_samples[(u32)MainRenderPass::Resource::ColorImage] = m_device.getMsaaCount();
+        mainPassInfo.m_samples[(u32)MainRenderPass::Resource::DepthImage] = m_device.getMsaaCount();
+        mainPassInfo.m_renderPassWidth = SwapChain::getImageExtent().width;
+        mainPassInfo.m_renderPassHeight = SwapChain::getImageExtent().height;
+        mainPassInfo.m_targetCount = m_swapChain.getImageViews().size();
+        mainPassInfo.m_targetWidth = SwapChain::getImageExtent().width;
+        mainPassInfo.m_targetHeight = SwapChain::getImageExtent().height;
+        m_renderPasses[(u32)RenderPassIndex::Main]->init(m_device, &mainPassInfo);
+    }
+
+    { // Deferred pass
+        m_renderPasses[(u32)RenderPassIndex::Deferred] = new DeferredRenderPass();
+
+        const ImageBuffer& positionTex = TextureTable::getTexture(TextureIndex::GBufferPosition)->getImageBuffer();
+        const ImageBuffer& normalTex = TextureTable::getTexture(TextureIndex::GBufferNormal)->getImageBuffer();
+        const ImageBuffer& albedoTex = TextureTable::getTexture(TextureIndex::GBufferAlbedo)->getImageBuffer();
+        const ImageBuffer& normalViewTex = TextureTable::getTexture(TextureIndex::GBufferNormalView)->getImageBuffer();
+
+        DeferredRenderPassInfo  deferredPassInfo(positionTex, normalTex, albedoTex, normalViewTex);
+        deferredPassInfo.m_formats.resize(DeferredRenderPass::RESOURCE_COUNT);
+        deferredPassInfo.m_formats[(u32)DeferredRenderPass::Resource::ColorPosition] = positionTex.getMetaData().m_format;
+        deferredPassInfo.m_formats[(u32)DeferredRenderPass::Resource::ColorNormal] = normalTex.getMetaData().m_format;
+        deferredPassInfo.m_formats[(u32)DeferredRenderPass::Resource::ColorAlbedo] = albedoTex.getMetaData().m_format;
+        deferredPassInfo.m_formats[(u32)DeferredRenderPass::Resource::ColorViewNormal] = normalViewTex.getMetaData().m_format;
+        deferredPassInfo.m_formats[(u32)DeferredRenderPass::Resource::DepthImage] = SwapChain::getDepthFormat();
+        deferredPassInfo.m_samples.resize(DeferredRenderPass::RESOURCE_COUNT, VK_SAMPLE_COUNT_1_BIT);
+        deferredPassInfo.m_renderPassWidth = SwapChain::getImageExtent().width;
+        deferredPassInfo.m_renderPassHeight = SwapChain::getImageExtent().height;
+        deferredPassInfo.m_targetCount = 1;
+        deferredPassInfo.m_targetWidth = SwapChain::getImageExtent().width;
+        deferredPassInfo.m_targetHeight = SwapChain::getImageExtent().height;
+        m_renderPasses[(u32)RenderPassIndex::Deferred]->init(m_device, &deferredPassInfo);
+    }
+
+#if ENABLE_SSAO
+    { // SSAO pass
+        m_renderPasses[(u32)RenderPassIndex::Ssao] = new SSAORenderPass();
+
+        const ImageBuffer& ssaoTex = TextureTable::getTexture(TextureIndex::GBufferSSAO)->getImageBuffer();
+
+        SSAORenderPassInfo  ssaoPassInfo(ssaoTex);
+        ssaoPassInfo.m_formats.resize(SSAORenderPass::RESOURCE_COUNT);
+        ssaoPassInfo.m_formats[(u32)SSAORenderPass::Resource::Color] = ssaoTex.getMetaData().m_format;
+        ssaoPassInfo.m_samples.resize(SSAORenderPass::RESOURCE_COUNT, VK_SAMPLE_COUNT_1_BIT);
+        ssaoPassInfo.m_renderPassWidth = SwapChain::getImageExtent().width;
+        ssaoPassInfo.m_renderPassHeight = SwapChain::getImageExtent().height;
+        ssaoPassInfo.m_targetCount = 1;
+        ssaoPassInfo.m_targetWidth = SwapChain::getImageExtent().width;
+        ssaoPassInfo.m_targetHeight = SwapChain::getImageExtent().height;
+        m_renderPasses[(u32)RenderPassIndex::Ssao]->init(m_device, &ssaoPassInfo);
+    }
+    { // SSAO blur pass
+        m_renderPasses[(u32)RenderPassIndex::SsaoBlur] = new SSAOBlurRenderPass();
+
+        const ImageBuffer& ssaoBlurTex = TextureTable::getTexture(TextureIndex::GBufferSSAOBlur)->getImageBuffer();
+
+        SSAOBlurRenderPassInfo  blurPassInfo(ssaoBlurTex);
+        blurPassInfo.m_formats.resize(SSAOBlurRenderPass::RESOURCE_COUNT);
+        blurPassInfo.m_formats[(u32)SSAOBlurRenderPass::Resource::Color] = ssaoBlurTex.getMetaData().m_format;
+        blurPassInfo.m_samples.resize(SSAOBlurRenderPass::RESOURCE_COUNT, VK_SAMPLE_COUNT_1_BIT);
+        blurPassInfo.m_renderPassWidth = SwapChain::getImageExtent().width;
+        blurPassInfo.m_renderPassHeight = SwapChain::getImageExtent().height;
+        blurPassInfo.m_targetCount = 1;
+        blurPassInfo.m_targetWidth = SwapChain::getImageExtent().width;
+        blurPassInfo.m_targetHeight = SwapChain::getImageExtent().height;
+        m_renderPasses[(u32)RenderPassIndex::SsaoBlur]->init(m_device, &blurPassInfo);
+    }
+#endif
 
 #if ENABLE_SHADOW_MAPPING
+    // Shadow pass
     m_renderPasses[(u32)RenderPassIndex::Shadow] = new ShadowRenderPass();
 
-    const ImageBuffer& shadowmap = ((const PFDSet*)m_descriptorTable[DescriptorSetIndex::Pfd])->getShadowmap();
+    const ImageBuffer& shadowmap = TextureTable::getTexture(TextureIndex::ShadowMap)->getImageBuffer();
 
     ShadowRenderPassInfo shadowPassInfo(shadowmap);
     shadowPassInfo.m_formats.resize(ShadowRenderPass::RESOURCE_COUNT, shadowmap.getMetaData().m_format);
@@ -192,76 +317,136 @@ void Renderer::_createRenderPasses() {
 #endif
 }
 
-void Renderer::_createPipelines() {
-    m_pipelines[(u32)PipelineIndex::ScenePipeline] = new ScenePipeline();
+void Renderer::_createPushConstants() {
+    m_pushConstants.reserve(PUSH_CONSTANT_COUNT);
 
-    VkRenderPass mainRenderPass = m_renderPasses[(u32)RenderPassIndex::Main]->getRenderPass();
-    m_pipelines[(u32)PipelineIndex::ScenePipeline]->init(m_device, mainRenderPass, m_pipelineLayout);
+    m_pushConstants[(u32)PushConstantIndex::Camera] = new CameraPushConstant();
+}
+
+void Renderer::_createPipelineLayouts() {
+    m_pipelineLayouts.resize(PIPELINE_LAYOUT_COUNT);
+
+    std::vector<const IDescriptorSet*> sets;
+
+    { // Scene
+        sets = {
+            m_descriptorTable[DescriptorSetIndex::Pfd],
+            m_descriptorTable[DescriptorSetIndex::GBuffer] };
+        m_pipelineLayouts[(u32)PipelineLayoutIndex::Scene].init(m_device, sets, m_pushConstants[(u32)PushConstantIndex::Camera]);
+    }
+    { // Deferred
+        sets = { m_descriptorTable[DescriptorSetIndex::WorldData] };
+        m_pipelineLayouts[(u32)PipelineLayoutIndex::Deferred].init(m_device, sets, m_pushConstants[(u32)PushConstantIndex::Camera]);
+    }
+#if ENABLE_SKYBOX
+    { // Sky
+        sets = {
+            m_descriptorTable[DescriptorSetIndex::Pfd],
+            m_descriptorTable[DescriptorSetIndex::WorldData] };
+        m_pipelineLayouts[(u32)PipelineLayoutIndex::Sky].init(m_device, sets, m_pushConstants[(u32)PushConstantIndex::Camera]);
+    }
+#endif
+
+#if ENABLE_SSAO
+    { // Ssao
+        sets = { m_descriptorTable[DescriptorSetIndex::Ssao] };
+        m_pipelineLayouts[(u32)PipelineLayoutIndex::Ssao].init(m_device, sets, m_pushConstants[(u32)PushConstantIndex::Camera]);
+    }
+    { // Ssao blur
+        sets = { m_descriptorTable[DescriptorSetIndex::SsaoBlur] };
+        m_pipelineLayouts[(u32)PipelineLayoutIndex::SsaoBlur].init(m_device, sets);
+    }
+#endif
+
+#if ENABLE_SHADOW_MAPPING
+    { // Sky
+        sets = { m_descriptorTable[DescriptorSetIndex::Pfd] };
+        m_pipelineLayouts[(u32)PipelineLayoutIndex::Sky].init(m_device, sets);
+    }
+#endif
+}
+
+void Renderer::_createPipelines() {
+    m_pipelines.reserve(PIPELINE_COUNT);
+
+    const VkRenderPass mainRenderPass = m_renderPasses[(u32)RenderPassIndex::Main]->getRenderPass();
+
+    m_pipelines[(u32)PipelineIndex::ScenePipeline] = new ScenePipeline();
+    m_pipelines[(u32)PipelineIndex::ScenePipeline]->init(m_device, mainRenderPass, m_pipelineLayouts[(u32)PipelineLayoutIndex::Scene]);
+    m_pipelines[(u32)PipelineIndex::DebugPipeline] = new DebugTexPipeline();
+    m_pipelines[(u32)PipelineIndex::DebugPipeline]->init(m_device, mainRenderPass, m_pipelineLayouts[(u32)PipelineLayoutIndex::Scene]);
 
 #if ENABLE_SKYBOX
     m_pipelines[(u32)PipelineIndex::SkyboxPipeline] = new SkyboxPipeline();
+    m_pipelines[(u32)PipelineIndex::SkyboxPipeline]->init(m_device, mainRenderPass, m_pipelineLayouts[(u32)PipelineLayoutIndex::Sky]);
     m_pipelines[(u32)PipelineIndex::StarfieldPipeline] = new StarfieldPipeline();
-    m_pipelines[(u32)PipelineIndex::SkyboxPipeline]->init(m_device, mainRenderPass, m_pipelineLayout);
-    m_pipelines[(u32)PipelineIndex::StarfieldPipeline]->init(m_device, mainRenderPass, m_pipelineLayout);
+    m_pipelines[(u32)PipelineIndex::StarfieldPipeline]->init(m_device, mainRenderPass, m_pipelineLayouts[(u32)PipelineLayoutIndex::Sky]);
 #endif
+
+    const VkRenderPass deferredRenderpass = m_renderPasses[(u32)RenderPassIndex::Deferred]->getRenderPass();
+
+    m_pipelines[(u32)PipelineIndex::Deferred] = new DeferredPipeline();
+    m_pipelines[(u32)PipelineIndex::Deferred]->init(m_device, deferredRenderpass, m_pipelineLayouts[(u32)PipelineLayoutIndex::Deferred]);
+
+#if ENABLE_SSAO
+    const VkRenderPass ssaoRenderPass = m_renderPasses[(u32)RenderPassIndex::Ssao]->getRenderPass();
+
+    m_pipelines[(u32)PipelineIndex::Ssao] = new SSAOPipeline();
+    m_pipelines[(u32)PipelineIndex::Ssao]->init(m_device, ssaoRenderPass, m_pipelineLayouts[(u32)PipelineLayoutIndex::Ssao]);
+
+    const VkRenderPass ssaoBlurRenderPass = m_renderPasses[(u32)RenderPassIndex::SsaoBlur]->getRenderPass();
+
+    m_pipelines[(u32)PipelineIndex::SsaoBlur] = new SSAOBlurPipeline();
+    m_pipelines[(u32)PipelineIndex::SsaoBlur]->init(m_device, ssaoBlurRenderPass, m_pipelineLayouts[(u32)PipelineLayoutIndex::SsaoBlur]);
+#endif
+
 #if ENABLE_SHADOW_MAPPING
-    m_pipelines[(u32)PipelineIndex::ShadowPipeline] = new ShadowPipeline();
-
     VkRenderPass shadowRenderPass = m_renderPasses[(u32)RenderPassIndex::Shadow]->getRenderPass();
-    m_pipelines[(u32)PipelineIndex::ShadowPipeline]->init(m_device, shadowRenderPass, m_pipelineLayout);
-#endif
 
-    m_pipelines[(u32)PipelineIndex::DebugPipeline] = new DebugTexPipeline();
-    m_pipelines[(u32)PipelineIndex::DebugPipeline]->init(m_device, mainRenderPass, m_pipelineLayout);
+    m_pipelines[(u32)PipelineIndex::ShadowPipeline] = new ShadowPipeline();
+    m_pipelines[(u32)PipelineIndex::ShadowPipeline]->init(m_device, shadowRenderPass, m_pipelineLayouts[(u32)PipelineLayoutIndex::Shadows]);
+#endif
 
     LDEBUG("Pipelines created.");
 }
 
-void Renderer::_createPipelineLayout() {
-    std::array<VkDescriptorSetLayout, DESCRIPTOR_TABLE_SIZE> setLayouts;
-    for (u32 i = 0; i < DESCRIPTOR_TABLE_SIZE; ++i)
-        setLayouts[i] = m_descriptorTable[i]->getLayout();
-
-    VkPipelineLayoutCreateInfo layoutInfo{};
-    layoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-    layoutInfo.setLayoutCount = DESCRIPTOR_TABLE_SIZE;
-    layoutInfo.pSetLayouts = setLayouts.data();
-    layoutInfo.pushConstantRangeCount = 0;
-    layoutInfo.pPushConstantRanges = nullptr;
-
-    if (vkCreatePipelineLayout(m_device.getDevice(), &layoutInfo, nullptr, &m_pipelineLayout) != VK_SUCCESS)
-        throw std::runtime_error("Failed to create pipeline layout.");
-}
-
 void Renderer::_createGfxSemaphores() {
+    m_semaphores.resize(SEMAPHORE_COUNT);
     for (GfxSemaphore& semaphore : m_semaphores) semaphore.init(m_device);
 }
 
 void Renderer::_createFences() {
+    m_fences.resize(FENCE_COUNT);
     for (Fence& fence : m_fences) fence.init(m_device, VK_FENCE_CREATE_SIGNALED_BIT);
 }
-
-/* ========================================================================== */
 
 void Renderer::_destroyCommandBuffers() {
     for (u32 i = 0; i < CMD_BUFFER_COUNT; ++i) m_commandPool.destroyBuffer(m_device, m_commandBuffers[i]);
 }
 
 void Renderer::_destroyRenderPasses() {
-    for (u32 i = 0; i < RENDER_PASS_COUNT; i++) m_renderPasses[i]->destroy(m_device);
+    for (u32 i = 0; i < RENDER_PASS_COUNT; i++) {
+        m_renderPasses[i]->destroy(m_device);
+        delete m_renderPasses[i];
+    }
 }
 
 void Renderer::_destroyPipelines() {
-    _destroyPipelineLayout();
-
     for (u32 i = 0; i < PIPELINE_COUNT; ++i) {
         m_pipelines[i]->destroy(m_device);
         delete m_pipelines[i];
     }
 }
 
-void Renderer::_destroyPipelineLayout() {
-    vkDestroyPipelineLayout(m_device.getDevice(), m_pipelineLayout, nullptr);
+void Renderer::_destroyPipelineLayouts() {
+    for (PipelineLayout& layout : m_pipelineLayouts) layout.destroy(m_device);
+}
+
+void Renderer::_destroyPushConstants() {
+    for (u32 i = 0; i < PUSH_CONSTANT_COUNT; ++i) {
+        delete m_pushConstants[i];
+        LDEBUG("Destroyed push constant " << i);
+    }
 }
 
 void Renderer::_destroyGfxSemaphores() {

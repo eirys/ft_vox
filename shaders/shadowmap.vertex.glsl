@@ -1,11 +1,12 @@
 #version 450
+#define VOX_SHADOW_LAYOUT
 
 #include "../src/engine/game/game_decl.h"
 #include "../src/engine/gfx/descriptor/sets/descriptor_decl.h"
 
 layout(location = 0) in uint inData;
 
-layout(set = PFD_SET, binding = 2) uniform Projector {
+layout(set = PFD_SET, binding = 1) uniform Projector {
     mat4 viewProj;
 } projector;
 

@@ -6,35 +6,20 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/19 10:48:36 by etran             #+#    #+#             */
-/*   Updated: 2024/06/03 10:08:13 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/18 15:55:13 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "skybox_pipeline.h"
 #include "device.h"
+#include "pipeline_layout.h"
 #include "icommand_buffer.h"
-#include "descriptor_table.h"
 
 #include "debug.h"
 
 #include <array>
 
 namespace vox::gfx {
-
-enum class SkyboxDescriptorSet: u32 {
-    Pfd = 0,
-    WorldData,
-
-    First = Pfd,
-    Last = WorldData
-};
-
-enum class SetIndex: u32 {
-    PerFrameData    = (u32)DescriptorSetIndex::Pfd,
-    Textures        = (u32)DescriptorSetIndex::WorldData,
-};
-
-static constexpr u32 DESCRIPTOR_SET_COUNT = enumSize<SkyboxDescriptorSet>();
 
 /* ========================================================================== */
 /*                                   PUBLIC                                   */
@@ -43,8 +28,10 @@ static constexpr u32 DESCRIPTOR_SET_COUNT = enumSize<SkyboxDescriptorSet>();
 void SkyboxPipeline::init(
     const Device& device,
     const VkRenderPass& renderPass,
-    const VkPipelineLayout& pipelineLayout
+    const PipelineLayout& pipelineLayout
 ) {
+    m_pipelineLayout = &pipelineLayout;
+
     VkPipelineVertexInputStateCreateInfo vertexInput{};
     vertexInput.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
 
@@ -118,7 +105,7 @@ void SkyboxPipeline::init(
     pipelineInfo.renderPass = renderPass;
     pipelineInfo.stageCount = SHADER_STAGE_COUNT;
     pipelineInfo.pStages = shaderStages.data();
-    pipelineInfo.layout = pipelineLayout;
+    pipelineInfo.layout = m_pipelineLayout->getLayout();
     pipelineInfo.subpass = 0;
     pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
     pipelineInfo.basePipelineIndex = -1;
@@ -130,39 +117,20 @@ void SkyboxPipeline::init(
     vkDestroyShaderModule(device.getDevice(), fragmentModule, nullptr);
 
 
-    LDEBUG("Skybox pipeline initialized.");
+    LDEBUG("Skybox pipeline initialized: " << m_pipeline);
 }
 
 void SkyboxPipeline::destroy(const Device& device) {
     vkDestroyPipeline(device.getDevice(), m_pipeline, nullptr);
 
-    LDEBUG("Scene pipeline destroyed.");
+    LDEBUG("Skybox pipeline destroyed.");
 }
 
 /* ========================================================================== */
 
-void SkyboxPipeline::record(
-    const VkPipelineLayout layout,
-    const DescriptorTable& descriptorTable,
-    const ICommandBuffer* cmdBuffer
-) {
-    std::array<VkDescriptorSet, DESCRIPTOR_SET_COUNT> descriptorSets = {
-        descriptorTable[(u32)SetIndex::PerFrameData]->getSet(),
-        descriptorTable[(u32)SetIndex::Textures]->getSet()
-    };
-
-    vkCmdBindDescriptorSets(
-        cmdBuffer->getBuffer(),
-        VK_PIPELINE_BIND_POINT_GRAPHICS,
-        layout,
-        (u32)SkyboxDescriptorSet::First,
-        DESCRIPTOR_SET_COUNT, descriptorSets.data(),
-        0, nullptr);
-
-    vkCmdBindPipeline(
-        cmdBuffer->getBuffer(),
-        VK_PIPELINE_BIND_POINT_GRAPHICS,
-        m_pipeline);
+void SkyboxPipeline::record(const ICommandBuffer* cmdBuffer) const {
+    cmdBuffer->bindDescriptorSets(*m_pipelineLayout);
+    cmdBuffer->bindPipeline(m_pipeline);
 
     // Draw skybox
     vkCmdDraw(cmdBuffer->getBuffer(), 4, 6, 0, 0);

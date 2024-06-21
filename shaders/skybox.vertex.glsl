@@ -1,10 +1,11 @@
 #version 450
+#define VOX_SKY_LAYOUT
 
 #include "../src/engine/gfx/descriptor/sets/descriptor_decl.h"
 
 layout(location = 0) out vec3 outUVW;
 
-layout(set = PFD_SET, binding = 0) uniform Camera {
+layout(push_constant) uniform Camera {
     mat4 view;
     mat4 proj;
 } camera;

@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/30 16:45:00 by etran             #+#    #+#             */
-/*   Updated: 2024/05/30 19:26:28 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/10 19:13:17 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,35 +25,53 @@ enum class BlockFace: u8 {
     Back
 };
 
-// Total material types possible: 7
-enum class MaterialType: u8 {
-    AIR = 0,
+enum class Biome: u8 {
+    Plains,
+    Desert,
+    RockMountains,
+    SnowMountains,
+    Oceans,
 
-    // Solid
-    GRASS,
-    DIRT,
-    STONE,
-    SNOW,
+    Count
 
-    // Gravity affected
-    SAND,
-
-    // Directed
-    WOOD,
-
-    // Liquid
-    WATER,
-    // LAVA,
-
-    // // Transparent
-    // GLASS,
-    // LEAVES,
-    // CLOUD,
-
-    First = AIR,
-    Last = WATER
+    // Forest,
+    // Jungle,
+    // Snow,
+    // Swamp,
+    // Tundra,
+    // Volcano,
+    // Wasteland,
+    // Woodland,
 };
 
-static_assert((u8)MaterialType::Last < 8, "MaterialType::Last must be less than 8");
+// Total material types possible: 7
+enum class MaterialType: u8 {
+    Air,
+
+    // Solid
+    Grass,
+    Dirt,
+    Stone,
+    Snow,
+
+    // Gravity Affected
+    Sand,
+
+    // Directed
+    Wood,
+
+    // Liquid
+    Water,
+    // Lava,
+
+    // // Transparent
+    // Glass,
+    // Leaves,
+    // Cloud,
+
+    Count
+};
+
+static_assert((u8)MaterialType::Count <= 8, "MaterialType::Count must not exceed 8");
 
 } // namespace game

@@ -6,12 +6,14 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/15 15:51:38 by etran             #+#    #+#             */
-/*   Updated: 2024/06/07 01:50:23 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/14 17:16:06 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "world.h"
 #include "perlin_noise.h"
+#include "voxmap.h"
+
 #include "debug.h"
 
 namespace game {
@@ -21,30 +23,35 @@ namespace game {
 /* ========================================================================== */
 
 void World::init(const u32 seed) {
-    proc::NoiseMapInfo info{};
-    info.seed = seed;
-    info.type = proc::PerlinNoiseType::PERLIN_NOISE_2D;
-    info.width = RENDER_DISTANCE * CHUNK_SIZE;
-    info.height = RENDER_DISTANCE * CHUNK_SIZE;
-    info.layers = 3;
-    info.frequency_0 = 0.05f;
-    info.frequency_mult = 2.0f;
-    info.amplitude_mult = 0.5f;
+    proc::NoiseMapInfo noiseInfo{};
+    noiseInfo.seed = seed;
+    noiseInfo.type = proc::PerlinNoiseType::PERLIN_NOISE_2D;
+    noiseInfo.width = RENDER_DISTANCE * CHUNK_SIZE;
+    noiseInfo.height = RENDER_DISTANCE * CHUNK_SIZE;
+    noiseInfo.layers = 3;
+    noiseInfo.frequency_0 = 0.05f;
+    noiseInfo.frequency_mult = 2.0f;
+    noiseInfo.amplitude_mult = 0.5f;
+    noiseInfo.scale = CHUNK_SIZE - 1.0f;
+    proc::PerlinNoise perlin(noiseInfo);
 
-    info.scale = CHUNK_SIZE - 1.0f;
-
-    proc::PerlinNoise perlin(info);
+    proc::VoronoiDiagram voronoi;
+    if (voronoi.load("assets/maps/biomes.voxmap") == false) {
+        throw std::runtime_error("Failed to load biome map.");
+    }
 
     for (u32 z = 0; z < RENDER_DISTANCE; ++z) {
         for (u32 x = 0; x < RENDER_DISTANCE; ++x) {
             for (u32 y = 0; y < RENDER_HEIGHT; ++y) {
-                m_chunks[(y * RENDER_AREA) + (z * RENDER_DISTANCE) + x].generate(perlin, x, y, z);
+                m_chunks[(y * RENDER_AREA) + (z * RENDER_DISTANCE) + x].generate(perlin, voronoi, x, y, z);
             }
         }
     }
 
     m_origin = WORLD_ORIGIN;
     m_origin.y = perlin.noiseAt(m_origin.x, m_origin.z);
+
+    LINFO("World initialized.");
 }
 
 /* ========================================================================== */

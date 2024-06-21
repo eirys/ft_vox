@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/15 13:35:46 by etran             #+#    #+#             */
-/*   Updated: 2024/06/06 15:34:49 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/21 00:35:00 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,5 +32,18 @@
 # define WORLD_ORIGIN   { RENDER_DISTANCE * CHUNK_SIZE * 0.5f, 0.0f, RENDER_DISTANCE * CHUNK_SIZE * 0.5f }
 
 # define WORLD_Y        { 0.0f, 1.0f, 0.0f }
+
+
+# define WINDOW_WIDTH   1200.0f
+# define WINDOW_HEIGHT  800.0f
+
+# define Z_NEAR         0.1f
+# define Z_FAR          500.0f
+
+# define CAM_FOV        85.0f
+
+
+# define SSAO_KERNEL_SIZE   64
+# define SSAO_RADIUS        0.5
 
 #endif // GAME_DECL_H

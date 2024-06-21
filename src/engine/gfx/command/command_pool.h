@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/23 09:42:20 by etran             #+#    #+#             */
-/*   Updated: 2024/03/11 18:18:37 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/12 11:35:27 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,11 +19,7 @@ namespace vox::gfx {
 
 class Device;
 class ICommandBuffer;
-
-enum class CommandBufferType: u8 {
-    DRAW,
-    COMPUTE,
-};
+enum class CommandBufferType;
 
 class CommandPool final {
 public:
