@@ -1,4 +1,5 @@
 #version 450
+#define VOX_SCENE_LAYOUT
 
 layout (location = 0) out vec2 outUV;
 

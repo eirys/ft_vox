@@ -6,15 +6,15 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/27 14:22:51 by etran             #+#    #+#             */
-/*   Updated: 2024/06/14 19:38:24 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/16 15:17:17 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "starfield_pipeline.h"
 #include "device.h"
 #include "icommand_buffer.h"
-#include "descriptor_table.h"
 #include "game_decl.h"
+#include "pipeline_layout.h"
 
 #include <array>
 #include <stdexcept>
@@ -23,21 +23,6 @@
 
 namespace vox::gfx {
 
-enum class StarfieldDescriptorSet: u32 {
-    Pfd = 0,
-    WorldData,
-
-    First = Pfd,
-    Last = WorldData
-};
-
-enum class SetIndex: u32 {
-    PerFrameData    = (u32)DescriptorSetIndex::Pfd,
-    Textures        = (u32)DescriptorSetIndex::WorldData,
-};
-
-static constexpr u32 DESCRIPTOR_SET_COUNT = enumSize<StarfieldDescriptorSet>();
-
 /* ========================================================================== */
 /*                                   PUBLIC                                   */
 /* ========================================================================== */
@@ -45,8 +30,10 @@ static constexpr u32 DESCRIPTOR_SET_COUNT = enumSize<StarfieldDescriptorSet>();
 void StarfieldPipeline::init(
     const Device& device,
     const VkRenderPass& renderPass,
-    const VkPipelineLayout& pipelineLayout
+    const PipelineLayout& pipelineLayout
 ) {
+    m_pipelineLayout = &pipelineLayout;
+
     VkPipelineVertexInputStateCreateInfo vertexInput{};
     vertexInput.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
 
@@ -127,7 +114,7 @@ void StarfieldPipeline::init(
     pipelineInfo.renderPass = renderPass;
     pipelineInfo.stageCount = SHADER_STAGE_COUNT;
     pipelineInfo.pStages = shaderStages.data();
-    pipelineInfo.layout = pipelineLayout;
+    pipelineInfo.layout = pipelineLayout.getLayout();
     pipelineInfo.subpass = 0;
     pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
     pipelineInfo.basePipelineIndex = -1;
@@ -149,8 +136,8 @@ void StarfieldPipeline::destroy(const Device& device) {
 
 /* ========================================================================== */
 
-void StarfieldPipeline::record(const PipelineLayout& pipelineLayout, const ICommandBuffer* cmdBuffer) const {
-    cmdBuffer->bindDescriptorSets(pipelineLayout);
+void StarfieldPipeline::record(const ICommandBuffer* cmdBuffer) const {
+    cmdBuffer->bindDescriptorSets(*m_pipelineLayout);
     cmdBuffer->bindPipeline(m_pipeline);
 
     vkCmdDraw(cmdBuffer->getBuffer(), 4, STAR_COUNT, 0, 0);

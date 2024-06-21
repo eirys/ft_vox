@@ -6,13 +6,14 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/07 09:48:27 by etran             #+#    #+#             */
-/*   Updated: 2024/06/14 19:35:44 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/16 15:16:35 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "scene_pipeline.h"
 #include "device.h"
 #include "icommand_buffer.h"
+#include "pipeline_layout.h"
 
 #include <array>
 #include <stdexcept>
@@ -29,8 +30,10 @@ __attribute__ ((optnone))
 void ScenePipeline::init(
     const Device& device,
     const VkRenderPass& renderPass,
-    const VkPipelineLayout& pipelineLayout
+    const PipelineLayout& pipelineLayout
 ) {
+    m_pipelineLayout = &pipelineLayout;
+
     VkPipelineVertexInputStateCreateInfo vertexInput{};
     vertexInput.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
 
@@ -118,7 +121,7 @@ void ScenePipeline::init(
     pipelineInfo.renderPass = renderPass;
     pipelineInfo.stageCount = SHADER_STAGE_COUNT;
     pipelineInfo.pStages = shaderStages.data();
-    pipelineInfo.layout = pipelineLayout;
+    pipelineInfo.layout = m_pipelineLayout->getLayout();
     pipelineInfo.subpass = 0;
 
     if (vkCreateGraphicsPipelines(device.getDevice(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &m_pipeline) != VK_SUCCESS)
@@ -138,8 +141,8 @@ void ScenePipeline::destroy(const Device& device) {
 
 /* ========================================================================== */
 
-void ScenePipeline::record(const PipelineLayout& pipelineLayout, const ICommandBuffer* cmdBuffer) const {
-    cmdBuffer->bindDescriptorSets(pipelineLayout);
+void ScenePipeline::record(const ICommandBuffer* cmdBuffer) const {
+    cmdBuffer->bindDescriptorSets(*m_pipelineLayout);
     cmdBuffer->bindPipeline(m_pipeline);
 
     // Draw quad

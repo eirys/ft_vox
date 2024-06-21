@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/13 17:09:22 by etran             #+#    #+#             */
-/*   Updated: 2024/06/14 19:30:59 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/21 01:40:35 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 #include "device.h"
 #include "icommand_buffer.h"
 #include "vertex_buffer.h"
+#include "pipeline_layout.h"
 #include "debug.h"
 
 #include <stdexcept>
@@ -28,8 +29,10 @@ __attribute__ ((optnone))
 void DeferredPipeline::init(
     const Device& device,
     const VkRenderPass& renderPass,
-    const VkPipelineLayout& pipelineLayout
+    const PipelineLayout& pipelineLayout
 ) {
+    m_pipelineLayout = &pipelineLayout;
+
     VkPipelineVertexInputStateCreateInfo vertexInput{};
     vertexInput.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
     vertexInput.vertexBindingDescriptionCount = VertexInstance::getBindingDescriptions().size();
@@ -62,13 +65,15 @@ void DeferredPipeline::init(
     multisample.minSampleShading = 1.0f;
     multisample.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
 
-    std::array<VkPipelineColorBlendAttachmentState, 3> colorBlendAttachments{};
+    std::array<VkPipelineColorBlendAttachmentState, 4> colorBlendAttachments{};
     colorBlendAttachments[0].blendEnable = VK_FALSE;
     colorBlendAttachments[0].colorWriteMask = 0x0F;
     colorBlendAttachments[1].blendEnable = VK_FALSE;
     colorBlendAttachments[1].colorWriteMask = 0x0F;
     colorBlendAttachments[2].blendEnable = VK_FALSE;
     colorBlendAttachments[2].colorWriteMask = 0x0F;
+    colorBlendAttachments[3].blendEnable = VK_FALSE;
+    colorBlendAttachments[3].colorWriteMask = 0x0F;
 
     VkPipelineColorBlendStateCreateInfo colorBlend{};
     colorBlend.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
@@ -119,7 +124,7 @@ void DeferredPipeline::init(
     pipelineInfo.renderPass = renderPass;
     pipelineInfo.stageCount = SHADER_STAGE_COUNT;
     pipelineInfo.pStages = shaderStages.data();
-    pipelineInfo.layout = pipelineLayout;
+    pipelineInfo.layout = m_pipelineLayout->getLayout();
     pipelineInfo.subpass = 0;
     pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
     pipelineInfo.basePipelineIndex = -1;
@@ -141,8 +146,8 @@ void DeferredPipeline::destroy(const Device& device) {
 
 /* ========================================================================== */
 
-void DeferredPipeline::record(const PipelineLayout& pipelineLayout, const ICommandBuffer* cmdBuffer) const {
-    cmdBuffer->bindDescriptorSets(pipelineLayout);
+void DeferredPipeline::record(const ICommandBuffer* cmdBuffer) const {
+    cmdBuffer->bindDescriptorSets(*m_pipelineLayout);
     cmdBuffer->bindPipeline(m_pipeline);
     VertexBuffer::bind(cmdBuffer);
 

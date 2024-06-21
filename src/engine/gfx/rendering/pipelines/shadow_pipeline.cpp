@@ -6,13 +6,14 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/03 10:06:29 by etran             #+#    #+#             */
-/*   Updated: 2024/06/14 19:36:25 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/16 15:16:59 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "shadow_pipeline.h"
 #include "device.h"
 #include "icommand_buffer.h"
+#include "pipeline_layout.h"
 #include "vertex_buffer.h"
 
 #include "debug.h"
@@ -27,8 +28,10 @@ __attribute__ ((optnone))
 void ShadowPipeline::init(
     const Device& device,
     const VkRenderPass& renderPass,
-    const VkPipelineLayout& pipelineLayout
+    const PipelineLayout& pipelineLayout
 ) {
+    m_pipelineLayout = &pipelineLayout;
+
     VkPipelineVertexInputStateCreateInfo vertexInput{};
     vertexInput.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
     vertexInput.vertexBindingDescriptionCount = VertexInstance::getBindingDescriptions().size();
@@ -105,7 +108,7 @@ void ShadowPipeline::init(
     pipelineInfo.renderPass = renderPass;
     pipelineInfo.stageCount = SHADER_STAGE_COUNT;
     pipelineInfo.pStages = shaderStages.data();
-    pipelineInfo.layout = pipelineLayout;
+    pipelineInfo.layout = m_pipelineLayout->getLayout();
     pipelineInfo.subpass = 0;
     pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
     pipelineInfo.basePipelineIndex = -1;
@@ -124,8 +127,8 @@ void ShadowPipeline::destroy(const Device& device) {
     LDEBUG("Shadow pipeline destroyed.");
 }
 
-void ShadowPipeline::record(const PipelineLayout& pipelineLayout, const ICommandBuffer* cmdBuffer) const {
-    cmdBuffer->bindDescriptorSets(pipelineLayout);
+void ShadowPipeline::record(const ICommandBuffer* cmdBuffer) const {
+    cmdBuffer->bindDescriptorSets(*m_pipelineLayout);
     cmdBuffer->bindPipeline(m_pipeline);
     VertexBuffer::bind(cmdBuffer);
 

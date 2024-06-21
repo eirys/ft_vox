@@ -6,16 +6,13 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/29 22:37:23 by etran             #+#    #+#             */
-/*   Updated: 2024/06/13 18:37:53 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/16 18:56:24 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
-#include <vulkan/vulkan.h>
-
 #include "types.h"
-#include "enum.h"
 #include "vox_decl.h"
 
 namespace vox::gfx {
@@ -31,10 +28,15 @@ enum class PipelineIndex: u32 {
     StarfieldPipeline,
 #endif
 
-    Offscreen,
+    Deferred,
 
 #if ENABLE_SHADOW_MAPPING
     ShadowPipeline,
+#endif
+
+#if ENABLE_SSAO
+    Ssao,
+    SsaoBlur,
 #endif
 
     DebugPipeline,
@@ -42,25 +44,40 @@ enum class PipelineIndex: u32 {
     Count
 };
 
+constexpr u32 PIPELINE_COUNT = (u32)PipelineIndex::Count;
+
+// -----------------------
+
 enum class PipelineLayoutIndex: u32 {
-    Main,
+    Scene,
+    Deferred,
+
+#if ENABLE_SKYBOX
+    Sky,
+#endif
+
+#if ENABLE_SHADOW_MAPPING
+    Shadows,
+#endif
 
 #if ENABLE_SSAO
-    Offscreen,
-    SSAO,
-    SSAOBlur,
+    Ssao,
+    SsaoBlur,
 #endif
 
     Count
 };
 
-constexpr u32 PIPELINE_COUNT = (u32)PipelineIndex::Count;
 constexpr u32 PIPELINE_LAYOUT_COUNT = (u32)PipelineLayoutIndex::Count;
 
-enum class ShaderType: u8 {
-    VS = VK_SHADER_STAGE_VERTEX_BIT,
-    FS = VK_SHADER_STAGE_FRAGMENT_BIT,
-    CS = VK_SHADER_STAGE_COMPUTE_BIT
+// -----------------------
+
+enum class PushConstantIndex: u32 {
+    Camera,
+
+    Count
 };
+
+constexpr u32 PUSH_CONSTANT_COUNT = (u32)PushConstantIndex::Count;
 
 } // namespace vox::gfx

@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/03 10:05:50 by etran             #+#    #+#             */
-/*   Updated: 2024/06/14 19:36:38 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/16 15:14:01 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,12 +53,10 @@ public:
     void    init(
         const Device& device,
         const VkRenderPass& renderPass,
-        const VkPipelineLayout& pipelineLayout) override;
+        const PipelineLayout& pipelineLayout) override;
     void    destroy(const Device& device) override;
 
-    void    record(
-        const PipelineLayout& pipeline,
-        const ICommandBuffer* cmdBuffer) const override;
+    void    record(const ICommandBuffer* cmdBuffer) const override;
 
 private:
     /* ====================================================================== */

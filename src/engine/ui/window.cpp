@@ -6,14 +6,34 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/20 00:02:09 by etran             #+#    #+#             */
-/*   Updated: 2024/06/15 11:41:14 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/21 02:05:43 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "window.h"
 #include <stdexcept>
 
+#include "debug.h"
+
 namespace ui {
+
+static constexpr u32 DEBUG_COUNT = 9;
+
+static
+std::string currentDebug(u32 i) {
+    static std::string debugWindow[DEBUG_COUNT] = {
+        "none",
+        "position",
+        "depth",
+        "normal",
+        "albedo",
+        "shadowmap",
+        "ssao",
+        "blur",
+        "inverse normal"
+    };
+    return debugWindow[i];
+}
 
 static
 void keyCallback(GLFWwindow* win, int key, int scancode, int action, int mods) {
@@ -34,8 +54,9 @@ void keyCallback(GLFWwindow* win, int key, int scancode, int action, int mods) {
             case GLFW_KEY_O:
                 if (isPressed) {
                     u32 updatedValue = window->getKeyValue(KeyValueIndex::DisplayDebug);
-                    updatedValue = (updatedValue + 1) % 5;
+                    updatedValue = (updatedValue + 1) % DEBUG_COUNT;
                     window->setKeyValue(KeyValueIndex::DisplayDebug, updatedValue);
+                    LINFO("Debug display: " << currentDebug(updatedValue));
                     break;
                 }
 

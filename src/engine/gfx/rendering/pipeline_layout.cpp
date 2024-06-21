@@ -6,23 +6,25 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/12 20:40:37 by etran             #+#    #+#             */
-/*   Updated: 2024/06/14 19:27:59 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/21 14:34:37 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "pipeline_layout.h"
 #include "device.h"
-#include "icommand_buffer.h"
 #include "idescriptor_set.h"
+#include "push_constant.h"
+#include "debug.h"
 
+#include <vector>
 #include <stdexcept>
 
 namespace vox::gfx {
 
 void PipelineLayout::init(
     const Device& device,
-    const std::vector<IDescriptorSet*>& sets,
-    PushConstant* pushConstant
+    const std::vector<const IDescriptorSet*>& sets,
+    const PushConstant* pushConstant
 ) {
     std::vector<VkDescriptorSetLayout> setLayouts;
     setLayouts.reserve(sets.size());
@@ -34,8 +36,6 @@ void PipelineLayout::init(
     layoutInfo.pSetLayouts = setLayouts.data();
 
     if (pushConstant != nullptr) {
-        m_pushConstant = pushConstant;
-
         const auto& ranges = pushConstant->getRanges();
         layoutInfo.pushConstantRangeCount = ranges.size();
         layoutInfo.pPushConstantRanges = ranges.data();
@@ -47,29 +47,12 @@ void PipelineLayout::init(
     m_descriptorSets.reserve(sets.size());
     for (const auto& set: sets) m_descriptorSets.emplace_back(set->getSet());
 
+    LDEBUG("Pipeline layout created.");
 }
 
 void PipelineLayout::destroy(const Device& device) {
-    if (m_pushConstant != nullptr)
-        delete m_pushConstant;
     vkDestroyPipelineLayout(device.getDevice(), m_layout, nullptr);
-}
-
-/* ========================================================================== */
-
-void PipelineLayout::updatePushConstant(const game::GameState& gameState) const {
-    if (m_pushConstant == nullptr)
-        return;
-    m_pushConstant->update(gameState);
-}
-
-void PipelineLayout::bindPushConstantRange(const ICommandBuffer* commandBuffer) const {
-    for (u32 i = 0; i < m_pushConstant->getObjectCount(); ++i) {
-        const VkPushConstantRange range = m_pushConstant->getRange(i);
-        const void* data = m_pushConstant->getObject(i);
-
-        vkCmdPushConstants(commandBuffer->getBuffer(), m_layout, range.stageFlags, range.offset, range.size, data);
-    }
+    LDEBUG("Pipeline layout destroyed.");
 }
 
 VkPipelineLayout PipelineLayout::getLayout() const noexcept {

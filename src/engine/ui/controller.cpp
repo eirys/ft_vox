@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/15 20:35:46 by etran             #+#    #+#             */
-/*   Updated: 2024/06/15 11:32:44 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/17 20:35:45 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,9 +44,6 @@ void Controller::update(const Window& win) {
 
     m_state.m_yaw = std::fmod(std::fma(deltaX, CAM_SPEED, m_state.m_yaw), 360.0f);
     m_state.m_pitch = std::clamp(std::fma(deltaY, CAM_SPEED, m_state.m_pitch), -89.0f, 89.0f); // Clamp to avoid camera flipping.
-
-    LDEBUG("Yaw: " << m_state.m_yaw);
-    LDEBUG("Pitch: " << m_state.m_pitch);
 
     const float yaw = math::radians(m_state.m_yaw);
     const float pitch = math::radians(m_state.m_pitch);

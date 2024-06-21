@@ -6,28 +6,21 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/28 20:41:22 by etran             #+#    #+#             */
-/*   Updated: 2024/06/13 18:45:27 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/21 14:26:25 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
-#include <vulkan/vulkan.h>
 #include <array>
 
-#include "types.h"
 #include "enum.h"
 #include "descriptor_decl.h"
-
-namespace game {
-class GameState;
-}
 
 namespace vox::gfx {
 
 class Device;
 class ICommandBuffer;
-class ImageBuffer;
 
 class IDescriptorSet {
 public:
@@ -48,7 +41,7 @@ public:
     virtual void    init(const Device& device, const ICommandBuffer* cmdBuffer) = 0;
     virtual void    destroy(const Device& device) = 0;
 
-    virtual void    fill(const Device& device) = 0;
+    virtual void    fill(const Device& device)= 0;
     virtual void    setDescriptorSet(const VkDescriptorSet set) noexcept = 0;
 
     /* ====================================================================== */
@@ -56,8 +49,6 @@ public:
     virtual const PoolSizes&        getSizes() const noexcept = 0;
     virtual VkDescriptorSetLayout   getLayout() const noexcept = 0;
     virtual VkDescriptorSet         getSet() const noexcept = 0;
-    virtual DescriptorSetIndex      getSetIndex() const noexcept = 0;
-    virtual const ImageBuffer&      getImageBuffer(const u32 index) const noexcept = 0;
 
 protected:
     /* ====================================================================== */

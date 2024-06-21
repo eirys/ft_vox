@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/28 16:16:09 by etran             #+#    #+#             */
-/*   Updated: 2024/03/11 14:07:19 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/21 14:26:50 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,22 +36,20 @@ public:
     const PoolSizes&        getSizes() const noexcept override;
     VkDescriptorSetLayout   getLayout() const noexcept override;
     VkDescriptorSet         getSet() const noexcept override;
-    DescriptorSetIndex      getSetIndex() const noexcept override;
 
 protected:
     /* ====================================================================== */
     /*                                  DATA                                  */
     /* ====================================================================== */
 
-    VkDescriptorSetLayout   m_layout = VK_NULL_HANDLE;
+    VkDescriptorSetLayout           m_layout = VK_NULL_HANDLE;
 
     /* ====================================================================== */
     /*                                 METHODS                                */
     /* ====================================================================== */
 
-    DescriptorSet(const DescriptorSetIndex index);
+    DescriptorSet() = default;
 
-    DescriptorSet() = delete;
     DescriptorSet(DescriptorSet&& other) = delete;
     DescriptorSet(const DescriptorSet& other) = delete;
     DescriptorSet& operator=(DescriptorSet&& other) = delete;
@@ -66,7 +64,12 @@ protected:
 
     VkWriteDescriptorSet            _createWriteDescriptorSet(
         const DescriptorTypeIndex typeIndex,
-        const void* descriptorInfo,
+        const VkDescriptorImageInfo& imageInfo,
+        const u32 bindingIndex) const;
+
+    VkWriteDescriptorSet            _createWriteDescriptorSet(
+        const DescriptorTypeIndex typeIndex,
+        const VkDescriptorBufferInfo& bufferInfo,
         const u32 bindingIndex) const;
 
 private:
@@ -76,8 +79,6 @@ private:
 
     PoolSizes               m_poolSizes{};
     VkDescriptorSet         m_set = VK_NULL_HANDLE;
-
-    DescriptorSetIndex      m_index;
 
 }; // class DescriptorSet
 

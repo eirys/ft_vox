@@ -1,22 +1,20 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   shadowmap_sampler.cpp                              :+:      :+:    :+:   */
+/*   shadowmap_texture.cpp                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/03 16:13:11 by etran             #+#    #+#             */
-/*   Updated: 2024/06/14 21:59:53 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/21 14:32:56 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "shadowmap_sampler.h"
+#include "shadowmap_texture.h"
 #include "device.h"
 #include "buffer.h"
 #include "icommand_buffer.h"
 #include "swap_chain.h"
-
-#include "ppm_loader.h"
 
 namespace vox::gfx {
 
@@ -38,13 +36,10 @@ void ShadowmapSampler::init(const Device& device) {
 
     m_imageBuffer.initImage(device, std::move(depthImageMetaData));
     m_imageBuffer.initView(device);
-
-    _createSampler(device);
 }
 
 void ShadowmapSampler::destroy(const Device& device) {
     m_imageBuffer.destroy(device);
-    vkDestroySampler(device.getDevice(), m_sampler, nullptr);
 }
 
 /* ========================================================================== */
@@ -54,32 +49,5 @@ void ShadowmapSampler::fill(
     const ICommandBuffer* cmdBuffer,
     const void* data
 ) {}
-
-/* ========================================================================== */
-/*                                   PRIVATE                                  */
-/* ========================================================================== */
-
-void ShadowmapSampler::_createSampler(const Device& device) {
-    VkSamplerCreateInfo samplerInfo{};
-
-    samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
-    samplerInfo.magFilter = VK_FILTER_LINEAR;
-    samplerInfo.minFilter = VK_FILTER_LINEAR;
-    samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
-    samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER;
-    samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER;
-    samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER;
-    samplerInfo.anisotropyEnable = VK_FALSE;
-    samplerInfo.maxAnisotropy = 1.0f;
-    samplerInfo.compareEnable = VK_FALSE;
-    samplerInfo.compareOp = VK_COMPARE_OP_NEVER;
-    samplerInfo.mipLodBias = 0.0f;
-    samplerInfo.minLod = 0.0f;
-    samplerInfo.maxLod = 1.0f;
-    samplerInfo.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
-
-    if (vkCreateSampler(device.getDevice(), &samplerInfo, nullptr, &m_sampler) != VK_SUCCESS)
-        throw std::runtime_error("failed to create shadow sampler");
-}
 
 } // namespace vox::gfx

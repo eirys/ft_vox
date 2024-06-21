@@ -6,32 +6,29 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/13 23:57:17 by etran             #+#    #+#             */
-/*   Updated: 2024/06/14 17:19:55 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/21 01:34:11 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "gbuffer_set.h"
-#include "gbuffer_textures.h"
+#include "texture.h"
 #include "device.h"
+#include "texture_table.h"
 #include "debug.h"
 
 namespace vox::gfx {
 
 void GBufferSet::init(const Device& device, const ICommandBuffer* cmdBuffer) {
-    m_textures[(u32)Texture::PositionTexture] = new PositionTexture();
-    m_textures[(u32)Texture::NormalTexture] = new NormalTexture();
-    m_textures[(u32)Texture::AlbedoTexture] = new AlbedoTexture();
-
-    for (u32 i = 0; i < TEXTURE_COUNT; ++i) m_textures[i]->init(device);
-
-    VkSampler sampler = m_textures[(u32)Texture::PositionTexture]->getSampler();
-    m_textures[(u32)Texture::NormalTexture]->fill(device, cmdBuffer, &sampler);
-    m_textures[(u32)Texture::AlbedoTexture]->fill(device, cmdBuffer, &sampler);
-
     std::array<VkDescriptorSetLayoutBinding, BINDING_COUNT> bindings = {
         _createLayoutBinding(DescriptorTypeIndex::CombinedImageSampler, ShaderVisibility::FS, (u32)BindingIndex::PositionTexture),
         _createLayoutBinding(DescriptorTypeIndex::CombinedImageSampler, ShaderVisibility::FS, (u32)BindingIndex::NormalTexture),
-        _createLayoutBinding(DescriptorTypeIndex::CombinedImageSampler, ShaderVisibility::FS, (u32)BindingIndex::AlbedoTexture) };
+        _createLayoutBinding(DescriptorTypeIndex::CombinedImageSampler, ShaderVisibility::FS, (u32)BindingIndex::AlbedoTexture),
+        _createLayoutBinding(DescriptorTypeIndex::CombinedImageSampler, ShaderVisibility::FS, (u32)BindingIndex::NormalViewTexture),
+#if ENABLE_SSAO
+        _createLayoutBinding(DescriptorTypeIndex::CombinedImageSampler, ShaderVisibility::FS, (u32)BindingIndex::SsaoTexture),
+        _createLayoutBinding(DescriptorTypeIndex::CombinedImageSampler, ShaderVisibility::FS, (u32)BindingIndex::SsaoBlur),
+#endif
+    };
 
     VkDescriptorSetLayoutCreateInfo layoutInfo{};
     layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
@@ -45,47 +42,60 @@ void GBufferSet::init(const Device& device, const ICommandBuffer* cmdBuffer) {
 }
 
 void GBufferSet::destroy(const Device& device) {
-    for (u32 i = 0; i < TEXTURE_COUNT; ++i) {
-        m_textures[i]->destroy(device);
-        delete m_textures[i];
-    }
-
     vkDestroyDescriptorSetLayout(device.getDevice(), m_layout, nullptr);
 
     LDEBUG("GBuffer descriptor set destroyed");
 }
 
 void GBufferSet::fill(const Device& device) {
+    const VkSampler sampler = TextureTable::getSampler(device, Sampler::Filter::Nearest, Sampler::Border::Edge, Sampler::BorderColor::WhiteFloat).getSampler();
+
     VkDescriptorImageInfo positionTextureInfo{};
-    positionTextureInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-    positionTextureInfo.imageView = m_textures[(u32)Texture::PositionTexture]->getImageBuffer().getView();
-    positionTextureInfo.sampler = m_textures[(u32)Texture::PositionTexture]->getSampler();
+    positionTextureInfo.imageLayout = TextureTable::getTexture(TextureIndex::GBufferPosition)->getImageBuffer().getMetaData().m_layoutData.m_layout;
+    positionTextureInfo.imageView = TextureTable::getTexture(TextureIndex::GBufferPosition)->getImageBuffer().getView();
+    positionTextureInfo.sampler = sampler;
 
     VkDescriptorImageInfo normalTextureInfo{};
-    normalTextureInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-    normalTextureInfo.imageView = m_textures[(u32)Texture::NormalTexture]->getImageBuffer().getView();
-    normalTextureInfo.sampler = m_textures[(u32)Texture::NormalTexture]->getSampler();
+    normalTextureInfo.imageLayout = TextureTable::getTexture(TextureIndex::GBufferNormal)->getImageBuffer().getMetaData().m_layoutData.m_layout;
+    normalTextureInfo.imageView = TextureTable::getTexture(TextureIndex::GBufferNormal)->getImageBuffer().getView();
+    normalTextureInfo.sampler = sampler;
 
     VkDescriptorImageInfo albedoTextureInfo{};
-    albedoTextureInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-    albedoTextureInfo.imageView = m_textures[(u32)Texture::AlbedoTexture]->getImageBuffer().getView();
-    albedoTextureInfo.sampler = m_textures[(u32)Texture::AlbedoTexture]->getSampler();
+    albedoTextureInfo.imageLayout = TextureTable::getTexture(TextureIndex::GBufferAlbedo)->getImageBuffer().getMetaData().m_layoutData.m_layout;
+    albedoTextureInfo.imageView = TextureTable::getTexture(TextureIndex::GBufferAlbedo)->getImageBuffer().getView();
+    albedoTextureInfo.sampler = sampler;
+
+    VkDescriptorImageInfo normalViewTextureInfo{};
+    normalViewTextureInfo.imageLayout = TextureTable::getTexture(TextureIndex::GBufferNormalView)->getImageBuffer().getMetaData().m_layoutData.m_layout;
+    normalViewTextureInfo.imageView = TextureTable::getTexture(TextureIndex::GBufferNormalView)->getImageBuffer().getView();
+    normalViewTextureInfo.sampler = sampler;
+
+#if ENABLE_SSAO
+    VkDescriptorImageInfo ssaoTextureInfo{};
+    ssaoTextureInfo.imageLayout = TextureTable::getTexture(TextureIndex::GBufferSSAO)->getImageBuffer().getMetaData().m_layoutData.m_layout;
+    ssaoTextureInfo.imageView = TextureTable::getTexture(TextureIndex::GBufferSSAO)->getImageBuffer().getView();
+    ssaoTextureInfo.sampler = sampler;
+
+    VkDescriptorImageInfo ssaoBlurTextureInfo{};
+    ssaoBlurTextureInfo.imageLayout = TextureTable::getTexture(TextureIndex::GBufferSSAOBlur)->getImageBuffer().getMetaData().m_layoutData.m_layout;
+    ssaoBlurTextureInfo.imageView = TextureTable::getTexture(TextureIndex::GBufferSSAOBlur)->getImageBuffer().getView();
+    ssaoBlurTextureInfo.sampler = sampler;
+#endif
 
     std::array<VkWriteDescriptorSet, BINDING_COUNT> descriptorWrites = {
-        _createWriteDescriptorSet(DescriptorTypeIndex::CombinedImageSampler, &positionTextureInfo, (u32)BindingIndex::PositionTexture),
-        _createWriteDescriptorSet(DescriptorTypeIndex::CombinedImageSampler, &normalTextureInfo, (u32)BindingIndex::NormalTexture),
-        _createWriteDescriptorSet(DescriptorTypeIndex::CombinedImageSampler, &albedoTextureInfo, (u32)BindingIndex::AlbedoTexture)
+        _createWriteDescriptorSet(DescriptorTypeIndex::CombinedImageSampler, positionTextureInfo, (u32)BindingIndex::PositionTexture),
+        _createWriteDescriptorSet(DescriptorTypeIndex::CombinedImageSampler, normalTextureInfo, (u32)BindingIndex::NormalTexture),
+        _createWriteDescriptorSet(DescriptorTypeIndex::CombinedImageSampler, albedoTextureInfo, (u32)BindingIndex::AlbedoTexture),
+        _createWriteDescriptorSet(DescriptorTypeIndex::CombinedImageSampler, normalViewTextureInfo, (u32)BindingIndex::NormalViewTexture),
+#if ENABLE_SSAO
+        _createWriteDescriptorSet(DescriptorTypeIndex::CombinedImageSampler, ssaoTextureInfo, (u32)BindingIndex::SsaoTexture),
+        _createWriteDescriptorSet(DescriptorTypeIndex::CombinedImageSampler, ssaoBlurTextureInfo, (u32)BindingIndex::SsaoBlur),
+#endif
     };
 
     vkUpdateDescriptorSets(device.getDevice(), BINDING_COUNT, descriptorWrites.data(), 0, nullptr);
 
     LDEBUG("GBuffer descriptor set filled");
-}
-
-/* ========================================================================== */
-
-const ImageBuffer& GBufferSet::getImageBuffer(const u32 index) const noexcept {
-    return m_textures[index]->getImageBuffer();
 }
 
 } // namespace vox::gfx

@@ -1,34 +1,34 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   game_texture_sampler.h                             :+:      :+:    :+:   */
+/*   chunk_data_sampler.h                               :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/03/11 17:33:50 by etran             #+#    #+#             */
-/*   Updated: 2024/06/03 15:59:55 by etran            ###   ########.fr       */
+/*   Created: 2024/03/17 23:04:53 by etran             #+#    #+#             */
+/*   Updated: 2024/06/21 14:30:22 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
-#include "texture_sampler.h"
+#include "texture.h"
 
 namespace vox::gfx {
 
-class GameTextureSampler final: public TextureSampler {
+class ChunkDataSampler final: public Texture {
 public:
     /* ====================================================================== */
     /*                                 METHODS                                */
     /* ====================================================================== */
 
-    GameTextureSampler() = default;
-    ~GameTextureSampler() = default;
+    ChunkDataSampler() = default;
+    ~ChunkDataSampler() = default;
 
-    GameTextureSampler(GameTextureSampler&& other) = delete;
-    GameTextureSampler(const GameTextureSampler& other) = delete;
-    GameTextureSampler& operator=(GameTextureSampler&& other) = delete;
-    GameTextureSampler& operator=(const GameTextureSampler& other) = delete;
+    ChunkDataSampler(ChunkDataSampler&& other) = delete;
+    ChunkDataSampler(const ChunkDataSampler& other) = delete;
+    ChunkDataSampler& operator=(ChunkDataSampler&& other) = delete;
+    ChunkDataSampler& operator=(const ChunkDataSampler& other) = delete;
 
     /* ====================================================================== */
 
@@ -37,13 +37,13 @@ public:
 
     void    fill(const Device& device, const ICommandBuffer* cmdBuffer, const void* data = nullptr) override;
 
-private:
-    /* ====================================================================== */
-    /*                                 METHODS                                */
-    /* ====================================================================== */
+// private:
+//     /* ====================================================================== */
+//     /*                                 METHODS                                */
+//     /* ====================================================================== */
 
-    void    _createSampler(const Device& device);
+//     void    _createSampler(const Device& device);
 
-}; // class GameTextureSampler
+}; // class ChunkDataSampler
 
 } // namespace vox::gfx

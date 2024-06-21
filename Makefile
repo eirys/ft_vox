@@ -6,7 +6,7 @@
 #    By: etran <etran@student.42.fr>                +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/04/06 03:40:09 by eli               #+#    #+#              #
-#    Updated: 2024/06/15 01:47:59 by etran            ###   ########.fr        #
+#    Updated: 2024/06/21 03:24:54 by etran            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -40,7 +40,7 @@ SYNC_DIR	:=	$(GFX_DIR)/sync
 
 DESC_DIR	:=	$(GFX_DIR)/descriptor
 SETS_DIR	:=	$(DESC_DIR)/sets
-SAMPLER_DIR	:=	$(DESC_DIR)/sampler
+TEX_DIR		:=	$(DESC_DIR)/texture
 
 RENDER_DIR	:=	$(GFX_DIR)/rendering
 PIP_DIR		:=	$(RENDER_DIR)/pipelines
@@ -67,7 +67,7 @@ SUBDIRS		:=	$(LIBS_DIR) \
 				$(UI_DIR) \
 				$(IO_DIR) \
 				$(BUF_DIR) \
-				$(SAMPLER_DIR) \
+				$(TEX_DIR) \
 				$(CMD_DIR) \
 				$(DESC_DIR) \
 				$(SETS_DIR) \
@@ -98,17 +98,20 @@ SRC_FILES	:=	entrypoint.cpp \
 				$(GFX_DIR)/swap_chain.cpp \
 				$(CMD_DIR)/command_pool.cpp \
 				$(CMD_DIR)/command_buffer.cpp \
-				$(SAMPLER_DIR)/game_texture_sampler.cpp \
-				$(SAMPLER_DIR)/skybox_sampler.cpp \
-				$(SAMPLER_DIR)/gbuffer_textures.cpp \
-				$(SAMPLER_DIR)/perlin_noise_sampler.cpp \
-				$(SAMPLER_DIR)/shadowmap_sampler.cpp \
+				$(TEX_DIR)/game_textures.cpp \
+				$(TEX_DIR)/skybox_texture.cpp \
+				$(TEX_DIR)/gbuffer_textures.cpp \
+				$(TEX_DIR)/perlin_noise_texture.cpp \
+				$(TEX_DIR)/shadowmap_texture.cpp \
+				$(TEX_DIR)/sampler.cpp \
 				$(SETS_DIR)/descriptor_set.cpp \
 				$(SETS_DIR)/pfd_set.cpp \
 				$(SETS_DIR)/world_set.cpp \
 				$(SETS_DIR)/gbuffer_set.cpp \
+				$(SETS_DIR)/ssao_sets.cpp \
 				$(DESC_DIR)/descriptor_pool.cpp \
 				$(DESC_DIR)/descriptor_table.cpp \
+				$(DESC_DIR)/texture_table.cpp \
 				$(RENDER_DIR)/pipeline_layout.cpp \
 				$(RENDER_DIR)/push_constant.cpp \
 				$(GEO_DIR)/vertex.cpp \
@@ -117,8 +120,12 @@ SRC_FILES	:=	entrypoint.cpp \
 				$(PASSES_DIR)/render_pass.cpp \
 				$(PASSES_DIR)/main_render_pass.cpp \
 				$(PASSES_DIR)/deferred_render_pass.cpp \
+				$(PASSES_DIR)/ssao_render_pass.cpp \
+				$(PASSES_DIR)/ssao_blur_render_pass.cpp \
 				$(PASSES_DIR)/shadow_render_pass.cpp \
 				$(PIP_DIR)/pipeline.cpp \
+				$(PIP_DIR)/ssao_pipeline.cpp \
+				$(PIP_DIR)/ssao_blur_pipeline.cpp \
 				$(PIP_DIR)/deferred_pipeline.cpp \
 				$(PIP_DIR)/scene_pipeline.cpp \
 				$(PIP_DIR)/skybox_pipeline.cpp \
@@ -196,7 +203,9 @@ SHD_FILES	:=	scene.fragment \
 				deferred.fragment \
 				debug.vertex \
 				debug.fragment \
-				shadowmap.vertex
+				shadowmap.vertex \
+				ssao.fragment \
+				blur.fragment
 
 SHD			:=	$(addprefix $(SHD_BIN_DIR)/,$(SHD_FILES))
 SHD_BIN		:=	$(addsuffix .spv,$(SHD))
@@ -226,7 +235,7 @@ run: all
 	@./$(NAME)
 
 .PHONY: fclean
-fclean: clean remove_map
+fclean: clean
 	@$(RM) $(NAME)
 	@echo "Removed $(NAME)."
 
@@ -285,7 +294,7 @@ $(MAPS):
 	@./obj/$(SETUP_DIR)/map_generator
 	@echo "Maps generated."
 
-.PHONY: remove_maps
+.PHONY: remove_map
 remove_map:
 	@$(RM) $(MAP_DIR)
 	@echo "Removed $(MAP_DIR)."

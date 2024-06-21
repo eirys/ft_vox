@@ -1,4 +1,5 @@
 #version 450
+#define VOX_SKY_LAYOUT
 
 #include "../src/engine/game/game_decl.h"
 #include "../src/engine/vox_decl.h"
@@ -14,7 +15,6 @@ layout(set = PFD_SET, binding = 0) uniform GameData {
 } gameData;
 
 #if ENABLE_CUBEMAP
-// layout(set = WORLD_SET, binding = 3) uniform samplerCube    SkyboxTex;
 layout(set = WORLD_SET, binding = 2) uniform samplerCube SkyboxTex;
 #endif
 

@@ -6,12 +6,13 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/19 10:48:36 by etran             #+#    #+#             */
-/*   Updated: 2024/06/14 19:37:36 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/18 15:55:13 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "skybox_pipeline.h"
 #include "device.h"
+#include "pipeline_layout.h"
 #include "icommand_buffer.h"
 
 #include "debug.h"
@@ -27,8 +28,10 @@ namespace vox::gfx {
 void SkyboxPipeline::init(
     const Device& device,
     const VkRenderPass& renderPass,
-    const VkPipelineLayout& pipelineLayout
+    const PipelineLayout& pipelineLayout
 ) {
+    m_pipelineLayout = &pipelineLayout;
+
     VkPipelineVertexInputStateCreateInfo vertexInput{};
     vertexInput.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
 
@@ -102,7 +105,7 @@ void SkyboxPipeline::init(
     pipelineInfo.renderPass = renderPass;
     pipelineInfo.stageCount = SHADER_STAGE_COUNT;
     pipelineInfo.pStages = shaderStages.data();
-    pipelineInfo.layout = pipelineLayout;
+    pipelineInfo.layout = m_pipelineLayout->getLayout();
     pipelineInfo.subpass = 0;
     pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
     pipelineInfo.basePipelineIndex = -1;
@@ -114,7 +117,7 @@ void SkyboxPipeline::init(
     vkDestroyShaderModule(device.getDevice(), fragmentModule, nullptr);
 
 
-    LDEBUG("Skybox pipeline initialized.");
+    LDEBUG("Skybox pipeline initialized: " << m_pipeline);
 }
 
 void SkyboxPipeline::destroy(const Device& device) {
@@ -125,8 +128,8 @@ void SkyboxPipeline::destroy(const Device& device) {
 
 /* ========================================================================== */
 
-void SkyboxPipeline::record(const PipelineLayout& pipelineLayout, const ICommandBuffer* cmdBuffer) const {
-    cmdBuffer->bindDescriptorSets(pipelineLayout);
+void SkyboxPipeline::record(const ICommandBuffer* cmdBuffer) const {
+    cmdBuffer->bindDescriptorSets(*m_pipelineLayout);
     cmdBuffer->bindPipeline(m_pipeline);
 
     // Draw skybox

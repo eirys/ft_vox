@@ -1,28 +1,35 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   shadowmap_sampler.h                                :+:      :+:    :+:   */
+/*   shadowmap_texture.h                                :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/03 16:12:27 by etran             #+#    #+#             */
-/*   Updated: 2024/06/03 16:26:58 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/20 16:32:22 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
-#include "texture_sampler.h"
+#include "texture.h"
 
 namespace vox::gfx {
 
-class ShadowmapSampler final: public TextureSampler {
+class ShadowmapSampler final: public Texture {
 public:
+    /* ====================================================================== */
+    /*                                TYPEDEFS                                */
+    /* ====================================================================== */
+
+    using super = Texture;
+
     /* ====================================================================== */
     /*                                 METHODS                                */
     /* ====================================================================== */
 
-    ShadowmapSampler() = default;
+    ShadowmapSampler(): super(true) {}
+
     ~ShadowmapSampler() = default;
 
     ShadowmapSampler(ShadowmapSampler&& other) = delete;
@@ -36,13 +43,6 @@ public:
     void    destroy(const Device& device) override;
 
     void    fill(const Device& device, const ICommandBuffer* cmdBuffer, const void* data = nullptr) override;
-
-private:
-    /* ====================================================================== */
-    /*                                 METHODS                                */
-    /* ====================================================================== */
-
-    void    _createSampler(const Device& device);
 
 }; // class ShadowmapSampler
 

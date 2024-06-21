@@ -6,16 +6,15 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/11 16:12:13 by etran             #+#    #+#             */
-/*   Updated: 2024/06/15 11:33:34 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/21 03:42:31 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "pfd_set.h"
 #include "device.h"
 #include "game_state.h"
-#include "matrix.h"
-#include "maths.h"
-#include "shadowmap_sampler.h"
+#include "texture.h"
+#include "texture_table.h"
 
 #include <stdexcept>
 
@@ -31,12 +30,6 @@ void PFDSet::init(const Device& device, const ICommandBuffer* cmdBuffer) {
     bufferData.m_properties = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
     m_mvpDataBuffer.init(device, std::move(bufferData));
     m_mvpDataBuffer.map(device);
-
-#if ENABLE_SHADOW_MAPPING
-    m_textures[(u32)Texture::Shadowmap] = new ShadowmapSampler();
-#endif
-
-    for (u32 i = 0; i < TEXTURE_COUNT; ++i) m_textures[i]->init(device);
 
     std::array<VkDescriptorSetLayoutBinding, BINDING_COUNT> bindings = {
         _createLayoutBinding(DescriptorTypeIndex::UniformBuffer, ShaderVisibility::VS_FS, (u32)BindingIndex::GameData),
@@ -59,11 +52,6 @@ void PFDSet::init(const Device& device, const ICommandBuffer* cmdBuffer) {
 }
 
 void PFDSet::destroy(const Device& device) {
-    for (u32 i = 0; i < TEXTURE_COUNT; ++i) {
-        m_textures[i]->destroy(device);
-        delete m_textures[i];
-    }
-
     m_mvpDataBuffer.unmap(device);
     m_mvpDataBuffer.destroy(device);
     vkDestroyDescriptorSetLayout(device.getDevice(), m_layout, nullptr);
@@ -76,26 +64,26 @@ void PFDSet::destroy(const Device& device) {
 void PFDSet::fill(const Device& device) {
     VkDescriptorBufferInfo gameDataInfo{};
     gameDataInfo.buffer = m_mvpDataBuffer.getBuffer();
-    gameDataInfo.offset = (VkDeviceSize)PFDUbo::Offset::GameData;
+    gameDataInfo.offset = (u32)offsetof(PFDUbo, m_gameData);
     gameDataInfo.range = sizeof(PFDUbo::m_gameData);
 
 #if ENABLE_SHADOW_MAPPING
     VkDescriptorBufferInfo projectorInfo{};
     projectorInfo.buffer = m_mvpDataBuffer.getBuffer();
-    projectorInfo.offset = (VkDeviceSize)PFDUbo::Offset::ProjectorViewProj;
+    projectorInfo.offset = (u32)offsetof(PFDUbo, m_projectorViewProj);
     projectorInfo.range = sizeof(PFDUbo::m_projectorViewProj);
 
     VkDescriptorImageInfo shadowmapInfo{};
-    shadowmapInfo.imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL; // By the end of the render pass
-    shadowmapInfo.imageView = m_textures[(u32)Texture::Shadowmap]->getImageBuffer().getView();
-    shadowmapInfo.sampler = m_textures[(u32)Texture::Shadowmap]->getSampler();
+    shadowmapInfo.imageLayout = TextureTable::getTexture(TextureIndex::ShadowMap)->getImageBuffer().getMetaData().m_layoutData.m_layout; // By the end of the render pass
+    shadowmapInfo.imageView = TextureTable::getTexture(TextureIndex::ShadowMap)->getImageBuffer().getView();
+    shadowmapInfo.sampler = TextureTable::getSampler(device, Sampler::Filter::Linear, Sampler::Border::Color, Sampler::BorderColor::WhiteFloat).getSampler();
 #endif
 
     std::array<VkWriteDescriptorSet, BINDING_COUNT> descriptorWrites = {
-        _createWriteDescriptorSet(DescriptorTypeIndex::UniformBuffer, &gameDataInfo, (u32)BindingIndex::GameData),
+        _createWriteDescriptorSet(DescriptorTypeIndex::UniformBuffer, gameDataInfo, (u32)BindingIndex::GameData),
 #if ENABLE_SHADOW_MAPPING
-        _createWriteDescriptorSet(DescriptorTypeIndex::UniformBuffer, &projectorInfo, (u32)BindingIndex::ProjectorViewProj),
-        _createWriteDescriptorSet(DescriptorTypeIndex::CombinedImageSampler, &shadowmapInfo, (u32)BindingIndex::Shadowmap),
+        _createWriteDescriptorSet(DescriptorTypeIndex::UniformBuffer, projectorInfo, (u32)BindingIndex::ProjectorViewProj),
+        _createWriteDescriptorSet(DescriptorTypeIndex::CombinedImageSampler, shadowmapInfo, (u32)BindingIndex::Shadowmap),
 #endif
     };
     vkUpdateDescriptorSets(device.getDevice(), BINDING_COUNT, descriptorWrites.data(), 0, nullptr);
@@ -129,12 +117,6 @@ void PFDSet::update(const game::GameState& state) {
 #endif
 
     m_mvpDataBuffer.copyFrom(&m_data);
-}
-
-/* ========================================================================== */
-
-const ImageBuffer& PFDSet::getImageBuffer(const u32 index) const noexcept {
-    return m_textures[index]->getImageBuffer();
 }
 
 } // namespace vox::gfx

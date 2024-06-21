@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/13 17:25:43 by etran             #+#    #+#             */
-/*   Updated: 2024/06/14 13:18:38 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/21 01:31:07 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,16 +20,19 @@ struct DeferredRenderPassInfo final: public RenderPassInfo {
     DeferredRenderPassInfo(
         const ImageBuffer& positionTexture,
         const ImageBuffer& normalTexture,
-        const ImageBuffer& albedoTexture):
+        const ImageBuffer& albedoTexture,
+        const ImageBuffer& normalViewTexture) :
         m_positionTexture(positionTexture),
         m_normalTexture(normalTexture),
-        m_albedoTexture(albedoTexture) {};
+        m_albedoTexture(albedoTexture),
+        m_normalViewTexture(normalViewTexture) {}
 
     DeferredRenderPassInfo() = delete;
 
     const ImageBuffer& m_positionTexture;
     const ImageBuffer& m_normalTexture;
     const ImageBuffer& m_albedoTexture;
+    const ImageBuffer& m_normalViewTexture;
 };
 
 class DeferredRenderPass final: public RenderPass {
@@ -42,6 +45,7 @@ public:
         ColorPosition,
         ColorNormal,
         ColorAlbedo,
+        ColorViewNormal,
         DepthImage,
 
         Count
@@ -51,6 +55,7 @@ public:
         ColorPosition,
         ColorNormal,
         ColorAlbedo,
+        ColorViewNormal,
         Depth,
 
         Count
@@ -76,7 +81,6 @@ public:
     DeferredRenderPass& operator=(const DeferredRenderPass& other) = delete;
 
     /* ====================================================================== */
-
 
     void    init(const Device& device, const RenderPassInfo* info) override;
     void    destroy(const Device& device) override;

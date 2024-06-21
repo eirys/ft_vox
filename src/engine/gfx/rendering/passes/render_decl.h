@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/07 14:55:18 by etran             #+#    #+#             */
-/*   Updated: 2024/06/13 18:37:14 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/16 22:01:06 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,6 +22,11 @@ enum class RenderPassIndex: u32 {
     Main,
     Deferred,
 
+#if ENABLE_SSAO
+    Ssao,
+    SsaoBlur,
+#endif
+
 #if ENABLE_SHADOW_MAPPING
     Shadow,
 #endif
@@ -30,11 +35,5 @@ enum class RenderPassIndex: u32 {
 };
 
 constexpr u32 RENDER_PASS_COUNT = (u32)RenderPassIndex::Count;
-
-struct RecordInfo {
-    virtual ~RecordInfo() = default;
-
-    u32 m_targetIndex = 0;
-};
 
 } // namespace vox::gfx

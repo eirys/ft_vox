@@ -1,34 +1,41 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   skybox_sampler.h                                   :+:      :+:    :+:   */
+/*   game_textures.h                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/03/19 02:48:23 by etran             #+#    #+#             */
-/*   Updated: 2024/06/03 15:59:00 by etran            ###   ########.fr       */
+/*   Created: 2024/03/11 17:33:50 by etran             #+#    #+#             */
+/*   Updated: 2024/06/18 15:47:49 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
-#include "texture_sampler.h"
+#include "texture.h"
 
 namespace vox::gfx {
 
-class SkyboxSampler final: public TextureSampler {
+class GameTextureSampler final: public Texture {
 public:
+    /* ====================================================================== */
+    /*                                TYPEDEFS                                */
+    /* ====================================================================== */
+
+    using super = Texture;
+
     /* ====================================================================== */
     /*                                 METHODS                                */
     /* ====================================================================== */
 
-    SkyboxSampler() = default;
-    ~SkyboxSampler() = default;
+    GameTextureSampler(): super(true) {}
 
-    SkyboxSampler(SkyboxSampler&& other) = delete;
-    SkyboxSampler(const SkyboxSampler& other) = delete;
-    SkyboxSampler& operator=(SkyboxSampler&& other) = delete;
-    SkyboxSampler& operator=(const SkyboxSampler& other) = delete;
+    ~GameTextureSampler() = default;
+
+    GameTextureSampler(GameTextureSampler&& other) = delete;
+    GameTextureSampler(const GameTextureSampler& other) = delete;
+    GameTextureSampler& operator=(GameTextureSampler&& other) = delete;
+    GameTextureSampler& operator=(const GameTextureSampler& other) = delete;
 
     /* ====================================================================== */
 
@@ -37,13 +44,6 @@ public:
 
     void    fill(const Device& device, const ICommandBuffer* cmdBuffer, const void* data = nullptr) override;
 
-private:
-    /* ====================================================================== */
-    /*                                 METHODS                                */
-    /* ====================================================================== */
-
-    void    _createSampler(const Device& device);
-
-}; // class SkyboxSampler
+}; // class GameTextureSampler
 
 } // namespace vox::gfx

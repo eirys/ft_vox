@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/27 18:36:30 by etran             #+#    #+#             */
-/*   Updated: 2024/06/14 02:41:10 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/19 12:10:00 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,6 +23,12 @@ namespace vox::gfx {
 
 /* ========================================================================== */
 /*                                   PUBLIC                                   */
+/* ========================================================================== */
+
+ImageBuffer::ImageBuffer(const bool isFramebuffer) {
+    m_isFrameBuffer = isFramebuffer;
+}
+
 /* ========================================================================== */
 
 void ImageBuffer::initImage(const Device& device, ImageMetaData&& metadata) {
@@ -58,6 +64,13 @@ void ImageBuffer::initImage(const Device& device, ImageMetaData&& metadata) {
         throw std::runtime_error("failed to allocate image memory");
     } else if (vkBindImageMemory(device.getDevice(), m_image, m_memory, 0) != VK_SUCCESS) {
         throw std::runtime_error("failed to bind image memory");
+    }
+
+    if (m_isFrameBuffer) {
+        if (m_metadata.m_usage & VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT)
+            m_metadata.m_layoutData.m_layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
+        else if (m_metadata.m_usage & VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT)
+            m_metadata.m_layoutData.m_layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
     }
 
     LDEBUG("Image buffer initialized: " << "image::" << m_image
@@ -301,11 +314,11 @@ const ImageMetaData& ImageBuffer::getMetaData() const noexcept {
 
 u32  ImageMetaData::getPixelSize() const {
     switch (m_format) {
-        // uint
+        // u8
         case VK_FORMAT_R8_UINT:
+        case VK_FORMAT_R8_UNORM:
             return sizeof(u8);
 
-        case VK_FORMAT_R16_UINT:
         case VK_FORMAT_R8G8_UINT:
             return sizeof(u8) * 2;
 
@@ -313,31 +326,48 @@ u32  ImageMetaData::getPixelSize() const {
         case VK_FORMAT_B8G8R8_UINT:
             return sizeof(u8) * 3;
 
-        case VK_FORMAT_R32_UINT:
-        case VK_FORMAT_R16G16_UINT:
+        case VK_FORMAT_R8G8B8A8_SRGB:
         case VK_FORMAT_R8G8B8A8_UINT:
         case VK_FORMAT_B8G8R8A8_UINT:
             return sizeof(u8) * 4;
 
+        // u16
+        case VK_FORMAT_R16_UINT:
+            return sizeof(u16);
+
+        case VK_FORMAT_R16G16_UINT:
+            return sizeof(u16) * 2;
 
         case VK_FORMAT_R16G16B16_UINT:
             return sizeof(u16) * 3;
 
-        case VK_FORMAT_R64_UINT:
-        case VK_FORMAT_R32G32_UINT:
+        case VK_FORMAT_R16G16B16A16_SFLOAT:
         case VK_FORMAT_R16G16B16A16_UINT:
-            return sizeof(u64);
+            return sizeof(u16) * 4;
+
+        // u32
+        case VK_FORMAT_R32_SFLOAT:
+        case VK_FORMAT_R32_UINT:
+            return sizeof(u32);
+
+        case VK_FORMAT_R32G32_UINT:
+        case VK_FORMAT_R32G32_SFLOAT:
+            return sizeof(u32) * 2;
 
         case VK_FORMAT_R32G32B32_UINT:
             return sizeof(u32) * 3;
 
-        case VK_FORMAT_R64G64_UINT:
+        case VK_FORMAT_R32G32B32A32_SFLOAT:
         case VK_FORMAT_R32G32B32A32_UINT:
+            return sizeof(u32) * 4;
+
+        // u64
+        case VK_FORMAT_R64_UINT:
+            return sizeof(u64);
+
+        case VK_FORMAT_R64G64_UINT:
             return sizeof(u64) * 2;
 
-        // sfloat
-        case VK_FORMAT_R8G8B8A8_SRGB:
-            return sizeof(u32);
 
         default:
             throw std::runtime_error("pixel format not supported");

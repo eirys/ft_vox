@@ -6,11 +6,11 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/17 23:05:38 by etran             #+#    #+#             */
-/*   Updated: 2024/06/03 15:59:14 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/21 14:30:11 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "chunk_data_sampler.h"
+#include "chunk_data_texture.h"
 #include "device.h"
 #include "chunk.h"
 #include "buffer.h"
@@ -35,7 +35,7 @@ void ChunkDataSampler::init(const Device& device) {
                           VK_IMAGE_USAGE_TRANSFER_DST_BIT;  // Transfer destination
     textureData.m_viewType = VK_IMAGE_VIEW_TYPE_2D_ARRAY;
     m_imageBuffer.initImage(device, std::move(textureData));
-    _createSampler(device);
+    // _createSampler(device);
 }
 
 void ChunkDataSampler::fill(
@@ -76,27 +76,27 @@ void ChunkDataSampler::destroy(const Device& device) {
 /*                                   PRIVATE                                  */
 /* ========================================================================== */
 
-void ChunkDataSampler::_createSampler(const Device& device) {
-    VkSamplerCreateInfo samplerInfo{};
-    samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
-    samplerInfo.magFilter = VK_FILTER_NEAREST;
-    samplerInfo.minFilter = VK_FILTER_NEAREST;
-    samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_NEAREST;
-    samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER;
-    samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER;
-    samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER;
-    samplerInfo.anisotropyEnable = VK_FALSE;
-    samplerInfo.maxAnisotropy = 1.0;
-    samplerInfo.compareEnable = VK_FALSE;
-    samplerInfo.compareOp = VK_COMPARE_OP_NEVER;
-    samplerInfo.mipLodBias = 0.0f;
-    samplerInfo.minLod = 0.0f;
-    samplerInfo.maxLod = 1.0f;
-    samplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
+// void ChunkDataSampler::_createSampler(const Device& device) {
+//     VkSamplerCreateInfo samplerInfo{};
+//     samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+//     samplerInfo.magFilter = VK_FILTER_NEAREST;
+//     samplerInfo.minFilter = VK_FILTER_NEAREST;
+//     samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_NEAREST;
+//     samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER;
+//     samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER;
+//     samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER;
+//     samplerInfo.anisotropyEnable = VK_FALSE;
+//     samplerInfo.maxAnisotropy = 1.0;
+//     samplerInfo.compareEnable = VK_FALSE;
+//     samplerInfo.compareOp = VK_COMPARE_OP_NEVER;
+//     samplerInfo.mipLodBias = 0.0f;
+//     samplerInfo.minLod = 0.0f;
+//     samplerInfo.maxLod = 1.0f;
+//     samplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
 
-    if (vkCreateSampler(device.getDevice(), &samplerInfo, nullptr, &m_sampler) != VK_SUCCESS) {
-        throw std::runtime_error("failed to create texture sampler!");
-    }
-}
+//     if (vkCreateSampler(device.getDevice(), &samplerInfo, nullptr, &m_sampler) != VK_SUCCESS) {
+//         throw std::runtime_error("failed to create texture sampler!");
+//     }
+// }
 
 } // namespace vox::gfx

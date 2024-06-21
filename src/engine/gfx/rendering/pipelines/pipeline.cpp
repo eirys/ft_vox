@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/29 22:13:57 by etran             #+#    #+#             */
-/*   Updated: 2024/03/27 14:29:22 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/16 15:43:09 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,6 +27,10 @@ namespace vox::gfx {
 
 VkPipeline Pipeline::getPipeline() const noexcept {
     return m_pipeline;
+}
+
+const PipelineLayout& Pipeline::getPipelineLayout() const noexcept {
+    return *m_pipelineLayout;
 }
 
 /* ========================================================================== */

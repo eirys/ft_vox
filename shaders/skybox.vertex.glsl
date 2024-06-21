@@ -1,4 +1,5 @@
 #version 450
+#define VOX_SKY_LAYOUT
 
 #include "../src/engine/gfx/descriptor/sets/descriptor_decl.h"
 

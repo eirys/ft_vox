@@ -1,34 +1,41 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   chunk_data_sampler.h                               :+:      :+:    :+:   */
+/*   perlin_noise_texture.h                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/03/17 23:04:53 by etran             #+#    #+#             */
-/*   Updated: 2024/06/03 15:59:25 by etran            ###   ########.fr       */
+/*   Created: 2024/03/27 15:26:15 by etran             #+#    #+#             */
+/*   Updated: 2024/06/20 16:11:04 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
-#include "texture_sampler.h"
+#include "texture.h"
 
 namespace vox::gfx {
 
-class ChunkDataSampler final: public TextureSampler {
+class PerlinNoiseSampler final: public Texture {
 public:
+    /* ====================================================================== */
+    /*                                TYPEDEFS                                */
+    /* ====================================================================== */
+
+    using super = Texture;
+
     /* ====================================================================== */
     /*                                 METHODS                                */
     /* ====================================================================== */
 
-    ChunkDataSampler() = default;
-    ~ChunkDataSampler() = default;
+    PerlinNoiseSampler(): super(true) {}
 
-    ChunkDataSampler(ChunkDataSampler&& other) = delete;
-    ChunkDataSampler(const ChunkDataSampler& other) = delete;
-    ChunkDataSampler& operator=(ChunkDataSampler&& other) = delete;
-    ChunkDataSampler& operator=(const ChunkDataSampler& other) = delete;
+    ~PerlinNoiseSampler() = default;
+
+    PerlinNoiseSampler(PerlinNoiseSampler&& other) = delete;
+    PerlinNoiseSampler(const PerlinNoiseSampler& other) = delete;
+    PerlinNoiseSampler& operator=(PerlinNoiseSampler&& other) = delete;
+    PerlinNoiseSampler& operator=(const PerlinNoiseSampler& other) = delete;
 
     /* ====================================================================== */
 
@@ -37,13 +44,6 @@ public:
 
     void    fill(const Device& device, const ICommandBuffer* cmdBuffer, const void* data = nullptr) override;
 
-private:
-    /* ====================================================================== */
-    /*                                 METHODS                                */
-    /* ====================================================================== */
-
-    void    _createSampler(const Device& device);
-
-}; // class ChunkDataSampler
+}; // class PerlinNoiseSampler
 
 } // namespace vox::gfx

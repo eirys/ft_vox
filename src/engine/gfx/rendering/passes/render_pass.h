@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/02 19:56:22 by etran             #+#    #+#             */
-/*   Updated: 2024/06/14 02:36:00 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/21 14:37:19 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,6 @@ namespace vox::gfx {
 
 class Device;
 class ICommandBuffer;
-struct RecordInfo;
 
 /* ========================================================================== */
 /*                               HELPER OBJECTS                               */
@@ -43,6 +42,12 @@ struct RenderPassInfo {
     u32 m_targetCount;
     u32 m_targetWidth;
     u32 m_targetHeight;
+};
+
+struct RecordInfo {
+    virtual ~RecordInfo() = default;
+
+    u32 m_targetIndex = 0;
 };
 
 /**
@@ -80,8 +85,8 @@ protected:
     std::vector<VkFramebuffer>      m_targets;
     std::vector<const ImageBuffer*> m_resources;
 
-    u32                         m_width = 0;
-    u32                         m_height = 0;
+    u32 m_width = 0;
+    u32 m_height = 0;
 
     /* ====================================================================== */
     /*                                 METHODS                                */

@@ -6,13 +6,14 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/03 22:11:27 by etran             #+#    #+#             */
-/*   Updated: 2024/06/14 19:30:07 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/16 16:57:18 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "debug_tex_pipeline.h"
 #include "device.h"
 #include "icommand_buffer.h"
+#include "pipeline_layout.h"
 #include "debug.h"
 
 #include <array>
@@ -26,8 +27,10 @@ namespace vox::gfx {
 void DebugTexPipeline::init(
     const Device& device,
     const VkRenderPass& renderPass,
-    const VkPipelineLayout& pipelineLayout
+    const PipelineLayout& pipelineLayout
 ) {
+    m_pipelineLayout = &pipelineLayout;
+
     VkPipelineVertexInputStateCreateInfo vertexInput{};
     vertexInput.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
 
@@ -104,7 +107,7 @@ void DebugTexPipeline::init(
     pipelineInfo.renderPass = renderPass;
     pipelineInfo.stageCount = SHADER_STAGE_COUNT;
     pipelineInfo.pStages = shaderStages.data();
-    pipelineInfo.layout = pipelineLayout;
+    pipelineInfo.layout = m_pipelineLayout->getLayout();
     pipelineInfo.subpass = 0;
     pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
     pipelineInfo.basePipelineIndex = -1;
@@ -126,8 +129,8 @@ void DebugTexPipeline::destroy(const Device& device) {
 
 /* ========================================================================== */
 
-void DebugTexPipeline::record(const PipelineLayout& pipelineLayout, const ICommandBuffer* cmdBuffer) const {
-    cmdBuffer->bindDescriptorSets(pipelineLayout);
+void DebugTexPipeline::record(const ICommandBuffer* cmdBuffer) const {
+    cmdBuffer->bindDescriptorSets(*m_pipelineLayout);
     cmdBuffer->bindPipeline(m_pipeline);
 
     vkCmdDraw(cmdBuffer->getBuffer(), 4, 1, 0, 0);

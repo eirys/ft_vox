@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/15 19:33:01 by etran             #+#    #+#             */
-/*   Updated: 2024/06/15 11:32:51 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/19 11:53:39 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,6 @@
 #include "vector.h"
 #include "game_decl.h"
 #include "types.h"
-#include "debug.h"
 
 namespace ui {
 
@@ -23,10 +22,10 @@ class Window;
 
 struct Camera {
 
-    static constexpr f32    NEAR_PLANE = 0.1f;
-    static constexpr f32    FAR_PLANE = 500.0f;
-    static constexpr f32    ASPECT_RATIO = 1200.0f / 800.0f;
-    static constexpr f32    FOV = 85.0f;
+    static constexpr f32    NEAR_PLANE = Z_NEAR;
+    static constexpr f32    FAR_PLANE = Z_FAR;
+    static constexpr f32    ASPECT_RATIO = WINDOW_WIDTH / WINDOW_HEIGHT;
+    static constexpr f32    FOV = CAM_FOV;
 
     math::Vect3 m_position;
     math::Vect3 m_front;

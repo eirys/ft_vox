@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/13 17:50:52 by etran             #+#    #+#             */
-/*   Updated: 2024/06/14 17:16:40 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/21 14:36:33 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,6 +64,7 @@ void DeferredRenderPass::begin(const ICommandBuffer* cmdBuffer, const RecordInfo
     clearValues[(u32)Attachment::ColorPosition].color = {{ 0.0f, 0.0f, 0.0f, 0.0f }};
     clearValues[(u32)Attachment::ColorNormal].color = {{ 0.0f, 0.0f, 0.0f, 0.0f }};
     clearValues[(u32)Attachment::ColorAlbedo].color = {{ 0.0f, 0.0f, 0.0f, 0.0f }};
+    clearValues[(u32)Attachment::ColorViewNormal].color = {{ 0.0f, 0.0f, 0.0f, 0.0f }};
     clearValues[(u32)Attachment::Depth].depthStencil = { 1.0f, 0 };
 
     VkRenderPassBeginInfo beginInfo{};
@@ -87,32 +88,24 @@ void DeferredRenderPass::_createRenderPass(const Device& device, const RenderPas
     // Attachments
     std::array<VkAttachmentDescription, ATTACHMENT_COUNT> attachments{};
 
-    attachments[(u32)Attachment::ColorPosition].format = deferredInfo->m_formats[(u32)Resource::ColorPosition];
-    attachments[(u32)Attachment::ColorPosition].samples = deferredInfo->m_samples[(u32)Resource::ColorPosition];
-    attachments[(u32)Attachment::ColorPosition].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-    attachments[(u32)Attachment::ColorPosition].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-    attachments[(u32)Attachment::ColorPosition].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-    attachments[(u32)Attachment::ColorPosition].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-    attachments[(u32)Attachment::ColorPosition].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    attachments[(u32)Attachment::ColorPosition].finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+    auto createAtt = [](VkFormat format, VkSampleCountFlagBits sampleCount){
+        VkAttachmentDescription attDesc{};
+        attDesc.format = format;
+        attDesc.samples = sampleCount;
+        attDesc.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+        attDesc.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+        attDesc.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+        attDesc.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+        attDesc.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        attDesc.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
-    attachments[(u32)Attachment::ColorNormal].format = deferredInfo->m_formats[(u32)Resource::ColorNormal];
-    attachments[(u32)Attachment::ColorNormal].samples = deferredInfo->m_samples[(u32)Resource::ColorNormal];
-    attachments[(u32)Attachment::ColorNormal].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-    attachments[(u32)Attachment::ColorNormal].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-    attachments[(u32)Attachment::ColorNormal].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-    attachments[(u32)Attachment::ColorNormal].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-    attachments[(u32)Attachment::ColorNormal].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    attachments[(u32)Attachment::ColorNormal].finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        return attDesc;
+    };
 
-    attachments[(u32)Attachment::ColorAlbedo].format = deferredInfo->m_formats[(u32)Resource::ColorAlbedo];
-    attachments[(u32)Attachment::ColorAlbedo].samples = deferredInfo->m_samples[(u32)Resource::ColorAlbedo];
-    attachments[(u32)Attachment::ColorAlbedo].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-    attachments[(u32)Attachment::ColorAlbedo].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-    attachments[(u32)Attachment::ColorAlbedo].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-    attachments[(u32)Attachment::ColorAlbedo].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-    attachments[(u32)Attachment::ColorAlbedo].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    attachments[(u32)Attachment::ColorAlbedo].finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+    attachments[(u32)Attachment::ColorPosition] = createAtt(deferredInfo->m_formats[(u32)Resource::ColorPosition], deferredInfo->m_samples[(u32)Resource::ColorPosition]);
+    attachments[(u32)Attachment::ColorNormal] = createAtt(deferredInfo->m_formats[(u32)Resource::ColorNormal], deferredInfo->m_samples[(u32)Resource::ColorNormal]);
+    attachments[(u32)Attachment::ColorAlbedo] = createAtt(deferredInfo->m_formats[(u32)Resource::ColorAlbedo], deferredInfo->m_samples[(u32)Resource::ColorAlbedo]);
+    attachments[(u32)Attachment::ColorViewNormal] = createAtt(deferredInfo->m_formats[(u32)Resource::ColorViewNormal], deferredInfo->m_samples[(u32)Resource::ColorViewNormal]);
 
     attachments[(u32)Attachment::Depth].format = deferredInfo->m_formats[(u32)Resource::DepthImage];
     attachments[(u32)Attachment::Depth].samples = deferredInfo->m_samples[(u32)Resource::DepthImage];
@@ -121,7 +114,7 @@ void DeferredRenderPass::_createRenderPass(const Device& device, const RenderPas
     attachments[(u32)Attachment::Depth].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
     attachments[(u32)Attachment::Depth].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
     attachments[(u32)Attachment::Depth].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    attachments[(u32)Attachment::Depth].finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+    attachments[(u32)Attachment::Depth].finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
 
     // Subpasses
     std::array<VkAttachmentReference, ATTACHMENT_COUNT> attachmentRefs{};
@@ -132,6 +125,9 @@ void DeferredRenderPass::_createRenderPass(const Device& device, const RenderPas
     attachmentRefs[(u32)Attachment::ColorNormal].attachment = (u32)Attachment::ColorNormal;
     attachmentRefs[(u32)Attachment::ColorNormal].layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
+    attachmentRefs[(u32)Attachment::ColorViewNormal].attachment = (u32)Attachment::ColorViewNormal;
+    attachmentRefs[(u32)Attachment::ColorViewNormal].layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
     attachmentRefs[(u32)Attachment::ColorAlbedo].attachment = (u32)Attachment::ColorAlbedo;
     attachmentRefs[(u32)Attachment::ColorAlbedo].layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
@@ -140,7 +136,7 @@ void DeferredRenderPass::_createRenderPass(const Device& device, const RenderPas
 
     VkSubpassDescription subpass{};
     subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-    subpass.colorAttachmentCount = 3;
+    subpass.colorAttachmentCount = 4;
     subpass.pColorAttachments = attachmentRefs.data();
     subpass.pDepthStencilAttachment = &attachmentRefs[(u32)Attachment::Depth];
 
@@ -148,18 +144,18 @@ void DeferredRenderPass::_createRenderPass(const Device& device, const RenderPas
     std::array<VkSubpassDependency, 2> dependencies{};
     dependencies[0].srcSubpass = VK_SUBPASS_EXTERNAL;
     dependencies[0].dstSubpass = 0;
-    dependencies[0].srcStageMask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
+    dependencies[0].srcStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
     dependencies[0].dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-    dependencies[0].srcAccessMask = VK_ACCESS_MEMORY_READ_BIT;
-    dependencies[0].dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+    dependencies[0].srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
+    dependencies[0].dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
     dependencies[0].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
 
     dependencies[1].srcSubpass = 0;
     dependencies[1].dstSubpass = VK_SUBPASS_EXTERNAL;
     dependencies[1].srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-    dependencies[1].dstStageMask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
-    dependencies[1].srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-    dependencies[1].dstAccessMask = VK_ACCESS_MEMORY_READ_BIT;
+    dependencies[1].dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+    dependencies[1].srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+    dependencies[1].dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
     dependencies[1].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
 
     // Render pass
@@ -192,11 +188,11 @@ void DeferredRenderPass::_importResources(const Device& device, const RenderPass
     textureData.m_usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT |
                           VK_IMAGE_USAGE_SAMPLED_BIT;
     textureData.m_aspectFlags = VK_IMAGE_ASPECT_DEPTH_BIT;
-    ImageBuffer* depthImg = new ImageBuffer();
+    ImageBuffer* depthImg = new ImageBuffer(true);
     depthImg->initImage(device, std::move(textureData));
     depthImg->initView(device);
 
-    m_resources = { &deferredInfo->m_positionTexture, &deferredInfo->m_normalTexture, &deferredInfo->m_albedoTexture, depthImg };
+    m_resources = { &deferredInfo->m_positionTexture, &deferredInfo->m_normalTexture, &deferredInfo->m_albedoTexture, &deferredInfo->m_normalViewTexture, depthImg };
 
     LDEBUG("Deferred render pass resources created.");
 }
@@ -208,6 +204,7 @@ void DeferredRenderPass::_createTargets(const Device& device, const RenderPassIn
         m_resources[(u32)Attachment::ColorPosition]->getView(),
         m_resources[(u32)Attachment::ColorNormal]->getView(),
         m_resources[(u32)Attachment::ColorAlbedo]->getView(),
+        m_resources[(u32)Attachment::ColorViewNormal]->getView(),
         m_resources[(u32)Attachment::Depth]->getView() };
 
     VkFramebufferCreateInfo framebufferInfo{};

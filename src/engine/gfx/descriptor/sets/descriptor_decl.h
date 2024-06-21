@@ -6,21 +6,18 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/28 23:42:29 by etran             #+#    #+#             */
-/*   Updated: 2024/06/13 23:46:40 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/21 03:45:48 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef DESCRIPTOR_DECL_H
 # define DESCRIPTOR_DECL_H
 
-#define PFD_SET 0
-#define WORLD_SET 1
-#define GBUFFER_SET 2
-
 #ifdef VOX_CPP
 
 #include <vulkan/vulkan.h>
 #include "types.h"
+#include "vox_decl.h"
 
 namespace vox::gfx {
 
@@ -33,9 +30,13 @@ namespace vox::gfx {
  * @note The list is stored in the DescriptorTable class.
 */
 enum class DescriptorSetIndex: u32 {
-    Pfd         = PFD_SET,
-    WorldData   = WORLD_SET,
-    GBuffer     = GBUFFER_SET,
+    Pfd,
+    WorldData,
+    GBuffer,
+#if ENABLE_SSAO
+    Ssao,
+    SsaoBlur,
+#endif
 
     Count
 };
@@ -87,6 +88,29 @@ ShaderVisibility operator|(ShaderVisibility lhs, ShaderVisibility rhs) {
 
 } // namespace vox::gfx
 
-#endif // VOX_CPP
+#else
 
+#if defined(VOX_SCENE_LAYOUT)
+# define PFD_SET 0
+# define GBUFFER_SET 1
+
+#elif defined(VOX_SKY_LAYOUT)
+#define PFD_SET 0
+#define WORLD_SET 1
+
+#elif defined(VOX_DEFERRED_LAYOUT)
+#define WORLD_SET 0
+
+#elif defined(VOX_SHADOW_LAYOUT)
+#define PFD_SET 0
+
+#elif defined(VOX_SSAO_LAYOUT)
+#define SSAO_SET 0
+
+#elif defined(VOX_SSAO_BLUR_LAYOUT)
+#define SSAO_BLUR_SET 0
+
+#endif
+
+#endif // VOX_CPP
 #endif // DESCRIPTOR_DECL_H

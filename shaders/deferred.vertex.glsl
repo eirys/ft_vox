@@ -1,4 +1,5 @@
 #version 450
+#define VOX_DEFERRED_LAYOUT
 
 #include "../src/engine/game/game_decl.h"
 #include "../src/engine/gfx/descriptor/sets/descriptor_decl.h"
@@ -9,6 +10,7 @@ layout(location = 0) in uint inData;
 layout(location = 0) out vec3 outUVW;
 layout(location = 1) out vec3 outNormal;
 layout(location = 2) out vec3 outPosition;
+layout(location = 3) out vec3 outNormalView;
 
 layout(push_constant) uniform Camera {
     mat4 view;
@@ -77,11 +79,15 @@ InstanceData unpackData(in uint inputData) {
 }
 
 void main() {
-    InstanceData instanceData = unpackData(inData);
+    const InstanceData instanceData = unpackData(inData);
+    const vec4         worldPos = vec4(CUBE_FACE[instanceData.face][gl_VertexIndex] + instanceData.chunkPos + instanceData.blockPos, 1.0);
 
     outUVW = vec3(UVS[gl_VertexIndex], instanceData.textureIndex);
     outNormal = NORMALS[instanceData.face];
-    outPosition = CUBE_FACE[instanceData.face][gl_VertexIndex] + instanceData.chunkPos + instanceData.blockPos;
+    outPosition = (camera.view * worldPos).xyz;
 
-    gl_Position = camera.proj * camera.view * vec4(outPosition, 1.0);
+    const mat3 invView = transpose(inverse(mat3(camera.view)));
+    outNormalView = invView * outNormal;
+
+    gl_Position = camera.proj * camera.view * worldPos;
 }

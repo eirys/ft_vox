@@ -1,4 +1,5 @@
 #version 450
+#define VOX_SHADOW_LAYOUT
 
 #include "../src/engine/game/game_decl.h"
 #include "../src/engine/gfx/descriptor/sets/descriptor_decl.h"

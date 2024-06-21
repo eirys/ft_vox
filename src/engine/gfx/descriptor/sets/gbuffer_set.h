@@ -6,18 +6,17 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/13 23:51:42 by etran             #+#    #+#             */
-/*   Updated: 2024/06/14 14:03:11 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/21 01:33:27 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
 #include "descriptor_set.h"
-#include "image_buffer.h"
 
 namespace vox::gfx {
 
-class TextureSampler;
+class Texture;
 
 class GBufferSet final: public DescriptorSet {
 public:
@@ -29,14 +28,12 @@ public:
         PositionTexture,
         NormalTexture,
         AlbedoTexture,
+        NormalViewTexture,
 
-        Count
-    };
-
-    enum class Texture: u32 {
-        PositionTexture,
-        NormalTexture,
-        AlbedoTexture,
+#if ENABLE_SSAO
+        SsaoTexture,
+        SsaoBlur,
+#endif
 
         Count
     };
@@ -51,18 +48,10 @@ public:
     /*                                 METHODS                                */
     /* ====================================================================== */
 
-    GBufferSet(): super(DescriptorSetIndex::GBuffer) {}
-
-    /* ====================================================================== */
-
     void    init(const Device& device, const ICommandBuffer* cmdBuffer) override;
     void    destroy(const Device& device) override;
 
     void    fill(const Device& device) override;
-
-    /* ====================================================================== */
-
-    const ImageBuffer&  getImageBuffer(const u32 index) const noexcept override;
 
 private:
     /* ====================================================================== */
@@ -70,13 +59,6 @@ private:
     /* ====================================================================== */
 
     static constexpr u32 BINDING_COUNT = (u32)BindingIndex::Count;
-    static constexpr u32 TEXTURE_COUNT = (u32)Texture::Count;
-
-    /* ====================================================================== */
-    /*                                  DATA                                  */
-    /* ====================================================================== */
-
-    std::array<TextureSampler*, TEXTURE_COUNT>  m_textures;
 
 }; // class GBufferSet
 

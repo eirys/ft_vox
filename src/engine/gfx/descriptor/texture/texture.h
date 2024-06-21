@@ -1,49 +1,59 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   perlin_noise_sampler.h                             :+:      :+:    :+:   */
+/*   texture.h                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/03/27 15:26:15 by etran             #+#    #+#             */
-/*   Updated: 2024/06/03 15:59:43 by etran            ###   ########.fr       */
+/*   Created: 2024/03/11 17:10:03 by etran             #+#    #+#             */
+/*   Updated: 2024/06/20 13:41:36 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
-#include "texture_sampler.h"
+#include "image_buffer.h"
 
 namespace vox::gfx {
 
-class PerlinNoiseSampler final: public TextureSampler {
+class Texture {
 public:
     /* ====================================================================== */
     /*                                 METHODS                                */
     /* ====================================================================== */
 
-    PerlinNoiseSampler() = default;
-    ~PerlinNoiseSampler() = default;
-
-    PerlinNoiseSampler(PerlinNoiseSampler&& other) = delete;
-    PerlinNoiseSampler(const PerlinNoiseSampler& other) = delete;
-    PerlinNoiseSampler& operator=(PerlinNoiseSampler&& other) = delete;
-    PerlinNoiseSampler& operator=(const PerlinNoiseSampler& other) = delete;
+    virtual ~Texture() = default;
 
     /* ====================================================================== */
 
-    void    init(const Device& device) override;
-    void    destroy(const Device& device) override;
+    virtual void init(const Device& device) = 0;
+    virtual void destroy(const Device& device) = 0;
 
-    void    fill(const Device& device, const ICommandBuffer* cmdBuffer, const void* data = nullptr) override;
+    virtual void fill(const Device& device, const ICommandBuffer* cmdBuffer, const void* data = nullptr) = 0;
 
-private:
+    /* ====================================================================== */
+
+    const ImageBuffer&  getImageBuffer() const noexcept { return m_imageBuffer; }
+
+protected:
+    /* ====================================================================== */
+    /*                                  DATA                                  */
+    /* ====================================================================== */
+
+    ImageBuffer m_imageBuffer;
+
     /* ====================================================================== */
     /*                                 METHODS                                */
     /* ====================================================================== */
 
-    void    _createSampler(const Device& device);
+    Texture(bool isFramebuffer): m_imageBuffer(isFramebuffer) {}
 
-}; // class PerlinNoiseSampler
+    Texture() = delete;
+    Texture(Texture&& other) = delete;
+    Texture(const Texture& other) = delete;
+    Texture& operator=(Texture&& other) = delete;
+    Texture& operator=(const Texture& other) = delete;
+
+}; // class Texture
 
 } // namespace vox::gfx

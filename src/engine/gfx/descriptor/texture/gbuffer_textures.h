@@ -6,23 +6,37 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/14 00:06:31 by etran             #+#    #+#             */
-/*   Updated: 2024/06/14 02:19:53 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/21 14:32:08 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
-#include "texture_sampler.h"
+#include "texture.h"
 
 namespace vox::gfx {
 
-class PositionTexture final: public TextureSampler {
+class PositionTexture;
+class NormalTexture;
+class AlbedoTexture;
+class SSAOTexture;
+using NormalViewTexture = NormalTexture;
+using SSAOBlurTexture = SSAOTexture;
+
+class PositionTexture final: public Texture {
 public:
+    /* ====================================================================== */
+    /*                                TYPEDEFS                                */
+    /* ====================================================================== */
+
+    using super = Texture;
+
     /* ====================================================================== */
     /*                                 METHODS                                */
     /* ====================================================================== */
 
-    PositionTexture() = default;
+    PositionTexture(): super(true) {}
+
     ~PositionTexture() = default;
 
     PositionTexture(PositionTexture&& other) = delete;
@@ -39,13 +53,20 @@ public:
 
 }; // class PositionTexture
 
-class NormalTexture final: public TextureSampler {
+class NormalTexture final: public Texture {
 public:
+    /* ====================================================================== */
+    /*                                TYPEDEFS                                */
+    /* ====================================================================== */
+
+    using super = Texture;
+
     /* ====================================================================== */
     /*                                 METHODS                                */
     /* ====================================================================== */
 
-    NormalTexture() = default;
+    NormalTexture(): super(true) {}
+
     ~NormalTexture() = default;
 
     NormalTexture(NormalTexture&& other) = delete;
@@ -62,13 +83,20 @@ public:
 
 }; // class NormalTexture
 
-class AlbedoTexture final: public TextureSampler {
+class AlbedoTexture final: public Texture {
 public:
+    /* ====================================================================== */
+    /*                                TYPEDEFS                                */
+    /* ====================================================================== */
+
+    using super = Texture;
+
     /* ====================================================================== */
     /*                                 METHODS                                */
     /* ====================================================================== */
 
-    AlbedoTexture() = default;
+    AlbedoTexture(): super(true) {}
+
     ~AlbedoTexture() = default;
 
     AlbedoTexture(AlbedoTexture&& other) = delete;
@@ -84,5 +112,38 @@ public:
     void    fill(const Device& device, const ICommandBuffer* cmdBuffer, const void* data = nullptr) override;
 
 }; // class AlbedoTexture
+
+/**
+ * @brief SSAO texture sampler, same format used for the SSAO Blur texture.
+ */
+class SSAOTexture final: public Texture {
+public:
+    /* ====================================================================== */
+    /*                                TYPEDEFS                                */
+    /* ====================================================================== */
+
+    using super = Texture;
+
+    /* ====================================================================== */
+    /*                                 METHODS                                */
+    /* ====================================================================== */
+
+    SSAOTexture(): super(true) {}
+
+    ~SSAOTexture() = default;
+
+    SSAOTexture(SSAOTexture&& other) = delete;
+    SSAOTexture(const SSAOTexture& other) = delete;
+    SSAOTexture& operator=(SSAOTexture&& other) = delete;
+    SSAOTexture& operator=(const SSAOTexture& other) = delete;
+
+    /* ====================================================================== */
+
+    void    init(const Device& device) override;
+    void    destroy(const Device& device) override;
+
+    void    fill(const Device& device, const ICommandBuffer* cmdBuffer, const void* data = nullptr) override;
+
+}; // class SSAOTexture
 
 } // namespace vox::gfx

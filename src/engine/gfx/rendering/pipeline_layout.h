@@ -6,22 +6,23 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/12 10:38:03 by etran             #+#    #+#             */
-/*   Updated: 2024/06/14 19:27:45 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/21 14:34:48 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
+#include <vulkan/vulkan.h>
 #include <vector>
 
 #include "types.h"
-#include "push_constant.h"
 
 namespace vox::gfx {
 
 class Device;
 class ICommandBuffer;
 class IDescriptorSet;
+class PushConstant;
 
 class PipelineLayout final {
 public:
@@ -41,12 +42,9 @@ public:
 
     void init(
         const Device& device,
-        const std::vector<IDescriptorSet*>& setLayouts,
-        PushConstant* pushConstant);
+        const std::vector<const IDescriptorSet*>& setLayouts,
+        const PushConstant* pushConstant = nullptr);
     void destroy(const Device& device);
-
-    void updatePushConstant(const game::GameState& gameState) const;
-    void bindPushConstantRange(const ICommandBuffer* commandBuffer) const;
 
     VkPipelineLayout                    getLayout() const noexcept;
     const std::vector<VkDescriptorSet>& getSets() const noexcept;
@@ -58,7 +56,6 @@ private:
 
     std::vector<VkDescriptorSet>    m_descriptorSets;
     VkPipelineLayout                m_layout = VK_NULL_HANDLE;
-    PushConstant*                   m_pushConstant = nullptr;
 
 }; // class PipelineLayout
 

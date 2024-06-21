@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:16:07 by etran             #+#    #+#             */
-/*   Updated: 2024/06/03 21:04:56 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/18 13:34:44 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -91,6 +91,10 @@ struct Vect3 {
 	constexpr Vect3(float value): x(value), y(value), z(value) {}
 	constexpr Vect3(float new_x, float new_y, float new_z):
 		x(new_x), y(new_y), z(new_z) {}
+    constexpr Vect3(const Vect2& vec, float val):
+        x(vec.x), y(vec.y), z(val) {}
+    constexpr Vect3(float val, const Vect2& vec):
+        x(val), y(vec.x), z(vec.y) {}
 
 	constexpr Vect3(const Vect3& other) = default;
 	constexpr Vect3(Vect3&& other) = default;
@@ -151,6 +155,19 @@ struct Vect4 {
 	constexpr Vect4(float value): x(value), y(value), z(value), w(value) {}
 	constexpr Vect4(float new_x, float new_y, float new_z, float new_w):
 		x(new_x), y(new_y), z(new_z), w(new_w) {}
+    constexpr Vect4(const Vect3& vec, float val):
+        x(vec.x), y(vec.y), z(vec.z), w(val) {}
+    constexpr Vect4(float val, const Vect3& vec):
+        x(val), y(vec.x), z(vec.y), w(vec.z) {}
+    constexpr Vect4(const Vect2& first, const Vect2& sec):
+        x(first.x), y(first.y), z(sec.x), w(sec.y) {}
+    constexpr Vect4(const Vect2& vec, float blue, float alpha):
+        x(vec.x), y(vec.y), z(blue), w(alpha) {}
+    constexpr Vect4(float red, const Vect2& vec, float alpha):
+        x(red), y(vec.x), z(vec.y), w(alpha) {}
+    constexpr Vect4(float red, float green, const Vect2& vec):
+        x(red), y(green), z(vec.x), w(vec.y) {}
+
 
 	constexpr Vect4(const Vect4& other) = default;
 	constexpr Vect4(Vect4&& other) = default;

@@ -1,11 +1,12 @@
 #version 450
+#define VOX_SKY_LAYOUT
 
 #include "../src/engine/gfx/descriptor/sets/descriptor_decl.h"
 #include "../src/engine/game/game_decl.h"
 
 layout(location = 0) out float outIntensity;
-layout(location = 1) out float outRandom;
-layout(location = 2) out float outHeight;
+// layout(location = 1) out float outRandom;
+layout(location = 1) out float outHeight;
 
 layout(push_constant) uniform Camera {
     mat4 view;
@@ -16,7 +17,6 @@ layout(set = PFD_SET, binding = 0) uniform GameData {
     vec2 sunPos;
 } gameData;
 
-// layout(set = WORLD_SET, binding = 2) uniform sampler2DArray NoiseTex;
 layout(set = WORLD_SET, binding = 1) uniform sampler2DArray NoiseTex;
 
 const vec3 X_AXIS = vec3(1.0, 0.0, 0.0);
@@ -149,8 +149,10 @@ void main() {
     const vec4 vertex = vec4(VERTEX_POS[gl_VertexIndex], 1.0);
     const vec4 worldPos = model * vertex;
 
-    outIntensity = pow(max(moonDir.y, 0.0), 2.0);
-    outRandom = texture(NoiseTex, vec3(noiseCoord, 3)).r * 0.8 + 0.2;
+    const float randomFactor = texture(NoiseTex, vec3(noiseCoord, 3)).r * 0.8 + 0.2;
+    float moonHeight = max(moonDir.y, 0.0);
+
+    outIntensity = randomFactor * moonHeight * moonHeight;
     outHeight = (camera.proj * worldPos).y;
 
     gl_Position = camera.proj * mat4(mat3(camera.view)) * worldPos;

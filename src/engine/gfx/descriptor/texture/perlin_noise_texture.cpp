@@ -1,16 +1,16 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   perlin_noise_sampler.cpp                           :+:      :+:    :+:   */
+/*   perlin_noise_texture.cpp                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/27 15:41:25 by etran             #+#    #+#             */
-/*   Updated: 2024/06/03 15:59:37 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/20 16:11:08 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "perlin_noise_sampler.h"
+#include "perlin_noise_texture.h"
 #include "device.h"
 #include "perlin_noise.h"
 #include "icommand_buffer.h"
@@ -35,7 +35,6 @@ void PerlinNoiseSampler::init(const Device& device) {
     textureData.m_layerCount = 4;
     textureData.m_viewType = VK_IMAGE_VIEW_TYPE_2D_ARRAY;
     m_imageBuffer.initImage(device, std::move(textureData));
-    _createSampler(device);
 }
 
 void PerlinNoiseSampler::fill(
@@ -97,38 +96,6 @@ void PerlinNoiseSampler::fill(
 
 void PerlinNoiseSampler::destroy(const Device& device) {
     m_imageBuffer.destroy(device);
-    vkDestroySampler(device.getDevice(), m_sampler, nullptr);
-}
-
-/* ========================================================================== */
-/*                                   PRIVATE                                  */
-/* ========================================================================== */
-
-void PerlinNoiseSampler::_createSampler(const Device& device) {
-    VkSamplerCreateInfo samplerInfo{};
-
-    // constexpr VkFilter FILTER = VK_FILTER_NEAREST;
-    constexpr VkFilter FILTER = VK_FILTER_LINEAR;
-
-    samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
-    samplerInfo.magFilter = FILTER;
-    samplerInfo.minFilter = FILTER;
-    samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
-    samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER;
-    samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER;
-    samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER;
-    samplerInfo.anisotropyEnable = VK_FALSE;
-    samplerInfo.maxAnisotropy = 0.0f;
-    samplerInfo.compareEnable = VK_FALSE;
-    samplerInfo.compareOp = VK_COMPARE_OP_NEVER;
-    samplerInfo.mipLodBias = 0.0f;
-    samplerInfo.minLod = 0.0f;
-    samplerInfo.maxLod = 1.0f;
-    samplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
-
-    if (vkCreateSampler(device.getDevice(), &samplerInfo, nullptr, &m_sampler) != VK_SUCCESS) {
-        throw std::runtime_error("failed to create texture sampler!");
-    }
 }
 
 } // namespace vox::gfx

@@ -1,27 +1,25 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   skybox_sampler.cpp                                 :+:      :+:    :+:   */
+/*   skybox_texture.cpp                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/20 15:27:49 by etran             #+#    #+#             */
-/*   Updated: 2024/06/03 15:59:02 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/21 14:33:27 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "skybox_sampler.h"
+#include "skybox_texture.h"
 #include "device.h"
 #include "icommand_buffer.h"
 #include "buffer.h"
-#include "debug.h"
-
 #include "ppm_loader.h"
+#include "debug.h"
 
 namespace vox::gfx {
 
 static constexpr u32 TEXTURE_SIZE = 16;
-static constexpr u32 TEXTURE_COUNT = 1;
 
 /* ========================================================================== */
 /*                                   PUBLIC                                   */
@@ -40,12 +38,10 @@ void SkyboxSampler::init(const Device& device) {
     textureData.m_flags = VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT;
     textureData.computeMipCount();
     m_imageBuffer.initImage(device, std::move(textureData));
-    _createSampler(device);
 }
 
 void SkyboxSampler::destroy(const Device& device) {
     m_imageBuffer.destroy(device);
-    vkDestroySampler(device.getDevice(), m_sampler, nullptr);
 }
 
 /* ========================================================================== */
@@ -83,34 +79,6 @@ void SkyboxSampler::fill(
     stagingBuffer.destroy(device);
 
     m_imageBuffer.initView(device);
-}
-
-/* ========================================================================== */
-/*                                   PRIVATE                                  */
-/* ========================================================================== */
-
-void SkyboxSampler::_createSampler(const Device& device) {
-    VkSamplerCreateInfo samplerInfo{};
-    samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
-    samplerInfo.magFilter = VK_FILTER_LINEAR;
-    samplerInfo.minFilter = VK_FILTER_LINEAR;
-    samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
-    samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-    samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-    samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-    samplerInfo.anisotropyEnable = VK_TRUE;
-    samplerInfo.maxAnisotropy = device.queryDeviceProperties().limits.maxSamplerAnisotropy;
-    samplerInfo.compareEnable = VK_FALSE;
-    samplerInfo.compareOp = VK_COMPARE_OP_NEVER;
-    samplerInfo.mipLodBias = 0.0f;
-    samplerInfo.minLod = 0.0f;
-    samplerInfo.maxLod = (float)m_imageBuffer.getMetaData().m_mipCount;
-    samplerInfo.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
-    samplerInfo.unnormalizedCoordinates = VK_FALSE;
-
-    if (vkCreateSampler(device.getDevice(), &samplerInfo, nullptr, &m_sampler) != VK_SUCCESS) {
-        throw std::runtime_error("failed to create texture sampler!");
-    }
 }
 
 } // namespace vox::gfx

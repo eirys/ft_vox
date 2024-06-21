@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/12 21:21:33 by etran             #+#    #+#             */
-/*   Updated: 2024/06/13 15:32:54 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/21 14:35:48 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,29 +25,45 @@ class GameState;
 
 namespace vox::gfx {
 
+class PipelineLayout;
+class ICommandBuffer;
+
 class PushConstant {
 public:
+    /* ====================================================================== */
+    /*                                 METHODS                                */
+    /* ====================================================================== */
+
     virtual ~PushConstant() = default;
 
     virtual void    update(const game::GameState& gameState) noexcept = 0;
-    virtual void*   getObject(const u32 index) const noexcept = 0;
-    virtual u32     getObjectCount() const noexcept = 0;
+
+    virtual void    bind(const ICommandBuffer* cmdBuffer, const PipelineLayout& layout) const = 0;
+
     virtual VkPushConstantRange getRange(const u32 index) const noexcept = 0;
+    virtual const void*         getObject(const u32 index) const noexcept = 0;
 
     const std::vector<VkPushConstantRange>& getRanges() const noexcept;
 
 protected:
-    std::vector<VkPushConstantRange>    m_ranges;
-};
+    /* ====================================================================== */
+    /*                                  DATA                                  */
+    /* ====================================================================== */
 
-class MainPushConstant final: public PushConstant {
+    std::vector<VkPushConstantRange>    m_ranges;
+
+}; // class PushConstant
+
+// ----------------------------------------------------------------------------
+
+class CameraPushConstant final: public PushConstant {
 public:
     /* ====================================================================== */
     /*                                  ENUMS                                 */
     /* ====================================================================== */
 
     enum class Objects: u32 {
-        Camera,
+        Data,
 
         Count
     };
@@ -56,11 +72,12 @@ public:
     /*                                 METHODS                                */
     /* ====================================================================== */
 
-    MainPushConstant();
+    CameraPushConstant();
 
     void    update(const game::GameState& gameState) noexcept override;
-    void*   getObject(const u32 index) const noexcept override;
-    u32     getObjectCount() const noexcept override;
+    void    bind(const ICommandBuffer* cmdBuffer, const PipelineLayout& layout) const override;
+
+    const void*         getObject(const u32 index) const noexcept override;
     VkPushConstantRange getRange(const u32 index) const noexcept override;
 
 private:
@@ -68,13 +85,11 @@ private:
     /*                                  DATA                                  */
     /* ====================================================================== */
 
-    struct Camera {
-        static constexpr u32 OFFSET = 0;
-
+    struct Data {
         math::Mat4  m_view;
         math::Mat4  m_proj;
-    }   m_camera;
+    }   m_data;
 
-};
+}; // class CameraPushConstant
 
 } // namespace vox::gfx
