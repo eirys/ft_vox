@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/20 00:02:09 by etran             #+#    #+#             */
-/*   Updated: 2024/06/21 02:05:43 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/21 17:06:57 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,7 +47,7 @@ void keyCallback(GLFWwindow* win, int key, int scancode, int action, int mods) {
 
             case GLFW_KEY_M:            if (isPressed) window->toggleMouse(); break;
 
-            // Toggle
+            // Switch
             case GLFW_KEY_T:            if (isPressed) window->switchKey(KeySwitchIndex::DisableTime); break;
 
             // Value
@@ -60,7 +60,7 @@ void keyCallback(GLFWwindow* win, int key, int scancode, int action, int mods) {
                     break;
                 }
 
-            // Switch
+            // Toggle
             case GLFW_KEY_W:            isPressed ? window->toggleKey(KeyToggleIndex::Forward) : window->untoggleKey(KeyToggleIndex::Forward); break;
             case GLFW_KEY_S:            isPressed ? window->toggleKey(KeyToggleIndex::Backward) : window->untoggleKey(KeyToggleIndex::Backward); break;
             case GLFW_KEY_A:            isPressed ? window->toggleKey(KeyToggleIndex::Left) : window->untoggleKey(KeyToggleIndex::Left); break;
@@ -69,10 +69,8 @@ void keyCallback(GLFWwindow* win, int key, int scancode, int action, int mods) {
             case GLFW_KEY_LEFT_CONTROL: isPressed ? window->toggleKey(KeyToggleIndex::Down) : window->untoggleKey(KeyToggleIndex::Down); break;
             case GLFW_KEY_R:            isPressed ? window->toggleKey(KeyToggleIndex::Speed) : window->untoggleKey(KeyToggleIndex::Speed); break;
 
-            default:                    break;
+            default:                    return;
         }
-
-        // window->toggleUpdate();
     }
 }
 
@@ -84,7 +82,6 @@ void cursorPositionCallback(GLFWwindow* win, double xpos, double ypos) {
         return;
 
     window->updateMousePos(xpos, ypos);
-    // window->toggleUpdate();
 }
 
 /* ========================================================================== */
@@ -160,10 +157,6 @@ void    Window::toggleMouse() noexcept {
     glfwSetInputMode(m_window, GLFW_CURSOR, m_mouseActive ? GLFW_CURSOR_NORMAL : GLFW_CURSOR_DISABLED);
 }
 
-void    Window::toggleUpdate() noexcept {
-    m_isUpdated = !m_isUpdated;
-}
-
 void Window::retrieveFramebufferSize(int& width, int& height) const {
     glfwGetFramebufferSize(m_window, &width, &height);
 }
@@ -214,10 +207,6 @@ const Window::MousePos& Window::getMousePos() const noexcept {
 
 bool Window::isMouseActive() const noexcept {
     return m_mouseActive;
-}
-
-bool Window::needsUpdate() const noexcept {
-    return m_isUpdated;
 }
 
 GLFWwindow* Window::getWindow() noexcept {

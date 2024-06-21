@@ -83,8 +83,7 @@ void main() {
     const vec3 sunDir = vec3(gameData.sunPos, 0.0);
     const vec3 moonDir = -sunDir;
     const float sunHeight = max(sunDir.y, 0.0);
-
-    const vec3 lightDir =  mix(moonDir * 0.2, sunDir, step(0.0, sunDir.y));
+    const vec3 lightDir =  mix(moonDir, sunDir, step(0.0, sunDir.y));
     const float lightHeight = max(lightDir.y, 0.0);
 
     vec3 color = albedo.rgb;
@@ -97,10 +96,11 @@ void main() {
     color = mix(color, skyHue, 0.005);
 
     // Lighting
+    const float intensity = mix(0.1, 1.0, sunHeight) * min(1.0, pow(lightHeight, 2.0) + (0.5 * lightHeight));
     const float diffuse = max(dot(normal, lightDir), 0.0);
-    const vec3  ambient = vec3(lightHeight * 0.1 + mix(0.05, 0.1, sunHeight));
+    const vec3  ambient = vec3(mix(0.05, 0.2, sunHeight));
     const float shadow = applyShadow(position);
-    vec3 lighting = clamp(shadow * diffuse * lightHeight + ambient, 0.0, 1.0);
+    vec3 lighting = clamp(shadow * diffuse * intensity + ambient, 0.0, 1.0);
 
 #if ENABLE_SSAO
     lighting *= ssao;

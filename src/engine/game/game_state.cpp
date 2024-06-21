@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/15 13:46:03 by etran             #+#    #+#             */
-/*   Updated: 2024/06/21 03:11:05 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/21 17:09:09 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,9 +47,11 @@ void GameState::update(const ui::Window& window) {
     m_controller.update((window));
 
 #if !TOGGLE_TIME
+    float pos = -M_PI * 0.1;// M_PI * 0.5;
+
     m_sun.m_direction = math::Vect3(
-        std::cos(M_PI * 0.5),
-        std::sin(M_PI * 0.5),
+        std::cos(pos),
+        std::sin(pos),
         0.0f);
     return;
 #endif

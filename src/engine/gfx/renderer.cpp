@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/23 09:29:35 by etran             #+#    #+#             */
-/*   Updated: 2024/06/21 03:45:28 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/21 15:22:48 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -104,12 +104,10 @@ void Renderer::waitIdle() const {
 }
 
 void Renderer::render(const game::GameState& game) {
-    const PushConstant* cameraConstant = m_pushConstants[(u32)PushConstantIndex::Camera];
-
     // Prepare frame resources ---------
     m_fences[(u32)FenceIndex::DrawInFlight].await(m_device);
     m_pushConstants[(u32)PushConstantIndex::Camera]->update(game);
-    m_descriptorTable.update(game, cameraConstant);
+    m_descriptorTable.update(game);
 #if ENABLE_FRUSTUM_CULLING
     VertexBuffer::update(m_device, game);
 #endif
@@ -119,6 +117,7 @@ void Renderer::render(const game::GameState& game) {
     m_fences[(u32)FenceIndex::DrawInFlight].reset(m_device);
     // --------------------------------
 
+    const PushConstant* cameraConstant = m_pushConstants[(u32)PushConstantIndex::Camera];
     RecordInfo  recordInfo{};
 
     // Record offscreen commands -------

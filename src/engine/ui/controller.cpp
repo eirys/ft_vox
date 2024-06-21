@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/15 20:35:46 by etran             #+#    #+#             */
-/*   Updated: 2024/06/17 20:35:45 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/21 17:06:22 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,6 +34,13 @@ void Controller::update(const Window& win) {
     if (win.isMouseActive())
         return;
 
+    const float yaw = math::radians(m_state.m_yaw);
+    const float pitch = math::radians(m_state.m_pitch);
+    const float cosYaw = std::cos(yaw);
+    const float sinYaw = std::sin(yaw);
+    const float cosPitch = std::cos(pitch);
+    const float sinPitch = std::sin(pitch);
+
     // Camera
     const auto& mousePos = win.getMousePos();
     const float deltaX = (float)mousePos.x - m_state.m_lastX;
@@ -44,14 +51,6 @@ void Controller::update(const Window& win) {
 
     m_state.m_yaw = std::fmod(std::fma(deltaX, CAM_SPEED, m_state.m_yaw), 360.0f);
     m_state.m_pitch = std::clamp(std::fma(deltaY, CAM_SPEED, m_state.m_pitch), -89.0f, 89.0f); // Clamp to avoid camera flipping.
-
-    const float yaw = math::radians(m_state.m_yaw);
-    const float pitch = math::radians(m_state.m_pitch);
-
-    const float cosPitch = std::cos(pitch);
-    const float sinPitch = std::sin(pitch);
-    const float cosYaw = std::cos(yaw);
-    const float sinYaw = std::sin(yaw);
 
     m_camera.m_front = { cosYaw * cosPitch, sinPitch, sinYaw * cosPitch };
     m_camera.m_right = math::normalize(math::cross(m_camera.m_front, UP_VEC));
