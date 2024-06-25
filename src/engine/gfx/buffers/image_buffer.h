@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/27 18:36:32 by etran             #+#    #+#             */
-/*   Updated: 2024/06/18 15:14:37 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/25 16:27:05 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,7 +64,7 @@ public:
     /*                                 PUBLIC                                 */
     /* ====================================================================== */
 
-    ImageBuffer(const bool isFramebuffer = false);
+    ImageBuffer(const bool isSampled);
 
     ImageBuffer(ImageBuffer&& other) = default;
     ImageBuffer& operator=(ImageBuffer&& other) = default;
@@ -110,7 +110,7 @@ private:
     VkDeviceMemory  m_memory = VK_NULL_HANDLE;
     VkImageView     m_view = VK_NULL_HANDLE;
 
-    bool            m_isFrameBuffer = false;
+    bool            m_isSampled = false;
 };
 
 } // namespace vox::gfx

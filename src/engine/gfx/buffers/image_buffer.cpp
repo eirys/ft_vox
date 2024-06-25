@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/27 18:36:30 by etran             #+#    #+#             */
-/*   Updated: 2024/06/19 12:10:00 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/25 16:26:26 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,8 +25,8 @@ namespace vox::gfx {
 /*                                   PUBLIC                                   */
 /* ========================================================================== */
 
-ImageBuffer::ImageBuffer(const bool isFramebuffer) {
-    m_isFrameBuffer = isFramebuffer;
+ImageBuffer::ImageBuffer(const bool isSampled) {
+    m_isSampled = isSampled;
 }
 
 /* ========================================================================== */
@@ -66,7 +66,7 @@ void ImageBuffer::initImage(const Device& device, ImageMetaData&& metadata) {
         throw std::runtime_error("failed to bind image memory");
     }
 
-    if (m_isFrameBuffer) {
+    if (m_isSampled) {
         if (m_metadata.m_usage & VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT)
             m_metadata.m_layoutData.m_layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
         else if (m_metadata.m_usage & VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT)

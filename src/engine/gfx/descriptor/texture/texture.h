@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/11 17:10:03 by etran             #+#    #+#             */
-/*   Updated: 2024/06/20 13:41:36 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/25 16:30:08 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,7 +46,7 @@ protected:
     /*                                 METHODS                                */
     /* ====================================================================== */
 
-    Texture(bool isFramebuffer): m_imageBuffer(isFramebuffer) {}
+    Texture(bool isSampled): m_imageBuffer(isSampled) {}
 
     Texture() = delete;
     Texture(Texture&& other) = delete;
