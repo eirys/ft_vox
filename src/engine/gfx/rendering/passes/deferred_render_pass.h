@@ -6,12 +6,13 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/13 17:25:43 by etran             #+#    #+#             */
-/*   Updated: 2024/06/21 01:31:07 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/25 12:29:53 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
+#include "vox_decl.h"
 #include "render_pass.h"
 
 namespace vox::gfx {
@@ -21,18 +22,32 @@ struct DeferredRenderPassInfo final: public RenderPassInfo {
         const ImageBuffer& positionTexture,
         const ImageBuffer& normalTexture,
         const ImageBuffer& albedoTexture,
-        const ImageBuffer& normalViewTexture) :
+        const ImageBuffer& depthTexture
+#if ENABLE_SSAO
+        , const ImageBuffer& normalViewTexture
+        , const ImageBuffer& posViewTexture
+#endif
+    ) :
         m_positionTexture(positionTexture),
         m_normalTexture(normalTexture),
         m_albedoTexture(albedoTexture),
-        m_normalViewTexture(normalViewTexture) {}
+        m_depth(depthTexture)
+#if ENABLE_SSAO
+        , m_normalViewTexture(normalViewTexture)
+        , m_positionViewTexture(posViewTexture)
+#endif
+        {}
 
     DeferredRenderPassInfo() = delete;
 
     const ImageBuffer& m_positionTexture;
     const ImageBuffer& m_normalTexture;
     const ImageBuffer& m_albedoTexture;
+    const ImageBuffer& m_depth;
+#if ENABLE_SSAO
     const ImageBuffer& m_normalViewTexture;
+    const ImageBuffer& m_positionViewTexture;
+#endif
 };
 
 class DeferredRenderPass final: public RenderPass {
@@ -45,7 +60,10 @@ public:
         ColorPosition,
         ColorNormal,
         ColorAlbedo,
+#if ENABLE_SSAO
         ColorViewNormal,
+        ColorViewPosition,
+#endif
         DepthImage,
 
         Count
@@ -55,7 +73,10 @@ public:
         ColorPosition,
         ColorNormal,
         ColorAlbedo,
+#if ENABLE_SSAO
         ColorViewNormal,
+        ColorViewPosition,
+#endif
         Depth,
 
         Count

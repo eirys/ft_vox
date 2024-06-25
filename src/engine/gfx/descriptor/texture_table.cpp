@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/20 13:21:04 by etran             #+#    #+#             */
-/*   Updated: 2024/06/21 14:23:08 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/25 14:50:11 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,31 +39,33 @@ std::vector<Sampler>                TextureTable::ms_samplers;
 void TextureTable::init(const Device& device, const ICommandBuffer* cmdBuffer) {
     ms_textures[(u32)TextureIndex::GameTexture] = new GameTextureSampler();
     ms_textures[(u32)TextureIndex::PerlinNoise] = new PerlinNoiseSampler();
+
     ms_textures[(u32)TextureIndex::GBufferPosition] = new PositionTexture();
     ms_textures[(u32)TextureIndex::GBufferNormal] = new NormalTexture();
-    ms_textures[(u32)TextureIndex::GBufferNormalView] = new NormalViewTexture();
     ms_textures[(u32)TextureIndex::GBufferAlbedo] = new AlbedoTexture();
+    ms_textures[(u32)TextureIndex::GBufferDepth] = new DepthTexture();
 
 #if ENABLE_SSAO
+    ms_textures[(u32)TextureIndex::GBufferNormalView] = new NormalViewTexture();
+    ms_textures[(u32)TextureIndex::GBufferPositionView] = new PositionViewTexture();
     ms_textures[(u32)TextureIndex::GBufferSSAO] = new SSAOTexture();
     ms_textures[(u32)TextureIndex::GBufferSSAOBlur] = new SSAOBlurTexture();
 #endif
-
 #if ENABLE_CUBEMAP
     ms_textures[(u32)TextureIndex::SkyboxSampler] = new SkyboxSampler();
 #endif
-
 #if ENABLE_SHADOW_MAPPING
-    ms_textures[(u32)TextureIndex::ShadowmapSampler] = new ShadowmapSampler();
+    ms_textures[(u32)TextureIndex::ShadowMap] = new ShadowmapSampler();
 #endif
 
-    for (auto& texture: ms_textures) texture->init(device);
+    for (auto texture: ms_textures) texture->init(device);
 
     ms_textures[(u32)TextureIndex::GameTexture]->fill(device, cmdBuffer);
     ms_textures[(u32)TextureIndex::PerlinNoise]->fill(device, cmdBuffer);
 #if ENABLE_CUBEMAP
-    ms_textures[(u32)TextureIndex::SkyboxSampler]->fill(device, cmdBuffer);
+    ms_textures[(u32)TextureIndex::Skybox]->fill(device, cmdBuffer);
 #endif
+
     LDEBUG("Texture table: created textures");
 }
 

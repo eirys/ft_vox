@@ -16,8 +16,7 @@ layout(set = GBUFFER_SET, binding = 1) uniform sampler2D NormalTex;
 layout(set = GBUFFER_SET, binding = 2) uniform sampler2D AlbedoTex;
 
 #if ENABLE_SSAO
-layout(set = GBUFFER_SET, binding = 4) uniform sampler2D SsaoTex;
-layout(set = GBUFFER_SET, binding = 5) uniform sampler2D BlurSsaoTex;
+layout(set = GBUFFER_SET, binding = 4) uniform sampler2D BlurSsaoTex;
 #endif
 
 layout(push_constant) uniform Camera {
@@ -54,17 +53,15 @@ float applyFog(in float distanceToPoint) {
     return clamp(fog, 0.0, 1.0);
 }
 
-float applyShadow(in vec4 position) {
 #if ENABLE_SHADOW_MAPPING
+float applyShadow(in vec4 position) {
     vec3 shadowCoords = (projector.viewProj * position).xyz;
     shadowCoords.xy = shadowCoords.xy * 0.5 + 0.5;
     const float shouldDisplayShadow = step(shadowCoords.z, 1.0);
     const float shadow = step(shadowCoords.z - BIAS, texture(Shadowmap, shadowCoords.xy).r);
     return shouldDisplayShadow * shadow + (1.0 - shouldDisplayShadow) * 1.0;
-#else
-    return 1.0;
-#endif
 }
+#endif
 
 void main() {
     // Gbuffer
@@ -72,19 +69,12 @@ void main() {
     const vec3 normal = texture(NormalTex, inUV).rgb;
     const vec4 albedo = texture(AlbedoTex, inUV);
 
-#if ENABLE_SSAO
-    const float ssao = texture(BlurSsaoTex, inUV).r;
-#endif
-
     if (albedo.a == 0.0)
         discard;
 
     // External data
     const vec3 sunDir = vec3(gameData.sunPos, 0.0);
-    const vec3 moonDir = -sunDir;
     const float sunHeight = max(sunDir.y, 0.0);
-    const vec3 lightDir =  mix(moonDir, sunDir, step(0.0, sunDir.y));
-    const float lightHeight = max(lightDir.y, 0.0);
 
     vec3 color = albedo.rgb;
 
@@ -96,16 +86,19 @@ void main() {
     color = mix(color, skyHue, 0.005);
 
     // Lighting
-    const float intensity = mix(0.1, 1.0, sunHeight) * min(1.0, pow(lightHeight, 2.0) + (0.5 * lightHeight));
-    const float diffuse = max(dot(normal, lightDir), 0.0);
-    const vec3  ambient = vec3(mix(0.05, 0.2, sunHeight));
-    const float shadow = applyShadow(position);
-    vec3 lighting = clamp(shadow * diffuse * intensity + ambient, 0.0, 1.0);
-
+    const float intensity = min(1.0, pow(sunHeight, 2.0) + (0.5 * sunHeight));
+    const float diffuse = max(dot(normal, sunDir), 0.0);
+    const float ambient = mix(0.05, 0.3, sunHeight);
+    float lighting = diffuse * intensity;
+#if ENABLE_SHADOW_MAPPING
+    const float shadow = applyShadow(vec4(position.xyz, 1.0));
+    lighting *= shadow;
+#endif
+    lighting = clamp(lighting + ambient, 0.0, 1.0);
 #if ENABLE_SSAO
+    const float ssao = texture(BlurSsaoTex, inUV).r;
     lighting *= ssao;
 #endif
-
     color *= lighting;
 
     // Fog
@@ -114,5 +107,4 @@ void main() {
     color = mix(color, fogColor, fogAmount);
 
     outFragColor = vec4(color, 1.0);
-
 }

@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/17 13:53:02 by etran             #+#    #+#             */
-/*   Updated: 2024/06/21 14:29:32 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/25 14:49:34 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 #include "descriptor_set.h"
 #include "vector.h"
 #include "buffer.h"
+#include "matrix.h"
 #include "game_decl.h"
 
 namespace vox::gfx {
@@ -25,25 +26,16 @@ class Texture;
 class SSAOSet final: public DescriptorSet {
 public:
     /* ====================================================================== */
-    /*                              HELPER CLASS                              */
-    /* ====================================================================== */
-
-    struct SSAOUbo {
-        math::Vect3 m_samples[SSAO_KERNEL_SIZE];
-    };
-
-    static_assert(sizeof(SSAOUbo) % 0x40 == 0, "PFD UBO size is must be a multiple of 64 bytes. Check value of PADDING_NEEDED.");
-    static constexpr u32 PADDING_NEEDED = (0x40 - (sizeof(SSAOUbo) % 0x40)) / sizeof(u32);
-
-    /* ====================================================================== */
     /*                                  ENUMS                                 */
     /* ====================================================================== */
 
     enum class BindingIndex: u32 {
         Samples,
-        PositionTexture,
-        NormalViewTexture,
         NoiseTexture,
+#if ENABLE_SSAO
+        PositionViewTexture,
+        NormalViewTexture,
+#endif
 
         Count
     };
@@ -75,13 +67,12 @@ private:
     /* ====================================================================== */
 
     Buffer  m_samplesBuffer;
-    SSAOUbo m_data;
 
     /* ====================================================================== */
     /*                                 METHODS                                */
     /* ====================================================================== */
 
-    void _fillBuffer(const Device& device, const ICommandBuffer* transferBuffer);
+    Buffer _createSamplesBuffer(const Device& device, const ICommandBuffer* transferBuffer);
 
 }; // class SSAOSet
 

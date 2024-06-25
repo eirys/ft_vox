@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/13 23:57:17 by etran             #+#    #+#             */
-/*   Updated: 2024/06/21 01:34:11 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/25 12:43:59 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,6 @@ void GBufferSet::init(const Device& device, const ICommandBuffer* cmdBuffer) {
         _createLayoutBinding(DescriptorTypeIndex::CombinedImageSampler, ShaderVisibility::FS, (u32)BindingIndex::PositionTexture),
         _createLayoutBinding(DescriptorTypeIndex::CombinedImageSampler, ShaderVisibility::FS, (u32)BindingIndex::NormalTexture),
         _createLayoutBinding(DescriptorTypeIndex::CombinedImageSampler, ShaderVisibility::FS, (u32)BindingIndex::AlbedoTexture),
-        _createLayoutBinding(DescriptorTypeIndex::CombinedImageSampler, ShaderVisibility::FS, (u32)BindingIndex::NormalViewTexture),
 #if ENABLE_SSAO
         _createLayoutBinding(DescriptorTypeIndex::CombinedImageSampler, ShaderVisibility::FS, (u32)BindingIndex::SsaoTexture),
         _createLayoutBinding(DescriptorTypeIndex::CombinedImageSampler, ShaderVisibility::FS, (u32)BindingIndex::SsaoBlur),
@@ -65,11 +64,6 @@ void GBufferSet::fill(const Device& device) {
     albedoTextureInfo.imageView = TextureTable::getTexture(TextureIndex::GBufferAlbedo)->getImageBuffer().getView();
     albedoTextureInfo.sampler = sampler;
 
-    VkDescriptorImageInfo normalViewTextureInfo{};
-    normalViewTextureInfo.imageLayout = TextureTable::getTexture(TextureIndex::GBufferNormalView)->getImageBuffer().getMetaData().m_layoutData.m_layout;
-    normalViewTextureInfo.imageView = TextureTable::getTexture(TextureIndex::GBufferNormalView)->getImageBuffer().getView();
-    normalViewTextureInfo.sampler = sampler;
-
 #if ENABLE_SSAO
     VkDescriptorImageInfo ssaoTextureInfo{};
     ssaoTextureInfo.imageLayout = TextureTable::getTexture(TextureIndex::GBufferSSAO)->getImageBuffer().getMetaData().m_layoutData.m_layout;
@@ -86,7 +80,6 @@ void GBufferSet::fill(const Device& device) {
         _createWriteDescriptorSet(DescriptorTypeIndex::CombinedImageSampler, positionTextureInfo, (u32)BindingIndex::PositionTexture),
         _createWriteDescriptorSet(DescriptorTypeIndex::CombinedImageSampler, normalTextureInfo, (u32)BindingIndex::NormalTexture),
         _createWriteDescriptorSet(DescriptorTypeIndex::CombinedImageSampler, albedoTextureInfo, (u32)BindingIndex::AlbedoTexture),
-        _createWriteDescriptorSet(DescriptorTypeIndex::CombinedImageSampler, normalViewTextureInfo, (u32)BindingIndex::NormalViewTexture),
 #if ENABLE_SSAO
         _createWriteDescriptorSet(DescriptorTypeIndex::CombinedImageSampler, ssaoTextureInfo, (u32)BindingIndex::SsaoTexture),
         _createWriteDescriptorSet(DescriptorTypeIndex::CombinedImageSampler, ssaoBlurTextureInfo, (u32)BindingIndex::SsaoBlur),

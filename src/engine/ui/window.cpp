@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/20 00:02:09 by etran             #+#    #+#             */
-/*   Updated: 2024/06/21 17:06:57 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/25 14:52:48 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,7 @@
 
 namespace ui {
 
-static constexpr u32 DEBUG_COUNT = 9;
+static constexpr u32 DEBUG_COUNT = 8;
 
 static
 std::string currentDebug(u32 i) {
@@ -30,7 +30,6 @@ std::string currentDebug(u32 i) {
         "shadowmap",
         "ssao",
         "blur",
-        "inverse normal"
     };
     return debugWindow[i];
 }

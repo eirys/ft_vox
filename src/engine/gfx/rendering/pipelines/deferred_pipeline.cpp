@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/13 17:09:22 by etran             #+#    #+#             */
-/*   Updated: 2024/06/21 01:40:35 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/25 15:05:36 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 #include "icommand_buffer.h"
 #include "vertex_buffer.h"
 #include "pipeline_layout.h"
+#include "vox_decl.h"
 #include "debug.h"
 
 #include <stdexcept>
@@ -65,15 +66,17 @@ void DeferredPipeline::init(
     multisample.minSampleShading = 1.0f;
     multisample.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
 
-    std::array<VkPipelineColorBlendAttachmentState, 4> colorBlendAttachments{};
-    colorBlendAttachments[0].blendEnable = VK_FALSE;
-    colorBlendAttachments[0].colorWriteMask = 0x0F;
-    colorBlendAttachments[1].blendEnable = VK_FALSE;
-    colorBlendAttachments[1].colorWriteMask = 0x0F;
-    colorBlendAttachments[2].blendEnable = VK_FALSE;
-    colorBlendAttachments[2].colorWriteMask = 0x0F;
-    colorBlendAttachments[3].blendEnable = VK_FALSE;
-    colorBlendAttachments[3].colorWriteMask = 0x0F;
+#if ENABLE_SSAO
+    constexpr u32 COLOR_ATT = 5;
+#else
+    constexpr u32 COLOR_ATT = 3;
+#endif
+
+    std::array<VkPipelineColorBlendAttachmentState, COLOR_ATT> colorBlendAttachments{};
+    for (auto& attachment : colorBlendAttachments) {
+        attachment.colorWriteMask = 0x0f;
+        attachment.blendEnable = VK_FALSE;
+    }
 
     VkPipelineColorBlendStateCreateInfo colorBlend{};
     colorBlend.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;

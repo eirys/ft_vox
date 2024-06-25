@@ -6,12 +6,13 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/14 00:06:31 by etran             #+#    #+#             */
-/*   Updated: 2024/06/21 14:32:08 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/25 14:57:50 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
+#include "vox_decl.h"
 #include "texture.h"
 
 namespace vox::gfx {
@@ -19,9 +20,16 @@ namespace vox::gfx {
 class PositionTexture;
 class NormalTexture;
 class AlbedoTexture;
+class DepthTexture;
 class SSAOTexture;
 using NormalViewTexture = NormalTexture;
 using SSAOBlurTexture = SSAOTexture;
+
+#if ENABLE_HIGH_RES
+class PositionViewTexture;
+#else
+using PositionViewTexture = PositionTexture;
+#endif
 
 class PositionTexture final: public Texture {
 public:
@@ -112,6 +120,68 @@ public:
     void    fill(const Device& device, const ICommandBuffer* cmdBuffer, const void* data = nullptr) override;
 
 }; // class AlbedoTexture
+
+class DepthTexture final: public Texture {
+public:
+    /* ====================================================================== */
+    /*                                TYPEDEFS                                */
+    /* ====================================================================== */
+
+    using super = Texture;
+
+    /* ====================================================================== */
+    /*                                 METHODS                                */
+    /* ====================================================================== */
+
+    DepthTexture(): super(true) {}
+
+    ~DepthTexture() = default;
+
+    DepthTexture(DepthTexture&& other) = delete;
+    DepthTexture(const DepthTexture& other) = delete;
+    DepthTexture& operator=(DepthTexture&& other) = delete;
+    DepthTexture& operator=(const DepthTexture& other) = delete;
+
+    /* ====================================================================== */
+
+    void    init(const Device& device) override;
+    void    destroy(const Device& device) override;
+
+    void    fill(const Device& device, const ICommandBuffer* cmdBuffer, const void* data = nullptr) override;
+
+}; // class DepthTexture
+
+#if ENABLE_HIGH_RES
+class PositionViewTexture final: public Texture {
+public:
+    /* ====================================================================== */
+    /*                                TYPEDEFS                                */
+    /* ====================================================================== */
+
+    using super = Texture;
+
+    /* ====================================================================== */
+    /*                                 METHODS                                */
+    /* ====================================================================== */
+
+    PositionViewTexture(): super(true) {}
+
+    ~PositionViewTexture() = default;
+
+    PositionViewTexture(PositionViewTexture&& other) = delete;
+    PositionViewTexture(const PositionViewTexture& other) = delete;
+    PositionViewTexture& operator=(PositionViewTexture&& other) = delete;
+    PositionViewTexture& operator=(const PositionViewTexture& other) = delete;
+
+    /* ====================================================================== */
+
+    void    init(const Device& device) override;
+    void    destroy(const Device& device) override;
+
+    void    fill(const Device& device, const ICommandBuffer* cmdBuffer, const void* data = nullptr) override;
+
+}; // class PositionViewTexture
+#endif
 
 /**
  * @brief SSAO texture sampler, same format used for the SSAO Blur texture.

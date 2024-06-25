@@ -2,7 +2,6 @@
 #define VOX_SKY_LAYOUT
 
 layout(location = 0) in     float inIntensity;
-// layout(location = 1) in     float inRandom;
 layout(location = 1) in     float inHeight;
 
 layout(location = 0) out    vec4 outFragColor;

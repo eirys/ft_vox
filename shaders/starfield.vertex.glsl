@@ -5,7 +5,6 @@
 #include "../src/engine/game/game_decl.h"
 
 layout(location = 0) out float outIntensity;
-// layout(location = 1) out float outRandom;
 layout(location = 1) out float outHeight;
 
 layout(push_constant) uniform Camera {

@@ -6,16 +6,10 @@
 #include "../src/engine/vox_decl.h"
 
 layout(location = 0) in vec2 inUV;
-layout(location = 1) in mat3 inInvView;
 
 layout(location = 0) out vec4 outColor;
 
 // ------------------------------------
-
-layout(push_constant) uniform Camera {
-    mat4 view;
-    mat4 proj;
-} camera;
 
 layout(set = PFD_SET, binding = 0) uniform GameData {
     vec2 dummy;
@@ -28,9 +22,8 @@ layout(set = GBUFFER_SET, binding = 1) uniform sampler2D NormalTex;
 layout(set = GBUFFER_SET, binding = 2) uniform sampler2D AlbedoTex;
 
 #if ENABLE_SSAO
-layout(set = GBUFFER_SET, binding = 3) uniform sampler2D NormalViewTex;
-layout(set = GBUFFER_SET, binding = 4) uniform sampler2D SsaoTex;
-layout(set = GBUFFER_SET, binding = 5) uniform sampler2D BlurTex;
+layout(set = GBUFFER_SET, binding = 3) uniform sampler2D SsaoTex;
+layout(set = GBUFFER_SET, binding = 4) uniform sampler2D BlurTex;
 #endif
 
 #if ENABLE_SHADOW_MAPPING
@@ -44,11 +37,10 @@ void main() {
 
     switch (gameData.debugIndex) {
         case 1: // Position
-            outColor.rgb = inInvView * texture(PositionTex, inUV).rgb * 0.01;
+            outColor.rgb = texture(PositionTex, inUV).rgb * 0.01;
             break;
-        case 2: // Depth
-            vec4 fragCoord = camera.proj * texture(PositionTex, inUV);
-            outColor.rgb = fragCoord.www * 0.01;
+        case 2: // Depth (scaled to 0-1 range)
+            outColor.rgb = texture(PositionTex, inUV).www / (CHUNK_SIZE * RENDER_DISTANCE * 0.5);
             break;
         case 3: // Normal
             outColor.rgb = texture(NormalTex, inUV).rgb;
@@ -70,10 +62,6 @@ void main() {
 
         case 7: // Ssao (blur)
             outColor.rgb = texture(BlurTex, inUV).rrr;
-            break;
-
-        case 8: // Normal view (blur)
-            outColor.rgb = texture(NormalViewTex, inUV).rgb;
             break;
 #endif
 

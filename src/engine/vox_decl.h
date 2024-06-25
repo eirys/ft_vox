@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/03 09:05:39 by etran             #+#    #+#             */
-/*   Updated: 2024/06/21 15:25:39 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/25 15:09:34 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,10 +17,16 @@
 # define ENABLE_CUBEMAP 0
 # define ENABLE_FRUSTUM_CULLING 0
 # define ENABLE_SHADOW_MAPPING 0
-# define ENABLE_SSAO 0
+# define ENABLE_SSAO 1
 
-# if !ENABLE_SKYBOX
-# define ENABLE_CUBEMAP 0 // If skybox is disabled, disable cubemap
+#ifdef VOX_CPP
+
+# define ENABLE_HIGH_RES 1
+
+# if !ENABLE_SKYBOX && ENABLE_CUBEMAP
+    static_assert(false, "Cubemap cannot be enabled if skybox is disabled");
 # endif
+
+# endif // VOX_CPP
 
 #endif // VOX_DECL_H

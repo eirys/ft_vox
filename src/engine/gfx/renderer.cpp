@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/23 09:29:35 by etran             #+#    #+#             */
-/*   Updated: 2024/06/21 15:22:48 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/25 14:45:38 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -133,17 +133,15 @@ void Renderer::render(const game::GameState& game) {
     m_renderPasses[(u32)RenderPassIndex::Shadow]->end(offscreenBuffer);
 #endif
 
-    cameraConstant->bind(offscreenBuffer, m_pipelineLayouts[(u32)PipelineLayoutIndex::Deferred]);
-
     // Deferred pass
+    cameraConstant->bind(offscreenBuffer, m_pipelineLayouts[(u32)PipelineLayoutIndex::Deferred]);
     m_renderPasses[(u32)RenderPassIndex::Deferred]->begin(offscreenBuffer, recordInfo);
     m_pipelines[(u32)PipelineIndex::Deferred]->record(offscreenBuffer);
     m_renderPasses[(u32)RenderPassIndex::Deferred]->end(offscreenBuffer);
 
 #if ENABLE_SSAO
-    cameraConstant->bind(offscreenBuffer, m_pipelineLayouts[(u32)PipelineLayoutIndex::Ssao]);
-
     // Ssao pass
+    cameraConstant->bind(offscreenBuffer, m_pipelineLayouts[(u32)PipelineLayoutIndex::Ssao]);
     m_renderPasses[(u32)RenderPassIndex::Ssao]->begin(offscreenBuffer, recordInfo);
     m_pipelines[(u32)PipelineIndex::Ssao]->record(offscreenBuffer);
     m_renderPasses[(u32)RenderPassIndex::Ssao]->end(offscreenBuffer);
@@ -168,13 +166,11 @@ void Renderer::render(const game::GameState& game) {
     m_renderPasses[(u32)RenderPassIndex::Main]->begin(drawBuffer, recordInfo);
 #if ENABLE_SKYBOX
     cameraConstant->bind(drawBuffer, m_pipelineLayouts[(u32)PipelineLayoutIndex::Sky]);
-
     m_pipelines[(u32)PipelineIndex::SkyboxPipeline]->record(drawBuffer);
     m_pipelines[(u32)PipelineIndex::StarfieldPipeline]->record(drawBuffer);
 #endif
 
     cameraConstant->bind(drawBuffer, m_pipelineLayouts[(u32)PipelineLayoutIndex::Scene]);
-
     m_pipelines[(u32)PipelineIndex::ScenePipeline]->record(drawBuffer);
     if (game.getController().showDebug())
         m_pipelines[(u32)PipelineIndex::DebugPipeline]->record(drawBuffer);
@@ -245,16 +241,16 @@ void Renderer::_createRenderPasses() {
         const ImageBuffer& positionTex = TextureTable::getTexture(TextureIndex::GBufferPosition)->getImageBuffer();
         const ImageBuffer& normalTex = TextureTable::getTexture(TextureIndex::GBufferNormal)->getImageBuffer();
         const ImageBuffer& albedoTex = TextureTable::getTexture(TextureIndex::GBufferAlbedo)->getImageBuffer();
-        const ImageBuffer& normalViewTex = TextureTable::getTexture(TextureIndex::GBufferNormalView)->getImageBuffer();
+        const ImageBuffer& depthTex = TextureTable::getTexture(TextureIndex::GBufferDepth)->getImageBuffer();
 
-        DeferredRenderPassInfo  deferredPassInfo(positionTex, normalTex, albedoTex, normalViewTex);
-        deferredPassInfo.m_formats.resize(DeferredRenderPass::RESOURCE_COUNT);
-        deferredPassInfo.m_formats[(u32)DeferredRenderPass::Resource::ColorPosition] = positionTex.getMetaData().m_format;
-        deferredPassInfo.m_formats[(u32)DeferredRenderPass::Resource::ColorNormal] = normalTex.getMetaData().m_format;
-        deferredPassInfo.m_formats[(u32)DeferredRenderPass::Resource::ColorAlbedo] = albedoTex.getMetaData().m_format;
-        deferredPassInfo.m_formats[(u32)DeferredRenderPass::Resource::ColorViewNormal] = normalViewTex.getMetaData().m_format;
-        deferredPassInfo.m_formats[(u32)DeferredRenderPass::Resource::DepthImage] = SwapChain::getDepthFormat();
-        deferredPassInfo.m_samples.resize(DeferredRenderPass::RESOURCE_COUNT, VK_SAMPLE_COUNT_1_BIT);
+#if ENABLE_SSAO
+        const ImageBuffer& normalViewTex = TextureTable::getTexture(TextureIndex::GBufferNormalView)->getImageBuffer();
+        const ImageBuffer& posViewTex = TextureTable::getTexture(TextureIndex::GBufferPositionView)->getImageBuffer();
+        DeferredRenderPassInfo  deferredPassInfo(positionTex, normalTex, albedoTex, depthTex, normalViewTex, posViewTex);
+#else
+        DeferredRenderPassInfo  deferredPassInfo(positionTex, normalTex, albedoTex, depthTex);
+#endif
+
         deferredPassInfo.m_renderPassWidth = SwapChain::getImageExtent().width;
         deferredPassInfo.m_renderPassHeight = SwapChain::getImageExtent().height;
         deferredPassInfo.m_targetCount = 1;
@@ -360,7 +356,7 @@ void Renderer::_createPipelineLayouts() {
 #if ENABLE_SHADOW_MAPPING
     { // Sky
         sets = { m_descriptorTable[DescriptorSetIndex::Pfd] };
-        m_pipelineLayouts[(u32)PipelineLayoutIndex::Sky].init(m_device, sets);
+        m_pipelineLayouts[(u32)PipelineLayoutIndex::Shadows].init(m_device, sets);
     }
 #endif
 }

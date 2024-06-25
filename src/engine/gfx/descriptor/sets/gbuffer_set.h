@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/13 23:51:42 by etran             #+#    #+#             */
-/*   Updated: 2024/06/21 01:33:27 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/25 12:43:49 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,7 +28,6 @@ public:
         PositionTexture,
         NormalTexture,
         AlbedoTexture,
-        NormalViewTexture,
 
 #if ENABLE_SSAO
         SsaoTexture,

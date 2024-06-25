@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/17 12:46:17 by etran             #+#    #+#             */
-/*   Updated: 2024/06/21 01:29:19 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/25 14:49:21 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,14 +23,17 @@ enum class TextureIndex: u32 {
 
     GBufferPosition,
     GBufferNormal,
-    GBufferNormalView,
     GBufferAlbedo,
+    GBufferDepth,
 
 #if ENABLE_CUBEMAP
     SkyCubemap,
 #endif
 
 #if ENABLE_SSAO
+    GBufferNormalView,
+    GBufferPositionView,
+
     GBufferSSAO,
     GBufferSSAOBlur,
 #endif

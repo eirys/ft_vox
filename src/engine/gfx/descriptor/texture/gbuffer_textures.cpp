@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/14 00:40:50 by etran             #+#    #+#             */
-/*   Updated: 2024/06/21 14:31:45 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/25 15:12:44 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,11 +24,17 @@
 
 namespace vox::gfx {
 
+#if ENABLE_HIGH_RES && ENABLE_SHADOW_MAPPING
+static VkFormat POS_FORMAT = VK_FORMAT_R32G32B32A32_SFLOAT;
+#else
+static VkFormat POS_FORMAT = VK_FORMAT_R16G16B16A16_SFLOAT;
+#endif
+
 /* POSITION TEXTURE ========================================================= */
 
 void PositionTexture::init(const Device& device) {
     ImageMetaData textureData{};
-    textureData.m_format = VK_FORMAT_R16G16B16A16_SFLOAT;
+    textureData.m_format = POS_FORMAT;
     textureData.m_width = SwapChain::getImageExtent().width;
     textureData.m_height = SwapChain::getImageExtent().height;
     textureData.m_sampleCount = VK_SAMPLE_COUNT_1_BIT;
@@ -55,7 +61,7 @@ void PositionTexture::fill(
 
 void NormalTexture::init(const Device& device) {
     ImageMetaData textureData{};
-    textureData.m_format = VK_FORMAT_R16G16B16A16_SFLOAT;
+    textureData.m_format = VK_FORMAT_R8G8B8A8_SNORM;
     textureData.m_width = SwapChain::getImageExtent().width;
     textureData.m_height = SwapChain::getImageExtent().height;
     textureData.m_sampleCount = VK_SAMPLE_COUNT_1_BIT;
@@ -107,6 +113,62 @@ void AlbedoTexture::fill(
     const void* data
 ) {
 }
+
+void DepthTexture::init(const Device& device) {
+    ImageMetaData textureData{};
+    textureData.m_format = SwapChain::getDepthFormat();
+    textureData.m_width = SwapChain::getImageExtent().width;
+    textureData.m_height = SwapChain::getImageExtent().height;
+    textureData.m_sampleCount = VK_SAMPLE_COUNT_1_BIT;
+    textureData.m_usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+    textureData.m_aspectFlags = VK_IMAGE_ASPECT_DEPTH_BIT;
+
+    m_imageBuffer.initImage(device, std::move(textureData));
+    m_imageBuffer.initView(device);
+    LDEBUG("Depth texture created.");
+}
+
+void DepthTexture::destroy(const Device& device) {
+    m_imageBuffer.destroy(device);
+}
+
+void DepthTexture::fill(
+    const Device& device,
+    const ICommandBuffer* cmdBuffer,
+    const void* data
+) {
+}
+
+/* POSITION VIEW TEXTURE ==================================================== */
+
+#if ENABLE_HIGH_RES
+
+void PositionViewTexture::init(const Device& device) {
+    ImageMetaData textureData{};
+    textureData.m_format = VK_FORMAT_R16G16B16A16_SFLOAT;
+    textureData.m_width = SwapChain::getImageExtent().width;
+    textureData.m_height = SwapChain::getImageExtent().height;
+    textureData.m_sampleCount = VK_SAMPLE_COUNT_1_BIT;
+    textureData.m_usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT |
+                          VK_IMAGE_USAGE_SAMPLED_BIT;
+    textureData.m_aspectFlags = VK_IMAGE_ASPECT_COLOR_BIT;
+
+    m_imageBuffer.initImage(device, std::move(textureData));
+    m_imageBuffer.initView(device);
+    LDEBUG("Pos view texture created.");
+}
+
+void PositionViewTexture::destroy(const Device& device) {
+    m_imageBuffer.destroy(device);
+}
+
+void PositionViewTexture::fill(
+    const Device& device,
+    const ICommandBuffer* cmdBuffer,
+    const void* data
+) {}
+
+#endif
 
 /* SSAO TEXTURE ============================================================= */
 

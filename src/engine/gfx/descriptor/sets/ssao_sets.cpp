@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/17 13:55:01 by etran             #+#    #+#             */
-/*   Updated: 2024/06/21 14:29:06 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/25 14:49:59 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,19 +28,15 @@ namespace vox::gfx {
 /* ========================================================================== */
 
 void SSAOSet::init(const Device& device, const ICommandBuffer* cmdBuffer) {
-    BufferMetadata samplesBufferData{};
-    samplesBufferData.m_format = sizeof(SSAOUbo::m_samples);
-    samplesBufferData.m_size = 1;
-    samplesBufferData.m_usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
-    samplesBufferData.m_properties = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
-    m_samplesBuffer.init(device, std::move(samplesBufferData));
-    _fillBuffer(device, cmdBuffer);
+    m_samplesBuffer = _createSamplesBuffer(device, cmdBuffer);
 
     std::array<VkDescriptorSetLayoutBinding, BINDING_COUNT> bindings = {
         _createLayoutBinding(DescriptorTypeIndex::UniformBuffer, ShaderVisibility::FS, (u32)BindingIndex::Samples),
-        _createLayoutBinding(DescriptorTypeIndex::CombinedImageSampler, ShaderVisibility::FS, (u32)BindingIndex::PositionTexture),
-        _createLayoutBinding(DescriptorTypeIndex::CombinedImageSampler, ShaderVisibility::FS, (u32)BindingIndex::NormalViewTexture),
         _createLayoutBinding(DescriptorTypeIndex::CombinedImageSampler, ShaderVisibility::FS, (u32)BindingIndex::NoiseTexture),
+#if ENABLE_SSAO
+        _createLayoutBinding(DescriptorTypeIndex::CombinedImageSampler, ShaderVisibility::FS, (u32)BindingIndex::PositionViewTexture),
+        _createLayoutBinding(DescriptorTypeIndex::CombinedImageSampler, ShaderVisibility::FS, (u32)BindingIndex::NormalViewTexture),
+#endif
     };
 
     VkDescriptorSetLayoutCreateInfo layoutInfo{};
@@ -66,30 +62,34 @@ void SSAOSet::fill(const Device& device) {
     VkDescriptorBufferInfo samplesInfo{};
     samplesInfo.buffer = m_samplesBuffer.getBuffer();
     samplesInfo.offset = 0;
-    samplesInfo.range = sizeof(SSAOUbo::m_samples);
+    samplesInfo.range = m_samplesBuffer.getMetadata().m_size * m_samplesBuffer.getMetadata().m_format;
 
     const VkSampler sampler = TextureTable::getSampler(device, Sampler::Filter::Nearest, Sampler::Border::Edge, Sampler::BorderColor::WhiteFloat).getSampler();
-
-    VkDescriptorImageInfo positionTextureInfo{};
-    positionTextureInfo.imageLayout = TextureTable::getTexture(TextureIndex::GBufferPosition)->getImageBuffer().getMetaData().m_layoutData.m_layout;
-    positionTextureInfo.imageView = TextureTable::getTexture(TextureIndex::GBufferPosition)->getImageBuffer().getView();
-    positionTextureInfo.sampler = sampler;
-
-    VkDescriptorImageInfo normalViewTextureInfo{};
-    normalViewTextureInfo.imageLayout = TextureTable::getTexture(TextureIndex::GBufferNormalView)->getImageBuffer().getMetaData().m_layoutData.m_layout;
-    normalViewTextureInfo.imageView = TextureTable::getTexture(TextureIndex::GBufferNormalView)->getImageBuffer().getView();
-    normalViewTextureInfo.sampler = sampler;
 
     VkDescriptorImageInfo noiseTextureInfo{};
     noiseTextureInfo.imageLayout = TextureTable::getTexture(TextureIndex::PerlinNoise)->getImageBuffer().getMetaData().m_layoutData.m_layout;
     noiseTextureInfo.imageView = TextureTable::getTexture(TextureIndex::PerlinNoise)->getImageBuffer().getView();
     noiseTextureInfo.sampler = sampler;
 
+#if ENABLE_SSAO
+    VkDescriptorImageInfo posViewTextureInfo{};
+    posViewTextureInfo.imageLayout = TextureTable::getTexture(TextureIndex::GBufferPositionView)->getImageBuffer().getMetaData().m_layoutData.m_layout;
+    posViewTextureInfo.imageView = TextureTable::getTexture(TextureIndex::GBufferPositionView)->getImageBuffer().getView();
+    posViewTextureInfo.sampler = sampler;
+
+    VkDescriptorImageInfo normalViewTextureInfo{};
+    normalViewTextureInfo.imageLayout = TextureTable::getTexture(TextureIndex::GBufferNormalView)->getImageBuffer().getMetaData().m_layoutData.m_layout;
+    normalViewTextureInfo.imageView = TextureTable::getTexture(TextureIndex::GBufferNormalView)->getImageBuffer().getView();
+    normalViewTextureInfo.sampler = sampler;
+#endif
+
     std::array<VkWriteDescriptorSet, BINDING_COUNT> descriptorWrites = {
         _createWriteDescriptorSet(DescriptorTypeIndex::UniformBuffer, samplesInfo, (u32)BindingIndex::Samples),
-        _createWriteDescriptorSet(DescriptorTypeIndex::CombinedImageSampler, positionTextureInfo, (u32)BindingIndex::PositionTexture),
-        _createWriteDescriptorSet(DescriptorTypeIndex::CombinedImageSampler, normalViewTextureInfo, (u32)BindingIndex::NormalViewTexture),
         _createWriteDescriptorSet(DescriptorTypeIndex::CombinedImageSampler, noiseTextureInfo, (u32)BindingIndex::NoiseTexture),
+#if ENABLE_SSAO
+        _createWriteDescriptorSet(DescriptorTypeIndex::CombinedImageSampler, posViewTextureInfo, (u32)BindingIndex::PositionViewTexture),
+        _createWriteDescriptorSet(DescriptorTypeIndex::CombinedImageSampler, normalViewTextureInfo, (u32)BindingIndex::NormalViewTexture),
+#endif
     };
 
     vkUpdateDescriptorSets(device.getDevice(), BINDING_COUNT, descriptorWrites.data(), 0, nullptr);
@@ -97,7 +97,9 @@ void SSAOSet::fill(const Device& device) {
     LDEBUG("SSAO descriptor set filled");
 }
 
-void SSAOSet::_fillBuffer(const Device& device, const ICommandBuffer* transferBuffer) {
+Buffer SSAOSet::_createSamplesBuffer(const Device& device, const ICommandBuffer* transferBuffer) {
+    Buffer buffer{};
+
     std::uniform_real_distribution<float>   randomDistance(0.0f, 1.0f);
     std::default_random_engine              gen;
 
@@ -117,18 +119,27 @@ void SSAOSet::_fillBuffer(const Device& device, const ICommandBuffer* transferBu
         ssaoKernel.emplace_back(sample * scale);
     }
 
-    Buffer  stagingBuffer = m_samplesBuffer.createStagingBuffer(device);
+    BufferMetadata samplesBufferData{};
+    samplesBufferData.m_format = sizeof(math::Vect3);
+    samplesBufferData.m_size = ssaoKernel.size();
+    samplesBufferData.m_usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
+    samplesBufferData.m_properties = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
+    buffer.init(device, std::move(samplesBufferData));
+
+    Buffer  stagingBuffer = buffer.createStagingBuffer(device);
     stagingBuffer.map(device);
     stagingBuffer.copyFrom(ssaoKernel.data());
     stagingBuffer.unmap(device);
 
     transferBuffer->reset();
     transferBuffer->startRecording();
-    m_samplesBuffer.copyBuffer(transferBuffer, stagingBuffer);
+    buffer.copyBuffer(transferBuffer, stagingBuffer);
     transferBuffer->stopRecording();
     transferBuffer->awaitEndOfRecording(device);
 
     stagingBuffer.destroy(device);
+
+    return buffer;
 }
 
 /* ========================================================================== */

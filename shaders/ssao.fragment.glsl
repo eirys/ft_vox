@@ -11,9 +11,9 @@ layout(location = 0) out float outFragColor;
 layout(set = SSAO_SET, binding = 0) uniform Samples {
     vec3 at[SSAO_KERNEL_SIZE];
 } samples;
-layout(set = SSAO_SET, binding = 1) uniform sampler2D PositionTex;
-layout(set = SSAO_SET, binding = 2) uniform sampler2D NormalViewInv;
-layout(set = SSAO_SET, binding = 3) uniform sampler2DArray NoiseTex;
+layout(set = SSAO_SET, binding = 1) uniform sampler2DArray NoiseTex;
+layout(set = SSAO_SET, binding = 2) uniform sampler2D PositionViewTex;
+layout(set = SSAO_SET, binding = 3) uniform sampler2D NormalViewInv;
 
 layout(push_constant) uniform Camera {
     mat4 view;
@@ -22,14 +22,14 @@ layout(push_constant) uniform Camera {
 
 // --------------------------
 
-const float BIAS = 0.1;
-const float RADIUS = 0.75;
+const float BIAS = 0.05;
+const float RADIUS = 1.0;
 
 // --------------------------
 
 void main() {
     // Scale UV to match noise texture
-    const ivec2 posTexDim = textureSize(PositionTex, 0);
+    const ivec2 posTexDim = textureSize(PositionViewTex, 0);
     const ivec2 noiseTexDim = textureSize(NoiseTex, 0).xy;
     const vec3 scale = vec3(
         float(posTexDim.x) / float(noiseTexDim.x),
@@ -37,7 +37,7 @@ void main() {
         1.0);
 
     // Retrieve from GBuffer
-    const vec3 fragPos = texture(PositionTex, inUV).xyz;
+    const vec3 fragPos = texture(PositionViewTex, inUV).xyz;
     const vec3 normal = texture(NormalViewInv, inUV).xyz;
     const vec3 randVec = vec3(texture(NoiseTex, vec3(inUV, 0.0) * scale).xy, 0.0);
 
@@ -60,9 +60,10 @@ void main() {
         offset.xy = offset.xy * 0.5 + 0.5;
 
         // Compare depth values
-        const float sampleDepth = texture(PositionTex, offset.xy).z;
+        const float sampleDepth = texture(PositionViewTex, offset.xy).z;
         const float rangeCheck = smoothstep(0.0, 1.0, RADIUS / abs(fragPos.z - sampleDepth));
-        occlusion += (sampleDepth > samplePos.z + BIAS ? 1.0 : 0.0) * rangeCheck;
+        occlusion += step(samplePos.z + BIAS, sampleDepth) * rangeCheck;
+        // if (sampleDepth > samplePos.z + BIAS) occlusion += 1.0 * rangeCheck;
     }
 
     occlusion = 1.0 - (occlusion / float(SSAO_KERNEL_SIZE));
