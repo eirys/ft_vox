@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/13 10:49:11 by etran             #+#    #+#             */
-/*   Updated: 2024/06/21 14:35:36 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/28 22:18:09 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,15 +39,19 @@ CameraPushConstant::CameraPushConstant() {
     LDEBUG("Camera push constant created.");
 }
 
-void CameraPushConstant::update(const game::GameState& gameState) noexcept {
-    const ui::Camera&   camera = gameState.getController().getCamera();
+void CameraPushConstant::update() noexcept {
+    const game::Camera&   camera = game::GameState::getCamera();
 
-    m_data.m_view = math::lookAt(camera.m_position, camera.m_front, camera.m_up, camera.m_right);
+    m_data.m_view = math::lookAt(
+        camera.m_position,
+        camera.m_directions.front,
+        camera.m_directions.up,
+        camera.m_directions.right);
     m_data.m_proj = math::perspective(
-        math::radians(camera.m_fov),
-        ui::Camera::ASPECT_RATIO,
-        ui::Camera::NEAR_PLANE,
-        ui::Camera::FAR_PLANE);
+        math::radians(camera.getSettings().fov),
+        camera.ASPECT_RATIO,
+        camera.getSettings().nearPlane,
+        camera.getSettings().farPlane);
 }
 
 void CameraPushConstant::bind(const ICommandBuffer* cmdBuffer, const PipelineLayout& layout) const {

@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/20 13:21:04 by etran             #+#    #+#             */
-/*   Updated: 2024/06/25 14:50:11 by etran            ###   ########.fr       */
+/*   Updated: 2024/08/15 12:40:11 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 
 #include "game_textures.h"
 #include "perlin_noise_texture.h"
+#include "chunk_data_texture.h"
 #include "gbuffer_textures.h"
 
 #if ENABLE_SHADOW_MAPPING
@@ -37,8 +38,9 @@ std::vector<Sampler>                TextureTable::ms_samplers;
 /* ========================================================================== */
 
 void TextureTable::init(const Device& device, const ICommandBuffer* cmdBuffer) {
-    ms_textures[(u32)TextureIndex::GameTexture] = new GameTextureSampler();
-    ms_textures[(u32)TextureIndex::PerlinNoise] = new PerlinNoiseSampler();
+    ms_textures[(u32)TextureIndex::GameTexture] = new GameTexture();
+    ms_textures[(u32)TextureIndex::PerlinNoise] = new PerlinNoiseTexture();
+    ms_textures[(u32)TextureIndex::ChunkData] = new ChunkDataTexture();
 
     ms_textures[(u32)TextureIndex::GBufferPosition] = new PositionTexture();
     ms_textures[(u32)TextureIndex::GBufferNormal] = new NormalTexture();
@@ -62,6 +64,8 @@ void TextureTable::init(const Device& device, const ICommandBuffer* cmdBuffer) {
 
     ms_textures[(u32)TextureIndex::GameTexture]->fill(device, cmdBuffer);
     ms_textures[(u32)TextureIndex::PerlinNoise]->fill(device, cmdBuffer);
+    ms_textures[(u32)TextureIndex::ChunkData]->fill(device, cmdBuffer);
+
 #if ENABLE_CUBEMAP
     ms_textures[(u32)TextureIndex::Skybox]->fill(device, cmdBuffer);
 #endif

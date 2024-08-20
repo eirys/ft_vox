@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/27 15:26:15 by etran             #+#    #+#             */
-/*   Updated: 2024/06/20 16:11:04 by etran            ###   ########.fr       */
+/*   Updated: 2024/07/12 18:31:08 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,7 @@
 
 namespace vox::gfx {
 
-class PerlinNoiseSampler final: public Texture {
+class PerlinNoiseTexture final: public Texture {
 public:
     /* ====================================================================== */
     /*                                TYPEDEFS                                */
@@ -28,22 +28,22 @@ public:
     /*                                 METHODS                                */
     /* ====================================================================== */
 
-    PerlinNoiseSampler(): super(true) {}
+    PerlinNoiseTexture(): super(true) {}
 
-    ~PerlinNoiseSampler() = default;
+    ~PerlinNoiseTexture() = default;
 
-    PerlinNoiseSampler(PerlinNoiseSampler&& other) = delete;
-    PerlinNoiseSampler(const PerlinNoiseSampler& other) = delete;
-    PerlinNoiseSampler& operator=(PerlinNoiseSampler&& other) = delete;
-    PerlinNoiseSampler& operator=(const PerlinNoiseSampler& other) = delete;
+    PerlinNoiseTexture(PerlinNoiseTexture&& other) = delete;
+    PerlinNoiseTexture(const PerlinNoiseTexture& other) = delete;
+    PerlinNoiseTexture& operator=(PerlinNoiseTexture&& other) = delete;
+    PerlinNoiseTexture& operator=(const PerlinNoiseTexture& other) = delete;
 
     /* ====================================================================== */
 
     void    init(const Device& device) override;
     void    destroy(const Device& device) override;
 
-    void    fill(const Device& device, const ICommandBuffer* cmdBuffer, const void* data = nullptr) override;
+    void    fill(const Device& device, const ICommandBuffer* cmdBuffer) override;
 
-}; // class PerlinNoiseSampler
+}; // class PerlinNoiseTexture
 
 } // namespace vox::gfx

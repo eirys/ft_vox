@@ -6,34 +6,24 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/15 19:33:01 by etran             #+#    #+#             */
-/*   Updated: 2024/06/19 11:53:39 by etran            ###   ########.fr       */
+/*   Updated: 2024/08/15 18:27:52 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
 #include "vector.h"
-#include "game_decl.h"
 #include "types.h"
+
+#include "game_decl.h"
+
+namespace game {
+class Camera;
+}
 
 namespace ui {
 
 class Window;
-
-struct Camera {
-
-    static constexpr f32    NEAR_PLANE = Z_NEAR;
-    static constexpr f32    FAR_PLANE = Z_FAR;
-    static constexpr f32    ASPECT_RATIO = WINDOW_WIDTH / WINDOW_HEIGHT;
-    static constexpr f32    FOV = CAM_FOV;
-
-    math::Vect3 m_position;
-    math::Vect3 m_front;
-    math::Vect3 m_right;
-    math::Vect3 m_up;
-    float       m_fov = FOV;
-
-};
 
 /**
  * @brief Player controller
@@ -57,26 +47,41 @@ public:
     void init(const Window& win);
     void update(const Window& win);
 
-    const Camera&   getCamera() const noexcept;
-    bool            isTimeEnabled() const noexcept;
-    u32             showDebug() const noexcept;
+    /* ====================================================================== */
+
+    static bool    isTimeEnabled() noexcept { return ms_settings.ui.m_isTimeEnabled; }
+    static u32     showDebug() noexcept { return ms_settings.ui.m_selectDebug; }
+    static bool    isMouseActive() noexcept { return ms_settings.ui.m_mouseActive; }
+
+    static u32      getFogDistance() noexcept { return ms_settings.gfx.m_fogDistance; }
+
+    f32     getYaw() const noexcept { return m_yaw; }
+    f32     getPitch() const noexcept { return m_pitch; }
 
 private:
     /* ====================================================================== */
     /*                                  DATA                                  */
     /* ====================================================================== */
 
-    Camera  m_camera;
+    f32     m_lastX = 0.0f;
+    f32     m_lastY = 0.0f;
 
-    struct {
-        float   m_lastX = 0.0f;
-        float   m_lastY = 0.0f;
-        float   m_yaw = 0.0f;
-        float   m_pitch = 0.0f;
-    }       m_state;
+    f32     m_yaw = 0;
+    f32     m_pitch = 0;
 
-    u32     m_selectDebug;
-    bool    m_isTimeEnabled;
+    static struct Settings {
+
+        struct UI {
+            u32     m_selectDebug = 0;
+            bool    m_isTimeEnabled = true;
+            bool    m_mouseActive = false;
+        }   ui;
+
+        struct Gfx {
+            u32     m_fogDistance = 100;
+        }   gfx;
+
+    }       ms_settings;
 
 }; // class Controller
 

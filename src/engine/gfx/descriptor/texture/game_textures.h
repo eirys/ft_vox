@@ -16,7 +16,7 @@
 
 namespace vox::gfx {
 
-class GameTextureSampler final: public Texture {
+class GameTexture final: public Texture {
 public:
     /* ====================================================================== */
     /*                                TYPEDEFS                                */
@@ -28,22 +28,22 @@ public:
     /*                                 METHODS                                */
     /* ====================================================================== */
 
-    GameTextureSampler(): super(true) {}
+    GameTexture(): super(true) {}
 
-    ~GameTextureSampler() = default;
+    ~GameTexture() = default;
 
-    GameTextureSampler(GameTextureSampler&& other) = delete;
-    GameTextureSampler(const GameTextureSampler& other) = delete;
-    GameTextureSampler& operator=(GameTextureSampler&& other) = delete;
-    GameTextureSampler& operator=(const GameTextureSampler& other) = delete;
+    GameTexture(GameTexture&& other) = delete;
+    GameTexture(const GameTexture& other) = delete;
+    GameTexture& operator=(GameTexture&& other) = delete;
+    GameTexture& operator=(const GameTexture& other) = delete;
 
     /* ====================================================================== */
 
     void    init(const Device& device) override;
     void    destroy(const Device& device) override;
 
-    void    fill(const Device& device, const ICommandBuffer* cmdBuffer, const void* data = nullptr) override;
+    void    fill(const Device& device, const ICommandBuffer* cmdBuffer) override;
 
-}; // class GameTextureSampler
+}; // class GameTexture
 
 } // namespace vox::gfx

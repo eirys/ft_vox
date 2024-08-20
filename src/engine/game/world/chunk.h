@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/15 13:29:06 by etran             #+#    #+#             */
-/*   Updated: 2024/06/11 15:42:28 by etran            ###   ########.fr       */
+/*   Updated: 2024/08/15 16:59:31 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,25 +15,35 @@
 #include "types.h"
 #include "game_decl.h"
 #include "block.h"
-#include "bounding_box.h"
+#include "chunk_gfx.h"
 
 #include <vector>
 
 namespace proc {
-class PerlinNoise;
 class VoxMap;
-using VoronoiDiagram = VoxMap;
 }
 
 namespace game {
 
+enum ChunkNeighbor: u32 {
+    Left = 0,
+    Right,
+    Front,
+    Back,
+
+    Count
+};
+
 class Chunk final {
 public:
     /* ====================================================================== */
-    /*                                TYPEDEFS                                */
+    /*                             STATIC MEMBERS                             */
     /* ====================================================================== */
 
-    using BlockArray = std::vector<Block>;
+    static constexpr bool SHOULD_STORE_BLOCKS = false;
+    static constexpr u32 HEIGHT = CHUNK_HEIGHT;
+    static constexpr u32 SIZE = CHUNK_SIZE;
+    static constexpr u32 VOLUME = SIZE * SIZE * HEIGHT;
 
     /* ====================================================================== */
     /*                                 METHODS                                */
@@ -49,12 +59,25 @@ public:
 
     /* ====================================================================== */
 
-    void    generate(
-        const proc::PerlinNoise& terrainNoise,
-        const proc::VoronoiDiagram& biomeMap,
+    void    generateTerrain(
+        const proc::VoxMap& terrainNoise,
+        const proc::VoxMap& biomeMap,
         const u32 offsetX,
-        const u32 offsetY,
-        const u32 offsetZ) noexcept;
+        const u32 offsetZ);
+
+
+    void   generateInstances(
+        std::vector<vox::gfx::VertexInstance>& instances,
+        const std::vector<const Chunk*>& neighbors);
+
+    void    clearBlocks();
+
+    // DPCT
+    void    generate(
+        const proc::VoxMap& terrainNoise,
+        const proc::VoxMap& biomeMap,
+        const u32 offsetX,
+        const u32 offsetZ);
 
     /* ====================================================================== */
 
@@ -63,12 +86,11 @@ public:
     Block&          getBlock(const u32 x, const u32 y, const u32 z) noexcept;
     const Block&    getBlock(const u32 x, const u32 y, const u32 z) const noexcept;
 
-    const BlockArray&   getBlocks() const;
-    u16                 getId() const;
-
-    /* ====================================================================== */
-
-    const vox::gfx::BoundingBox&  getBoundingBox() const noexcept;
+    // const vox::gfx::BoundingBox&    getBoundingBox() const noexcept;
+    const std::vector<Block>&       getBlocks() const;
+    u16                             getId() const;
+    bool                            isVisible(const vox::gfx::BoundingFrustum& frustum) const noexcept;
+    u32                             getInstanceCount() const noexcept;
 
     /* ====================================================================== */
 
@@ -79,21 +101,20 @@ private:
     /*                                  DATA                                  */
     /* ====================================================================== */
 
-    BlockArray              m_blocks;
-    vox::gfx::BoundingBox   m_boundingBox;
+    vox::gfx::ChunkGfx      m_chunkGfx;
+
+    std::vector<Block>      m_blocks;
     struct {
-        u32 m_x = 0;
-        u32 m_y = 0;
-        u32 m_z = 0;
+        u32 x = 0;
+        u32 z = 0;
     }                       m_position;
-    bool                    m_updated = false;
 
     /* ====================================================================== */
     /*                                 METHODS                                */
     /* ====================================================================== */
 
     Biome   _getBiome(const f32 cellValue, const f32 moistureValue) const noexcept;
-    u8      _generateHeight(const proc::PerlinNoise& terrainNoise, const Biome biome, const u32 x, const u32 z) const noexcept;
+    u8      _getHeight(const proc::VoxMap& terrainNoise, const Biome biome, const u32 x, const u32 z) const noexcept;
 
     MaterialType _getMaterial(const Biome biome, const u8 height) const noexcept;
 

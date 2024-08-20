@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/17 12:46:17 by etran             #+#    #+#             */
-/*   Updated: 2024/06/25 14:49:21 by etran            ###   ########.fr       */
+/*   Updated: 2024/07/11 15:56:23 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,8 @@ namespace vox::gfx {
 enum class TextureIndex: u32 {
     GameTexture,
     PerlinNoise,
+
+    ChunkData,
 
     GBufferPosition,
     GBufferNormal,

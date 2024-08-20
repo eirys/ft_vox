@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/14 00:06:31 by etran             #+#    #+#             */
-/*   Updated: 2024/06/25 14:57:50 by etran            ###   ########.fr       */
+/*   Updated: 2024/07/12 18:32:31 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,8 +57,6 @@ public:
     void    init(const Device& device) override;
     void    destroy(const Device& device) override;
 
-    void    fill(const Device& device, const ICommandBuffer* cmdBuffer, const void* data = nullptr) override;
-
 }; // class PositionTexture
 
 class NormalTexture final: public Texture {
@@ -86,8 +84,6 @@ public:
 
     void    init(const Device& device) override;
     void    destroy(const Device& device) override;
-
-    void    fill(const Device& device, const ICommandBuffer* cmdBuffer, const void* data = nullptr) override;
 
 }; // class NormalTexture
 
@@ -117,8 +113,6 @@ public:
     void    init(const Device& device) override;
     void    destroy(const Device& device) override;
 
-    void    fill(const Device& device, const ICommandBuffer* cmdBuffer, const void* data = nullptr) override;
-
 }; // class AlbedoTexture
 
 class DepthTexture final: public Texture {
@@ -146,8 +140,6 @@ public:
 
     void    init(const Device& device) override;
     void    destroy(const Device& device) override;
-
-    void    fill(const Device& device, const ICommandBuffer* cmdBuffer, const void* data = nullptr) override;
 
 }; // class DepthTexture
 
@@ -177,8 +169,6 @@ public:
 
     void    init(const Device& device) override;
     void    destroy(const Device& device) override;
-
-    void    fill(const Device& device, const ICommandBuffer* cmdBuffer, const void* data = nullptr) override;
 
 }; // class PositionViewTexture
 #endif
@@ -211,8 +201,6 @@ public:
 
     void    init(const Device& device) override;
     void    destroy(const Device& device) override;
-
-    void    fill(const Device& device, const ICommandBuffer* cmdBuffer, const void* data = nullptr) override;
 
 }; // class SSAOTexture
 

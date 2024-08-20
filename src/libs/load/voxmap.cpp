@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/10 21:22:50 by etran             #+#    #+#             */
-/*   Updated: 2024/06/11 23:35:16 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/30 23:19:41 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -94,7 +94,11 @@ u32 VoxMap::getSize() const noexcept {
 }
 
 f32 VoxMap::getValue(const u32 x, const u32 y) const noexcept {
-    return m_values[y * m_size + x];
+    return m_values[y * m_size + x] * m_scale;
+}
+
+void VoxMap::setScale(f32 scale) noexcept {
+    m_scale = scale;
 }
 
 } // namespace proc

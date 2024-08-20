@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/21 12:17:21 by etran             #+#    #+#             */
-/*   Updated: 2024/06/20 16:05:06 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/28 17:53:05 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,11 +60,11 @@ public:
 
     /* ====================================================================== */
 
-    void init(ui::Window& window, const game::GameState& game);
+    void init(ui::Window& window);
     void destroy();
 
     void waitIdle() const;
-    void render(const game::GameState& game);
+    void render();
 
 private:
     /* ====================================================================== */

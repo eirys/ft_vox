@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/11 17:10:03 by etran             #+#    #+#             */
-/*   Updated: 2024/06/25 16:30:08 by etran            ###   ########.fr       */
+/*   Updated: 2024/07/12 18:30:13 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,8 +28,7 @@ public:
 
     virtual void init(const Device& device) = 0;
     virtual void destroy(const Device& device) = 0;
-
-    virtual void fill(const Device& device, const ICommandBuffer* cmdBuffer, const void* data = nullptr) = 0;
+    virtual void fill(const Device& device, const ICommandBuffer* cmdBuffer) {};
 
     /* ====================================================================== */
 

@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/15 16:21:18 by etran             #+#    #+#             */
-/*   Updated: 2024/06/20 18:18:06 by etran            ###   ########.fr       */
+/*   Updated: 2024/08/15 18:15:21 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,13 +15,26 @@
 #include "descriptor_set.h"
 #include "game_decl.h"
 #include "vox_decl.h"
-
-#include <array>
+#include "buffer.h"
 
 namespace vox::gfx {
 
 class WorldSet final: public DescriptorSet {
 public:
+    /* ====================================================================== */
+    /*                              HELPER CLASS                              */
+    /* ====================================================================== */
+
+    struct Ubo {
+        enum: u32 {
+            RenderDistance,
+            FogDistance
+        };
+        u32 data[16];
+    };
+
+    // constexpr u32 PADDING_NEEDED = (0x40 - (sizeof(Ubo) % 0x40)) / sizeof(u32);
+
     /* ====================================================================== */
     /*                                  ENUMS                                 */
     /* ====================================================================== */
@@ -29,6 +42,8 @@ public:
     enum class BindingIndex: u32 {
         Textures,
         Noise,
+        Chunks,
+        RenderData,
 
 #if ENABLE_CUBEMAP
         Cubemap,
@@ -45,6 +60,7 @@ public:
     void    destroy(const Device& device) override;
 
     void    fill(const Device& device) override;
+    void    update(const Device& device, const ICommandBuffer* cmdBuffer);
 
 private:
     /* ====================================================================== */
@@ -53,6 +69,15 @@ private:
 
     static constexpr u32 BINDING_COUNT = (u32)BindingIndex::Count;
 
+    /* ====================================================================== */
+    /*                                  DATA                                  */
+    /* ====================================================================== */
+
+    Buffer  m_renderDataBuffer;
+    Ubo     m_ubo;
+
 }; // class WorldSet
+
+static_assert(sizeof(WorldSet::Ubo) % 0x40 == 0, "PFD UBO size is must be a multiple of 64 bytes. Check value of PADDING_NEEDED.");
 
 } // namespace vox::gfx

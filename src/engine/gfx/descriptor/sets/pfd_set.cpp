@@ -6,13 +6,14 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/11 16:12:13 by etran             #+#    #+#             */
-/*   Updated: 2024/06/21 03:42:31 by etran            ###   ########.fr       */
+/*   Updated: 2024/08/15 17:31:21 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "pfd_set.h"
 #include "device.h"
 #include "game_state.h"
+#include "controller.h"
 #include "texture.h"
 #include "texture_table.h"
 
@@ -91,27 +92,27 @@ void PFDSet::fill(const Device& device) {
     LDEBUG("PFD descriptor set filled");
 }
 
-void PFDSet::update(const game::GameState& state) {
+void PFDSet::update() {
     constexpr math::Vect3 SUN_COLOR = {1.0f, 1.0f, 0.33f};
     constexpr math::Vect3 MOON_COLOR = {0.5f, 0.5f, 0.5f};
 
-    m_data.m_gameData.sunPos = state.getSunPos().xy;
-    m_data.m_gameData.skyHue = math::lerp(SUN_COLOR, MOON_COLOR, std::max(0.0f, state.getSunPos().y)).toRGBA();
-    m_data.m_gameData.debugIndex = state.getController().showDebug();
+    m_data.m_gameData.sunPos = game::GameState::getSunPos().xy;
+    m_data.m_gameData.skyHue = math::lerp(SUN_COLOR, MOON_COLOR, std::max(0.0f, game::GameState::getSunPos().y)).toRGBA();
+    m_data.m_gameData.debugIndex = ui::Controller::showDebug();
 
 #if ENABLE_SHADOW_MAPPING
-    constexpr float	TERRAIN_SIZE = CHUNK_SIZE * RENDER_DISTANCE;
-    constexpr float	TERRAIN_HALF = TERRAIN_SIZE * 0.5f;
-    constexpr float	LIGHT_DISTANCE = TERRAIN_HALF;
+    const float	terrainSize = CHUNK_SIZE * game::World::getSettings().renderDistance;
+    const float	terrainSizeHalf = terrainSize * 0.5f;
+    const float	lightDistance = terrainSizeHalf;
 
     const math::Mat4 projectorView = math::lookAt(
-        state.getSunPos() * LIGHT_DISTANCE + state.getWorld().getOrigin(),
-        state.getWorld().getOrigin(),
+        game::GameState::getSunPos() * lightDistance + game::GameState::getWorld().getOrigin(),
+        game::GameState::getWorld().getOrigin(),
         WORLD_Y);
     static const math::Mat4 projectorProj = math::orthographic(
-        -TERRAIN_HALF, TERRAIN_HALF,
-        -TERRAIN_HALF, TERRAIN_HALF,
-        0.0f, TERRAIN_SIZE);
+        -terrainSizeHalf, terrainSizeHalf,
+        -terrainSizeHalf, terrainSizeHalf,
+        0.0f, terrainSize);
 
     m_data.m_projectorViewProj = projectorProj * projectorView;
 #endif

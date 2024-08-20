@@ -15,7 +15,7 @@ layout(set = PFD_SET, binding = 0) uniform GameData {
 } gameData;
 
 #if ENABLE_CUBEMAP
-layout(set = WORLD_SET, binding = 2) uniform samplerCube SkyboxTex;
+layout(set = WORLD_SET, binding = 3) uniform samplerCube SkyboxTex;
 #endif
 
 const float TINT_INTENSITY = 0.02;

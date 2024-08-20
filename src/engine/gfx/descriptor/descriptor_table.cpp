@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/28 19:55:31 by etran             #+#    #+#             */
-/*   Updated: 2024/06/21 14:21:59 by etran            ###   ########.fr       */
+/*   Updated: 2024/08/18 13:30:56 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,9 +66,19 @@ void DescriptorTable::fill(const Device& device) {
     LINFO("Descriptor table filled up.");
 }
 
-void DescriptorTable::update(const game::GameState& state) {
+void DescriptorTable::update(const Device& device, const ICommandBuffer* cmdBuffer) {
     PFDSet* pfd = (PFDSet*)m_sets[(u32)DescriptorSetIndex::Pfd];
-    pfd->update(state);
+    pfd->update();
+
+    static bool updated = false;
+
+    if (updated)
+        return;
+
+    auto* worldSet = (WorldSet*)m_sets[(u32)DescriptorSetIndex::WorldData];
+    worldSet->update(device, cmdBuffer);
+
+    updated = true;
 }
 
 /* ========================================================================== */

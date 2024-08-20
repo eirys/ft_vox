@@ -47,7 +47,7 @@ const vec3 FOG_COLOR = vec3(0.4, 0.5, 0.75);
 // From Iñigo Quílez
 float applyFog(in float distanceToPoint) {
     const float minFogDistance = 100.0;
-    const float maxFogDistance = 200.0;
+    const float maxFogDistance = minFogDistance + 100.0;
 
     const float fog = 1.0 - (maxFogDistance - distanceToPoint) / (maxFogDistance - minFogDistance);
     return clamp(fog, 0.0, 1.0);

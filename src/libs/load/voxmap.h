@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/10 15:38:27 by etran             #+#    #+#             */
-/*   Updated: 2024/06/11 13:21:02 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/30 23:19:25 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,6 +45,8 @@ public:
     u32     getSize() const noexcept;
     f32     getValue(const u32 x, const u32 y) const noexcept;
 
+    void    setScale(f32 scale) noexcept;
+
 protected:
     /* ====================================================================== */
     /*                                  DATA                                  */
@@ -52,6 +54,7 @@ protected:
 
     std::vector<f32>    m_values;
     u32                 m_size = 0;
+    f32                 m_scale = 1.0f;
     VxmType             m_type = VxmType::Unknown;
 
 }; // class VoxMap

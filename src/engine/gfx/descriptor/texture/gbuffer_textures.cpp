@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/14 00:40:50 by etran             #+#    #+#             */
-/*   Updated: 2024/06/25 15:12:44 by etran            ###   ########.fr       */
+/*   Updated: 2024/07/12 18:33:12 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,12 +51,6 @@ void PositionTexture::destroy(const Device& device) {
     m_imageBuffer.destroy(device);
 }
 
-void PositionTexture::fill(
-    const Device& device,
-    const ICommandBuffer* cmdBuffer,
-    const void* data
-) {}
-
 /* NORMAL TEXTURE =========================================================== */
 
 void NormalTexture::init(const Device& device) {
@@ -77,13 +71,6 @@ void NormalTexture::init(const Device& device) {
 
 void NormalTexture::destroy(const Device& device) {
     m_imageBuffer.destroy(device);
-}
-
-void NormalTexture::fill(
-    const Device& device,
-    const ICommandBuffer* cmdBuffer,
-    const void* data
-) {
 }
 
 /* ALBEDO TEXTURE =========================================================== */
@@ -107,13 +94,6 @@ void AlbedoTexture::destroy(const Device& device) {
     m_imageBuffer.destroy(device);
 }
 
-void AlbedoTexture::fill(
-    const Device& device,
-    const ICommandBuffer* cmdBuffer,
-    const void* data
-) {
-}
-
 void DepthTexture::init(const Device& device) {
     ImageMetaData textureData{};
     textureData.m_format = SwapChain::getDepthFormat();
@@ -130,13 +110,6 @@ void DepthTexture::init(const Device& device) {
 
 void DepthTexture::destroy(const Device& device) {
     m_imageBuffer.destroy(device);
-}
-
-void DepthTexture::fill(
-    const Device& device,
-    const ICommandBuffer* cmdBuffer,
-    const void* data
-) {
 }
 
 /* POSITION VIEW TEXTURE ==================================================== */
@@ -162,12 +135,6 @@ void PositionViewTexture::destroy(const Device& device) {
     m_imageBuffer.destroy(device);
 }
 
-void PositionViewTexture::fill(
-    const Device& device,
-    const ICommandBuffer* cmdBuffer,
-    const void* data
-) {}
-
 #endif
 
 /* SSAO TEXTURE ============================================================= */
@@ -189,13 +156,6 @@ void SSAOTexture::init(const Device& device) {
 
 void SSAOTexture::destroy(const Device& device) {
     m_imageBuffer.destroy(device);
-}
-
-void SSAOTexture::fill(
-    const Device& device,
-    const ICommandBuffer* cmdBuffer,
-    const void* data
-) {
 }
 
 } // namespace vox::gfx

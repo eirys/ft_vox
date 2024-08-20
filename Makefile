@@ -6,7 +6,7 @@
 #    By: etran <etran@student.42.fr>                +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/04/06 03:40:09 by eli               #+#    #+#              #
-#    Updated: 2024/06/21 03:24:54 by etran            ###   ########.fr        #
+#    Updated: 2024/08/20 14:02:00 by etran            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -101,6 +101,7 @@ SRC_FILES	:=	entrypoint.cpp \
 				$(TEX_DIR)/game_textures.cpp \
 				$(TEX_DIR)/skybox_texture.cpp \
 				$(TEX_DIR)/gbuffer_textures.cpp \
+				$(TEX_DIR)/chunk_data_texture.cpp \
 				$(TEX_DIR)/perlin_noise_texture.cpp \
 				$(TEX_DIR)/shadowmap_texture.cpp \
 				$(TEX_DIR)/sampler.cpp \
@@ -140,10 +141,12 @@ SRC_FILES	:=	entrypoint.cpp \
 				$(MATH_DIR)/maths.cpp \
 				$(MATH_DIR)/matrix.cpp \
 				$(GAME_DIR)/game_state.cpp \
+				$(GAME_DIR)/camera.cpp \
 				$(WORLD_DIR)/world.cpp \
 				$(WORLD_DIR)/chunk.cpp \
 				$(WORLD_DIR)/block.cpp \
 				$(UI_DIR)/controller.cpp \
+				$(UI_DIR)/key_handler.cpp \
 				$(UI_DIR)/window.cpp
 
 SRC			:=	$(addprefix $(SRC_DIR)/,$(SRC_FILES))
@@ -218,8 +221,8 @@ GLSLC_FLAGS	:=	-MD \
 
 RM			:=	rm -rf
 
-MAPS		:=	$(MAP_DIR)/biomes.voxmap \
-				# $(MAP_DIR)/heightmap.voxmap
+MAP_FILES	:=	$(MAP_DIR)/biomes.voxmap \
+				$(MAP_DIR)/height.voxmap
 
 # ============================================================================ #
 #                                     RULES                                    #
@@ -228,7 +231,7 @@ MAPS		:=	$(MAP_DIR)/biomes.voxmap \
 # PROJECT ==================================================================== #
 
 .PHONY: all
-all: $(MAPS) $(NAME)
+all: $(MAP_FILES) $(NAME)
 
 .PHONY: run
 run: all
@@ -243,7 +246,7 @@ fclean: clean
 re: fclean all
 
 .PHONY: force
-force: shaders_re run
+force: maps_re shaders_re run
 
 # CPP ======================================================================== #
 -include $(DEP)
@@ -285,16 +288,22 @@ shaders_re: clean_shaders $(SHD_BIN)
 
 # ASSETS ===================================================================== #
 .PHONY: maps
-maps: $(MAPS)
-
-$(MAPS):
+maps: $(OBJ_DIR)/$(SETUP_DIR)/map_generator.o
 	@echo "Generating maps..."
-	@mkdir -p $(MAP_DIR) $(OBJ_DIR)/$(SETUP_DIR)
-	@$(CXX) $(CFLAGS) $(DEFINES) $(SRC_DIR)/$(SETUP_DIR)/map_generator.cpp -o $(OBJ_DIR)/$(SETUP_DIR)/map_generator
-	@./obj/$(SETUP_DIR)/map_generator
+	@mkdir -p $(MAP_DIR)
+	@$(CXX) $(CFLAGS) $(DEFINES) $(OBJ_DIR)/$(SETUP_DIR)/map_generator.o -o $(OBJ_DIR)/$(SETUP_DIR)/map_generator
+	@./$(OBJ_DIR)/$(SETUP_DIR)/map_generator
 	@echo "Maps generated."
+
+$(OBJ_DIR)/$(SETUP_DIR)/map_generator.o: $(SRC_DIR)/$(SETUP_DIR)/map_generator.cpp
+	@echo "Compiling map_generator.cpp..."
+	@mkdir -p $(MAP_DIR) $(OBJ_DIR)/$(SETUP_DIR)
+	@$(CXX) $(CFLAGS) $(DEFINES) -c $(SRC_DIR)/$(SETUP_DIR)/map_generator.cpp -o $(OBJ_DIR)/$(SETUP_DIR)/map_generator.o
 
 .PHONY: remove_map
 remove_map:
 	@$(RM) $(MAP_DIR)
 	@echo "Removed $(MAP_DIR)."
+
+.PHONY: maps_re
+maps_re: remove_map maps

@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/28 11:02:25 by etran             #+#    #+#             */
-/*   Updated: 2024/05/30 17:07:34 by etran            ###   ########.fr       */
+/*   Updated: 2024/07/02 13:41:02 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,12 @@
 
 namespace vox::gfx {
 
+/**
+ * @note Data form:
+ * @param [blockId] 16 bits
+ * @param [chunkId] 10 bits
+ * @param [face] 3 bits
+ */
 class VertexInstance final {
 public:
     /* ====================================================================== */
@@ -34,7 +40,6 @@ public:
 
     VertexInstance(
         const game::BlockFace face,
-        const u8 textureId,
         const u16 blockId,
         const u16 chunkId);
 

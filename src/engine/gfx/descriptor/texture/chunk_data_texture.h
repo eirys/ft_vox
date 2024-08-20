@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   chunk_data_sampler.h                               :+:      :+:    :+:   */
+/*   chunk_data_texture.h                               :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/17 23:04:53 by etran             #+#    #+#             */
-/*   Updated: 2024/06/21 14:30:22 by etran            ###   ########.fr       */
+/*   Updated: 2024/07/12 18:31:51 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,34 +16,34 @@
 
 namespace vox::gfx {
 
-class ChunkDataSampler final: public Texture {
+class ChunkDataTexture final: public Texture {
 public:
+    /* ====================================================================== */
+    /*                                TYPEDEFS                                */
+    /* ====================================================================== */
+
+    using super = Texture;
+
     /* ====================================================================== */
     /*                                 METHODS                                */
     /* ====================================================================== */
 
-    ChunkDataSampler() = default;
-    ~ChunkDataSampler() = default;
+    ChunkDataTexture(): super(false) {}
 
-    ChunkDataSampler(ChunkDataSampler&& other) = delete;
-    ChunkDataSampler(const ChunkDataSampler& other) = delete;
-    ChunkDataSampler& operator=(ChunkDataSampler&& other) = delete;
-    ChunkDataSampler& operator=(const ChunkDataSampler& other) = delete;
+    ~ChunkDataTexture() = default;
+
+    ChunkDataTexture(ChunkDataTexture&& other) = delete;
+    ChunkDataTexture(const ChunkDataTexture& other) = delete;
+    ChunkDataTexture& operator=(ChunkDataTexture&& other) = delete;
+    ChunkDataTexture& operator=(const ChunkDataTexture& other) = delete;
 
     /* ====================================================================== */
 
     void    init(const Device& device) override;
     void    destroy(const Device& device) override;
 
-    void    fill(const Device& device, const ICommandBuffer* cmdBuffer, const void* data = nullptr) override;
+    void    fill(const Device& device, const ICommandBuffer* cmdBuffer) override;
 
-// private:
-//     /* ====================================================================== */
-//     /*                                 METHODS                                */
-//     /* ====================================================================== */
-
-//     void    _createSampler(const Device& device);
-
-}; // class ChunkDataSampler
+}; // class ChunkDataTexture
 
 } // namespace vox::gfx

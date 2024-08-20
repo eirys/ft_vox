@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/19 02:48:23 by etran             #+#    #+#             */
-/*   Updated: 2024/06/20 16:27:41 by etran            ###   ########.fr       */
+/*   Updated: 2024/07/12 18:31:19 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,7 +42,7 @@ public:
     void    init(const Device& device) override;
     void    destroy(const Device& device) override;
 
-    void    fill(const Device& device, const ICommandBuffer* cmdBuffer, const void* data = nullptr) override;
+    void    fill(const Device& device, const ICommandBuffer* cmdBuffer) override;
 
 }; // class SkyboxSampler
 

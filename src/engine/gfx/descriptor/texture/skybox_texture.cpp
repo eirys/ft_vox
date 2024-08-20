@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/20 15:27:49 by etran             #+#    #+#             */
-/*   Updated: 2024/06/21 14:33:27 by etran            ###   ########.fr       */
+/*   Updated: 2024/08/15 15:08:43 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,13 +19,13 @@
 
 namespace vox::gfx {
 
-static constexpr u32 TEXTURE_SIZE = 16;
-
 /* ========================================================================== */
 /*                                   PUBLIC                                   */
 /* ========================================================================== */
 
 void SkyboxSampler::init(const Device& device) {
+    constexpr u32 TEXTURE_SIZE = 16;
+
     ImageMetaData textureData{};
     textureData.m_format = VK_FORMAT_R8G8B8A8_SRGB;
     textureData.m_width = TEXTURE_SIZE;
@@ -54,11 +54,7 @@ scop::Image _loadSkybox() {
     return loader.load();
 }
 
-void SkyboxSampler::fill(
-    const Device& device,
-    const ICommandBuffer* cmdBuffer,
-    const void* data
-) {
+void SkyboxSampler::fill(const Device& device, const ICommandBuffer* cmdBuffer) {
     const u32 IMAGE_SIZE = m_imageBuffer.getMetaData().getLayerSize()
                            * m_imageBuffer.getMetaData().getPixelSize();
 

@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/30 22:51:33 by etran             #+#    #+#             */
-/*   Updated: 2024/05/31 02:22:41 by etran            ###   ########.fr       */
+/*   Updated: 2024/08/15 17:07:45 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,7 +31,7 @@ public:
     /*                             STATIC MEMBERS                             */
     /* ====================================================================== */
 
-    static constexpr u32    LOG_INTERVAL = 2;
+    static constexpr u32    LOG_INTERVAL = 3;
 
     /* ====================================================================== */
     /*                                 METHODS                                */
@@ -52,8 +52,7 @@ public:
 
         if (elapsed >= LOG_INTERVAL) {
             u32 fps = m_counter / elapsed;
-            LLOG("FPS: " << fps);
-
+            LLOG("FPS: " << fps << " | Drawing "<< vox::gfx::ChunkGfx::chunksDrawn << " chunks.");
             reset();
         }
     }

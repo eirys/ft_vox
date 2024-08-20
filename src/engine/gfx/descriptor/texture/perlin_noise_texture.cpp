@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/27 15:41:25 by etran             #+#    #+#             */
-/*   Updated: 2024/06/20 16:11:08 by etran            ###   ########.fr       */
+/*   Updated: 2024/07/12 18:31:00 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,7 @@ namespace vox::gfx {
 /*                                   PUBLIC                                   */
 /* ========================================================================== */
 
-void PerlinNoiseSampler::init(const Device& device) {
+void PerlinNoiseTexture::init(const Device& device) {
     ImageMetaData textureData{};
     textureData.m_format = VK_FORMAT_R8G8B8A8_SRGB;
     textureData.m_width = NOISEMAP_SIZE;
@@ -37,11 +37,7 @@ void PerlinNoiseSampler::init(const Device& device) {
     m_imageBuffer.initImage(device, std::move(textureData));
 }
 
-void PerlinNoiseSampler::fill(
-    const Device& device,
-    const ICommandBuffer* cmdBuffer,
-    const void* data
-) {
+void PerlinNoiseTexture::fill(const Device& device, const ICommandBuffer* cmdBuffer) {
     proc::NoiseMapInfo info{};
     info.type = proc::PerlinNoiseType::PERLIN_NOISE_2D;
     info.width = m_imageBuffer.getMetaData().m_width;
@@ -94,7 +90,7 @@ void PerlinNoiseSampler::fill(
     m_imageBuffer.initView(device);
 }
 
-void PerlinNoiseSampler::destroy(const Device& device) {
+void PerlinNoiseTexture::destroy(const Device& device) {
     m_imageBuffer.destroy(device);
 }
 

@@ -6,14 +6,14 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/11 16:56:28 by etran             #+#    #+#             */
-/*   Updated: 2024/06/06 02:22:35 by etran            ###   ########.fr       */
+/*   Updated: 2024/08/15 12:45:46 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
 #include "world.h"
-#include "controller.h"
+#include "camera.h"
 
 #include <chrono>
 
@@ -48,30 +48,27 @@ public:
 
     GameState() = default;
 
-    void init(const ui::Window& window);
-    void update(const ui::Window& window);
+    void init(const ui::Controller& controller);
+    void update(const ui::Controller& controller);
+
+    void ignoreData();
 
     /* ====================================================================== */
 
-    float getElapsedTime() const noexcept;
-
-    /* ====================================================================== */
-
-    World&                  getWorld() noexcept;
-    const World&            getWorld() const noexcept;
-    const ui::Controller&   getController() const noexcept;
-    const math::Vect3&      getSunPos() const noexcept;
+    static float               getElapsedTime() noexcept;
+    static const World&        getWorld() noexcept;
+    static const math::Vect3&  getSunPos() noexcept;
+    static const Camera&       getCamera() noexcept;
 
 private:
     /* ====================================================================== */
     /*                                  DATA                                  */
     /* ====================================================================== */
 
-    World               m_world;
-    ui::Controller      m_controller;
-
-    Sun                 m_sun;
-    Clock               m_gameClock;
+    static World   m_world;
+    static Sun     m_sun;
+    static Camera  m_camera;
+    static Clock   m_gameClock;
 
 };
 

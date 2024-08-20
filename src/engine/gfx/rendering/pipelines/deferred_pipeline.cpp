@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/13 17:09:22 by etran             #+#    #+#             */
-/*   Updated: 2024/06/25 15:05:36 by etran            ###   ########.fr       */
+/*   Updated: 2024/08/15 17:58:35 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,11 +16,15 @@
 #include "vertex_buffer.h"
 #include "pipeline_layout.h"
 #include "vox_decl.h"
+#include "bounding_frustum.h"
+#include "game_state.h"
 #include "debug.h"
 
 #include <stdexcept>
 
 namespace vox::gfx {
+
+u32 ChunkGfx::chunksDrawn;
 
 /* ========================================================================== */
 /*                                   PUBLIC                                   */
@@ -154,7 +158,19 @@ void DeferredPipeline::record(const ICommandBuffer* cmdBuffer) const {
     cmdBuffer->bindPipeline(m_pipeline);
     VertexBuffer::bind(cmdBuffer);
 
-    vkCmdDraw(cmdBuffer->getBuffer(), 4, VertexBuffer::getInstancesCount(), 0, 0);
+    const game::World& world = game::GameState::getWorld();
+    const BoundingFrustum frustum(game::GameState::getCamera());
+
+    ChunkGfx::chunksDrawn = 0;
+    u32 offset = 0;
+
+    for (const game::Chunk& chunk: world.getChunks()) {
+        if (chunk.isVisible(frustum)) {
+            vkCmdDraw(cmdBuffer->getBuffer(), 4, chunk.getInstanceCount(), 0, offset);
+            ++ChunkGfx::chunksDrawn;
+        }
+        offset += chunk.getInstanceCount();
+    }
 }
 
 } // namespace vox::gfx

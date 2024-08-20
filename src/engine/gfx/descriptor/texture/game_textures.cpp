@@ -19,14 +19,15 @@
 
 namespace vox::gfx {
 
-static constexpr u32 IMAGE_SIZE = 16;
 static constexpr u32 IMAGE_COUNT = 6;
 
 /* ========================================================================== */
 /*                                   PUBLIC                                   */
 /* ========================================================================== */
 
-void GameTextureSampler::init(const Device& device) {
+void GameTexture::init(const Device& device) {
+    constexpr u32 IMAGE_SIZE = 16;
+
     ImageMetaData textureData{};
     textureData.m_format = VK_FORMAT_R8G8B8A8_SRGB;
     textureData.m_width = IMAGE_SIZE;
@@ -38,7 +39,7 @@ void GameTextureSampler::init(const Device& device) {
     m_imageBuffer.initImage(device, std::move(textureData));
 }
 
-void GameTextureSampler::destroy(const Device& device) {
+void GameTexture::destroy(const Device& device) {
     m_imageBuffer.destroy(device);
 }
 
@@ -49,12 +50,12 @@ std::array<scop::Image, IMAGE_COUNT> _loadAssets() {
     std::array<scop::Image, IMAGE_COUNT> textures;
 
     std::array<std::string, IMAGE_COUNT> texturePaths = {
-        "assets/textures/dirt.ppm",
-        "assets/textures/grass_side.ppm",
-        "assets/textures/grass_top.ppm",
-        "assets/textures/stone.ppm",
-        "assets/textures/sand.ppm",
-        "assets/textures/undefined.ppm"
+        "assets/textures/dirt.ppm",         // 0
+        "assets/textures/grass_side.ppm",   // 1
+        "assets/textures/grass_top.ppm",    // 2
+        "assets/textures/stone.ppm",        // 3
+        "assets/textures/sand.ppm",         // 4
+        "assets/textures/undefined.ppm"     // 5
     };
 
     for (u32 i = 0; i < IMAGE_COUNT; ++i) {
@@ -65,11 +66,7 @@ std::array<scop::Image, IMAGE_COUNT> _loadAssets() {
     return textures;
 }
 
-void GameTextureSampler::fill(
-    const Device& device,
-    const ICommandBuffer* cmdBuffer,
-    const void* data
-) {
+void GameTexture::fill(const Device& device, const ICommandBuffer* cmdBuffer) {
     const u32 IMAGE_SIZE = m_imageBuffer.getMetaData().getLayerSize()
                            * m_imageBuffer.getMetaData().getPixelSize();
 

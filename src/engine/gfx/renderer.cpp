@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/23 09:29:35 by etran             #+#    #+#             */
-/*   Updated: 2024/06/25 14:45:38 by etran            ###   ########.fr       */
+/*   Updated: 2024/08/15 18:16:33 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,7 @@
 #include "world_set.h"
 #include "gbuffer_set.h"
 #include "push_constant.h"
-#include "game_state.h"
+#include "controller.h"
 #include "texture.h"
 
 #include "main_render_pass.h"
@@ -43,7 +43,7 @@ namespace vox::gfx {
 /*                                   PUBLIC                                   */
 /* ========================================================================== */
 
-void Renderer::init(ui::Window& window, const game::GameState& game) {
+void Renderer::init(ui::Window& window) {
     m_core.init(window);
     m_device.init(m_core);
     m_swapChain.init(m_core, m_device, window);
@@ -66,11 +66,7 @@ void Renderer::init(ui::Window& window, const game::GameState& game) {
     _createFences();
     _createGfxSemaphores();
 
-#if ENABLE_FRUSTUM_CULLING
-    VertexBuffer::init(m_device, game);
-#else
-    VertexBuffer::init(m_device, transferBuffer, game);
-#endif
+    VertexBuffer::init(m_device, transferBuffer);
 
     LDEBUG("Renderer initialized.");
 }
@@ -103,14 +99,13 @@ void Renderer::waitIdle() const {
     m_device.idle();
 }
 
-void Renderer::render(const game::GameState& game) {
+void Renderer::render() {
     // Prepare frame resources ---------
     m_fences[(u32)FenceIndex::DrawInFlight].await(m_device);
-    m_pushConstants[(u32)PushConstantIndex::Camera]->update(game);
-    m_descriptorTable.update(game);
-#if ENABLE_FRUSTUM_CULLING
-    VertexBuffer::update(m_device, game);
-#endif
+
+    m_pushConstants[(u32)PushConstantIndex::Camera]->update();
+    m_descriptorTable.update(m_device, m_commandBuffers[(u32)CommandBufferIndex::Transfer]);
+
     if (m_swapChain.acquireNextImage(m_device, m_semaphores[(u32)SemaphoreIndex::ImageAvailable]) == false)
         // TODO: Handle this error
         return;
@@ -172,8 +167,7 @@ void Renderer::render(const game::GameState& game) {
 
     cameraConstant->bind(drawBuffer, m_pipelineLayouts[(u32)PipelineLayoutIndex::Scene]);
     m_pipelines[(u32)PipelineIndex::ScenePipeline]->record(drawBuffer);
-    if (game.getController().showDebug())
-        m_pipelines[(u32)PipelineIndex::DebugPipeline]->record(drawBuffer);
+    if (ui::Controller::showDebug() != 0) m_pipelines[(u32)PipelineIndex::DebugPipeline]->record(drawBuffer);
     m_renderPasses[(u32)RenderPassIndex::Main]->end(drawBuffer);
 
     drawBuffer->stopRecording();

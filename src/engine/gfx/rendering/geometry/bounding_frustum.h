@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/30 19:39:12 by etran             #+#    #+#             */
-/*   Updated: 2024/05/31 15:08:39 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/28 19:22:05 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,9 +15,9 @@
 #include "types.h"
 #include "vector.h"
 
-namespace ui {
+namespace game {
 struct Camera;
-} // namespace ui
+} // namespace game
 
 namespace vox::gfx {
 
@@ -48,7 +48,7 @@ struct BoundingFrustum final {
     /*                                 METHODS                                */
     /* ====================================================================== */
 
-    BoundingFrustum(const ui::Camera& cam);
+    BoundingFrustum(const game::Camera& cam);
 
     BoundingFrustum(): m_planes() {}
 

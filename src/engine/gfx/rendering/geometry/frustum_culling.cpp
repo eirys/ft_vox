@@ -6,14 +6,14 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/31 15:07:11 by etran             #+#    #+#             */
-/*   Updated: 2024/05/31 18:32:53 by etran            ###   ########.fr       */
+/*   Updated: 2024/06/28 22:17:23 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "bounding_box.h"
 #include "bounding_frustum.h"
 #include "maths.h"
-#include "controller.h"
+#include "camera.h"
 
 namespace vox::gfx {
 
@@ -21,29 +21,29 @@ namespace vox::gfx {
     /*                             BOUNDINGFRUSTUM                            */
     /* ====================================================================== */
 
-BoundingFrustum::BoundingFrustum(const ui::Camera& cam) {
-    const float halfHeight = ui::Camera::FAR_PLANE * tanf(math::radians(cam.m_fov) * .5f);
-    const float halfWidth = halfHeight * ui::Camera::ASPECT_RATIO;
+BoundingFrustum::BoundingFrustum(const game::Camera& cam) {
+    const float halfHeight = cam.getSettings().farPlane * tanf(math::radians(cam.getSettings().fov) * .5f);
+    const float halfWidth = halfHeight * game::Camera::ASPECT_RATIO;
 
-    const math::Vect3 nearFront = ui::Camera::NEAR_PLANE * cam.m_front;
-    const math::Vect3 farFront = ui::Camera::FAR_PLANE * cam.m_front;
+    const math::Vect3 nearFront = cam.getSettings().nearPlane * cam.m_directions.front;
+    const math::Vect3 farFront = cam.getSettings().farPlane * cam.m_directions.front;
 
-    m_near.xyz = cam.m_front;
+    m_near.xyz = cam.m_directions.front;
     m_near.w = math::dot(m_near.xyz, cam.m_position + nearFront);
 
-    m_far.xyz = -cam.m_front;
+    m_far.xyz = -cam.m_directions.front;
     m_far.w = math::dot(m_far.xyz, cam.m_position + farFront);
 
-    m_right.xyz = math::normalize(math::cross(cam.m_up, farFront + cam.m_right * halfWidth));
+    m_right.xyz = math::normalize(math::cross(cam.m_directions.up, farFront + cam.m_directions.right * halfWidth));
     m_right.w = math::dot(m_right.xyz, cam.m_position);
 
-    m_left.xyz = math::normalize(math::cross(farFront - cam.m_right * halfWidth, cam.m_up));
+    m_left.xyz = math::normalize(math::cross(farFront - cam.m_directions.right * halfWidth, cam.m_directions.up));
     m_left.w = math::dot(m_left.xyz, cam.m_position);
 
-    m_top.xyz = math::normalize(math::cross(farFront + cam.m_up * halfHeight, cam.m_right));
+    m_top.xyz = math::normalize(math::cross(farFront + cam.m_directions.up * halfHeight, cam.m_directions.right));
     m_top.w = math::dot(m_top.xyz, cam.m_position);
 
-    m_bottom.xyz = math::normalize(math::cross(cam.m_right, farFront - cam.m_up * halfHeight));
+    m_bottom.xyz = math::normalize(math::cross(cam.m_directions.right, farFront - cam.m_directions.up * halfHeight));
     m_bottom.w = math::dot(m_bottom.xyz, cam.m_position);
 }
 

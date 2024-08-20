@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/03 16:13:11 by etran             #+#    #+#             */
-/*   Updated: 2024/06/21 14:32:56 by etran            ###   ########.fr       */
+/*   Updated: 2024/08/15 15:08:30 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,13 +18,13 @@
 
 namespace vox::gfx {
 
-static constexpr u32 TEXTURE_SIZE = 4096;
-
 /* ========================================================================== */
 /*                                   PUBLIC                                   */
 /* ========================================================================== */
 
 void ShadowmapSampler::init(const Device& device) {
+    constexpr u32 TEXTURE_SIZE = 4096;
+
     ImageMetaData depthImageMetaData{};
     depthImageMetaData.m_format = SwapChain::getDepthFormat();
     depthImageMetaData.m_sampleCount = VK_SAMPLE_COUNT_1_BIT;
@@ -41,13 +41,5 @@ void ShadowmapSampler::init(const Device& device) {
 void ShadowmapSampler::destroy(const Device& device) {
     m_imageBuffer.destroy(device);
 }
-
-/* ========================================================================== */
-
-void ShadowmapSampler::fill(
-    const Device& device,
-    const ICommandBuffer* cmdBuffer,
-    const void* data
-) {}
 
 } // namespace vox::gfx
