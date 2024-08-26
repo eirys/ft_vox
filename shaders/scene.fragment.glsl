@@ -25,7 +25,7 @@ layout(push_constant) uniform Camera {
 } camera;
 
 layout(set = PFD_SET, binding = 0) uniform GameData {
-    vec2 sunPos;
+    uvec2 sunPos;
     uint skyHue;
 } gameData;
 
@@ -73,7 +73,7 @@ void main() {
         discard;
 
     // External data
-    const vec3 sunDir = vec3(gameData.sunPos, 0.0);
+    const vec3 sunDir = vec3(uintBitsToFloat(gameData.sunPos.x), uintBitsToFloat(gameData.sunPos.y), 0.0);
     const float sunHeight = max(sunDir.y, 0.0);
 
     vec3 color = albedo.rgb;

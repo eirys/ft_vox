@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/17 23:05:38 by etran             #+#    #+#             */
-/*   Updated: 2024/08/20 13:48:50 by etran            ###   ########.fr       */
+/*   Updated: 2024/08/22 15:30:31 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,7 +26,7 @@ namespace vox::gfx {
 /* ========================================================================== */
 
 void ChunkDataTexture::init(const Device& device) {
-    const u32 renderArea = game::World::getSettings().rendering.renderDistance * game::World::getSettings().rendering.renderDistance;
+    const u32 renderArea = game::World::getSettings().rendering.getRenderedChunksCount();
 
     ImageMetaData textureData{};
     textureData.m_format = VK_FORMAT_R8_UINT;
@@ -37,6 +37,8 @@ void ChunkDataTexture::init(const Device& device) {
                           VK_IMAGE_USAGE_TRANSFER_DST_BIT;  // Transfer destination
     textureData.m_viewType = VK_IMAGE_VIEW_TYPE_2D_ARRAY;
     m_imageBuffer.initImage(device, std::move(textureData));
+
+    LDEBUG("Created Chunk data text");
 }
 
 void ChunkDataTexture::fill(const Device& device, const ICommandBuffer* cmdBuffer) {
@@ -45,10 +47,12 @@ void ChunkDataTexture::fill(const Device& device, const ICommandBuffer* cmdBuffe
         .m_accessMask = VK_ACCESS_SHADER_READ_BIT,
         .m_stageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT };
 
+    LDEBUG("Filling Chunk data text");
     Buffer stagingBuffer = m_imageBuffer.createStagingBuffer(device);
     stagingBuffer.map(device);
     stagingBuffer.copyFrom(game::GameState::getWorld().getBlockRaw().data());
     stagingBuffer.unmap(device);
+    LDEBUG("Copied");
 
     cmdBuffer->reset();
     cmdBuffer->startRecording();

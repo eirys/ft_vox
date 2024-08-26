@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/23 09:29:35 by etran             #+#    #+#             */
-/*   Updated: 2024/08/15 18:16:33 by etran            ###   ########.fr       */
+/*   Updated: 2024/08/26 12:08:11 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,6 +59,7 @@ void Renderer::init(ui::Window& window) {
 
     m_descriptorPool.init(m_device, m_descriptorTable);
     m_descriptorTable.fill(m_device);
+
 
     _createPushConstants();
     _createPipelineLayouts();
@@ -324,8 +325,17 @@ void Renderer::_createPipelineLayouts() {
         m_pipelineLayouts[(u32)PipelineLayoutIndex::Scene].init(m_device, sets, m_pushConstants[(u32)PushConstantIndex::Camera]);
     }
     { // Deferred
-        sets = { m_descriptorTable[DescriptorSetIndex::WorldData] };
+        sets = {
+            m_descriptorTable[DescriptorSetIndex::Pfd],
+            m_descriptorTable[DescriptorSetIndex::WorldData] };
         m_pipelineLayouts[(u32)PipelineLayoutIndex::Deferred].init(m_device, sets, m_pushConstants[(u32)PushConstantIndex::Camera]);
+    }
+    { // Debug
+        sets = {
+            m_descriptorTable[DescriptorSetIndex::Pfd],
+            m_descriptorTable[DescriptorSetIndex::GBuffer],
+            m_descriptorTable[DescriptorSetIndex::WorldData] };
+        m_pipelineLayouts[(u32)PipelineLayoutIndex::Debug].init(m_device, sets, m_pushConstants[(u32)PushConstantIndex::Camera]);
     }
 #if ENABLE_SKYBOX
     { // Sky
@@ -363,7 +373,7 @@ void Renderer::_createPipelines() {
     m_pipelines[(u32)PipelineIndex::ScenePipeline] = new ScenePipeline();
     m_pipelines[(u32)PipelineIndex::ScenePipeline]->init(m_device, mainRenderPass, m_pipelineLayouts[(u32)PipelineLayoutIndex::Scene]);
     m_pipelines[(u32)PipelineIndex::DebugPipeline] = new DebugTexPipeline();
-    m_pipelines[(u32)PipelineIndex::DebugPipeline]->init(m_device, mainRenderPass, m_pipelineLayouts[(u32)PipelineLayoutIndex::Scene]);
+    m_pipelines[(u32)PipelineIndex::DebugPipeline]->init(m_device, mainRenderPass, m_pipelineLayouts[(u32)PipelineLayoutIndex::Debug]);
 
 #if ENABLE_SKYBOX
     m_pipelines[(u32)PipelineIndex::SkyboxPipeline] = new SkyboxPipeline();

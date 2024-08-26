@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/15 17:03:33 by etran             #+#    #+#             */
-/*   Updated: 2024/08/20 13:49:03 by etran            ###   ########.fr       */
+/*   Updated: 2024/08/26 12:32:36 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,7 +29,7 @@ namespace vox::gfx {
 /* ========================================================================== */
 
 void WorldSet::init(const Device& device, const ICommandBuffer* cmdBuffer) {
-    m_ubo.data[(u32)Ubo::RenderDistance] = game::GameState::getWorld().getSettings().rendering.renderDistance;
+    m_ubo.data[(u32)Ubo::RenderAreaSide] = game::GameState::getWorld().getSettings().rendering.getRenderAreaSide();
     m_ubo.data[(u32)Ubo::FogDistance] = ui::Controller::getFogDistance();
 
     BufferMetadata bufferData{};
@@ -43,7 +43,7 @@ void WorldSet::init(const Device& device, const ICommandBuffer* cmdBuffer) {
         _createLayoutBinding(DescriptorTypeIndex::CombinedImageSampler, ShaderVisibility::FS, (u32)BindingIndex::Textures),
         _createLayoutBinding(DescriptorTypeIndex::CombinedImageSampler, ShaderVisibility::VS, (u32)BindingIndex::Noise),
         _createLayoutBinding(DescriptorTypeIndex::CombinedImageSampler, ShaderVisibility::VS, (u32)BindingIndex::Chunks),
-        _createLayoutBinding(DescriptorTypeIndex::UniformBuffer, ShaderVisibility::VS, (u32)BindingIndex::RenderData),
+        _createLayoutBinding(DescriptorTypeIndex::UniformBuffer, ShaderVisibility::VS_FS, (u32)BindingIndex::RenderData),
 #if ENABLE_CUBEMAP
         _createLayoutBinding(DescriptorTypeIndex::CombinedImageSampler, ShaderVisibility::FS, (u32)BindingIndex::Cubemap),
 #endif

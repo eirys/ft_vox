@@ -10,7 +10,7 @@ layout(location = 0) in vec3 inUVW;
 layout(location = 0) out vec4 outFragColor;
 
 layout(set = PFD_SET, binding = 0) uniform GameData {
-    vec2 sunPos;
+    uvec2 sunPos;
     uint skyHue;
 } gameData;
 
@@ -88,7 +88,7 @@ vec3 computeSkyColor(in vec3 defaultColor, in float sunHeight, in float horizonL
 
 void main() {
     const vec3 skyboxPoint = normalize(inUVW);
-    const vec3 sunDir = vec3(gameData.sunPos, 0.0);
+    const vec3 sunDir = vec3(uintBitsToFloat(gameData.sunPos.x), uintBitsToFloat(gameData.sunPos.y), 0.0);
     const float sunHeight = max(sunDir.y, 0.0);
     const float horizonLine = 1.0 - clamp(skyboxPoint.y + 0.15, 0.0, 1.0); // Offset height to lower horizon
 

@@ -20,9 +20,15 @@ layout(push_constant) uniform Camera {
     mat4 proj;
 } camera;
 
+layout(set = PFD_SET, binding = 0) uniform GameData {
+    vec4 dummy;
+    uvec2 portionOffset;
+    uvec2 renderOffset;
+};
+
 layout(set = WORLD_SET, binding = 2) uniform usampler2DArray ChunkData;
 layout(set = WORLD_SET, binding = 3) uniform RenderData {
-    uint renderDistance;
+    uint renderAreaSide;
     uint fogDistance;
 } renderData;
 
@@ -72,14 +78,16 @@ const uint TEXTURE_INDEX[8][6] = {
 };
 
 struct InstanceData {
-    vec3 chunkPos;      // 16 bits
+    vec3 chunkOffset;   // 16 bits
     vec3 blockPos;      // 9 bits
     uint face;          // 3 bits
 
     uint textureIndex;  // deduced
 };
 
-uint getMaterial(in vec3 blockPosLocal, in uint chunk, in vec2 dim) {
+uint getMaterial(in vec3 blockPosLocal, in uint chunk) {
+    const vec2 dim = textureSize(ChunkData, 0).xy;
+
     vec2 remapPos = vec2(
         blockPosLocal.y + (blockPosLocal.x * 16),
         blockPosLocal.z);
@@ -92,22 +100,20 @@ uint getMaterial(in vec3 blockPosLocal, in uint chunk, in vec2 dim) {
 InstanceData unpackData(in uint inputData) {
     InstanceData instanceData;
 
-    const vec2 dim = textureSize(ChunkData, 0).xy;
-
     uint blockId = inputData & 0xFFff;
     uint chunkId = inputData >> 16 & 0x3Ff;
 
-    instanceData.chunkPos = CHUNK_SIZE * vec3(
-        chunkId % renderData.renderDistance,
+    instanceData.chunkOffset = CHUNK_SIZE * vec3(
+        chunkId % renderData.renderAreaSide,
         0.0,
-        chunkId / renderData.renderDistance);
+        chunkId / renderData.renderAreaSide);
 
     instanceData.blockPos = vec3(
         float((blockId >> 12) & 0xF),
         float((blockId >> 4) & 0xFF),
         float(blockId & 0xF));
 
-    uint material = getMaterial(instanceData.blockPos, chunkId, dim);
+    uint material = getMaterial(instanceData.blockPos, chunkId);
 
     instanceData.face = (inputData >> (16+10)) & 0x7;
     instanceData.textureIndex = TEXTURE_INDEX[material][instanceData.face];
@@ -117,7 +123,7 @@ InstanceData unpackData(in uint inputData) {
 
 void main() {
     const InstanceData instanceData = unpackData(inData);
-    const vec4 worldPos = vec4(CUBE_FACE[instanceData.face][gl_VertexIndex] + instanceData.chunkPos + instanceData.blockPos, 1.0);
+    const vec4 worldPos = vec4(CUBE_FACE[instanceData.face][gl_VertexIndex] + instanceData.chunkOffset + instanceData.blockPos, 1.0);
 
     outUVW = vec3(UVS[gl_VertexIndex], instanceData.textureIndex);
     outNormal = NORMALS[instanceData.face];

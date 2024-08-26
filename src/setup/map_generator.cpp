@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/10 18:06:14 by etran             #+#    #+#             */
-/*   Updated: 2024/08/20 14:09:42 by etran            ###   ########.fr       */
+/*   Updated: 2024/08/26 11:44:03 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,11 +20,12 @@ using f32 = float;
 #include <fstream>
 #include <iostream>
 
-static constexpr bool DEBUG = true;
+static constexpr bool DEBUG = false;
 
 namespace proc {
 
-static constexpr u32 size = CHUNK_SIZE * RENDER_DISTANCE;
+static constexpr u32 WORLD_DIM = 8;
+static constexpr u32 SIZE = (1 + 4 * WORLD_DIM * (WORLD_DIM + 1));
 
 template <typename F, typename G>
 static
@@ -34,8 +35,8 @@ void fillFile(
     F writeToFile,
     G extra
 ) {
-    for (u32 y = 0; y < size; ++y) {
-        for (u32 x = 0; x < size; ++x) {
+    for (u32 y = 0; y < SIZE; ++y) {
+        for (u32 x = 0; x < SIZE; ++x) {
             f32 x2 = (f32)x, y2 = (f32)y;
             extra(noise, x2, y2);
             const f32 val = noise.GetNoise(x2, y2) * 0.5f + 0.5f;
@@ -54,7 +55,7 @@ void createMap(
     G writeFile
 ) {
     std::ofstream file("assets/maps/" + name + ".voxmap");
-    file << "VXM " << type << ' ' << size << ' ';
+    file << "VXM " << type << ' ' << SIZE << ' ';
 
     fillFile(
         noise,
@@ -73,7 +74,7 @@ void debug(
 ) {
     std::ofstream file("assets/maps/" + name + "_debug.ppm");
 
-    file << "P6\n" << size << ' ' << size << "\n255\n";
+    file << "P6\n" << SIZE << ' ' << SIZE << "\n255\n";
 
     fillFile(
         noise,

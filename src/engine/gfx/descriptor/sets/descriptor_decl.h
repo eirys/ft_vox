@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/28 23:42:29 by etran             #+#    #+#             */
-/*   Updated: 2024/06/21 03:45:48 by etran            ###   ########.fr       */
+/*   Updated: 2024/08/22 14:53:53 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -94,12 +94,18 @@ ShaderVisibility operator|(ShaderVisibility lhs, ShaderVisibility rhs) {
 # define PFD_SET 0
 # define GBUFFER_SET 1
 
+#elif defined(VOX_DEBUG_LAYOUT)
+# define PFD_SET 0
+# define GBUFFER_SET 1
+# define WORLD_SET 2
+
 #elif defined(VOX_SKY_LAYOUT)
 #define PFD_SET 0
 #define WORLD_SET 1
 
 #elif defined(VOX_DEFERRED_LAYOUT)
-#define WORLD_SET 0
+#define PFD_SET 0
+#define WORLD_SET 1
 
 #elif defined(VOX_SHADOW_LAYOUT)
 #define PFD_SET 0

@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/11 16:12:13 by etran             #+#    #+#             */
-/*   Updated: 2024/08/15 17:31:21 by etran            ###   ########.fr       */
+/*   Updated: 2024/08/20 18:21:25 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -65,8 +65,8 @@ void PFDSet::destroy(const Device& device) {
 void PFDSet::fill(const Device& device) {
     VkDescriptorBufferInfo gameDataInfo{};
     gameDataInfo.buffer = m_mvpDataBuffer.getBuffer();
-    gameDataInfo.offset = (u32)offsetof(PFDUbo, m_gameData);
-    gameDataInfo.range = sizeof(PFDUbo::m_gameData);
+    gameDataInfo.offset = (u32)offsetof(PFDUbo, m_data);
+    gameDataInfo.range = sizeof(PFDUbo::m_data);
 
 #if ENABLE_SHADOW_MAPPING
     VkDescriptorBufferInfo projectorInfo{};
@@ -96,9 +96,15 @@ void PFDSet::update() {
     constexpr math::Vect3 SUN_COLOR = {1.0f, 1.0f, 0.33f};
     constexpr math::Vect3 MOON_COLOR = {0.5f, 0.5f, 0.5f};
 
-    m_data.m_gameData.sunPos = game::GameState::getSunPos().xy;
-    m_data.m_gameData.skyHue = math::lerp(SUN_COLOR, MOON_COLOR, std::max(0.0f, game::GameState::getSunPos().y)).toRGBA();
-    m_data.m_gameData.debugIndex = ui::Controller::showDebug();
+    m_data.m_data[PFDUbo::SunPositionX] = *(u32*)&game::GameState::getSunPos().x;
+    m_data.m_data[PFDUbo::SunPositionY] = *(u32*)&game::GameState::getSunPos().y;
+    m_data.m_data[PFDUbo::SkyHue] = math::lerp(SUN_COLOR, MOON_COLOR, std::max(0.0f, game::GameState::getSunPos().y)).toRGBA();
+    m_data.m_data[PFDUbo::DebugIndex] = ui::Controller::showDebug();
+
+    m_data.m_data[PFDUbo::PortionOffsetX] = game::GameState::getWorld().getPortionOffsetX();
+    m_data.m_data[PFDUbo::PortionOffsetZ] = game::GameState::getWorld().getPortionOffsetZ();
+    m_data.m_data[PFDUbo::RenderOffsetX] = game::GameState::getWorld().getRenderOffsetX();
+    m_data.m_data[PFDUbo::RenderOffsetZ] = game::GameState::getWorld().getRenderOffsetZ();
 
 #if ENABLE_SHADOW_MAPPING
     const float	terrainSize = CHUNK_SIZE * game::World::getSettings().renderDistance;

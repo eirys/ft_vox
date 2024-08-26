@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/15 13:29:06 by etran             #+#    #+#             */
-/*   Updated: 2024/08/15 16:59:31 by etran            ###   ########.fr       */
+/*   Updated: 2024/08/22 17:21:12 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,6 +43,7 @@ public:
     static constexpr bool SHOULD_STORE_BLOCKS = false;
     static constexpr u32 HEIGHT = CHUNK_HEIGHT;
     static constexpr u32 SIZE = CHUNK_SIZE;
+    static constexpr u32 AREA = SIZE * SIZE;
     static constexpr u32 VOLUME = SIZE * SIZE * HEIGHT;
 
     /* ====================================================================== */
@@ -86,7 +87,6 @@ public:
     Block&          getBlock(const u32 x, const u32 y, const u32 z) noexcept;
     const Block&    getBlock(const u32 x, const u32 y, const u32 z) const noexcept;
 
-    // const vox::gfx::BoundingBox&    getBoundingBox() const noexcept;
     const std::vector<Block>&       getBlocks() const;
     u16                             getId() const;
     bool                            isVisible(const vox::gfx::BoundingFrustum& frustum) const noexcept;

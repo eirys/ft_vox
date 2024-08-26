@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/15 13:35:46 by etran             #+#    #+#             */
-/*   Updated: 2024/08/15 17:47:05 by etran            ###   ########.fr       */
+/*   Updated: 2024/08/20 15:57:56 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,10 +17,6 @@
 # define CHUNK_HEIGHT   16 // Temporary value, will be changed to 256
 # define CHUNK_AREA     (CHUNK_SIZE * CHUNK_SIZE) // 256
 # define CHUNK_VOLUME   (CHUNK_AREA * CHUNK_HEIGHT) // 4096
-
-# define WORLD_SIZE     16
-# define WORLD_HEIGHT   16
-# define WORLD_DIM      (WORLD_SIZE * WORLD_SIZE)
 
 # define NOISEMAP_SIZE  16
 # define STAR_COUNT     (NOISEMAP_SIZE * NOISEMAP_SIZE)

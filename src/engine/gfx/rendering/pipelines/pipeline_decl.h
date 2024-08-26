@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/29 22:37:23 by etran             #+#    #+#             */
-/*   Updated: 2024/06/16 18:56:24 by etran            ###   ########.fr       */
+/*   Updated: 2024/08/22 14:48:26 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,6 +51,7 @@ constexpr u32 PIPELINE_COUNT = (u32)PipelineIndex::Count;
 enum class PipelineLayoutIndex: u32 {
     Scene,
     Deferred,
+    Debug,
 
 #if ENABLE_SKYBOX
     Sky,

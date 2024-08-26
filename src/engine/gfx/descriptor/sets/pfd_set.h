@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/28 23:38:00 by etran             #+#    #+#             */
-/*   Updated: 2024/06/28 18:27:00 by etran            ###   ########.fr       */
+/*   Updated: 2024/08/22 14:58:25 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,12 +25,17 @@ class GameState;
 namespace vox::gfx {
 
 struct PFDUbo final {
-    struct {
-        math::Vect2 sunPos;
-        u32         skyHue;
-        u32         debugIndex;
-        u32         padding[12];
-    }           m_gameData;
+    enum: u32 {
+        SunPositionX,
+        SunPositionY,
+        SkyHue,
+        DebugIndex,
+        PortionOffsetX,
+        PortionOffsetZ,
+        RenderOffsetX,
+        RenderOffsetZ,
+    };
+    u32         m_data[16];
 
 #if ENABLE_SHADOW_MAPPING
     math::Mat4  m_projectorViewProj;

@@ -13,7 +13,7 @@ layout(push_constant) uniform Camera {
 } camera;
 
 layout(set = PFD_SET, binding = 0) uniform GameData {
-    vec2 sunPos;
+    uvec2 sunPos;
 } gameData;
 
 layout(set = WORLD_SET, binding = 1) uniform sampler2DArray NoiseTex;
@@ -136,7 +136,7 @@ mat4 getModel(in vec2 moonDir, in vec3 random) {
 }
 
 void main() {
-    const vec2 moonDir = vec2(gameData.sunPos.x, -gameData.sunPos.y);
+    const vec2 moonDir = vec2(uintBitsToFloat(gameData.sunPos.x), -uintBitsToFloat(gameData.sunPos.y));
     const uvec2 noisemapSize = uvec2(textureSize(NoiseTex, 0).xy);
     const vec2 noiseCoord = vec2(gl_InstanceIndex % noisemapSize.x, gl_InstanceIndex / noisemapSize.x) / vec2(noisemapSize);
     const vec3 random = vec3(

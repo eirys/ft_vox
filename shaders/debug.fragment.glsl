@@ -1,5 +1,5 @@
 #version 450
-#define VOX_SCENE_LAYOUT
+#define VOX_DEBUG_LAYOUT
 
 #include "../src/engine/game/game_decl.h"
 #include "../src/engine/gfx/descriptor/sets/descriptor_decl.h"
@@ -12,10 +12,14 @@ layout(location = 0) out vec4 outColor;
 // ------------------------------------
 
 layout(set = PFD_SET, binding = 0) uniform GameData {
-    vec2 dummy;
-    uint dummy2;
+    vec3 dummy;
     uint debugIndex;
 } gameData;
+layout(set = WORLD_SET, binding = 3) uniform RenderData {
+    uint renderAreaSide;
+    uint fogDistance;
+} renderData;
+
 
 layout(set = GBUFFER_SET, binding = 0) uniform sampler2D PositionTex;
 layout(set = GBUFFER_SET, binding = 1) uniform sampler2D NormalTex;
@@ -40,7 +44,7 @@ void main() {
             outColor.rgb = texture(PositionTex, inUV).rgb * 0.01;
             break;
         case 2: // Depth (scaled to 0-1 range)
-            outColor.rgb = texture(PositionTex, inUV).www / (CHUNK_SIZE * RENDER_DISTANCE * 0.5);
+            outColor.rgb = texture(PositionTex, inUV).www / (CHUNK_SIZE * renderData.renderAreaSide * 0.5);
             break;
         case 3: // Normal
             outColor.rgb = texture(NormalTex, inUV).rgb;

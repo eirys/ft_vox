@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/15 16:21:18 by etran             #+#    #+#             */
-/*   Updated: 2024/08/15 18:15:21 by etran            ###   ########.fr       */
+/*   Updated: 2024/08/26 12:31:30 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,8 +27,8 @@ public:
 
     struct Ubo {
         enum: u32 {
-            RenderDistance,
-            FogDistance
+            RenderAreaSide,
+            FogDistance,
         };
         u32 data[16];
     };

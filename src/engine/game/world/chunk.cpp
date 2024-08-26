@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/15 16:08:27 by etran             #+#    #+#             */
-/*   Updated: 2024/08/20 14:30:14 by etran            ###   ########.fr       */
+/*   Updated: 2024/08/22 17:22:03 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,19 +38,19 @@ void Chunk::generateTerrain(
     const u32 offsetX,
     const u32 offsetZ
 ) {
-    m_blocks.resize(CHUNK_VOLUME);
-
-    constexpr math::Vect3 HALF_CHUNK = math::Vect3(CHUNK_SIZE / 2.0f);
+    constexpr math::Vect3 HALF_CHUNK = math::Vect3(SIZE / 2.0f);
 
     m_chunkGfx.m_boundingBox = vox::gfx::BoundingBox(
-        math::Vect3(offsetX, 0.0f, offsetZ) * CHUNK_SIZE + HALF_CHUNK,
+        math::Vect3(offsetX, 0.0f, offsetZ) * SIZE + HALF_CHUNK,
         HALF_CHUNK);
     m_position = { offsetX, offsetZ };
 
-    for (u32 z = 0; z < CHUNK_SIZE; ++z) {
-        for (u32 x = 0; x < CHUNK_SIZE; ++x) {
-            const u32 blockX = x + (offsetX * CHUNK_SIZE);
-            const u32 blockZ = z + (offsetZ * CHUNK_SIZE);
+    m_blocks.resize(VOLUME);
+
+    for (u32 z = 0; z < SIZE; ++z) {
+        for (u32 x = 0; x < SIZE; ++x) {
+            const u32 blockX = x + (offsetX * SIZE);
+            const u32 blockZ = z + (offsetZ * SIZE);
 
             const f32 moisture = 0.0f; // moistureNoise.noiseAt(blockX, blockZ);
             const Biome biome = _getBiome(biomeMap.getValue((f32)blockX, (f32)blockZ), moisture);
@@ -60,13 +60,13 @@ void Chunk::generateTerrain(
 
             for (u32 y = 0; y < terrainHeight; ++y) {
                 material = _getMaterial(biome, y);
-                m_blocks[(y * CHUNK_AREA) + (z * CHUNK_SIZE) + x] = Block(material, biome);
+                m_blocks[(y * AREA) + (z * SIZE) + x] = Block(material, biome);
             }
 
             if (material == MaterialType::Dirt)
-                m_blocks[(terrainHeight * CHUNK_AREA) + (z * CHUNK_SIZE) + x] = Block(MaterialType::Grass, biome);
+                m_blocks[(terrainHeight * AREA) + (z * SIZE) + x] = Block(MaterialType::Grass, biome);
             else
-                m_blocks[(terrainHeight * CHUNK_AREA) + (z * CHUNK_SIZE) + x] = Block(material, biome);
+                m_blocks[(terrainHeight * AREA) + (z * SIZE) + x] = Block(material, biome);
         }
     }
 }
@@ -132,11 +132,11 @@ const Block& Chunk::operator[](const u32 index) const noexcept {
 }
 
 Block& Chunk::getBlock(const u32 x, const u32 y, const u32 z) noexcept {
-    return m_blocks[(y * CHUNK_AREA) + (z * CHUNK_SIZE) + x];
+    return m_blocks[(y * AREA) + (z * SIZE) + x];
 }
 
 const Block& Chunk::getBlock(const u32 x, const u32 y, const u32 z) const noexcept {
-    return m_blocks[(y * CHUNK_AREA) + (z * CHUNK_SIZE) + x];
+    return m_blocks[(y * AREA) + (z * SIZE) + x];
 }
 
 const std::vector<Block>& Chunk::getBlocks() const {
@@ -147,7 +147,7 @@ const std::vector<Block>& Chunk::getBlocks() const {
  * @brief Returns packed chunk position. cf. chart.md
  */
 u16 Chunk::getId() const {
-    return m_position.x + m_position.z * World::SIZE;
+    return m_position.x + m_position.z * World::SIDE;
 }
 
 u32 Chunk::getInstanceCount() const noexcept {
