@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:17:49 by etran             #+#    #+#             */
-/*   Updated: 2024/01/20 12:55:47 by etran            ###   ########.fr       */
+/*   Updated: 2024/08/26 18:47:37 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,7 @@
 # include <functional>
 
 # include "image_loader.h"
-# include "image_handler.h"
+# include "image.h"
 
 namespace scop {
 
@@ -36,7 +36,7 @@ public:
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
 
-	PpmLoader(const std::string& path);
+	PpmLoader(const std::string_view& path);
 
 	PpmLoader(PpmLoader&& x) = default;
 	~PpmLoader() = default;

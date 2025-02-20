@@ -9,6 +9,13 @@ layout(location = 0) in uint inData;
 layout(set = PFD_SET, binding = 1) uniform Projector {
     mat4 viewProj;
 } projector;
+layout(set = WORLD_SET, binding = 3) uniform RenderData {
+    uint worldSide;
+    uint fogDistance;
+    uvec2 portionOffset;
+    uvec2 renderOffset;
+} renderData;
+
 
 #define CORNER_A vec3(1.0, 0.0, 1.0)
 #define CORNER_B vec3(1.0, 0.0, 0.0)
@@ -29,45 +36,37 @@ const vec3 CUBE_FACE[6][4] = {
 };
 
 struct InstanceData {
-    vec3 chunkPos;  // 14 bits
-    vec3 blockPos;  // 12 bits
-    uint face;    // 3 bits
-    uint textureIndex; // 3 bits
+    vec3 chunkOffset;   // 16 bits
+    vec3 blockPos;      // 9 bits
+    uint face;          // 3 bits
 };
 
 InstanceData unpackData(in uint inputData) {
     InstanceData instanceData;
 
-    uint textureIndex = (inputData >> 29) & 0x7;
-    uint face = (inputData >> 26) & 0x7;
-    uint blockId = (inputData >> 14) & 0xFFF;
-    uint chunkId = inputData & 0x3FFF;
+    uint blockId = inputData & 0xFFff;
+    uint chunkId = inputData >> 16 & 0x3Ff;
 
-    instanceData.chunkPos = CHUNK_SIZE * vec3(
-        float((chunkId >> 9) & 0x1F),
-        float((chunkId >> 5) & 0xF),
-        float(chunkId & 0x1F)
-    );
+    instanceData.chunkOffset = CHUNK_SIZE * vec3(
+        (chunkId % renderData.worldSide),
+        0.0,
+        (chunkId / renderData.worldSide));
 
     instanceData.blockPos = vec3(
-        float((blockId >> 8) & 0xF),
-        float((blockId >> 4) & 0xF),
-        float(blockId & 0xF)
-    );
+        float((blockId >> 12) & 0xF),
+        float((blockId >> 4) & 0xFF),
+        float(blockId & 0xF));
 
-    instanceData.face = face;
-
-    instanceData.textureIndex = textureIndex;
+    instanceData.face = (inputData >> (16+10)) & 0x7;
 
     return instanceData;
 }
 
 void main() {
-    InstanceData instanceData = unpackData(inData);
-
-    vec3 worldPos =
+    const InstanceData instanceData = unpackData(inData);
+    const vec3 worldPos =
         CUBE_FACE[instanceData.face][gl_VertexIndex] +
-        instanceData.chunkPos +
+        instanceData.chunkOffset +
         instanceData.blockPos;
 
     gl_Position = projector.viewProj * vec4(worldPos, 1.0);

@@ -20,16 +20,12 @@ layout(push_constant) uniform Camera {
     mat4 proj;
 } camera;
 
-layout(set = PFD_SET, binding = 0) uniform GameData {
-    vec4 dummy;
-    uvec2 portionOffset;
-    uvec2 renderOffset;
-};
-
 layout(set = WORLD_SET, binding = 2) uniform usampler2DArray ChunkData;
 layout(set = WORLD_SET, binding = 3) uniform RenderData {
-    uint renderAreaSide;
+    uint worldSide;
     uint fogDistance;
+    uvec2 portionOffset;
+    uvec2 renderOffset;
 } renderData;
 
 #define CORNER_A vec3(1.0, 0.0, 1.0)
@@ -66,8 +62,7 @@ const vec3 NORMALS[6] = {
     {  0.0,  0.0, -1.0 },
 };
 
-const uint TEXTURE_INDEX[8][6] = {
-    { 5, 5, 5, 5, 5, 5 }, // Air
+const uint TEXTURE_INDEX[7][6] = {
     { 2, 0, 1, 1, 1, 1 }, // Grass
     { 0, 0, 0, 0, 0, 0 }, // Dirt
     { 3, 3, 3, 3, 3, 3 }, // Stone
@@ -94,7 +89,7 @@ uint getMaterial(in vec3 blockPosLocal, in uint chunk) {
 
     vec3 uvw = vec3(remapPos / dim, float(chunk));
 
-    return texture(ChunkData, uvw).r;
+    return texture(ChunkData, uvw).r - 1; // Subtract 1 to account for air
 }
 
 InstanceData unpackData(in uint inputData) {
@@ -104,9 +99,9 @@ InstanceData unpackData(in uint inputData) {
     uint chunkId = inputData >> 16 & 0x3Ff;
 
     instanceData.chunkOffset = CHUNK_SIZE * vec3(
-        chunkId % renderData.renderAreaSide,
+        (chunkId % renderData.worldSide),
         0.0,
-        chunkId / renderData.renderAreaSide);
+        (chunkId / renderData.worldSide));
 
     instanceData.blockPos = vec3(
         float((blockId >> 12) & 0xF),

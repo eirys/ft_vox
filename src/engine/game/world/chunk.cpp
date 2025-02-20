@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/15 16:08:27 by etran             #+#    #+#             */
-/*   Updated: 2024/08/22 17:22:03 by etran            ###   ########.fr       */
+/*   Updated: 2024/09/17 15:21:23 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,10 +38,10 @@ void Chunk::generateTerrain(
     const u32 offsetX,
     const u32 offsetZ
 ) {
-    constexpr math::Vect3 HALF_CHUNK = math::Vect3(SIZE / 2.0f);
+    constexpr math::vec3 HALF_CHUNK = math::vec3(SIZE / 2.0f);
 
     m_chunkGfx.m_boundingBox = vox::gfx::BoundingBox(
-        math::Vect3(offsetX, 0.0f, offsetZ) * SIZE + HALF_CHUNK,
+        math::vec3(offsetX, 0.0f, offsetZ) * SIZE + HALF_CHUNK,
         HALF_CHUNK);
     m_position = { offsetX, offsetZ };
 
@@ -82,7 +82,8 @@ void Chunk::generateInstances(std::vector<vox::gfx::VertexInstance>& instances, 
     constexpr u32 HEIGHT_LIMIT = HEIGHT - 1;
     constexpr u32 SIZE_LIMIT = SIZE - 1;
 
-    const u32 oldInstanceCount = instances.size();
+    // const u32 oldInstanceCount = instances.size();
+    m_chunkGfx.m_instanceOffset = instances.size();
 
     for (u32 z = 0; z < SIZE; ++z) {
         for (u32 x = 0; x < SIZE; ++x) {
@@ -113,7 +114,7 @@ void Chunk::generateInstances(std::vector<vox::gfx::VertexInstance>& instances, 
         }
     }
 
-    m_chunkGfx.m_instanceCount = instances.size() - oldInstanceCount;
+    m_chunkGfx.m_instanceCount = instances.size() - m_chunkGfx.m_instanceOffset;
 }
 
 void Chunk::clearBlocks() {
@@ -144,18 +145,10 @@ const std::vector<Block>& Chunk::getBlocks() const {
 }
 
 /**
- * @brief Returns packed chunk position. cf. chart.md
+ * @brief Returns chunk position.
  */
 u16 Chunk::getId() const {
-    return m_position.x + m_position.z * World::SIDE;
-}
-
-u32 Chunk::getInstanceCount() const noexcept {
-    return m_chunkGfx.m_instanceCount;
-}
-
-bool Chunk::isVisible(const vox::gfx::BoundingFrustum& frustum) const noexcept {
-    return m_chunkGfx.m_boundingBox.isVisible(frustum);
+    return m_position.x + m_position.y * World::SIDE;
 }
 
 /**
@@ -169,6 +162,7 @@ void Chunk::cache() const {
 /* ========================================================================== */
 
 Biome Chunk::_getBiome(const f32 cellValue, const f32 moisture) const noexcept {
+    // return Biome::Plains;
     if (cellValue < 0.4f && moisture > 0.0f) return Biome::Oceans;
     else if (cellValue < 0.05f) return Biome::Plains;
     else if (cellValue < 0.6f) return Biome::Desert;
@@ -203,6 +197,7 @@ u8 Chunk::_getHeight(
 }
 
 MaterialType Chunk::_getMaterial(const Biome biome, const u8 height) const noexcept {
+            // return MaterialType::Stone;
     switch (biome) {
         case Biome::Plains:
             if (height == 0)                return MaterialType::Water;

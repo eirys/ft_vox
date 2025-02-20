@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/15 13:29:06 by etran             #+#    #+#             */
-/*   Updated: 2024/08/22 17:21:12 by etran            ###   ########.fr       */
+/*   Updated: 2024/09/17 15:21:21 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -89,8 +89,9 @@ public:
 
     const std::vector<Block>&       getBlocks() const;
     u16                             getId() const;
-    bool                            isVisible(const vox::gfx::BoundingFrustum& frustum) const noexcept;
-    u32                             getInstanceCount() const noexcept;
+    bool                            isVisible(const vox::gfx::BoundingFrustum& frustum) const noexcept { return m_chunkGfx.m_boundingBox.isVisible(frustum); }
+    u32                             getInstanceCount() const noexcept { return m_chunkGfx.m_instanceCount; }
+    u32                             getInstanceOffset() const noexcept { return m_chunkGfx.m_instanceOffset; }
 
     /* ====================================================================== */
 
@@ -104,10 +105,7 @@ private:
     vox::gfx::ChunkGfx      m_chunkGfx;
 
     std::vector<Block>      m_blocks;
-    struct {
-        u32 x = 0;
-        u32 z = 0;
-    }                       m_position;
+    math::uvec2             m_position;
 
     /* ====================================================================== */
     /*                                 METHODS                                */

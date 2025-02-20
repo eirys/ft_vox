@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/23 09:29:35 by etran             #+#    #+#             */
-/*   Updated: 2024/08/26 12:08:11 by etran            ###   ########.fr       */
+/*   Updated: 2024/10/07 19:23:37 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,7 @@
 #include "push_constant.h"
 #include "controller.h"
 #include "texture.h"
+#include "game_state.h"
 
 #include "main_render_pass.h"
 #include "shadow_render_pass.h"
@@ -59,7 +60,6 @@ void Renderer::init(ui::Window& window) {
 
     m_descriptorPool.init(m_device, m_descriptorTable);
     m_descriptorTable.fill(m_device);
-
 
     _createPushConstants();
     _createPipelineLayouts();
@@ -105,6 +105,11 @@ void Renderer::render() {
     m_fences[(u32)FenceIndex::DrawInFlight].await(m_device);
 
     m_pushConstants[(u32)PushConstantIndex::Camera]->update();
+    // if (game::GameState::getWorld().needsGfxUpdate()) {
+    //     VertexBuffer::changeBuffer();
+    //     VertexBuffer::update(m_device, m_commandBuffers[(u32)CommandBufferIndex::Transfer]);
+    // }
+
     m_descriptorTable.update(m_device, m_commandBuffers[(u32)CommandBufferIndex::Transfer]);
 
     if (m_swapChain.acquireNextImage(m_device, m_semaphores[(u32)SemaphoreIndex::ImageAvailable]) == false)
@@ -359,7 +364,9 @@ void Renderer::_createPipelineLayouts() {
 
 #if ENABLE_SHADOW_MAPPING
     { // Sky
-        sets = { m_descriptorTable[DescriptorSetIndex::Pfd] };
+        sets = {
+            m_descriptorTable[DescriptorSetIndex::Pfd],
+            m_descriptorTable[DescriptorSetIndex::WorldData] };
         m_pipelineLayouts[(u32)PipelineLayoutIndex::Shadows].init(m_device, sets);
     }
 #endif
@@ -406,7 +413,7 @@ void Renderer::_createPipelines() {
     m_pipelines[(u32)PipelineIndex::ShadowPipeline]->init(m_device, shadowRenderPass, m_pipelineLayouts[(u32)PipelineLayoutIndex::Shadows]);
 #endif
 
-    LDEBUG("Pipelines created.");
+    LDEBUG("Pipelines created HAHA.");
 }
 
 void Renderer::_createGfxSemaphores() {

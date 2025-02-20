@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/29 22:21:46 by etran             #+#    #+#             */
-/*   Updated: 2024/03/11 09:05:38 by etran            ###   ########.fr       */
+/*   Updated: 2024/08/26 18:37:58 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,11 +22,11 @@ namespace io {
 */
 std::vector<u8>	readBinary(const char* filename) {
     // Read file as binary file, at the end of the file
-    const std::string   filePath = std::string(filename);
-    std::ifstream       file(filePath, std::ios::ate | std::ios::binary);
+    const std::string_view  filePath = std::string_view(filename);
+    std::ifstream           file(filePath.data(), std::ios::ate | std::ios::binary);
 
     if (!file.is_open())
-        throw std::runtime_error("failed to open file: " + filePath);
+        throw std::runtime_error("failed to open file: " + std::string(filePath));
 
     const std::size_t   fileSize = (std::size_t)file.tellg();
     std::vector<u8>	buffer(fileSize);

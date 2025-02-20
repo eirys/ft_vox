@@ -49,7 +49,7 @@ static
 std::array<scop::Image, IMAGE_COUNT> _loadAssets() {
     std::array<scop::Image, IMAGE_COUNT> textures;
 
-    std::array<std::string, IMAGE_COUNT> texturePaths = {
+    std::array<std::string_view, IMAGE_COUNT> texturePaths = {
         "assets/textures/dirt.ppm",         // 0
         "assets/textures/grass_side.ppm",   // 1
         "assets/textures/grass_top.ppm",    // 2

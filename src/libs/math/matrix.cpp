@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/19 23:18:11 by etran             #+#    #+#             */
-/*   Updated: 2024/06/10 15:24:52 by etran            ###   ########.fr       */
+/*   Updated: 2024/08/26 13:06:54 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -128,8 +128,8 @@ Mat4	Mat4::operator*(float rhs) const noexcept {
 	return result.operator*=(rhs);
 }
 
-Vect3	Mat4::operator*(const Vect3& rhs) const noexcept {
-	Vect3 result;
+vec3	Mat4::operator*(const vec3& rhs) const noexcept {
+	vec3 result;
 
 	result.x = static_cast<float>(
 		std::fma(
@@ -253,10 +253,10 @@ Mat4	Mat4::transpose() const {
  *	 0],
  *	[0, 0, 0, 1]]						col 3
 */
-Mat4	rotate(const Mat4& mat, float angle, const Vect3& axis) noexcept {
+Mat4	rotate(const Mat4& mat, float angle, const vec3& axis) noexcept {
 	const float	c = std::cos(angle);
 	const float	s = std::sin(angle);
-	const Vect3	u = math::normalize(axis);
+	const vec3	u = math::normalize(axis);
 
 	return mat * Mat4{
 		// Col 1
@@ -288,10 +288,10 @@ Mat4	rotate(const Mat4& mat, float angle, const Vect3& axis) noexcept {
  * 					orientation of the camera. Should not be parallel
  * 					to the vector from eye to center.
 */
-Mat4	lookAt(const Vect3& eyePos, const Vect3& center, const Vect3& world_up) noexcept {
-	const Vect3	forward = math::normalize(center - eyePos);
-	const Vect3	right = math::normalize(math::cross(forward, world_up));
-	const Vect3	up = math::cross(right, forward);
+Mat4	lookAt(const vec3& eyePos, const vec3& center, const vec3& world_up) noexcept {
+	const vec3	forward = math::normalize(center - eyePos);
+	const vec3	right = math::normalize(math::cross(forward, world_up));
+	const vec3	up = math::cross(right, forward);
 
 	return Mat4{
 		// Col 1
@@ -306,10 +306,10 @@ Mat4	lookAt(const Vect3& eyePos, const Vect3& center, const Vect3& world_up) noe
 }
 
 Mat4	lookAt(
-	const Vect3& eyePos,
-	const Vect3& cam_front,
-	const Vect3& cam_up,
-	const Vect3& cam_right
+	const vec3& eyePos,
+	const vec3& cam_front,
+	const vec3& cam_up,
+	const vec3& cam_right
 ) noexcept {
 	return Mat4 {
 		// Col 1
@@ -371,7 +371,7 @@ Mat4	orthographic(float left, float right, float bot, float top, float near, flo
  *
  * @note Only scales the first 3 rows of the matrix
 */
-Mat4	scale(const Mat4& mat, const Vect3& scale) noexcept {
+Mat4	scale(const Mat4& mat, const vec3& scale) noexcept {
 	Mat4	result(mat);
 
 	for (std::size_t j = 0; j < 3; ++j) {
@@ -393,7 +393,7 @@ Mat4	scale(const Mat4& mat, const Vect3& scale) noexcept {
  * for (uint32_t i = 0; i < 4; ++i)
  *  result[12 + i] = (mat[i] * dir.x) + (mat[4 + i] * dir.y) + (mat[8 + i] * dir.z) + mat[12 + i];
 */
-Mat4	translate(const Mat4& mat, const Vect3& dir) noexcept {
+Mat4	translate(const Mat4& mat, const vec3& dir) noexcept {
 	Mat4	result(mat);
     for (uint32_t i = 0; i < 4; ++i)
         result[12 + i] = std::fma(

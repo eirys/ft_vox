@@ -6,28 +6,16 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/15 13:46:03 by etran             #+#    #+#             */
-/*   Updated: 2024/08/15 16:41:06 by etran            ###   ########.fr       */
+/*   Updated: 2024/10/07 18:57:38 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "game_state.h"
 #include "controller.h"
 #include "maths.h"
+#include "vertex_buffer.h"
 
-#define TOGGLE_TIME 0
-
-#if TOGGLE_TIME
-#define STABLE_TIME_CODE
-#else
-#define STABLE_TIME_CODE \
-    float pos = M_PI * 0.25; \
- \
-    m_sun.m_direction = math::Vect3( \
-        std::cos(pos), \
-        std::sin(pos), \
-        0.0f); \
-    return;
-#endif
+#define TOGGLE_TIME 1
 
 namespace game {
 
@@ -43,23 +31,31 @@ Clock   GameState::m_gameClock;
 void GameState::init(const ui::Controller& controller) {
     m_world.init();
 
+    m_camera.init(
+        m_world.getOrigin() + math::vec3(0.0f, 5.0f, 0.0),
+        math::vec3(0.0f, 0.0f, 1.0f));
+
     m_gameClock.init();
 }
 
 void GameState::update(const ui::Controller& controller) {
+    // Camera
     if (!controller.isMouseActive()) {
         m_camera.update(controller);
     }
 
-    STABLE_TIME_CODE
-
+    // Sky
+#if TOGGLE_TIME
     if (controller.isTimeEnabled()) {
-        const float time = m_gameClock.getElapsedTime();
+        m_sun.update(m_gameClock.getElapsedTime());
+    }
+#endif
 
-        m_sun.m_direction = math::Vect3(
-            std::cos(time * m_sun.m_rotationSpeed),
-            std::sin(time * m_sun.m_rotationSpeed),
-            0.0f);
+    // World
+    m_world.update(m_camera);
+    if (m_world.needsGfxUpdate()) {
+    LINFO("Pos :" << m_camera.getChunkPosition());
+    LINFO("offset :" << m_world.getPortionOffset());
     }
 }
 
@@ -83,7 +79,7 @@ const World& GameState::getWorld() noexcept {
     return m_world;
 }
 
-const math::Vect3& GameState::getSunPos() noexcept {
+const math::vec3& GameState::getSunPos() noexcept {
     return m_sun.m_direction;
 }
 

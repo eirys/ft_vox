@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/30 22:51:33 by etran             #+#    #+#             */
-/*   Updated: 2024/08/15 17:07:45 by etran            ###   ########.fr       */
+/*   Updated: 2024/09/11 15:50:14 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,7 +37,7 @@ public:
     /*                                 METHODS                                */
     /* ====================================================================== */
 
-    void reset() noexcept {
+    void init() noexcept {
         m_startTime = Clock::now();
         m_counter = 0;
     }
@@ -53,7 +53,7 @@ public:
         if (elapsed >= LOG_INTERVAL) {
             u32 fps = m_counter / elapsed;
             LLOG("FPS: " << fps << " | Drawing "<< vox::gfx::ChunkGfx::chunksDrawn << " chunks.");
-            reset();
+            init();
         }
     }
 

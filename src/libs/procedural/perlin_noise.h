@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:13:52 by etran             #+#    #+#             */
-/*   Updated: 2024/05/31 18:40:55 by etran            ###   ########.fr       */
+/*   Updated: 2024/08/26 13:23:56 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,9 +21,6 @@
 # include "vector.h"
 
 namespace proc {
-
-using Vect2 = math::Vect2;
-using Vect3 = math::Vect3;
 
 enum class PerlinNoiseType {
 	PERLIN_NOISE_1D,
@@ -147,7 +144,7 @@ private:
 	uint32_t					_generateSeed() const;
 	float						_generateFloat(float min, float max);
 	std::vector<float>			_generateRandomTable();
-	std::vector<Vect3>	        _generateGradientTable();
+	std::vector<math::vec3>     _generateGradientTable();
 	std::vector<std::size_t>	_generatePermutationTable();
 
 	template <typename T>

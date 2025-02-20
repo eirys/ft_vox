@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/20 00:02:09 by etran             #+#    #+#             */
-/*   Updated: 2024/06/29 01:20:46 by etran            ###   ########.fr       */
+/*   Updated: 2024/08/26 13:51:17 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -169,7 +169,7 @@ void Window::updateMousePos(double x, double y) noexcept {
 
 /* ========================================================================== */
 
-const Window::MousePos& Window::getMousePos() const noexcept {
+const math::dvec2& Window::getMousePos() const noexcept {
     return m_mousePos;
 }
 

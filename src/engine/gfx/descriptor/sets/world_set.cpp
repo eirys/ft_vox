@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/15 17:03:33 by etran             #+#    #+#             */
-/*   Updated: 2024/08/26 12:32:36 by etran            ###   ########.fr       */
+/*   Updated: 2024/09/17 14:33:46 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,15 +29,15 @@ namespace vox::gfx {
 /* ========================================================================== */
 
 void WorldSet::init(const Device& device, const ICommandBuffer* cmdBuffer) {
-    m_ubo.data[(u32)Ubo::RenderAreaSide] = game::GameState::getWorld().getSettings().rendering.getRenderAreaSide();
-    m_ubo.data[(u32)Ubo::FogDistance] = ui::Controller::getFogDistance();
-
     BufferMetadata bufferData{};
     bufferData.m_format = sizeof(Ubo);
     bufferData.m_size = 1;
     bufferData.m_usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
     bufferData.m_properties = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
     m_renderDataBuffer.init(device, std::move(bufferData));
+    m_stagingBuffer = m_renderDataBuffer.createStagingBuffer(device);
+
+    update(device, cmdBuffer);
 
     std::array<VkDescriptorSetLayoutBinding, BINDING_COUNT> bindings = {
         _createLayoutBinding(DescriptorTypeIndex::CombinedImageSampler, ShaderVisibility::FS, (u32)BindingIndex::Textures),
@@ -63,6 +63,7 @@ void WorldSet::init(const Device& device, const ICommandBuffer* cmdBuffer) {
 
 void WorldSet::destroy(const Device& device) {
     m_renderDataBuffer.destroy(device);
+    m_stagingBuffer.destroy(device);
     vkDestroyDescriptorSetLayout(device.getDevice(), m_layout, nullptr);
 
     LDEBUG("World descriptor set destroyed");
@@ -129,17 +130,27 @@ void WorldSet::fill(const Device& device) {
 
 void WorldSet::update(const Device& device, const ICommandBuffer* cmdBuffer) {
     //TODO update before transfper
-    Buffer stagingBuffer = m_renderDataBuffer.createStagingBuffer(device);
-    stagingBuffer.map(device);
-    stagingBuffer.copyFrom(&m_ubo);
-    stagingBuffer.unmap(device);
+    if (game::GameState::getWorld().needsGfxUpdate() || ui::Controller::settingsUpdated()) {
+        LINFO("Update renderData");
+        m_ubo.data[(u32)Ubo::WorldSide] = game::GameState::getWorld().SIDE;
+        m_ubo.data[(u32)Ubo::FogDistance] = ui::Controller::getFogDistance();
+        m_ubo.data[(u32)Ubo::RenderOffsetX] = game::GameState::getWorld().getRenderOffset().x;
+        m_ubo.data[(u32)Ubo::RenderOffsetZ] = game::GameState::getWorld().getRenderOffset().y;
+        m_ubo.data[(u32)Ubo::WorldPortionOffsetX] = game::GameState::getWorld().getPortionOffset().x;
+        m_ubo.data[(u32)Ubo::WorldPortionOffsetZ] = game::GameState::getWorld().getPortionOffset().y;
 
-    cmdBuffer->reset();
-    cmdBuffer->startRecording();
-    m_renderDataBuffer.copyBuffer(cmdBuffer, stagingBuffer);
-    cmdBuffer->stopRecording();
-    cmdBuffer->awaitEndOfRecording(device);
-    stagingBuffer.destroy(device);
+        m_stagingBuffer.map(device);
+        m_stagingBuffer.copyFrom(&m_ubo);
+        m_stagingBuffer.unmap(device);
+
+        cmdBuffer->reset();
+        cmdBuffer->startRecording();
+        m_renderDataBuffer.copyBuffer(cmdBuffer, m_stagingBuffer);
+        cmdBuffer->stopRecording();
+        cmdBuffer->awaitEndOfRecording(device);
+
+        ui::Controller::unsetSettingsUpdated();
+    }
 }
 
 } // namespace vox::gfx

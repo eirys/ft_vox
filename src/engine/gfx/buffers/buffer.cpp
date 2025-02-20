@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/27 17:40:32 by etran             #+#    #+#             */
-/*   Updated: 2024/05/31 14:54:17 by etran            ###   ########.fr       */
+/*   Updated: 2024/09/17 14:57:22 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,6 +61,10 @@ void Buffer::init(const Device& device, BufferMetadata&& metadata) {
 void Buffer::destroy(const Device& device) {
     vkDestroyBuffer(device.getDevice(), m_buffer, nullptr);
     vkFreeMemory(device.getDevice(), m_memory, nullptr);
+
+    m_buffer = VK_NULL_HANDLE;
+    m_memory = VK_NULL_HANDLE;
+
     LDEBUG("Buffer destroyed:" << m_buffer);
 }
 

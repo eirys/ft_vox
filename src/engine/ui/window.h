@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/19 23:59:08 by etran             #+#    #+#             */
-/*   Updated: 2024/06/28 20:41:53 by etran            ###   ########.fr       */
+/*   Updated: 2024/08/26 13:50:56 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,7 @@
 
 # include "game_decl.h"
 # include "types.h"
+# include "vector.h"
 # include "enum.h"
 
 namespace ui {
@@ -26,15 +27,6 @@ namespace ui {
 */
 class Window final {
 public:
-    /* ====================================================================== */
-    /*                             HELPER OBJECTS                             */
-    /* ====================================================================== */
-
-    struct MousePos {
-        double x;
-        double y;
-    };
-
     /* ========================================================================= */
     /*                                  TYPEDEF                                  */
     /* ========================================================================= */
@@ -74,7 +66,7 @@ public:
 
     /* ========================================================================= */
 
-    const MousePos&     getMousePos() const noexcept;
+    const math::dvec2&  getMousePos() const noexcept;
     GLFWwindow*         getWindow() noexcept;
     GLFWwindow const*   getWindow() const noexcept;
 
@@ -85,7 +77,7 @@ private:
 
     GLFWwindow*     m_window = nullptr;
 
-    MousePos        m_mousePos = {0.0, (double)HEIGHT / 2.0};
+    math::dvec2     m_mousePos = {0.0, (double)HEIGHT / 2.0};
 
     u32             m_width = WIDTH;
     u32             m_height = HEIGHT;

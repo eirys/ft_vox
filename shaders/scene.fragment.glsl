@@ -89,6 +89,7 @@ void main() {
     const float intensity = min(1.0, pow(sunHeight, 2.0) + (0.5 * sunHeight));
     const float diffuse = max(dot(normal, sunDir), 0.0);
     const float ambient = mix(0.05, 0.3, sunHeight);
+    // float lighting = intensity;
     float lighting = diffuse * intensity;
 #if ENABLE_SHADOW_MAPPING
     const float shadow = applyShadow(vec4(position.xyz, 1.0));

@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/17 13:55:01 by etran             #+#    #+#             */
-/*   Updated: 2024/06/25 14:49:59 by etran            ###   ########.fr       */
+/*   Updated: 2024/08/26 13:06:54 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -103,10 +103,10 @@ Buffer SSAOSet::_createSamplesBuffer(const Device& device, const ICommandBuffer*
     std::uniform_real_distribution<float>   randomDistance(0.0f, 1.0f);
     std::default_random_engine              gen;
 
-    std::vector<math::Vect3> ssaoKernel;
+    std::vector<math::vec3> ssaoKernel;
     ssaoKernel.reserve(SSAO_KERNEL_SIZE);
     for (u32 i = 0; i < SSAO_KERNEL_SIZE; ++i) {
-        math::Vect3 sample(
+        math::vec3 sample(
             randomDistance(gen) * 2.0f - 1.0f,
             randomDistance(gen) * 2.0f - 1.0f,
             randomDistance(gen));
@@ -120,7 +120,7 @@ Buffer SSAOSet::_createSamplesBuffer(const Device& device, const ICommandBuffer*
     }
 
     BufferMetadata samplesBufferData{};
-    samplesBufferData.m_format = sizeof(math::Vect3);
+    samplesBufferData.m_format = sizeof(math::vec3);
     samplesBufferData.m_size = ssaoKernel.size();
     samplesBufferData.m_usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
     samplesBufferData.m_properties = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;

@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:17:44 by etran             #+#    #+#             */
-/*   Updated: 2024/01/20 12:55:47 by etran            ###   ########.fr       */
+/*   Updated: 2024/08/26 18:40:56 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,8 +59,8 @@ public:
 	class FailedToLoadImage: public std::exception {
 	public:
 		FailedToLoadImage() = delete;
-		FailedToLoadImage(const std::string& path, const std::string& spec):
-			spec("Failed to load `" + path + "`: " + spec) {}
+		FailedToLoadImage(const std::string_view& path, const std::string& spec):
+			spec("Failed to load `" + std::string(path.data()) + "`: " + spec) {}
 
 		const char*	what() const noexcept override {
 			return spec.c_str();
@@ -74,8 +74,8 @@ protected:
 	/*                                    DATA                                   */
 	/* ========================================================================= */
 
-	const std::string	path;		// File path
-	ImageType			type;		// File extension
+	const std::string_view	path;		// File path
+	ImageType			    type;		// File extension
 	std::vector<uint8_t>	data;		// Contains file entire content
 	std::size_t			width;
 	std::size_t			height;
@@ -84,7 +84,7 @@ protected:
 	/*                                  METHODS                                  */
 	/* ========================================================================= */
 
-	ImageLoader(const std::string& path, ImageType type): path(path), type(type) {}
+	ImageLoader(const std::string_view& path, ImageType type): path(path), type(type) {}
 	ImageLoader(ImageLoader&& x) = default;
 
 	ImageLoader() = delete;

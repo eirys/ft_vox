@@ -40,20 +40,25 @@ struct Camera {
     /*                                 METHODS                                */
     /* ====================================================================== */
 
+    void init(const math::vec3& position, const math::vec3& front);
     void update(const ui::Controller& controller);
 
-    static const Settings& getSettings() noexcept { return ms_cameraSettings; }
+    const math::ivec2&      getChunkPosition() const noexcept { return m_chunkPosition; }
+    static const Settings&  getSettings() noexcept { return ms_cameraSettings; }
 
     /* ====================================================================== */
     /*                                  DATA                                  */
     /* ====================================================================== */
 
-    math::Vect3     m_position = math::Vect3(WORLD_ORIGIN) + math::Vect3(0.0f, 20.0f, 0.0f);
+    math::vec3      m_position;
+    math::ivec2     m_chunkPosition = { 0, 0 };
     struct {
-        math::Vect3 front;
-        math::Vect3 right;
-        math::Vect3 up;
+        math::vec3 front;
+        math::vec3 right;
+        math::vec3 up;
     }               m_directions;
+
+    bool            m_updateChunk = false;
 
 private:
     /* ====================================================================== */

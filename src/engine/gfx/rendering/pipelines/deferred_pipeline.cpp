@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/13 17:09:22 by etran             #+#    #+#             */
-/*   Updated: 2024/08/15 17:58:35 by etran            ###   ########.fr       */
+/*   Updated: 2024/09/16 20:46:11 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,7 +24,7 @@
 
 namespace vox::gfx {
 
-u32 ChunkGfx::chunksDrawn;
+u32 ChunkGfx::chunksDrawn = 0;
 
 /* ========================================================================== */
 /*                                   PUBLIC                                   */
@@ -162,14 +162,12 @@ void DeferredPipeline::record(const ICommandBuffer* cmdBuffer) const {
     const BoundingFrustum frustum(game::GameState::getCamera());
 
     ChunkGfx::chunksDrawn = 0;
-    u32 offset = 0;
 
-    for (const game::Chunk& chunk: world.getChunks()) {
-        if (chunk.isVisible(frustum)) {
-            vkCmdDraw(cmdBuffer->getBuffer(), 4, chunk.getInstanceCount(), 0, offset);
+    for (const auto* chunk: world.getRenderedChunks()) {
+        if (chunk->isVisible(frustum)) {
+            vkCmdDraw(cmdBuffer->getBuffer(), 4, chunk->getInstanceCount(), 0, chunk->getInstanceOffset());
             ++ChunkGfx::chunksDrawn;
         }
-        offset += chunk.getInstanceCount();
     }
 }
 

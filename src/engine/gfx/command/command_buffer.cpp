@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/23 22:43:14 by etran             #+#    #+#             */
-/*   Updated: 2024/06/14 19:28:16 by etran            ###   ########.fr       */
+/*   Updated: 2024/09/11 13:34:26 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -82,11 +82,14 @@ void CommandBuffer::awaitEndOfRecording(const Device& device) const {
     submitInfo.commandBufferCount = 1;
     submitInfo.pCommandBuffers = &m_buffer;
 
+    LDEBUG("Submit command buffer...");
     if (vkQueueSubmit(_getQueue(), 1, &submitInfo, m_awaitFence.getFence()) != VK_SUCCESS)
         throw std::runtime_error("failed to submit command buffer to queue");
 
+    LDEBUG("Waiting command buffer...");
     m_awaitFence.await(device);
     m_awaitFence.reset(device);
+    LDEBUG("Done waiting.");
 }
 
 void CommandBuffer::submitRecording(

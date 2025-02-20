@@ -2,25 +2,66 @@
 
 #include <vector>
 
+#include "vector.h"
 #include "vertex.h"
+
+namespace game {
+class World;
+class Chunk;
+}
 
 namespace vox::gfx {
 
-struct WorldGfx final {
+/**
+ * @brief Handler for gfx data of the world (vertices, rendering area, etc).
+ */
+class WorldGfx final {
+public:
+    /* ====================================================================== */
+    /*                                 METHODS                                */
+    /* ====================================================================== */
 
-    std::vector<VertexInstance> m_instances;
+    WorldGfx() = default;
+    ~WorldGfx() = default;
+
+    WorldGfx(WorldGfx&& other) = delete;
+    WorldGfx(const WorldGfx& other) = delete;
+    WorldGfx& operator=(WorldGfx&& rhs) = delete;
+    WorldGfx& operator=(const WorldGfx& rhs) = delete;
+
+    /* ====================================================================== */
+
+    void generateInstances(std::vector<game::Chunk>& chunks);
+    void computeRenderedAreaChunks(const std::vector<game::Chunk>& chunks);
+    void updateRenderData(const math::ivec2& chunkPos);
+
+    /* ====================================================================== */
+
+    const std::vector<VertexInstance>&      getInstances() const noexcept { return m_instances; }
+    const std::vector<const game::Chunk*>&  getRenderedChunks() const noexcept { return m_renderedChunks; }
+    const math::ivec2&                      getPortionOffset() const noexcept { return m_portionOffset; }
+    const math::ivec2&                      getRenderOffset() const noexcept { return m_renderOffset; }
+    bool                                    needsUpdate() const noexcept { return m_needUpdate; }
+
+private:
+    /* ====================================================================== */
+    /*                                  DATA                                  */
+    /* ====================================================================== */
+
+    std::vector<VertexInstance>         m_instances;
+    std::vector<const game::Chunk*>     m_renderedChunks;
 
     // Portion of world generated offset. At first, center of full world.
-    i32 m_portionOffsetX = 0;
-    i32 m_portionOffsetZ = 0;
+    // Aka PG
+    math::ivec2 m_portionOffset = math::ivec2(0, 0);
 
     // Rendered area chunks id offset.
-    i32 m_renderOffsetX = 0;
-    i32 m_renderOffsetZ = 0;
+    // Aka RA
+    math::ivec2 m_renderOffset = math::ivec2(0, 0);
 
-    u32 m_centerChunkX = 0;
-    u32 m_centerChunkZ = 0;
+    bool        m_needUpdate = false;
 
-}; // struct WorldGfx
+
+}; // class WorldGfx
 
 } // namespace vox::gfx

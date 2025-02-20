@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/28 19:55:31 by etran             #+#    #+#             */
-/*   Updated: 2024/08/18 13:30:56 by etran            ###   ########.fr       */
+/*   Updated: 2024/09/11 12:44:45 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,13 +44,8 @@ DescriptorTable::~DescriptorTable() {
 
 /* ========================================================================== */
 
-void DescriptorTable::init(
-    const Device& device,
-    const ICommandBuffer* cmdBuffer
-) {
-    for (auto& set: m_sets) {
-        set->init(device, cmdBuffer);
-    }
+void DescriptorTable::init(const Device& device, const ICommandBuffer* cmdBuffer) {
+    for (u32 i = 0; i < DESCRIPTOR_TABLE_SIZE; ++i) m_sets[i]->init(device, cmdBuffer);
     LINFO("Descriptor table initialized.");
 }
 
@@ -70,15 +65,8 @@ void DescriptorTable::update(const Device& device, const ICommandBuffer* cmdBuff
     PFDSet* pfd = (PFDSet*)m_sets[(u32)DescriptorSetIndex::Pfd];
     pfd->update();
 
-    static bool updated = false;
-
-    if (updated)
-        return;
-
     auto* worldSet = (WorldSet*)m_sets[(u32)DescriptorSetIndex::WorldData];
     worldSet->update(device, cmdBuffer);
-
-    updated = true;
 }
 
 /* ========================================================================== */

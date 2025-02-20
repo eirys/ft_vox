@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/11 16:12:13 by etran             #+#    #+#             */
-/*   Updated: 2024/08/20 18:21:25 by etran            ###   ########.fr       */
+/*   Updated: 2024/10/07 19:09:48 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -93,21 +93,21 @@ void PFDSet::fill(const Device& device) {
 }
 
 void PFDSet::update() {
-    constexpr math::Vect3 SUN_COLOR = {1.0f, 1.0f, 0.33f};
-    constexpr math::Vect3 MOON_COLOR = {0.5f, 0.5f, 0.5f};
+    constexpr math::vec3 SUN_COLOR = {1.0f, 1.0f, 0.33f};
+    constexpr math::vec3 MOON_COLOR = {0.5f, 0.5f, 0.5f};
 
     m_data.m_data[PFDUbo::SunPositionX] = *(u32*)&game::GameState::getSunPos().x;
     m_data.m_data[PFDUbo::SunPositionY] = *(u32*)&game::GameState::getSunPos().y;
     m_data.m_data[PFDUbo::SkyHue] = math::lerp(SUN_COLOR, MOON_COLOR, std::max(0.0f, game::GameState::getSunPos().y)).toRGBA();
     m_data.m_data[PFDUbo::DebugIndex] = ui::Controller::showDebug();
 
-    m_data.m_data[PFDUbo::PortionOffsetX] = game::GameState::getWorld().getPortionOffsetX();
-    m_data.m_data[PFDUbo::PortionOffsetZ] = game::GameState::getWorld().getPortionOffsetZ();
-    m_data.m_data[PFDUbo::RenderOffsetX] = game::GameState::getWorld().getRenderOffsetX();
-    m_data.m_data[PFDUbo::RenderOffsetZ] = game::GameState::getWorld().getRenderOffsetZ();
+    m_data.m_data[PFDUbo::PortionOffsetX] = game::GameState::getWorld().getPortionOffset().x;
+    m_data.m_data[PFDUbo::PortionOffsetZ] = game::GameState::getWorld().getPortionOffset().y;
+    m_data.m_data[PFDUbo::RenderOffsetX] = game::GameState::getWorld().getRenderOffset().x;
+    m_data.m_data[PFDUbo::RenderOffsetZ] = game::GameState::getWorld().getRenderOffset().y;
 
 #if ENABLE_SHADOW_MAPPING
-    const float	terrainSize = CHUNK_SIZE * game::World::getSettings().renderDistance;
+    const float	terrainSize = CHUNK_SIZE * game::World::getSettings().rendering.renderDistance;
     const float	terrainSizeHalf = terrainSize * 0.5f;
     const float	lightDistance = terrainSizeHalf;
 
@@ -124,6 +124,7 @@ void PFDSet::update() {
 #endif
 
     m_mvpDataBuffer.copyFrom(&m_data);
+    LDEBUG("PFD descriptor set updated");
 }
 
 } // namespace vox::gfx

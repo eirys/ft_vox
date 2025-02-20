@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/15 16:21:18 by etran             #+#    #+#             */
-/*   Updated: 2024/08/26 12:31:30 by etran            ###   ########.fr       */
+/*   Updated: 2024/09/11 13:13:52 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,8 +27,12 @@ public:
 
     struct Ubo {
         enum: u32 {
-            RenderAreaSide,
+            WorldSide,
             FogDistance,
+            WorldPortionOffsetX,
+            WorldPortionOffsetZ,
+            RenderOffsetX,
+            RenderOffsetZ,
         };
         u32 data[16];
     };
@@ -74,7 +78,14 @@ private:
     /* ====================================================================== */
 
     Buffer  m_renderDataBuffer;
+    Buffer  m_stagingBuffer;
     Ubo     m_ubo;
+
+    /* ====================================================================== */
+    /*                                 METHODS                                */
+    /* ====================================================================== */
+
+    void _sendData(const Device& device, const ICommandBuffer* cmdBuffer);
 
 }; // class WorldSet
 

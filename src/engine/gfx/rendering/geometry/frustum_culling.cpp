@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/31 15:07:11 by etran             #+#    #+#             */
-/*   Updated: 2024/06/28 22:17:23 by etran            ###   ########.fr       */
+/*   Updated: 2024/08/26 13:20:52 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,8 +25,8 @@ BoundingFrustum::BoundingFrustum(const game::Camera& cam) {
     const float halfHeight = cam.getSettings().farPlane * tanf(math::radians(cam.getSettings().fov) * .5f);
     const float halfWidth = halfHeight * game::Camera::ASPECT_RATIO;
 
-    const math::Vect3 nearFront = cam.getSettings().nearPlane * cam.m_directions.front;
-    const math::Vect3 farFront = cam.getSettings().farPlane * cam.m_directions.front;
+    const math::vec3 nearFront = cam.getSettings().nearPlane * cam.m_directions.front;
+    const math::vec3 farFront = cam.getSettings().farPlane * cam.m_directions.front;
 
     m_near.xyz = cam.m_directions.front;
     m_near.w = math::dot(m_near.xyz, cam.m_position + nearFront);
@@ -51,20 +51,20 @@ BoundingFrustum::BoundingFrustum(const game::Camera& cam) {
     /*                               BOUNDINGBOX                              */
     /* ====================================================================== */
 
-BoundingBox::BoundingBox(const math::Vect3& center, const math::Vect3& halfExtent):
+BoundingBox::BoundingBox(const math::vec3& center, const math::vec3& halfExtent):
     m_center(center),
     m_halfExtent(halfExtent) {}
 
 /* ========================================================================== */
 
 bool BoundingBox::isVisible(const BoundingFrustum& frustum) const {
-    for (const math::Vect4& plane: frustum.m_planes) {
+    for (const math::vec4& plane: frustum.m_planes) {
         if (!_isInsidePlane(plane)) return false;
     }
     return true;
 }
 
-bool BoundingBox::_isInsidePlane(const math::Vect4& plane) const {
+bool BoundingBox::_isInsidePlane(const math::vec4& plane) const {
     // Length of diag projected on plane normal
     const float extent = math::dot(m_halfExtent, abs(plane.xyz));
     const float signedDistance = math::dot(m_center, plane.xyz) - plane.w;

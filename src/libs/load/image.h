@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   image_handler.h                                    :+:      :+:    :+:   */
+/*   image.h                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 17:17:39 by etran             #+#    #+#             */
-/*   Updated: 2024/03/18 15:03:57 by etran            ###   ########.fr       */
+/*   Updated: 2024/08/26 18:39:04 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,7 +32,7 @@ public:
 	/* ========================================================================= */
 
 	Image(
-		const std::string& path,
+		const std::string_view& path,
 		std::vector<uint32_t>&& pixels,
 		std::size_t width,
 		std::size_t height
@@ -47,7 +47,7 @@ public:
 
 	/* ========================================================================= */
 
-	const std::string&		getPath() const noexcept;
+	const std::string_view& getPath() const noexcept;
 	const uint32_t*			getPixels() const noexcept;
 	std::size_t				getWidth() const noexcept;
 	std::size_t				getHeight() const noexcept;
@@ -57,7 +57,7 @@ private:
 	/*                                    DATA                                   */
 	/* ========================================================================= */
 
-	std::string				path;
+	std::string_view	    path;
 	std::vector<uint32_t>	pixels;
 	std::size_t				width = 0;
 	std::size_t				height = 0;

@@ -6,14 +6,13 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/15 15:51:38 by etran             #+#    #+#             */
-/*   Updated: 2024/08/26 12:19:03 by etran            ###   ########.fr       */
+/*   Updated: 2024/09/17 16:17:15 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "world.h"
-#include "perlin_noise.h"
 #include "voxmap.h"
-
+#include "camera.h"
 #include "debug.h"
 
 #include <cassert>
@@ -21,6 +20,8 @@
 namespace game {
 
 World::Settings World::ms_settings;
+
+static_assert(World::SIZE < 32);
 
 /* ========================================================================== */
 /*                                   PUBLIC                                   */
@@ -44,16 +45,15 @@ void World::init() {
         for (u32 x = 0; x < SIDE; ++x)
             m_chunks[(z * SIDE) + x].generateTerrain(perlin, voronoi, x, z);
 
-    _generateInstances();
-
-    m_origin = WORLD_ORIGIN;
+    // TODO change
+    m_origin = { SIDE * Chunk::SIZE * 0.5f, 0.0f, SIDE * Chunk::SIZE * 0.5f };
     m_origin.y = perlin.getValue(m_origin.x, m_origin.z);
 
-    m_worldGfx.m_centerChunkX = (SIDE / 2);
-    m_worldGfx.m_centerChunkZ = (SIDE / 2);
+    // m_worldGfx.m_portionOffset = math::ivec2(SIZE);
+    // m_worldGfx.m_renderOffset = math::ivec2(CENTER_CHUNK);
 
-    m_worldGfx.m_portionOffsetX = (MAX_CHUNK_COUNT / 2) - (SIDE / 2);
-    m_worldGfx.m_portionOffsetZ = (MAX_CHUNK_COUNT / 2) - (SIDE / 2);
+    m_worldGfx.generateInstances(m_chunks);
+    m_worldGfx.computeRenderedAreaChunks(m_chunks);
 
     LINFO("World initialized.");
 }
@@ -65,8 +65,10 @@ void World::ignoreData() {
 }
 
 void World::setRenderDistance(u32 newDistance) noexcept {
-    assert(newDistance < 25 && newDistance > 0);
+    assert(newDistance <= SIZE && newDistance >= 0);
     ms_settings.rendering.renderDistance = newDistance;
+    ms_settings.rendering.renderAreaSide = 1 + newDistance * 2;
+    ms_settings.rendering.renderArea = ms_settings.rendering.renderAreaSide * ms_settings.rendering.renderAreaSide;
 }
 /* ========================================================================== */
 
@@ -86,15 +88,24 @@ const Chunk& World::getChunk(const u32 x, const u32 z) const noexcept {
     return m_chunks[(z * SIDE) + x];
 }
 
-const math::Vect3& World::getOrigin() const noexcept {
+const math::vec3& World::getOrigin() const noexcept {
     return m_origin;
 }
 
-const std::vector<vox::gfx::VertexInstance>& World::getInstances() const noexcept {
-    return m_worldGfx.m_instances;
+/* GFX ====================================================================== */
+
+void World::update(const game::Camera& camera) {
+    const math::ivec2& chunkPos = camera.getChunkPosition();
+    return;
+
+    m_worldGfx.updateRenderData(chunkPos);
 }
 
-std::vector<u8> World::getBlockRaw() const {
+/**
+ * @brief Raw block data from the world portion generated.
+ * Should be used for saving/loading.
+ */
+std::vector<u8> World::retrieveBlocksRaw() const {
     std::vector<u8> raw;
     raw.reserve(DIMENSION * Chunk::VOLUME);
 
@@ -109,47 +120,6 @@ std::vector<u8> World::getBlockRaw() const {
         }
     }
     return raw;
-}
-
-const World::Settings& World::getSettings() noexcept {
-    return ms_settings;
-}
-
-/* ========================================================================== */
-/*                                   PRIVATE                                  */
-/* ========================================================================== */
-
-void World::_updateGfx() {
-    if (m_worldGfx.m_portionOffsetX - m_worldGfx.m_centerChunkX == 0) {
-        // TODO: trigger PG update
-    } else if (m_worldGfx.m_portionOffsetZ - m_worldGfx.m_centerChunkZ == 0) {
-        // TODO: trigger PG update
-    }
-}
-
-void World::_generateInstances() {
-    using ChunkNeighbor = game::ChunkNeighbor;
-
-    std::vector<const game::Chunk*>  neighbors = {nullptr, nullptr, nullptr, nullptr};
-
-    for (u32 z = 0; z < SIDE; ++z) {
-        for (u32 x = 0; x < SIDE; ++x) {
-            neighbors = {nullptr, nullptr, nullptr, nullptr};
-
-            auto& chunk = getChunk(x, z);
-
-            if (x > 0)
-                neighbors[ChunkNeighbor::Left] = &getChunk(x - 1, z);
-            if (x < SIDE - 1)
-                neighbors[ChunkNeighbor::Right] = &getChunk(x + 1, z);
-            if (z > 0)
-                neighbors[ChunkNeighbor::Back] = &getChunk(x, z - 1);
-            if (z < SIDE - 1)
-                neighbors[ChunkNeighbor::Front] = &getChunk(x, z + 1);
-
-            chunk.generateInstances(m_worldGfx.m_instances, neighbors);
-        }
-    }
 }
 
 } // namespace game

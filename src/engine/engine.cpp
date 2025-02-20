@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/27 18:17:53 by etran             #+#    #+#             */
-/*   Updated: 2024/08/22 15:00:49 by etran            ###   ########.fr       */
+/*   Updated: 2024/09/11 15:51:08 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,11 +39,14 @@ Engine::~Engine() {
 /* ========================================================================== */
 
 void Engine::run() {
-    m_timer.reset();
+    m_timer.init();
+
     while (m_window.isAlive()) {
         m_window.pollEvents();
-        m_game.update(m_controller);
+
         m_controller.update(m_window);
+        m_game.update(m_controller);
+
         m_renderer.render();
         m_timer.update();
     }

@@ -6,28 +6,26 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/20 13:34:05 by etran             #+#    #+#             */
-/*   Updated: 2024/08/15 17:34:59 by etran            ###   ########.fr       */
+/*   Updated: 2024/09/17 15:28:03 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
-#include <array>
 #include <vector>
-#include <stack>
 
 #include "buffer.h"
-#include "vertex.h"
-
-namespace game {
-class GameState;
-class Chunk;
-}
 
 namespace vox::gfx {
 
 class VertexBuffer final {
 public:
+    /* ====================================================================== */
+    /*                             STATIC MEMBERS                             */
+    /* ====================================================================== */
+
+    static constexpr u32  BUFFER_COUNT = 2;
+
     /* ====================================================================== */
     /*                                 METHODS                                */
     /* ====================================================================== */
@@ -45,20 +43,23 @@ public:
     static void     init(const Device& device, const ICommandBuffer* cmdBuffer);
     static void     destroy(const Device& device);
 
+    static void     update(const Device& device, const ICommandBuffer* cmdBuffer);
     static void     bind(const ICommandBuffer* cmdBuffer);
+    static void     changeBuffer() noexcept;
 
     /* ====================================================================== */
 
-    static const Buffer&   getBuffer() noexcept;
-    static u32             getInstancesCount() noexcept;
+    static const Buffer&   getBuffer() noexcept { return ms_buffers[ms_currentBuffer]; }
+    static u32             getInstancesCount() noexcept { return ms_buffers[ms_currentBuffer].getMetadata().m_size; }
+    static u32             getCurrentBuffer() noexcept { return ms_currentBuffer; }
 
 private:
     /* ====================================================================== */
     /*                             STATIC MEMBERS                             */
     /* ====================================================================== */
 
-    static Buffer   ms_buffer;
-    static u32      ms_instancesCount;
+    static std::vector<Buffer>  ms_buffers;
+    static u32                  ms_currentBuffer;
 
 }; // class VertexBuffer
 

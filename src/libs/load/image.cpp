@@ -1,16 +1,16 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   image_handler.cpp                                  :+:      :+:    :+:   */
+/*   image.cpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/12 22:44:13 by eli               #+#    #+#             */
-/*   Updated: 2023/06/08 20:31:42 by etran            ###   ########.fr       */
+/*   Updated: 2024/08/26 18:48:32 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "image_handler.h"
+#include "image.h"
 
 namespace scop {
 
@@ -19,7 +19,7 @@ namespace scop {
 /* ========================================================================== */
 
 Image::Image(
-	const std::string& path,
+	const std::string_view& path,
 	std::vector<uint32_t>&& pixels,
 	std::size_t width,
 	std::size_t height
@@ -31,7 +31,7 @@ height(height) {}
 
 /* ========================================================================== */
 
-const std::string&	Image::getPath() const noexcept {
+const std::string_view&	Image::getPath() const noexcept {
 	return path;
 }
 

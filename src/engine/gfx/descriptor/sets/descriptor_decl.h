@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/28 23:42:29 by etran             #+#    #+#             */
-/*   Updated: 2024/08/22 14:53:53 by etran            ###   ########.fr       */
+/*   Updated: 2024/10/07 19:24:20 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -109,6 +109,7 @@ ShaderVisibility operator|(ShaderVisibility lhs, ShaderVisibility rhs) {
 
 #elif defined(VOX_SHADOW_LAYOUT)
 #define PFD_SET 0
+#define WORLD_SET 1
 
 #elif defined(VOX_SSAO_LAYOUT)
 #define SSAO_SET 0

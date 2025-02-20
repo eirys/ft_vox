@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/30 19:39:12 by etran             #+#    #+#             */
-/*   Updated: 2024/06/28 19:22:05 by etran            ###   ########.fr       */
+/*   Updated: 2024/08/26 13:20:52 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,14 +34,14 @@ struct BoundingFrustum final {
 
     union {
         struct {
-            math::Vect4 m_far;
-            math::Vect4 m_near;
-            math::Vect4 m_top;
-            math::Vect4 m_bottom;
-            math::Vect4 m_left;
-            math::Vect4 m_right;
+            math::vec4 m_far;
+            math::vec4 m_near;
+            math::vec4 m_top;
+            math::vec4 m_bottom;
+            math::vec4 m_left;
+            math::vec4 m_right;
         };
-        math::Vect4 m_planes[6];
+        math::vec4 m_planes[6];
     };
 
     /* ====================================================================== */

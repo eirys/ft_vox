@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/03 10:06:29 by etran             #+#    #+#             */
-/*   Updated: 2024/06/16 15:16:59 by etran            ###   ########.fr       */
+/*   Updated: 2024/09/17 15:27:39 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 #include "device.h"
 #include "icommand_buffer.h"
 #include "pipeline_layout.h"
+#include "vertex.h"
 #include "vertex_buffer.h"
 
 #include "debug.h"

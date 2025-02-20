@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/11 16:56:28 by etran             #+#    #+#             */
-/*   Updated: 2024/08/15 12:45:46 by etran            ###   ########.fr       */
+/*   Updated: 2024/09/17 14:27:31 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,15 +14,11 @@
 
 #include "world.h"
 #include "camera.h"
+#include "sun.h"
 
 #include <chrono>
 
 namespace game {
-
-struct Sun final {
-    math::Vect3 m_direction;
-    float       m_rotationSpeed = 0.1f * M_PI;
-};
 
 struct Clock final {
 
@@ -47,6 +43,9 @@ public:
     /* ====================================================================== */
 
     GameState() = default;
+    ~GameState() = default;
+
+    /* ====================================================================== */
 
     void init(const ui::Controller& controller);
     void update(const ui::Controller& controller);
@@ -55,14 +54,14 @@ public:
 
     /* ====================================================================== */
 
-    static float               getElapsedTime() noexcept;
-    static const World&        getWorld() noexcept;
-    static const math::Vect3&  getSunPos() noexcept;
-    static const Camera&       getCamera() noexcept;
+    static float                getElapsedTime() noexcept;
+    static const World&         getWorld() noexcept;
+    static const math::vec3&    getSunPos() noexcept;
+    static const Camera&        getCamera() noexcept;
 
 private:
     /* ====================================================================== */
-    /*                                  DATA                                  */
+    /*                             STATIC MEMBERS                             */
     /* ====================================================================== */
 
     static World   m_world;

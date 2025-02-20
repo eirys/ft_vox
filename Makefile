@@ -6,7 +6,7 @@
 #    By: etran <etran@student.42.fr>                +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/04/06 03:40:09 by eli               #+#    #+#              #
-#    Updated: 2024/08/26 11:44:57 by etran            ###   ########.fr        #
+#    Updated: 2024/10/07 19:49:48 by etran            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -30,8 +30,6 @@ SHD_BIN_DIR	:=	$(OBJ_DIR)/shaders
 ENGINE_DIR	:=	engine
 GFX_DIR		:=	$(ENGINE_DIR)/gfx
 UI_DIR		:=	$(ENGINE_DIR)/ui
-GAME_DIR	:=	$(ENGINE_DIR)/game
-WORLD_DIR	:=	$(GAME_DIR)/world
 
 # gfx
 BUF_DIR		:=	$(GFX_DIR)/buffers
@@ -46,6 +44,12 @@ RENDER_DIR	:=	$(GFX_DIR)/rendering
 PIP_DIR		:=	$(RENDER_DIR)/pipelines
 PASSES_DIR	:=	$(RENDER_DIR)/passes
 GEO_DIR		:=	$(RENDER_DIR)/geometry
+
+# game
+GAME_DIR	:=	$(ENGINE_DIR)/game
+WORLD_DIR	:=	$(GAME_DIR)/world
+STATE_DIR	:=	$(GAME_DIR)/state
+ENT_DIR		:=	$(GAME_DIR)/entities
 
 # libraries
 LIBS_DIR	:=	libs
@@ -77,8 +81,10 @@ SUBDIRS		:=	$(LIBS_DIR) \
 				$(PIP_DIR) \
 				$(PASSES_DIR) \
 				$(PROC_DIR) \
-				$(GAME_DIR) \
 				$(LOAD_DIR) \
+				$(GAME_DIR) \
+				$(STATE_DIR) \
+				$(ENT_DIR) \
 				$(WORLD_DIR)
 
 OBJ_SUBDIRS	:=	$(addprefix $(OBJ_DIR)/,$(SUBDIRS))
@@ -89,7 +95,7 @@ INC_SUBDIRS	:=	$(addprefix $(SRC_DIR)/,$(SUBDIRS)) \
 SRC_FILES	:=	entrypoint.cpp \
 				$(LOAD_DIR)/voxmap.cpp \
 				$(LOAD_DIR)/ppm_loader.cpp \
-				$(LOAD_DIR)/image_handler.cpp \
+				$(LOAD_DIR)/image.cpp \
 				$(IO_DIR)/io_helpers.cpp \
 				$(ENGINE_DIR)/engine.cpp \
 				$(GFX_DIR)/renderer.cpp \
@@ -140,9 +146,10 @@ SRC_FILES	:=	entrypoint.cpp \
 				$(PROC_DIR)/perlin_noise.cpp \
 				$(MATH_DIR)/maths.cpp \
 				$(MATH_DIR)/matrix.cpp \
-				$(GAME_DIR)/game_state.cpp \
-				$(GAME_DIR)/camera.cpp \
+				$(STATE_DIR)/game_state.cpp \
+				$(ENT_DIR)/camera.cpp \
 				$(WORLD_DIR)/world.cpp \
+				$(WORLD_DIR)/world_gfx.cpp \
 				$(WORLD_DIR)/chunk.cpp \
 				$(WORLD_DIR)/block.cpp \
 				$(UI_DIR)/controller.cpp \
@@ -154,12 +161,16 @@ OBJ			:=	$(addprefix $(OBJ_DIR)/,$(SRC_FILES:.cpp=.o))
 DEP			:=	$(addprefix $(OBJ_DIR)/,$(SRC_FILES:.cpp=.d))
 
 CXX			:=	clang++
-MACROS		:=	GLFW_INCLUDE_VULKAN \
+MACROS		?=	GLFW_INCLUDE_VULKAN \
 				__LOG \
 				__INFO \
 				__LINUX \
 				VOX_SEED=42 \
 				VOX_CPP
+
+ifdef debug
+MACROS		+=	__DEBUG
+endif
 
 DEFINES		:=	$(addprefix -D,$(MACROS))
 
@@ -287,6 +298,9 @@ clean_shaders:
 shaders_re: clean_shaders $(SHD_BIN)
 
 # ASSETS ===================================================================== #
+
+# TODO: cleanup
+
 .PHONY: maps
 maps: $(OBJ_DIR)/$(SETUP_DIR)/map_generator.o
 	@echo "Generating maps..."
@@ -302,6 +316,8 @@ $(OBJ_DIR)/$(SETUP_DIR)/map_generator.o: $(SRC_DIR)/$(SETUP_DIR)/map_generator.c
 
 .PHONY: remove_map
 remove_map:
+	@$(RM) $(OBJ_DIR)/$(SETUP_DIR)
+	@echo "Removed $(OBJ_DIR)/$(SETUP_DIR)."
 	@$(RM) $(MAP_DIR)
 	@echo "Removed $(MAP_DIR)."
 

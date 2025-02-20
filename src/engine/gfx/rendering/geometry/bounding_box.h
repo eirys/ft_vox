@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/30 19:14:49 by etran             #+#    #+#             */
-/*   Updated: 2024/05/31 18:33:02 by etran            ###   ########.fr       */
+/*   Updated: 2024/08/26 13:20:52 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,7 +24,7 @@ public:
     /*                                 METHODS                                */
     /* ====================================================================== */
 
-    BoundingBox(const math::Vect3& center, const math::Vect3& halfExtent);
+    BoundingBox(const math::vec3& center, const math::vec3& halfExtent);
 
     BoundingBox() = default;
     ~BoundingBox() = default;
@@ -42,14 +42,14 @@ private:
     /*                                  DATA                                  */
     /* ====================================================================== */
 
-    math::Vect3 m_center;
-    math::Vect3 m_halfExtent;
+    math::vec3 m_center;
+    math::vec3 m_halfExtent;
 
     /* ====================================================================== */
     /*                                 METHODS                                */
     /* ====================================================================== */
 
-    bool    _isInsidePlane(const math::Vect4& plane) const;
+    bool    _isInsidePlane(const math::vec4& plane) const;
 
 }; // class BoundingBox
 

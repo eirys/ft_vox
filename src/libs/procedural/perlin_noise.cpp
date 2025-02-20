@@ -6,7 +6,7 @@
 /*   By: etran <etran@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/23 10:26:08 by etran             #+#    #+#             */
-/*   Updated: 2024/04/02 15:44:31 by etran            ###   ########.fr       */
+/*   Updated: 2024/08/26 13:24:01 by etran            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,6 +22,9 @@
 #include <algorithm> // std::shuffle
 
 namespace proc {
+
+using vec2 = math::vec2;
+using vec3 = math::vec3;
 
 /* ========================================================================== */
 /*                                   PUBLIC                                   */
@@ -180,16 +183,16 @@ std::vector<float>	PerlinNoise::_generateRandomTable() {
 /**
  * @brief Generate the gradient table.
 */
-std::vector<Vect3>	PerlinNoise::_generateGradientTable() {
-	std::vector<Vect3>	table(table_sizes);
+std::vector<vec3>	PerlinNoise::_generateGradientTable() {
+	std::vector<vec3>	table(table_sizes);
 
 	for (std::size_t i = 0; i < table_sizes; ++i) {
-		table[i] = Vect3(
+		table[i] = vec3(
 			_generateFloat(-1.0f, 1.0f),
 			_generateFloat(-1.0f, 1.0f),
 			_generateFloat(-1.0f, 1.0f)
 		);
-		if (table[i] == Vect3(0.0f, 0.0f, 0.0f)) {
+		if (table[i] == vec3(0.0f, 0.0f, 0.0f)) {
 			// If the gradient is null, regenerate it.
 			--i;
 			continue;
@@ -340,24 +343,24 @@ std::vector<float>	PerlinNoise::_generate2dNoiseMap() {
 	std::vector<float>	noise_map(width * height);
 	std::vector<float>	random_table = _generateRandomTable();
 
-	std::function<Vect2(const Vect2&)> floorFn =
+	std::function<vec2(const vec2&)> floorFn =
 		[]
-		(const Vect2& vec) -> Vect2 {
-			return Vect2(std::floor(vec.x), std::floor(vec.y));
+		(const vec2& vec) -> vec2 {
+			return vec2(std::floor(vec.x), std::floor(vec.y));
 		};
 
-	std::function<Vect2(const Vect2&, int32_t)> modFn =
+	std::function<vec2(const vec2&, int32_t)> modFn =
 		[]
-		(const Vect2& vec, int32_t len) -> Vect2 {
-			return Vect2(
+		(const vec2& vec, int32_t len) -> vec2 {
+			return vec2(
 				static_cast<int32_t>(vec.x) & len,
 				static_cast<int32_t>(vec.y) & len
 			);
 		};
 
-	std::function<float(Vect2, Vect2, Vect2)> lerpFn =
+	std::function<float(vec2, vec2, vec2)> lerpFn =
 		[&random_table, this]
-		(Vect2 min, Vect2 max, Vect2 t) -> float {
+		(vec2 min, vec2 max, vec2 t) -> float {
 			// Retrieve corners.
 			float c00 = random_table[_hash(min.x, min.y)];
 			float c10 = random_table[_hash(max.x, min.y)];
@@ -365,7 +368,7 @@ std::vector<float>	PerlinNoise::_generate2dNoiseMap() {
 			float c11 = random_table[_hash(max.x, max.y)];
 
 			// Smoothen t.
-			Vect2 s = Vect2(
+			vec2 s = vec2(
 				math::smoothen(t.x),
 				math::smoothen(t.y));
 
@@ -379,7 +382,7 @@ std::vector<float>	PerlinNoise::_generate2dNoiseMap() {
 	float	norm = 0;
 	for (std::size_t y = 0; y < height; ++y) {
 		for (std::size_t x = 0; x < width; ++x) {
-			Vect2	coord = Vect2(x, y) * frequency;
+			vec2	coord = vec2(x, y) * frequency;
 			float		amplitude = 1;	// Amplitude of the layer.
 
 			// Evaluate and stack up layers.
@@ -391,7 +394,7 @@ std::vector<float>	PerlinNoise::_generate2dNoiseMap() {
 							floorFn,
 							modFn,
 							lerpFn,
-							Vect2(1.0f, 1.0f)),
+							vec2(1.0f, 1.0f)),
 						amplitude,
 						noise_map[y * width + x]);
 
@@ -418,55 +421,55 @@ std::vector<float>	PerlinNoise::_generate2dNoiseMap() {
 */
 std::vector<float>	PerlinNoise::_generate3dNoiseMap() {
 	std::vector<float>	noise_map(width * height * depth);
-	std::vector<Vect3>	gradients = _generateGradientTable();
+	std::vector<vec3>	gradients = _generateGradientTable();
 
-	std::function<Vect3(const Vect3&)>	floorFn =
+	std::function<vec3(const vec3&)>	floorFn =
 		[]
-		(const Vect3& vec) -> Vect3 {
-			return Vect3(
+		(const vec3& vec) -> vec3 {
+			return vec3(
 				std::floor(vec.x),
 				std::floor(vec.y),
 				std::floor(vec.z)
 			);
 		};
 
-	std::function<Vect3(const Vect3&, int32_t)>	modFn =
+	std::function<vec3(const vec3&, int32_t)>	modFn =
 		[]
-		(const Vect3& vec, int32_t len) -> Vect3 {
-			return Vect3(
+		(const vec3& vec, int32_t len) -> vec3 {
+			return vec3(
 				static_cast<int32_t>(vec.x) & len,
 				static_cast<int32_t>(vec.y) & len,
 				static_cast<int32_t>(vec.z) & len
 			);
 		};
 
-	std::function<float(Vect3, Vect3, Vect3 t)>	lerpFn =
+	std::function<float(vec3, vec3, vec3 t)>	lerpFn =
 		[&gradients, this]
-		(Vect3 min, Vect3 max, Vect3 t) -> float {
+		(vec3 min, vec3 max, vec3 t) -> float {
 			// Retrieve gradients at corners.
-			Vect3 c000 = gradients[_hash(min.x, min.y, min.z)];
-			Vect3 c100 = gradients[_hash(max.x, min.y, min.z)];
-			Vect3 c010 = gradients[_hash(min.x, max.y, min.z)];
-			Vect3 c110 = gradients[_hash(max.x, max.y, min.z)];
+			vec3 c000 = gradients[_hash(min.x, min.y, min.z)];
+			vec3 c100 = gradients[_hash(max.x, min.y, min.z)];
+			vec3 c010 = gradients[_hash(min.x, max.y, min.z)];
+			vec3 c110 = gradients[_hash(max.x, max.y, min.z)];
 
-			Vect3 c001 = gradients[_hash(min.x, min.y, max.z)];
-			Vect3 c101 = gradients[_hash(max.x, min.y, max.z)];
-			Vect3 c011 = gradients[_hash(min.x, max.y, max.z)];
-			Vect3 c111 = gradients[_hash(max.x, max.y, max.z)];
+			vec3 c001 = gradients[_hash(min.x, min.y, max.z)];
+			vec3 c101 = gradients[_hash(max.x, min.y, max.z)];
+			vec3 c011 = gradients[_hash(min.x, max.y, max.z)];
+			vec3 c111 = gradients[_hash(max.x, max.y, max.z)];
 
 			// Retrieve vectors from corners to point.
-			Vect3 p000 = Vect3(t.x, t.y, t.z);
-			Vect3 p100 = Vect3(t.x - 1, t.y, t.z);
-			Vect3 p010 = Vect3(t.x, t.y - 1, t.z);
-			Vect3 p110 = Vect3(t.x - 1, t.y - 1, t.z);
+			vec3 p000 = vec3(t.x, t.y, t.z);
+			vec3 p100 = vec3(t.x - 1, t.y, t.z);
+			vec3 p010 = vec3(t.x, t.y - 1, t.z);
+			vec3 p110 = vec3(t.x - 1, t.y - 1, t.z);
 
-			Vect3 p001 = Vect3(t.x, t.y, t.z - 1);
-			Vect3 p101 = Vect3(t.x - 1, t.y, t.z - 1);
-			Vect3 p011 = Vect3(t.x, t.y - 1, t.z - 1);
-			Vect3 p111 = Vect3(t.x - 1, t.y - 1, t.z - 1);
+			vec3 p001 = vec3(t.x, t.y, t.z - 1);
+			vec3 p101 = vec3(t.x - 1, t.y, t.z - 1);
+			vec3 p011 = vec3(t.x, t.y - 1, t.z - 1);
+			vec3 p111 = vec3(t.x - 1, t.y - 1, t.z - 1);
 
 			// Smoothen t.
-			Vect3 s = Vect3(
+			vec3 s = vec3(
 				math::smoothen(t.x),
 				math::smoothen(t.y),
 				math::smoothen(t.z)
@@ -511,11 +514,11 @@ std::vector<float>	PerlinNoise::_generate3dNoiseMap() {
 					std::fma(y, width, x)
 				);
 				noise_map[index] = _evaluateAt(
-					Vect3(x, y, z),
+					vec3(x, y, z),
 					floorFn,
 					modFn,
 					lerpFn,
-					Vect3(1.0f, 1.0f, 1.0f)
+					vec3(1.0f, 1.0f, 1.0f)
 				);
 			}
 		}
